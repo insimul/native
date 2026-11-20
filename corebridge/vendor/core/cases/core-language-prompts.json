@@ -1,0 +1,7234 @@
+{
+ "area": "language-prompts",
+ "description": "core's language corpus conformance/language/prompts.json (P9h.core) through the language.* rows, each op as core's reference runner (src/language-learning/systems-corpus.ts, runLanguageSystemsOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/language/prompts.json": "d9686cf974b4ff9a177222c2bfbe124cdfe5dcb85d61bd8c12798fb07d4efa14"
+  }
+ },
+ "cases": [
+  {
+   "name": "language/prompts run: run: a pick raises one prompt, identification first; the last pick that raised one stands",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "bind": "b1"
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "bind": "b2"
+    },
+    {
+     "call": "language.prompts.initial",
+     "args": {},
+     "bind": "b5"
+    },
+    {
+     "call": "language.identification.registerTargets",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "targets": [
+       {
+        "id": "well",
+        "questId": "q_square",
+        "objectiveId": "o1",
+        "expected": "puits",
+        "hint": "a deep hole for water",
+        "objectName": "well"
+       },
+       {
+        "id": "fountain",
+        "questId": "q_square",
+        "objectiveId": "o2",
+        "expected": "fontaine",
+        "hint": "water that sprays"
+       },
+       {
+        "id": "w_apple",
+        "questId": "q_market",
+        "objectiveId": "o1",
+        "expected": "pomme",
+        "hint": "a red fruit"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": [
+           "well",
+           "fountain",
+           "w_apple"
+          ]
+         }
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.naming.nameableObjects",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "targetLanguage": "French"
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.naming.registerNameable",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "objects": {
+       "$ref": "b3.objects"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": {
+          "$ids": [
+           "well",
+           "cauldron",
+           "fountain",
+           "bench",
+           "apple"
+          ],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "props.interactables.examinePick",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0.5,
+       "z": 0
+      }
+     },
+     "expect": {
+      "pick": {
+       "$subset": {
+        "id": "w_well"
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "pick": {
+       "$ref": "b4.pick"
+      },
+      "at": {
+       "x": 0.5,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b6.state"
+       },
+       "naming": {
+        "$ref": "b7.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "identify",
+        "id": "well",
+        "prompt": {
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "promptText": "What is this? Answer in the target language.",
+         "isActivity": false
+        }
+       },
+       "checked": {
+        "identify": "raised"
+       },
+       "events": [
+        {
+         "type": "identification_prompted",
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "isActivity": false
+        },
+        {
+         "type": "visual_vocab_prompted",
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "isActivity": false
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "identify",
+          "id": "well"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "props.interactables.examinePick",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 2,
+       "z": 0.5
+      }
+     },
+     "expect": {
+      "pick": {
+       "$subset": {
+        "id": "w_cauldron"
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "pick": {
+       "$ref": "b8.pick"
+      },
+      "at": {
+       "x": 2,
+       "z": 0.5
+      },
+      "world": {
+       "identification": {
+        "$ref": "b6.state"
+       },
+       "naming": {
+        "$ref": "b7.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "name",
+        "id": "cauldron",
+        "prompt": "Name this object in the target language (3 attempts left):",
+        "attemptsLeft": 3
+       },
+       "checked": {
+        "identify": "not_a_target",
+        "name": "raised"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "name",
+          "id": "cauldron"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "props.interactables.examinePick",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": -2,
+       "z": 0.1
+      }
+     },
+     "expect": {
+      "pick": {
+       "$subset": {
+        "id": "w_crate"
+       }
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b11.state"
+      },
+      "pick": {
+       "$ref": "b10.pick"
+      },
+      "at": {
+       "x": -2,
+       "z": 0.1
+      },
+      "world": {
+       "identification": {
+        "$ref": "b6.state"
+       },
+       "naming": {
+        "$ref": "b7.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": null,
+       "checked": {
+        "identify": "not_a_target",
+        "name": "no_translation"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "name",
+          "id": "cauldron"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b13"
+    },
+    {
+     "call": "props.interactables.examinePick",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 9.5
+      }
+     },
+     "expect": {
+      "pick": null
+     },
+     "bind": "b12"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b13.state"
+      },
+      "pick": {
+       "$ref": "b12.pick"
+      },
+      "at": {
+       "x": 0,
+       "z": 9.5
+      },
+      "world": {
+       "identification": {
+        "$ref": "b6.state"
+       },
+       "naming": {
+        "$ref": "b7.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": false,
+       "refusal": "nothing_in_reach",
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "name",
+          "id": "cauldron"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b14"
+    },
+    {
+     "call": "language.prompts.standing",
+     "args": {
+      "state": {
+       "$ref": "b14.state"
+      },
+      "world": {
+       "identification": {
+        "$ref": "b6.state"
+       },
+       "naming": {
+        "$ref": "b7.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "prompt": {
+        "kind": "name",
+        "id": "cauldron",
+        "prompt": "Name this object in the target language (3 attempts left):",
+        "attemptsLeft": 3
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b16"
+    },
+    {
+     "call": "props.interactables.examinePick",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": -0.5
+      }
+     },
+     "expect": {
+      "pick": {
+       "$subset": {
+        "id": "w_well"
+       }
+      }
+     },
+     "bind": "b15"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b16.state"
+      },
+      "pick": {
+       "$ref": "b15.pick"
+      },
+      "at": {
+       "x": 0,
+       "z": -0.5
+      },
+      "world": {
+       "identification": {
+        "$ref": "b6.state"
+       },
+       "naming": {
+        "$ref": "b7.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "identify",
+        "id": "well",
+        "prompt": {
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "promptText": "What is this? Answer in the target language.",
+         "isActivity": false
+        }
+       },
+       "checked": {
+        "identify": "raised"
+       },
+       "events": [
+        {
+         "type": "identification_prompted",
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "isActivity": false
+        },
+        {
+         "type": "visual_vocab_prompted",
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "isActivity": false
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "identify",
+          "id": "well"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b17"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b17.state"
+      },
+      "input": "seau",
+      "world": {
+       "identification": {
+        "$ref": "b6.state"
+       },
+       "naming": {
+        "$ref": "b7.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "identify",
+       "id": "well",
+       "result": {
+        "passed": false,
+        "score": 0,
+        "feedback": "That doesn't seem right.",
+        "bestMatch": null,
+        "objectiveCompleted": false,
+        "events": [
+         {
+          "type": "identification_incorrect",
+          "targetId": "well",
+          "questId": "q_square",
+          "score": 0,
+          "playerAnswer": "seau"
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "seau",
+          "correct": false
+         },
+         {
+          "type": "visual_vocab_answered",
+          "targetId": "well",
+          "questId": "q_square",
+          "passed": false,
+          "score": 0,
+          "playerAnswer": "seau"
+         }
+        ]
+       },
+       "standing": {
+        "kind": "identify",
+        "id": "well",
+        "prompt": {
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "promptText": "What is this? Answer in the target language.",
+         "isActivity": false
+        }
+       }
+      }
+     },
+     "bind": "b18"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b18.state"
+      },
+      "input": "xx",
+      "world": {
+       "identification": {
+        "$ref": "b18.identification"
+       },
+       "naming": {
+        "$ref": "b18.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "identify",
+       "id": "well",
+       "result": {
+        "passed": false,
+        "score": 0,
+        "feedback": "That doesn't seem right. Hint: a deep hole for water",
+        "bestMatch": null,
+        "objectiveCompleted": false,
+        "events": [
+         {
+          "type": "identification_incorrect",
+          "targetId": "well",
+          "questId": "q_square",
+          "score": 0,
+          "playerAnswer": "xx"
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "xx",
+          "correct": false
+         },
+         {
+          "type": "visual_vocab_answered",
+          "targetId": "well",
+          "questId": "q_square",
+          "passed": false,
+          "score": 0,
+          "playerAnswer": "xx"
+         }
+        ]
+       },
+       "standing": {
+        "kind": "identify",
+        "id": "well",
+        "prompt": {
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "promptText": "What is this? Answer in the target language.",
+         "isActivity": false,
+         "hint": "a deep hole for water"
+        }
+       }
+      }
+     },
+     "bind": "b19"
+    },
+    {
+     "call": "language.prompts.standing",
+     "args": {
+      "state": {
+       "$ref": "b19.state"
+      },
+      "world": {
+       "identification": {
+        "$ref": "b19.identification"
+       },
+       "naming": {
+        "$ref": "b19.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "prompt": {
+        "kind": "identify",
+        "id": "well",
+        "prompt": {
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "promptText": "What is this? Answer in the target language.",
+         "isActivity": false,
+         "hint": "a deep hole for water"
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b20"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b20.state"
+      },
+      "input": "Puits!",
+      "world": {
+       "identification": {
+        "$ref": "b19.identification"
+       },
+       "naming": {
+        "$ref": "b19.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "identify",
+       "id": "well",
+       "result": {
+        "passed": true,
+        "score": 100,
+        "feedback": "Excellent! Perfect identification!",
+        "bestMatch": "puits",
+        "objectiveCompleted": true,
+        "events": [
+         {
+          "type": "identification_correct",
+          "targetId": "well",
+          "questId": "q_square",
+          "score": 100,
+          "playerAnswer": "Puits!"
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "puits",
+          "correct": true
+         },
+         {
+          "type": "visual_vocab_answered",
+          "targetId": "well",
+          "questId": "q_square",
+          "passed": true,
+          "score": 100,
+          "playerAnswer": "Puits!"
+         },
+         {
+          "type": "object_identified",
+          "objectId": "well",
+          "objectName": "well",
+          "targetWord": "puits"
+         }
+        ]
+       },
+       "standing": null
+      }
+     },
+     "bind": "b21"
+    },
+    {
+     "call": "language.prompts.standing",
+     "args": {
+      "state": {
+       "$ref": "b21.state"
+      },
+      "world": {
+       "identification": {
+        "$ref": "b21.identification"
+       },
+       "naming": {
+        "$ref": "b21.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "prompt": null,
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b22"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b22.state"
+      },
+      "input": "puits",
+      "world": {
+       "identification": {
+        "$ref": "b21.identification"
+       },
+       "naming": {
+        "$ref": "b21.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": false,
+       "refusal": "no_prompt"
+      }
+     },
+     "bind": "b24"
+    },
+    {
+     "call": "props.interactables.examinePick",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": -0.5
+      }
+     },
+     "expect": {
+      "pick": {
+       "$subset": {
+        "id": "w_well"
+       }
+      }
+     },
+     "bind": "b23"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b24.state"
+      },
+      "pick": {
+       "$ref": "b23.pick"
+      },
+      "at": {
+       "x": 0,
+       "z": -0.5
+      },
+      "world": {
+       "identification": {
+        "$ref": "b24.identification"
+       },
+       "naming": {
+        "$ref": "b24.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "name",
+        "id": "well",
+        "prompt": "Name this object in the target language (3 attempts left):",
+        "attemptsLeft": 3
+       },
+       "checked": {
+        "identify": "identified",
+        "name": "raised"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "name",
+          "id": "well"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b25"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b25.state"
+      },
+      "input": "puits",
+      "world": {
+       "identification": {
+        "$ref": "b24.identification"
+       },
+       "naming": {
+        "$ref": "b24.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "name",
+       "id": "well",
+       "result": {
+        "correct": true,
+        "xp": 5,
+        "attempts": 1,
+        "revealed": false,
+        "toasts": [
+         {
+          "title": "Correct!",
+          "text": "puits = well (+5 XP)"
+         }
+        ],
+        "events": [
+         {
+          "type": "object_named",
+          "objectId": "well",
+          "targetWord": "puits",
+          "category": "places",
+          "correct": true,
+          "attempts": 1
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "puits",
+          "correct": true
+         },
+         {
+          "type": "object_identified",
+          "objectId": "well",
+          "objectName": "well",
+          "targetWord": "puits",
+          "category": "places"
+         }
+        ]
+       },
+       "standing": null
+      }
+     },
+     "bind": "b26"
+    },
+    {
+     "call": "language.prompts.standing",
+     "args": {
+      "state": {
+       "$ref": "b26.state"
+      },
+      "world": {
+       "identification": {
+        "$ref": "b26.identification"
+       },
+       "naming": {
+        "$ref": "b26.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "prompt": null,
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/prompts run: run: a target by the pick's own id or its lower-cased role; point and name within 8 of the player, never twice",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "bind": "b1"
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "bind": "b2"
+    },
+    {
+     "call": "language.prompts.initial",
+     "args": {},
+     "bind": "b4"
+    },
+    {
+     "call": "language.identification.registerTargets",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "targets": [
+       {
+        "id": "well",
+        "questId": "q_square",
+        "objectiveId": "o1",
+        "expected": "puits",
+        "hint": "a deep hole for water",
+        "objectName": "well"
+       },
+       {
+        "id": "fountain",
+        "questId": "q_square",
+        "objectiveId": "o2",
+        "expected": "fontaine",
+        "hint": "water that sprays"
+       },
+       {
+        "id": "w_apple",
+        "questId": "q_market",
+        "objectiveId": "o1",
+        "expected": "pomme",
+        "hint": "a red fruit"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": [
+           "well",
+           "fountain",
+           "w_apple"
+          ]
+         }
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.naming.nameableObjects",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "targetLanguage": "French"
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.naming.registerNameable",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "objects": {
+       "$ref": "b3.objects"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": {
+          "$ids": [
+           "well",
+           "cauldron",
+           "fountain",
+           "bench",
+           "apple"
+          ],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "pick": {
+       "id": "w_apple",
+       "role": "apple",
+       "name": "apple",
+       "position": {
+        "x": 1,
+        "z": 1
+       },
+       "translations": {
+        "French": {
+         "targetWord": "pomme",
+         "category": "food"
+        }
+       }
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "identify",
+        "id": "w_apple",
+        "prompt": {
+         "targetId": "w_apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "promptText": "What is this? Answer in the target language.",
+         "isActivity": false
+        }
+       },
+       "checked": {
+        "identify": "raised"
+       },
+       "events": [
+        {
+         "type": "identification_prompted",
+         "targetId": "w_apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "isActivity": false
+        },
+        {
+         "type": "visual_vocab_prompted",
+         "targetId": "w_apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "isActivity": false
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "identify",
+          "id": "w_apple"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "pick": {
+       "id": "w_fountain",
+       "role": "Fountain",
+       "name": "fountain",
+       "position": {
+        "x": 0,
+        "z": 4
+       },
+       "translations": {
+        "French": {
+         "targetWord": "fontaine",
+         "category": "places"
+        }
+       }
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "identify",
+        "id": "fountain",
+        "prompt": {
+         "targetId": "fountain",
+         "questId": "q_square",
+         "objectiveId": "o2",
+         "promptText": "What is this? Answer in the target language.",
+         "isActivity": false
+        }
+       },
+       "checked": {
+        "identify": "raised"
+       },
+       "events": [
+        {
+         "type": "identification_prompted",
+         "targetId": "fountain",
+         "questId": "q_square",
+         "objectiveId": "o2",
+         "isActivity": false
+        },
+        {
+         "type": "visual_vocab_prompted",
+         "targetId": "fountain",
+         "questId": "q_square",
+         "objectiveId": "o2",
+         "isActivity": false
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "identify",
+          "id": "fountain"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "pick": {
+       "id": "w_bench",
+       "role": "bench",
+       "name": "bench",
+       "position": {
+        "x": 8,
+        "z": 0
+       },
+       "translations": {
+        "French": {
+         "targetWord": "banc"
+        }
+       }
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "name",
+        "id": "bench",
+        "prompt": "Name this object in the target language (3 attempts left):",
+        "attemptsLeft": 3
+       },
+       "checked": {
+        "identify": "not_a_target",
+        "name": "raised"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "name",
+          "id": "bench"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "pick": {
+       "id": "w_bench",
+       "role": "bench",
+       "name": "bench",
+       "position": {
+        "x": 8,
+        "z": 0
+       },
+       "translations": {
+        "French": {
+         "targetWord": "banc"
+        }
+       }
+      },
+      "at": {
+       "x": -0.01,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": null,
+       "checked": {
+        "identify": "not_a_target",
+        "name": "out_of_range"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "name",
+          "id": "bench"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "pick": {
+       "id": "w_lamp",
+       "role": "lamp",
+       "name": "lamp",
+       "position": {
+        "x": 1,
+        "z": 0
+       },
+       "translations": {
+        "French": {
+         "targetWord": "lampe"
+        }
+       }
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": null,
+       "checked": {
+        "identify": "not_a_target",
+        "name": "unknown_object"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "name",
+          "id": "bench"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b11.state"
+      },
+      "pick": {
+       "id": "w_cauldron",
+       "role": "cauldron",
+       "name": "cauldron",
+       "position": {
+        "x": 2,
+        "z": 0
+       },
+       "translations": {
+        "French": {
+         "targetWord": "chaudron"
+        }
+       }
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "name",
+        "id": "cauldron",
+        "prompt": "Name this object in the target language (3 attempts left):",
+        "attemptsLeft": 3
+       },
+       "checked": {
+        "identify": "not_a_target",
+        "name": "raised"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "name",
+          "id": "cauldron"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b12"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b12.state"
+      },
+      "input": " Chaudron ",
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "name",
+       "id": "cauldron",
+       "result": {
+        "correct": true,
+        "xp": 5,
+        "attempts": 1,
+        "revealed": false,
+        "toasts": [
+         {
+          "title": "Correct!",
+          "text": "chaudron = cauldron (+5 XP)"
+         }
+        ],
+        "events": [
+         {
+          "type": "object_named",
+          "objectId": "cauldron",
+          "targetWord": "chaudron",
+          "category": "general",
+          "correct": true,
+          "attempts": 1
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "chaudron",
+          "correct": true
+         },
+         {
+          "type": "object_identified",
+          "objectId": "cauldron",
+          "objectName": "cauldron",
+          "targetWord": "chaudron",
+          "category": "general"
+         }
+        ]
+       },
+       "standing": null
+      }
+     },
+     "bind": "b13"
+    },
+    {
+     "call": "language.prompts.standing",
+     "args": {
+      "state": {
+       "$ref": "b13.state"
+      },
+      "world": {
+       "identification": {
+        "$ref": "b13.identification"
+       },
+       "naming": {
+        "$ref": "b13.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "prompt": null,
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b14"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b14.state"
+      },
+      "pick": {
+       "id": "w_cauldron",
+       "role": "cauldron",
+       "name": "cauldron",
+       "position": {
+        "x": 2,
+        "z": 0
+       },
+       "translations": {
+        "French": {
+         "targetWord": "chaudron"
+        }
+       }
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b13.identification"
+       },
+       "naming": {
+        "$ref": "b13.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": null,
+       "checked": {
+        "identify": "not_a_target",
+        "name": "already_named"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": null
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/prompts run: run: a pick whose id and role both name targets asks by its id first, then by its role, then offers its name",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "bind": "b1"
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "bind": "b2"
+    },
+    {
+     "call": "language.prompts.initial",
+     "args": {},
+     "bind": "b5"
+    },
+    {
+     "call": "language.identification.registerTargets",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "targets": [
+       {
+        "id": "well",
+        "questId": "q_square",
+        "objectiveId": "o1",
+        "expected": "puits",
+        "hint": "a deep hole for water",
+        "objectName": "well"
+       },
+       {
+        "id": "w_well",
+        "questId": "q_this_well",
+        "objectiveId": "o1",
+        "expected": "puits",
+        "hint": "this well"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": [
+           "well",
+           "w_well"
+          ]
+         }
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.naming.nameableObjects",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "targetLanguage": "French"
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.naming.registerNameable",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "objects": {
+       "$ref": "b3.objects"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": {
+          "$ids": [
+           "well",
+           "cauldron",
+           "fountain",
+           "bench",
+           "apple"
+          ],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "props.interactables.examinePick",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expect": {
+      "pick": {
+       "$subset": {
+        "id": "w_well"
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "pick": {
+       "$ref": "b4.pick"
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b6.state"
+       },
+       "naming": {
+        "$ref": "b7.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "identify",
+        "id": "w_well",
+        "prompt": {
+         "targetId": "w_well",
+         "questId": "q_this_well",
+         "objectiveId": "o1",
+         "promptText": "What is this? Answer in the target language.",
+         "isActivity": false
+        }
+       },
+       "checked": {
+        "identify": "raised"
+       },
+       "events": [
+        {
+         "type": "identification_prompted",
+         "targetId": "w_well",
+         "questId": "q_this_well",
+         "objectiveId": "o1",
+         "isActivity": false
+        },
+        {
+         "type": "visual_vocab_prompted",
+         "targetId": "w_well",
+         "questId": "q_this_well",
+         "objectiveId": "o1",
+         "isActivity": false
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "identify",
+          "id": "w_well"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "input": "puits",
+      "world": {
+       "identification": {
+        "$ref": "b6.state"
+       },
+       "naming": {
+        "$ref": "b7.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "identify",
+       "id": "w_well",
+       "result": {
+        "passed": true,
+        "score": 100,
+        "feedback": "Excellent! Perfect identification!",
+        "bestMatch": "puits",
+        "objectiveCompleted": true,
+        "events": [
+         {
+          "type": "identification_correct",
+          "targetId": "w_well",
+          "questId": "q_this_well",
+          "score": 100,
+          "playerAnswer": "puits"
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "puits",
+          "correct": true
+         },
+         {
+          "type": "visual_vocab_answered",
+          "targetId": "w_well",
+          "questId": "q_this_well",
+          "passed": true,
+          "score": 100,
+          "playerAnswer": "puits"
+         },
+         {
+          "type": "object_identified",
+          "objectId": "w_well",
+          "objectName": "w_well",
+          "targetWord": "puits"
+         }
+        ]
+       },
+       "standing": null
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "props.interactables.examinePick",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expect": {
+      "pick": {
+       "$subset": {
+        "id": "w_well"
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "pick": {
+       "$ref": "b9.pick"
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b10.identification"
+       },
+       "naming": {
+        "$ref": "b10.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "identify",
+        "id": "well",
+        "prompt": {
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "promptText": "What is this? Answer in the target language.",
+         "isActivity": false
+        }
+       },
+       "checked": {
+        "identify": "raised"
+       },
+       "events": [
+        {
+         "type": "identification_prompted",
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "isActivity": false
+        },
+        {
+         "type": "visual_vocab_prompted",
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "isActivity": false
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "identify",
+          "id": "well"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b11.state"
+      },
+      "input": "puits",
+      "world": {
+       "identification": {
+        "$ref": "b10.identification"
+       },
+       "naming": {
+        "$ref": "b10.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "identify",
+       "id": "well",
+       "result": {
+        "passed": true,
+        "score": 100,
+        "feedback": "Excellent! Perfect identification!",
+        "bestMatch": "puits",
+        "objectiveCompleted": true,
+        "events": [
+         {
+          "type": "identification_correct",
+          "targetId": "well",
+          "questId": "q_square",
+          "score": 100,
+          "playerAnswer": "puits"
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "puits",
+          "correct": true
+         },
+         {
+          "type": "visual_vocab_answered",
+          "targetId": "well",
+          "questId": "q_square",
+          "passed": true,
+          "score": 100,
+          "playerAnswer": "puits"
+         },
+         {
+          "type": "object_identified",
+          "objectId": "well",
+          "objectName": "well",
+          "targetWord": "puits"
+         }
+        ]
+       },
+       "standing": null
+      }
+     },
+     "bind": "b13"
+    },
+    {
+     "call": "props.interactables.examinePick",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expect": {
+      "pick": {
+       "$subset": {
+        "id": "w_well"
+       }
+      }
+     },
+     "bind": "b12"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b13.state"
+      },
+      "pick": {
+       "$ref": "b12.pick"
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b13.identification"
+       },
+       "naming": {
+        "$ref": "b13.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "name",
+        "id": "well",
+        "prompt": "Name this object in the target language (3 attempts left):",
+        "attemptsLeft": 3
+       },
+       "checked": {
+        "identify": "identified",
+        "name": "raised"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "name",
+          "id": "well"
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/prompts run: run: three wrong names reveal the word and the naming prompt stands no more; that object is offered no more",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "bind": "b1"
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "bind": "b2"
+    },
+    {
+     "call": "language.prompts.initial",
+     "args": {},
+     "bind": "b4"
+    },
+    {
+     "call": "language.identification.registerTargets",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "targets": [
+       {
+        "id": "well",
+        "questId": "q_square",
+        "objectiveId": "o1",
+        "expected": "puits",
+        "hint": "a deep hole for water",
+        "objectName": "well"
+       },
+       {
+        "id": "fountain",
+        "questId": "q_square",
+        "objectiveId": "o2",
+        "expected": "fontaine",
+        "hint": "water that sprays"
+       },
+       {
+        "id": "w_apple",
+        "questId": "q_market",
+        "objectiveId": "o1",
+        "expected": "pomme",
+        "hint": "a red fruit"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": [
+           "well",
+           "fountain",
+           "w_apple"
+          ]
+         }
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.naming.nameableObjects",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "targetLanguage": "French"
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.naming.registerNameable",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "objects": {
+       "$ref": "b3.objects"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": {
+          "$ids": [
+           "well",
+           "cauldron",
+           "fountain",
+           "bench",
+           "apple"
+          ],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "pick": {
+       "id": "w_bench",
+       "role": "bench",
+       "name": "bench",
+       "position": {
+        "x": 8,
+        "z": 0
+       },
+       "translations": {
+        "French": {
+         "targetWord": "banc"
+        }
+       }
+      },
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "name",
+        "id": "bench",
+        "prompt": "Name this object in the target language (3 attempts left):",
+        "attemptsLeft": 3
+       },
+       "checked": {
+        "identify": "not_a_target",
+        "name": "raised"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "name",
+          "id": "bench"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "input": "chaise",
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "name",
+       "id": "bench",
+       "result": {
+        "correct": false,
+        "xp": 0,
+        "attempts": 1,
+        "revealed": false,
+        "toasts": [
+         {
+          "title": "Try again",
+          "text": "That's not quite right. Expected: banc"
+         }
+        ],
+        "events": [
+         {
+          "type": "vocabulary_used",
+          "word": "banc",
+          "correct": false
+         }
+        ]
+       },
+       "standing": {
+        "kind": "name",
+        "id": "bench",
+        "prompt": "Name this object in the target language (2 attempts left):",
+        "attemptsLeft": 2
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "input": "table",
+      "world": {
+       "identification": {
+        "$ref": "b8.identification"
+       },
+       "naming": {
+        "$ref": "b8.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "name",
+       "id": "bench",
+       "result": {
+        "correct": false,
+        "xp": 0,
+        "attempts": 2,
+        "revealed": false,
+        "toasts": [
+         {
+          "title": "Try again",
+          "text": "That's not quite right. Expected: banc"
+         }
+        ],
+        "events": [
+         {
+          "type": "vocabulary_used",
+          "word": "banc",
+          "correct": false
+         }
+        ]
+       },
+       "standing": {
+        "kind": "name",
+        "id": "bench",
+        "prompt": "Name this object in the target language (1 attempts left):",
+        "attemptsLeft": 1
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.prompts.standing",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "world": {
+       "identification": {
+        "$ref": "b9.identification"
+       },
+       "naming": {
+        "$ref": "b9.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "prompt": {
+        "kind": "name",
+        "id": "bench",
+        "prompt": "Name this object in the target language (1 attempts left):",
+        "attemptsLeft": 1
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "input": "lit",
+      "world": {
+       "identification": {
+        "$ref": "b9.identification"
+       },
+       "naming": {
+        "$ref": "b9.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "name",
+       "id": "bench",
+       "result": {
+        "correct": false,
+        "xp": 0,
+        "attempts": 3,
+        "revealed": true,
+        "toasts": [
+         {
+          "title": "Answer revealed",
+          "text": "The word is: banc (bench)"
+         },
+         {
+          "title": "Try again",
+          "text": "That's not quite right. Expected: banc"
+         }
+        ],
+        "events": [
+         {
+          "type": "vocabulary_used",
+          "word": "banc",
+          "correct": false
+         }
+        ]
+       },
+       "standing": null
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.prompts.standing",
+     "args": {
+      "state": {
+       "$ref": "b11.state"
+      },
+      "world": {
+       "identification": {
+        "$ref": "b11.identification"
+       },
+       "naming": {
+        "$ref": "b11.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "prompt": null,
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b12"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b12.state"
+      },
+      "pick": {
+       "id": "w_bench",
+       "role": "bench",
+       "name": "bench",
+       "position": {
+        "x": 8,
+        "z": 0
+       },
+       "translations": {
+        "French": {
+         "targetWord": "banc"
+        }
+       }
+      },
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b11.identification"
+       },
+       "naming": {
+        "$ref": "b11.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning"
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning"
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": null,
+       "checked": {
+        "identify": "not_a_target",
+        "name": "no_attempts_left"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": null
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/prompts run: run: the game's tunings: a nearer naming range (x and z), fewer tries, a stricter pass, an earlier hint, another prompt text",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "bind": "b1"
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "bind": "b2"
+    },
+    {
+     "call": "language.prompts.initial",
+     "args": {},
+     "bind": "b4"
+    },
+    {
+     "call": "language.identification.registerTargets",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "targets": [
+       {
+        "id": "well",
+        "questId": "q_square",
+        "objectiveId": "o1",
+        "expected": "puits",
+        "hint": "a deep hole for water",
+        "objectName": "well"
+       },
+       {
+        "id": "fountain",
+        "questId": "q_square",
+        "objectiveId": "o2",
+        "expected": "fontaine",
+        "hint": "water that sprays"
+       },
+       {
+        "id": "w_apple",
+        "questId": "q_market",
+        "objectiveId": "o1",
+        "expected": "pomme",
+        "hint": "a red fruit"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": [
+           "well",
+           "fountain",
+           "w_apple"
+          ]
+         }
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.naming.nameableObjects",
+     "args": {
+      "objects": [
+       {
+        "id": "w_well",
+        "role": "well",
+        "name": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "puits",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_cauldron",
+        "role": "cauldron",
+        "name": "cauldron",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "chaudron"
+         }
+        }
+       },
+       {
+        "id": "w_crate",
+        "role": "crate",
+        "name": "crate",
+        "position": {
+         "x": -2,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_fountain",
+        "role": "Fountain",
+        "name": "fountain",
+        "position": {
+         "x": 0,
+         "z": 4
+        },
+        "translations": {
+         "French": {
+          "targetWord": "fontaine",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_bench",
+        "role": "bench",
+        "name": "bench",
+        "position": {
+         "x": 8,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "banc"
+         }
+        }
+       },
+       {
+        "id": "w_apple",
+        "role": "apple",
+        "name": "apple",
+        "position": {
+         "x": 1,
+         "z": 1
+        },
+        "translations": {
+         "French": {
+          "targetWord": "pomme",
+          "category": "food"
+         }
+        }
+       }
+      ],
+      "targetLanguage": "French"
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.naming.registerNameable",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "objects": {
+       "$ref": "b3.objects"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": {
+          "$ids": [
+           "well",
+           "cauldron",
+           "fountain",
+           "bench",
+           "apple"
+          ],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "pick": {
+       "id": "w_cauldron",
+       "role": "cauldron",
+       "name": "cauldron",
+       "position": {
+        "x": 2,
+        "z": 0
+       },
+       "translations": {
+        "French": {
+         "targetWord": "chaudron"
+        }
+       }
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning",
+        "$set": {
+         "hintAfter": 1,
+         "passScore": 90,
+         "promptForObject": "Name it."
+        }
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning",
+        "$set": {
+         "range": 1.5,
+         "maxAttempts": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": null,
+       "checked": {
+        "identify": "not_a_target",
+        "name": "out_of_range"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": null
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "pick": {
+       "id": "w_cauldron",
+       "role": "cauldron",
+       "name": "cauldron",
+       "position": {
+        "x": 2,
+        "z": 0
+       },
+       "translations": {
+        "French": {
+         "targetWord": "chaudron"
+        }
+       }
+      },
+      "at": {
+       "x": 2,
+       "z": 1.6
+      },
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning",
+        "$set": {
+         "hintAfter": 1,
+         "passScore": 90,
+         "promptForObject": "Name it."
+        }
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning",
+        "$set": {
+         "range": 1.5,
+         "maxAttempts": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": null,
+       "checked": {
+        "identify": "not_a_target",
+        "name": "out_of_range"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": null
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "pick": {
+       "id": "w_cauldron",
+       "role": "cauldron",
+       "name": "cauldron",
+       "position": {
+        "x": 2,
+        "z": 0
+       },
+       "translations": {
+        "French": {
+         "targetWord": "chaudron"
+        }
+       }
+      },
+      "at": {
+       "x": 0.5,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning",
+        "$set": {
+         "hintAfter": 1,
+         "passScore": 90,
+         "promptForObject": "Name it."
+        }
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning",
+        "$set": {
+         "range": 1.5,
+         "maxAttempts": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "name",
+        "id": "cauldron",
+        "prompt": "Name this object in the target language (2 attempts left):",
+        "attemptsLeft": 2
+       },
+       "checked": {
+        "identify": "not_a_target",
+        "name": "raised"
+       },
+       "events": [],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "name",
+          "id": "cauldron"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.prompts.standing",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning",
+        "$set": {
+         "hintAfter": 1,
+         "passScore": 90,
+         "promptForObject": "Name it."
+        }
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning",
+        "$set": {
+         "range": 1.5,
+         "maxAttempts": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "prompt": {
+        "kind": "name",
+        "id": "cauldron",
+        "prompt": "Name this object in the target language (2 attempts left):",
+        "attemptsLeft": 2
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "input": "marmite",
+      "world": {
+       "identification": {
+        "$ref": "b5.state"
+       },
+       "naming": {
+        "$ref": "b6.state"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning",
+        "$set": {
+         "hintAfter": 1,
+         "passScore": 90,
+         "promptForObject": "Name it."
+        }
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning",
+        "$set": {
+         "range": 1.5,
+         "maxAttempts": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "name",
+       "id": "cauldron",
+       "result": {
+        "correct": false,
+        "xp": 0,
+        "attempts": 1,
+        "revealed": false,
+        "toasts": [
+         {
+          "title": "Try again",
+          "text": "That's not quite right. Expected: chaudron"
+         }
+        ],
+        "events": [
+         {
+          "type": "vocabulary_used",
+          "word": "chaudron",
+          "correct": false
+         }
+        ]
+       },
+       "standing": {
+        "kind": "name",
+        "id": "cauldron",
+        "prompt": "Name this object in the target language (1 attempts left):",
+        "attemptsLeft": 1
+       }
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b11.state"
+      },
+      "input": "pot",
+      "world": {
+       "identification": {
+        "$ref": "b11.identification"
+       },
+       "naming": {
+        "$ref": "b11.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning",
+        "$set": {
+         "hintAfter": 1,
+         "passScore": 90,
+         "promptForObject": "Name it."
+        }
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning",
+        "$set": {
+         "range": 1.5,
+         "maxAttempts": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "name",
+       "id": "cauldron",
+       "result": {
+        "correct": false,
+        "xp": 0,
+        "attempts": 2,
+        "revealed": true,
+        "toasts": [
+         {
+          "title": "Answer revealed",
+          "text": "The word is: chaudron (cauldron)"
+         },
+         {
+          "title": "Try again",
+          "text": "That's not quite right. Expected: chaudron"
+         }
+        ],
+        "events": [
+         {
+          "type": "vocabulary_used",
+          "word": "chaudron",
+          "correct": false
+         }
+        ]
+       },
+       "standing": null
+      }
+     },
+     "bind": "b12"
+    },
+    {
+     "call": "language.prompts.onPick",
+     "args": {
+      "state": {
+       "$ref": "b12.state"
+      },
+      "pick": {
+       "id": "w_well",
+       "role": "well",
+       "name": "well",
+       "position": {
+        "x": 0,
+        "z": 0
+       },
+       "translations": {
+        "French": {
+         "targetWord": "puits",
+         "category": "places"
+        }
+       }
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "world": {
+       "identification": {
+        "$ref": "b12.identification"
+       },
+       "naming": {
+        "$ref": "b12.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning",
+        "$set": {
+         "hintAfter": 1,
+         "passScore": 90,
+         "promptForObject": "Name it."
+        }
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning",
+        "$set": {
+         "range": 1.5,
+         "maxAttempts": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "prompt": {
+        "kind": "identify",
+        "id": "well",
+        "prompt": {
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "promptText": "Name it.",
+         "isActivity": false
+        }
+       },
+       "checked": {
+        "identify": "raised"
+       },
+       "events": [
+        {
+         "type": "identification_prompted",
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "isActivity": false
+        },
+        {
+         "type": "visual_vocab_prompted",
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "isActivity": false
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pick": {
+          "kind": "identify",
+          "id": "well"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b13"
+    },
+    {
+     "call": "language.prompts.answer",
+     "args": {
+      "state": {
+       "$ref": "b13.state"
+      },
+      "input": "puit",
+      "world": {
+       "identification": {
+        "$ref": "b12.identification"
+       },
+       "naming": {
+        "$ref": "b12.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning",
+        "$set": {
+         "hintAfter": 1,
+         "passScore": 90,
+         "promptForObject": "Name it."
+        }
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning",
+        "$set": {
+         "range": 1.5,
+         "maxAttempts": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "kind": "identify",
+       "id": "well",
+       "result": {
+        "passed": false,
+        "score": 80,
+        "feedback": "Close! Try again. Hint: a deep hole for water",
+        "bestMatch": "puits",
+        "objectiveCompleted": false,
+        "events": [
+         {
+          "type": "identification_incorrect",
+          "targetId": "well",
+          "questId": "q_square",
+          "score": 80,
+          "playerAnswer": "puit"
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "puit",
+          "correct": false
+         },
+         {
+          "type": "visual_vocab_answered",
+          "targetId": "well",
+          "questId": "q_square",
+          "passed": false,
+          "score": 80,
+          "playerAnswer": "puit"
+         }
+        ]
+       },
+       "standing": {
+        "kind": "identify",
+        "id": "well",
+        "prompt": {
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "promptText": "Name it.",
+         "isActivity": false,
+         "hint": "a deep hole for water"
+        }
+       }
+      }
+     },
+     "bind": "b14"
+    },
+    {
+     "call": "language.prompts.standing",
+     "args": {
+      "state": {
+       "$ref": "b14.state"
+      },
+      "world": {
+       "identification": {
+        "$ref": "b14.identification"
+       },
+       "naming": {
+        "$ref": "b14.naming"
+       },
+       "targetLanguage": "French",
+       "identifyTuning": {
+        "$ref": "b0.identificationTuning",
+        "$set": {
+         "hintAfter": 1,
+         "passScore": 90,
+         "promptForObject": "Name it."
+        }
+       },
+       "namingTuning": {
+        "$ref": "b0.namingTuning",
+        "$set": {
+         "range": 1.5,
+         "maxAttempts": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "prompt": {
+        "kind": "identify",
+        "id": "well",
+        "prompt": {
+         "targetId": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "promptText": "Name it.",
+         "isActivity": false,
+         "hint": "a deep hole for water"
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/prompts run: run: objects that come into reach together are each asked in turn, once per stay; a wrong answer waits for the next stay",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": []
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": {
+          "$ids": [],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "language.prompts.initial",
+     "args": {},
+     "bind": "b2"
+    },
+    {
+     "call": "language.collection.initial",
+     "args": {
+      "seed": "brightwater"
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.collection.registerTags",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "tags": [
+       {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "answer": "bread",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 0,
+         "y": 0,
+         "z": 0
+        },
+        "partOfSpeech": "noun"
+       },
+       {
+        "objectId": "cheese_stall",
+        "label": "fromage",
+        "answer": "cheese",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 3,
+         "y": 0,
+         "z": 4
+        }
+       },
+       {
+        "objectId": "anvil",
+        "label": "enclume",
+        "answer": "anvil",
+        "category": "tools",
+        "difficulty": "intermediate",
+        "position": {
+         "x": 6,
+         "y": 0,
+         "z": 0
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "tags": {
+          "$ids": [
+           "bread_stall",
+           "cheese_stall",
+           "anvil"
+          ],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "collection": {
+       "$ref": "b3.state"
+      },
+      "at": {
+       "x": 3,
+       "y": 0,
+       "z": 4
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"pain\" mean?",
+        "options": [
+         {
+          "text": "anvil",
+          "isCorrect": false
+         },
+         {
+          "text": "bread",
+          "isCorrect": true
+         },
+         {
+          "text": "cheese",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "bread_stall",
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "collection": {
+       "$ref": "b4.collection"
+      },
+      "at": {
+       "x": 3,
+       "y": 0,
+       "z": 4
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": "bread_stall",
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "collection": {
+       "$ref": "b5.collection"
+      },
+      "answer": "cheese",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "bread_stall",
+       "answer": {
+        "correct": false,
+        "alreadyCollected": false,
+        "xp": 0,
+        "label": "pain",
+        "answer": "bread",
+        "category": "food",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "pain",
+          "correct": false
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "pain",
+          "correct": false
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": []
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "collection": {
+       "$ref": "b6.collection"
+      },
+      "at": {
+       "x": 3,
+       "y": 0,
+       "z": 4
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": {
+        "objectId": "cheese_stall",
+        "label": "fromage",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"fromage\" mean?",
+        "options": [
+         {
+          "text": "bread",
+          "isCorrect": false
+         },
+         {
+          "text": "cheese",
+          "isCorrect": true
+         },
+         {
+          "text": "anvil",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "cheese_stall",
+         "offered": [
+          "bread_stall",
+          "cheese_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "collection": {
+       "$ref": "b7.collection"
+      },
+      "answer": "cheese",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "cheese_stall",
+       "answer": {
+        "correct": true,
+        "alreadyCollected": false,
+        "xp": 3,
+        "label": "fromage",
+        "answer": "cheese",
+        "category": "food",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "fromage",
+          "correct": true
+         },
+         {
+          "type": "item_collected",
+          "itemId": "vocab_cheese_stall",
+          "itemName": "fromage",
+          "quantity": 1,
+          "taxonomy": {
+           "category": "food",
+           "itemType": "vocabulary",
+           "baseType": "noun"
+          }
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "fromage",
+          "correct": true
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": [
+          "cheese_stall"
+         ]
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "collection": {
+       "$ref": "b8.collection"
+      },
+      "at": {
+       "x": 3,
+       "y": 0,
+       "z": 4
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "anvil"
+       ],
+       "quiz": {
+        "objectId": "anvil",
+        "label": "enclume",
+        "category": "tools",
+        "difficulty": "intermediate",
+        "prompt": "What does \"enclume\" mean?",
+        "options": [
+         {
+          "text": "anvil",
+          "isCorrect": true
+         },
+         {
+          "text": "bread",
+          "isCorrect": false
+         },
+         {
+          "text": "cheese",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "anvil",
+         "offered": [
+          "bread_stall",
+          "anvil"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "collection": {
+       "$ref": "b9.collection"
+      },
+      "answer": "anvil",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "anvil",
+       "answer": {
+        "correct": true,
+        "alreadyCollected": false,
+        "xp": 3,
+        "label": "enclume",
+        "answer": "anvil",
+        "category": "tools",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "enclume",
+          "correct": true
+         },
+         {
+          "type": "item_collected",
+          "itemId": "vocab_anvil",
+          "itemName": "enclume",
+          "quantity": 1,
+          "taxonomy": {
+           "category": "tools",
+           "itemType": "vocabulary",
+           "baseType": "noun"
+          }
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "enclume",
+          "correct": true
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": [
+          "cheese_stall",
+          "anvil"
+         ]
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "collection": {
+       "$ref": "b10.collection"
+      },
+      "at": {
+       "x": 3,
+       "y": 0,
+       "z": 4
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall"
+       ],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": null,
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b11.state"
+      },
+      "collection": {
+       "$ref": "b11.collection"
+      },
+      "at": {
+       "x": 100,
+       "y": 0,
+       "z": 100
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": null,
+         "offered": []
+        }
+       }
+      }
+     },
+     "bind": "b12"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b12.state"
+      },
+      "collection": {
+       "$ref": "b12.collection"
+      },
+      "at": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall"
+       ],
+       "quiz": {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"pain\" mean?",
+        "options": [
+         {
+          "text": "bread",
+          "isCorrect": true
+         },
+         {
+          "text": "cheese",
+          "isCorrect": false
+         },
+         {
+          "text": "anvil",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "bread_stall",
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b13"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b13.state"
+      },
+      "collection": {
+       "$ref": "b13.collection"
+      },
+      "answer": "bread",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "bread_stall",
+       "answer": {
+        "correct": true,
+        "alreadyCollected": false,
+        "xp": 3,
+        "label": "pain",
+        "answer": "bread",
+        "category": "food",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "pain",
+          "correct": true
+         },
+         {
+          "type": "item_collected",
+          "itemId": "vocab_bread_stall",
+          "itemName": "pain",
+          "quantity": 1,
+          "taxonomy": {
+           "category": "food",
+           "itemType": "vocabulary",
+           "baseType": "noun"
+          }
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "pain",
+          "correct": true
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": [
+          "cheese_stall",
+          "anvil",
+          "bread_stall"
+         ]
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b14"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b14.state"
+      },
+      "collection": {
+       "$ref": "b14.collection"
+      },
+      "answer": "bread",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": false,
+       "refusal": "no_quiz"
+      }
+     },
+     "bind": "b15"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b15.state"
+      },
+      "collection": {
+       "$ref": "b15.collection"
+      },
+      "at": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": null,
+         "offered": []
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/prompts run: run: an object that comes into reach while a quiz stands is asked after it; a quiz stands while its object is out of reach",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": []
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": {
+          "$ids": [],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "language.prompts.initial",
+     "args": {},
+     "bind": "b2"
+    },
+    {
+     "call": "language.collection.initial",
+     "args": {
+      "seed": "brightwater"
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.collection.registerTags",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "tags": [
+       {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "answer": "bread",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 0,
+         "y": 0,
+         "z": 0
+        },
+        "partOfSpeech": "noun"
+       },
+       {
+        "objectId": "cheese_stall",
+        "label": "fromage",
+        "answer": "cheese",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 3,
+         "y": 0,
+         "z": 4
+        }
+       },
+       {
+        "objectId": "anvil",
+        "label": "enclume",
+        "answer": "anvil",
+        "category": "tools",
+        "difficulty": "intermediate",
+        "position": {
+         "x": 6,
+         "y": 0,
+         "z": 0
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "tags": {
+          "$ids": [
+           "bread_stall",
+           "cheese_stall",
+           "anvil"
+          ],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "collection": {
+       "$ref": "b3.state"
+      },
+      "at": {
+       "x": -1,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall"
+       ],
+       "quiz": {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"pain\" mean?",
+        "options": [
+         {
+          "text": "anvil",
+          "isCorrect": false
+         },
+         {
+          "text": "bread",
+          "isCorrect": true
+         },
+         {
+          "text": "cheese",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "bread_stall",
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "collection": {
+       "$ref": "b4.collection"
+      },
+      "at": {
+       "x": 2,
+       "y": 0,
+       "z": 2
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": "bread_stall",
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "collection": {
+       "$ref": "b5.collection"
+      },
+      "answer": "bread",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "bread_stall",
+       "answer": {
+        "correct": true,
+        "alreadyCollected": false,
+        "xp": 3,
+        "label": "pain",
+        "answer": "bread",
+        "category": "food",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "pain",
+          "correct": true
+         },
+         {
+          "type": "item_collected",
+          "itemId": "vocab_bread_stall",
+          "itemName": "pain",
+          "quantity": 1,
+          "taxonomy": {
+           "category": "food",
+           "itemType": "vocabulary",
+           "baseType": "noun"
+          }
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "pain",
+          "correct": true
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": [
+          "bread_stall"
+         ]
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "collection": {
+       "$ref": "b6.collection"
+      },
+      "at": {
+       "x": 2,
+       "y": 0,
+       "z": 2
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": {
+        "objectId": "cheese_stall",
+        "label": "fromage",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"fromage\" mean?",
+        "options": [
+         {
+          "text": "bread",
+          "isCorrect": false
+         },
+         {
+          "text": "cheese",
+          "isCorrect": true
+         },
+         {
+          "text": "anvil",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "cheese_stall",
+         "offered": [
+          "cheese_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "collection": {
+       "$ref": "b7.collection"
+      },
+      "at": {
+       "x": 50,
+       "y": 0,
+       "z": 50
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": "cheese_stall",
+         "offered": []
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "collection": {
+       "$ref": "b8.collection"
+      },
+      "answer": "bread",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "cheese_stall",
+       "answer": {
+        "correct": false,
+        "alreadyCollected": false,
+        "xp": 0,
+        "label": "fromage",
+        "answer": "cheese",
+        "category": "food",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "fromage",
+          "correct": false
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "fromage",
+          "correct": false
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": [
+          "bread_stall"
+         ]
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "collection": {
+       "$ref": "b9.collection"
+      },
+      "at": {
+       "x": 2,
+       "y": 0,
+       "z": 2
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": {
+        "objectId": "cheese_stall",
+        "label": "fromage",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"fromage\" mean?",
+        "options": [
+         {
+          "text": "bread",
+          "isCorrect": false
+         },
+         {
+          "text": "anvil",
+          "isCorrect": false
+         },
+         {
+          "text": "cheese",
+          "isCorrect": true
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "cheese_stall",
+         "offered": [
+          "cheese_stall"
+         ]
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/prompts run: run: the game's collection range and options; a knowledge world",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": []
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": {
+          "$ids": [],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "language.prompts.initial",
+     "args": {},
+     "bind": "b2"
+    },
+    {
+     "call": "language.collection.initial",
+     "args": {
+      "seed": "survival"
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.collection.registerTags",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "tags": [
+       {
+        "objectId": "fern",
+        "label": "Bracken",
+        "answer": "a fern",
+        "category": "plants",
+        "difficulty": "beginner",
+        "position": {
+         "x": 0,
+         "y": 0,
+         "z": 0
+        }
+       },
+       {
+        "objectId": "fox",
+        "label": "Fox",
+        "answer": "a canid",
+        "category": "animals",
+        "difficulty": "beginner",
+        "position": {
+         "x": 3,
+         "y": 0,
+         "z": 0
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "tags": {
+          "$ids": [
+           "fern",
+           "fox"
+          ],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "collection": {
+       "$ref": "b3.state"
+      },
+      "at": {
+       "x": 1.5,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning",
+       "$set": {
+        "range": 1,
+        "options": 2,
+        "kind": "knowledge",
+        "xpPerEntry": 7
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": null,
+         "offered": []
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "collection": {
+       "$ref": "b4.collection"
+      },
+      "at": {
+       "x": 1,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning",
+       "$set": {
+        "range": 1,
+        "options": 2,
+        "kind": "knowledge",
+        "xpPerEntry": 7
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "fern"
+       ],
+       "quiz": {
+        "objectId": "fern",
+        "label": "Bracken",
+        "category": "plants",
+        "difficulty": "beginner",
+        "prompt": "What does \"Bracken\" mean?",
+        "options": [
+         {
+          "text": "a fern",
+          "isCorrect": true
+         },
+         {
+          "text": "a canid",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "fern",
+         "offered": [
+          "fern"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "collection": {
+       "$ref": "b5.collection"
+      },
+      "answer": "a fern",
+      "tuning": {
+       "$ref": "b0.collectionTuning",
+       "$set": {
+        "range": 1,
+        "options": 2,
+        "kind": "knowledge",
+        "xpPerEntry": 7
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "fern",
+       "answer": {
+        "correct": true,
+        "alreadyCollected": false,
+        "xp": 7,
+        "label": "Bracken",
+        "answer": "a fern",
+        "category": "plants",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "Bracken",
+          "correct": true
+         },
+         {
+          "type": "item_collected",
+          "itemId": "knowledge_fern",
+          "itemName": "Bracken",
+          "quantity": 1,
+          "taxonomy": {
+           "category": "plants",
+           "itemType": "knowledge"
+          }
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": [
+          "fern"
+         ]
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/prompts run: run: a quiz carried out of reach and back is the offer of the stay it returns to; answered wrongly there, it is not asked again in that stay",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": []
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": {
+          "$ids": [],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "language.prompts.initial",
+     "args": {},
+     "bind": "b2"
+    },
+    {
+     "call": "language.collection.initial",
+     "args": {
+      "seed": "brightwater"
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.collection.registerTags",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "tags": [
+       {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "answer": "bread",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 0,
+         "y": 0,
+         "z": 0
+        },
+        "partOfSpeech": "noun"
+       },
+       {
+        "objectId": "cheese_stall",
+        "label": "fromage",
+        "answer": "cheese",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 3,
+         "y": 0,
+         "z": 4
+        }
+       },
+       {
+        "objectId": "anvil",
+        "label": "enclume",
+        "answer": "anvil",
+        "category": "tools",
+        "difficulty": "intermediate",
+        "position": {
+         "x": 6,
+         "y": 0,
+         "z": 0
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "tags": {
+          "$ids": [
+           "bread_stall",
+           "cheese_stall",
+           "anvil"
+          ],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "collection": {
+       "$ref": "b3.state"
+      },
+      "at": {
+       "x": -1,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall"
+       ],
+       "quiz": {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"pain\" mean?",
+        "options": [
+         {
+          "text": "anvil",
+          "isCorrect": false
+         },
+         {
+          "text": "bread",
+          "isCorrect": true
+         },
+         {
+          "text": "cheese",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "bread_stall",
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "collection": {
+       "$ref": "b4.collection"
+      },
+      "at": {
+       "x": 50,
+       "y": 0,
+       "z": 50
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": "bread_stall",
+         "offered": []
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "collection": {
+       "$ref": "b5.collection"
+      },
+      "at": {
+       "x": 2,
+       "y": 0,
+       "z": 2
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": "bread_stall",
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "collection": {
+       "$ref": "b6.collection"
+      },
+      "answer": "anvil",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "bread_stall",
+       "answer": {
+        "correct": false,
+        "alreadyCollected": false,
+        "xp": 0,
+        "label": "pain",
+        "answer": "bread",
+        "category": "food",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "pain",
+          "correct": false
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "pain",
+          "correct": false
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": []
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "collection": {
+       "$ref": "b7.collection"
+      },
+      "at": {
+       "x": 2,
+       "y": 0,
+       "z": 2
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": {
+        "objectId": "cheese_stall",
+        "label": "fromage",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"fromage\" mean?",
+        "options": [
+         {
+          "text": "bread",
+          "isCorrect": false
+         },
+         {
+          "text": "cheese",
+          "isCorrect": true
+         },
+         {
+          "text": "anvil",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "cheese_stall",
+         "offered": [
+          "bread_stall",
+          "cheese_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "collection": {
+       "$ref": "b8.collection"
+      },
+      "answer": "cheese",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "cheese_stall",
+       "answer": {
+        "correct": true,
+        "alreadyCollected": false,
+        "xp": 3,
+        "label": "fromage",
+        "answer": "cheese",
+        "category": "food",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "fromage",
+          "correct": true
+         },
+         {
+          "type": "item_collected",
+          "itemId": "vocab_cheese_stall",
+          "itemName": "fromage",
+          "quantity": 1,
+          "taxonomy": {
+           "category": "food",
+           "itemType": "vocabulary",
+           "baseType": "noun"
+          }
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "fromage",
+          "correct": true
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": [
+          "cheese_stall"
+         ]
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "collection": {
+       "$ref": "b9.collection"
+      },
+      "at": {
+       "x": 2,
+       "y": 0,
+       "z": 2
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "anvil"
+       ],
+       "quiz": {
+        "objectId": "anvil",
+        "label": "enclume",
+        "category": "tools",
+        "difficulty": "intermediate",
+        "prompt": "What does \"enclume\" mean?",
+        "options": [
+         {
+          "text": "anvil",
+          "isCorrect": true
+         },
+         {
+          "text": "bread",
+          "isCorrect": false
+         },
+         {
+          "text": "cheese",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "anvil",
+         "offered": [
+          "bread_stall",
+          "anvil"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "collection": {
+       "$ref": "b10.collection"
+      },
+      "answer": "anvil",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "anvil",
+       "answer": {
+        "correct": true,
+        "alreadyCollected": false,
+        "xp": 3,
+        "label": "enclume",
+        "answer": "anvil",
+        "category": "tools",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "enclume",
+          "correct": true
+         },
+         {
+          "type": "item_collected",
+          "itemId": "vocab_anvil",
+          "itemName": "enclume",
+          "quantity": 1,
+          "taxonomy": {
+           "category": "tools",
+           "itemType": "vocabulary",
+           "baseType": "noun"
+          }
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "enclume",
+          "correct": true
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": [
+          "cheese_stall",
+          "anvil"
+         ]
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b11.state"
+      },
+      "collection": {
+       "$ref": "b11.collection"
+      },
+      "at": {
+       "x": 2,
+       "y": 0,
+       "z": 2
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall"
+       ],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": null,
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b12"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b12.state"
+      },
+      "collection": {
+       "$ref": "b12.collection"
+      },
+      "at": {
+       "x": 50,
+       "y": 0,
+       "z": 50
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": null,
+         "offered": []
+        }
+       }
+      }
+     },
+     "bind": "b13"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b13.state"
+      },
+      "collection": {
+       "$ref": "b13.collection"
+      },
+      "at": {
+       "x": -1,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall"
+       ],
+       "quiz": {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"pain\" mean?",
+        "options": [
+         {
+          "text": "bread",
+          "isCorrect": true
+         },
+         {
+          "text": "cheese",
+          "isCorrect": false
+         },
+         {
+          "text": "anvil",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "bread_stall",
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/prompts run: run: a returning standing quiz joins the objects still offered this stay, after them",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": []
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": {
+          "$ids": [],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "language.prompts.initial",
+     "args": {},
+     "bind": "b2"
+    },
+    {
+     "call": "language.collection.initial",
+     "args": {
+      "seed": "brightwater"
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.collection.registerTags",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "tags": [
+       {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "answer": "bread",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 0,
+         "y": 0,
+         "z": 0
+        },
+        "partOfSpeech": "noun"
+       },
+       {
+        "objectId": "cheese_stall",
+        "label": "fromage",
+        "answer": "cheese",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 3,
+         "y": 0,
+         "z": 4
+        }
+       },
+       {
+        "objectId": "anvil",
+        "label": "enclume",
+        "answer": "anvil",
+        "category": "tools",
+        "difficulty": "intermediate",
+        "position": {
+         "x": 6,
+         "y": 0,
+         "z": 0
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "tags": {
+          "$ids": [
+           "bread_stall",
+           "cheese_stall",
+           "anvil"
+          ],
+          "$key": "objectId"
+         }
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "collection": {
+       "$ref": "b3.state"
+      },
+      "at": {
+       "x": 3,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"pain\" mean?",
+        "options": [
+         {
+          "text": "anvil",
+          "isCorrect": false
+         },
+         {
+          "text": "bread",
+          "isCorrect": true
+         },
+         {
+          "text": "cheese",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "bread_stall",
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "collection": {
+       "$ref": "b4.collection"
+      },
+      "answer": "cheese",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "bread_stall",
+       "answer": {
+        "correct": false,
+        "alreadyCollected": false,
+        "xp": 0,
+        "label": "pain",
+        "answer": "bread",
+        "category": "food",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "pain",
+          "correct": false
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "pain",
+          "correct": false
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": []
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "collection": {
+       "$ref": "b5.collection"
+      },
+      "at": {
+       "x": 3,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": {
+        "objectId": "cheese_stall",
+        "label": "fromage",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"fromage\" mean?",
+        "options": [
+         {
+          "text": "bread",
+          "isCorrect": false
+         },
+         {
+          "text": "cheese",
+          "isCorrect": true
+         },
+         {
+          "text": "anvil",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "cheese_stall",
+         "offered": [
+          "bread_stall",
+          "cheese_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "collection": {
+       "$ref": "b6.collection"
+      },
+      "at": {
+       "x": -1,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall"
+       ],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": "cheese_stall",
+         "offered": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "collection": {
+       "$ref": "b7.collection"
+      },
+      "at": {
+       "x": 3,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": null,
+       "state": {
+        "$subset": {
+         "quiz": "cheese_stall",
+         "offered": [
+          "bread_stall",
+          "cheese_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.prompts.answerQuiz",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "collection": {
+       "$ref": "b8.collection"
+      },
+      "answer": "bread",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "objectId": "cheese_stall",
+       "answer": {
+        "correct": false,
+        "alreadyCollected": false,
+        "xp": 0,
+        "label": "fromage",
+        "answer": "cheese",
+        "category": "food",
+        "events": [
+         {
+          "type": "knowledge_applied",
+          "key": "fromage",
+          "correct": false
+         },
+         {
+          "type": "vocabulary_used",
+          "word": "fromage",
+          "correct": false
+         }
+        ]
+       },
+       "collection": {
+        "$subset": {
+         "collected": []
+        }
+       },
+       "state": {
+        "$subset": {
+         "quiz": null
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.prompts.quizOnReach",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "collection": {
+       "$ref": "b9.collection"
+      },
+      "at": {
+       "x": 3,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "inReach": [
+        "bread_stall",
+        "cheese_stall",
+        "anvil"
+       ],
+       "quiz": {
+        "objectId": "anvil",
+        "label": "enclume",
+        "category": "tools",
+        "difficulty": "intermediate",
+        "prompt": "What does \"enclume\" mean?",
+        "options": [
+         {
+          "text": "anvil",
+          "isCorrect": true
+         },
+         {
+          "text": "bread",
+          "isCorrect": false
+         },
+         {
+          "text": "cheese",
+          "isCorrect": false
+         }
+        ]
+       },
+       "state": {
+        "$subset": {
+         "quiz": "anvil",
+         "offered": [
+          "bread_stall",
+          "cheese_stall",
+          "anvil"
+         ]
+        }
+       }
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

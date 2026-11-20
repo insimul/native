@@ -1,0 +1,2177 @@
+{
+  "schema": "insimul.conformance.language/1",
+  "area": "language",
+  "file": "language/progress",
+  "phase": "P9h",
+  "description": "The language book: words and their mastery bands, grammar patterns and weaknesses, conversations and fluency (thousandths), the CEFR band; and the player's CEFR facts (src/language-learning/progress.ts, src/prolog/player-language-state.ts).",
+  "runner": "src/language-learning/systems-corpus.ts (runLanguageSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "language-progress-learning-profile",
+    "language-quest-feedback-grammar"
+  ],
+  "ops": [
+    "mastery",
+    "gain",
+    "run",
+    "facts"
+  ],
+  "steps": {
+    "run": [
+      "advance",
+      "encounter",
+      "event",
+      "grammar",
+      "conversation",
+      "cefr",
+      "weak",
+      "summary"
+    ]
+  },
+  "cases": [
+    {
+      "name": "mastery: bands from encounters and weighted halves",
+      "op": "mastery",
+      "note": "floor(halves / 2) is the weighted count: 3 learning, 5 familiar, 8 mastered; below 3, two encounters still make learning, one is new.",
+      "input": {
+        "pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            9,
+            15
+          ],
+          [
+            8,
+            16
+          ],
+          [
+            12,
+            30
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "encountered": 0,
+          "halves": 0,
+          "mastery": "new"
+        },
+        {
+          "encountered": 0,
+          "halves": 6,
+          "mastery": "new"
+        },
+        {
+          "encountered": 1,
+          "halves": 0,
+          "mastery": "new"
+        },
+        {
+          "encountered": 1,
+          "halves": 2,
+          "mastery": "new"
+        },
+        {
+          "encountered": 2,
+          "halves": 0,
+          "mastery": "learning"
+        },
+        {
+          "encountered": 1,
+          "halves": 5,
+          "mastery": "new"
+        },
+        {
+          "encountered": 1,
+          "halves": 6,
+          "mastery": "learning"
+        },
+        {
+          "encountered": 3,
+          "halves": 5,
+          "mastery": "learning"
+        },
+        {
+          "encountered": 4,
+          "halves": 9,
+          "mastery": "learning"
+        },
+        {
+          "encountered": 5,
+          "halves": 10,
+          "mastery": "familiar"
+        },
+        {
+          "encountered": 9,
+          "halves": 15,
+          "mastery": "familiar"
+        },
+        {
+          "encountered": 8,
+          "halves": 16,
+          "mastery": "mastered"
+        },
+        {
+          "encountered": 12,
+          "halves": 30,
+          "mastery": "mastered"
+        }
+      ]
+    },
+    {
+      "name": "gain: the parts, the bonuses and the diminishing multiplier, in thousandths",
+      "op": "gain",
+      "note": "Base min(500, 150 per turn), vocabulary min(2000, 200 per word), grammar 300/150/50, length min(500, 50 per turn), immersion 500 at 80%, 200 at 50%; × (200000 − fluency) / 200000, floored; clamped 100..3000.",
+      "input": {
+        "conversations": [
+          {
+            "fluency": 0,
+            "unique": 0,
+            "grammarCorrect": 0,
+            "grammarAttempted": 0,
+            "turns": 0,
+            "targetPercent": 0
+          },
+          {
+            "fluency": 0,
+            "unique": 5,
+            "grammarCorrect": 9,
+            "grammarAttempted": 10,
+            "turns": 10,
+            "targetPercent": 80
+          },
+          {
+            "fluency": 0,
+            "unique": 4,
+            "grammarCorrect": 8,
+            "grammarAttempted": 9,
+            "turns": 3,
+            "targetPercent": 79
+          },
+          {
+            "fluency": 0,
+            "unique": 2,
+            "grammarCorrect": 6,
+            "grammarAttempted": 10,
+            "turns": 2,
+            "targetPercent": 50
+          },
+          {
+            "fluency": 0,
+            "unique": 2,
+            "grammarCorrect": 5,
+            "grammarAttempted": 9,
+            "turns": 2,
+            "targetPercent": 49
+          },
+          {
+            "fluency": 0,
+            "unique": 1,
+            "grammarCorrect": 1,
+            "grammarAttempted": 10,
+            "turns": 1,
+            "targetPercent": 0
+          },
+          {
+            "fluency": 0,
+            "unique": 1,
+            "grammarCorrect": 0,
+            "grammarAttempted": 4,
+            "turns": 1,
+            "targetPercent": 0
+          },
+          {
+            "fluency": 0,
+            "unique": 20,
+            "grammarCorrect": 3,
+            "grammarAttempted": 3,
+            "turns": 20,
+            "targetPercent": 100
+          },
+          {
+            "fluency": 0,
+            "unique": 0,
+            "grammarCorrect": 0,
+            "grammarAttempted": 0,
+            "turns": 9,
+            "targetPercent": 0
+          },
+          {
+            "fluency": 0,
+            "unique": 12,
+            "grammarCorrect": 0,
+            "grammarAttempted": 0,
+            "turns": 0,
+            "targetPercent": 0
+          },
+          {
+            "fluency": 50000,
+            "unique": 3,
+            "grammarCorrect": 2,
+            "grammarAttempted": 2,
+            "turns": 4,
+            "targetPercent": 60
+          },
+          {
+            "fluency": 99900,
+            "unique": 0,
+            "grammarCorrect": 0,
+            "grammarAttempted": 1,
+            "turns": 0,
+            "targetPercent": 0
+          },
+          {
+            "fluency": 1000,
+            "unique": 8,
+            "grammarCorrect": 0,
+            "grammarAttempted": 0,
+            "turns": 1,
+            "targetPercent": 0
+          }
+        ]
+      },
+      "expected": [
+        {
+          "gain": 300,
+          "bonuses": [
+            "Excellent grammar!"
+          ]
+        },
+        {
+          "gain": 2800,
+          "bonuses": [
+            "Vocab variety bonus!",
+            "Excellent grammar!",
+            "Long conversation bonus!",
+            "Full immersion bonus!"
+          ]
+        },
+        {
+          "gain": 1750,
+          "bonuses": [
+            "Good grammar!",
+            "Good language mix!"
+          ]
+        },
+        {
+          "gain": 1150,
+          "bonuses": [
+            "Good grammar!",
+            "Good language mix!"
+          ]
+        },
+        {
+          "gain": 850,
+          "bonuses": [
+            "Keep practicing grammar!"
+          ]
+        },
+        {
+          "gain": 450,
+          "bonuses": [
+            "Keep practicing grammar!"
+          ]
+        },
+        {
+          "gain": 400,
+          "bonuses": []
+        },
+        {
+          "gain": 3000,
+          "bonuses": [
+            "Vocab variety bonus!",
+            "Excellent grammar!",
+            "Long conversation bonus!",
+            "Full immersion bonus!"
+          ]
+        },
+        {
+          "gain": 1250,
+          "bonuses": [
+            "Excellent grammar!"
+          ]
+        },
+        {
+          "gain": 2300,
+          "bonuses": [
+            "Vocab variety bonus!",
+            "Excellent grammar!"
+          ]
+        },
+        {
+          "gain": 1350,
+          "bonuses": [
+            "Excellent grammar!",
+            "Good language mix!"
+          ]
+        },
+        {
+          "gain": 100,
+          "bonuses": []
+        },
+        {
+          "gain": 2089,
+          "bonuses": [
+            "Vocab variety bonus!",
+            "Excellent grammar!"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: encounters build the book; a word is per language and ignores case; exposure is not a correct use",
+      "op": "run",
+      "input": {
+        "book": {
+          "language": "fr"
+        },
+        "steps": [
+          {
+            "do": "encounter",
+            "word": " pain ",
+            "type": "passive_read",
+            "meaning": "bread",
+            "category": "food"
+          },
+          {
+            "do": "advance",
+            "ms": 1500
+          },
+          {
+            "do": "encounter",
+            "word": "Pain",
+            "type": "active_use",
+            "context": "Ada Thatch"
+          },
+          {
+            "do": "encounter",
+            "word": "pain",
+            "type": "passive_hover"
+          },
+          {
+            "do": "encounter",
+            "word": "pain",
+            "type": "quiz_correct"
+          },
+          {
+            "do": "encounter",
+            "word": "pain",
+            "type": "quiz_incorrect",
+            "meaning": ""
+          },
+          {
+            "do": "encounter",
+            "word": "pain",
+            "language": "en",
+            "type": "active_use",
+            "meaning": "hurt"
+          },
+          {
+            "do": "encounter",
+            "word": "eau"
+          },
+          {
+            "do": "encounter",
+            "word": "pain",
+            "category": "bakery"
+          },
+          {
+            "do": "encounter",
+            "word": "   ",
+            "type": "active_use"
+          },
+          {
+            "do": "encounter",
+            "word": "lait",
+            "type": "shouted"
+          },
+          {
+            "do": "summary"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "pain",
+            "language": "fr",
+            "meaning": "bread",
+            "category": "food",
+            "context": null,
+            "encountered": 1,
+            "correct": 0,
+            "incorrect": 0,
+            "halves": 1,
+            "last": 0,
+            "types": {
+              "passive_read": 1
+            },
+            "mastery": "new"
+          },
+          "isNew": true,
+          "masteryChanged": null,
+          "correctUsages": 0,
+          "words": 1
+        },
+        {
+          "do": "advance",
+          "clockMs": 1500
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "pain",
+            "language": "fr",
+            "meaning": "bread",
+            "category": "food",
+            "context": "Ada Thatch",
+            "encountered": 2,
+            "correct": 1,
+            "incorrect": 0,
+            "halves": 3,
+            "last": 1500,
+            "types": {
+              "passive_read": 1,
+              "active_use": 1
+            },
+            "mastery": "learning"
+          },
+          "isNew": false,
+          "masteryChanged": "learning",
+          "correctUsages": 1,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "pain",
+            "language": "fr",
+            "meaning": "bread",
+            "category": "food",
+            "context": "Ada Thatch",
+            "encountered": 3,
+            "correct": 1,
+            "incorrect": 0,
+            "halves": 4,
+            "last": 1500,
+            "types": {
+              "passive_read": 1,
+              "active_use": 1,
+              "passive_hover": 1
+            },
+            "mastery": "learning"
+          },
+          "isNew": false,
+          "masteryChanged": null,
+          "correctUsages": 1,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "pain",
+            "language": "fr",
+            "meaning": "bread",
+            "category": "food",
+            "context": "Ada Thatch",
+            "encountered": 4,
+            "correct": 2,
+            "incorrect": 0,
+            "halves": 6,
+            "last": 1500,
+            "types": {
+              "passive_read": 1,
+              "active_use": 1,
+              "passive_hover": 1,
+              "quiz_correct": 1
+            },
+            "mastery": "learning"
+          },
+          "isNew": false,
+          "masteryChanged": null,
+          "correctUsages": 2,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "pain",
+            "language": "fr",
+            "meaning": "bread",
+            "category": "food",
+            "context": "Ada Thatch",
+            "encountered": 5,
+            "correct": 2,
+            "incorrect": 1,
+            "halves": 6,
+            "last": 1500,
+            "types": {
+              "passive_read": 1,
+              "active_use": 1,
+              "passive_hover": 1,
+              "quiz_correct": 1,
+              "quiz_incorrect": 1
+            },
+            "mastery": "learning"
+          },
+          "isNew": false,
+          "masteryChanged": null,
+          "correctUsages": 2,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "pain",
+            "language": "en",
+            "meaning": "hurt",
+            "category": null,
+            "context": null,
+            "encountered": 1,
+            "correct": 1,
+            "incorrect": 0,
+            "halves": 2,
+            "last": 1500,
+            "types": {
+              "active_use": 1
+            },
+            "mastery": "new"
+          },
+          "isNew": true,
+          "masteryChanged": null,
+          "correctUsages": 3,
+          "words": 2
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "eau",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": null,
+            "encountered": 1,
+            "correct": 0,
+            "incorrect": 0,
+            "halves": 1,
+            "last": 1500,
+            "types": {
+              "passive_read": 1
+            },
+            "mastery": "new"
+          },
+          "isNew": true,
+          "masteryChanged": null,
+          "correctUsages": 3,
+          "words": 3
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "pain",
+            "language": "fr",
+            "meaning": "bread",
+            "category": "bakery",
+            "context": "Ada Thatch",
+            "encountered": 6,
+            "correct": 2,
+            "incorrect": 1,
+            "halves": 7,
+            "last": 1500,
+            "types": {
+              "passive_read": 2,
+              "active_use": 1,
+              "passive_hover": 1,
+              "quiz_correct": 1,
+              "quiz_incorrect": 1
+            },
+            "mastery": "learning"
+          },
+          "isNew": false,
+          "masteryChanged": null,
+          "correctUsages": 3,
+          "words": 3
+        },
+        {
+          "do": "encounter",
+          "ok": false,
+          "refusal": "empty_word"
+        },
+        {
+          "do": "encounter",
+          "ok": false,
+          "refusal": "unknown_encounter"
+        },
+        {
+          "do": "summary",
+          "language": "fr",
+          "clockMs": 1500,
+          "fluency": 0,
+          "cefr": null,
+          "conversations": 0,
+          "correctUsages": 3,
+          "wordsLearned": 3,
+          "mastered": []
+        }
+      ]
+    },
+    {
+      "name": "run: a word climbs learning, familiar and mastered as its weighted uses reach 3, 5 and 8",
+      "op": "run",
+      "input": {
+        "steps": [
+          {
+            "do": "encounter",
+            "word": "merci",
+            "type": "active_use"
+          },
+          {
+            "do": "encounter",
+            "word": "merci",
+            "type": "active_use"
+          },
+          {
+            "do": "encounter",
+            "word": "merci",
+            "type": "active_use"
+          },
+          {
+            "do": "encounter",
+            "word": "merci",
+            "type": "active_use"
+          },
+          {
+            "do": "encounter",
+            "word": "merci",
+            "type": "active_use"
+          },
+          {
+            "do": "encounter",
+            "word": "merci",
+            "type": "active_use"
+          },
+          {
+            "do": "encounter",
+            "word": "merci",
+            "type": "active_use"
+          },
+          {
+            "do": "encounter",
+            "word": "merci",
+            "type": "active_use"
+          },
+          {
+            "do": "encounter",
+            "word": "merci",
+            "type": "passive_hover"
+          },
+          {
+            "do": "encounter",
+            "word": "merci",
+            "type": "passive_hover"
+          },
+          {
+            "do": "summary"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "merci",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": null,
+            "encountered": 1,
+            "correct": 1,
+            "incorrect": 0,
+            "halves": 2,
+            "last": 0,
+            "types": {
+              "active_use": 1
+            },
+            "mastery": "new"
+          },
+          "isNew": true,
+          "masteryChanged": null,
+          "correctUsages": 1,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "merci",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": null,
+            "encountered": 2,
+            "correct": 2,
+            "incorrect": 0,
+            "halves": 4,
+            "last": 0,
+            "types": {
+              "active_use": 2
+            },
+            "mastery": "learning"
+          },
+          "isNew": false,
+          "masteryChanged": "learning",
+          "correctUsages": 2,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "merci",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": null,
+            "encountered": 3,
+            "correct": 3,
+            "incorrect": 0,
+            "halves": 6,
+            "last": 0,
+            "types": {
+              "active_use": 3
+            },
+            "mastery": "learning"
+          },
+          "isNew": false,
+          "masteryChanged": null,
+          "correctUsages": 3,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "merci",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": null,
+            "encountered": 4,
+            "correct": 4,
+            "incorrect": 0,
+            "halves": 8,
+            "last": 0,
+            "types": {
+              "active_use": 4
+            },
+            "mastery": "learning"
+          },
+          "isNew": false,
+          "masteryChanged": null,
+          "correctUsages": 4,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "merci",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": null,
+            "encountered": 5,
+            "correct": 5,
+            "incorrect": 0,
+            "halves": 10,
+            "last": 0,
+            "types": {
+              "active_use": 5
+            },
+            "mastery": "familiar"
+          },
+          "isNew": false,
+          "masteryChanged": "familiar",
+          "correctUsages": 5,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "merci",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": null,
+            "encountered": 6,
+            "correct": 6,
+            "incorrect": 0,
+            "halves": 12,
+            "last": 0,
+            "types": {
+              "active_use": 6
+            },
+            "mastery": "familiar"
+          },
+          "isNew": false,
+          "masteryChanged": null,
+          "correctUsages": 6,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "merci",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": null,
+            "encountered": 7,
+            "correct": 7,
+            "incorrect": 0,
+            "halves": 14,
+            "last": 0,
+            "types": {
+              "active_use": 7
+            },
+            "mastery": "familiar"
+          },
+          "isNew": false,
+          "masteryChanged": null,
+          "correctUsages": 7,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "merci",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": null,
+            "encountered": 8,
+            "correct": 8,
+            "incorrect": 0,
+            "halves": 16,
+            "last": 0,
+            "types": {
+              "active_use": 8
+            },
+            "mastery": "mastered"
+          },
+          "isNew": false,
+          "masteryChanged": "mastered",
+          "correctUsages": 8,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "merci",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": null,
+            "encountered": 9,
+            "correct": 8,
+            "incorrect": 0,
+            "halves": 17,
+            "last": 0,
+            "types": {
+              "active_use": 8,
+              "passive_hover": 1
+            },
+            "mastery": "mastered"
+          },
+          "isNew": false,
+          "masteryChanged": null,
+          "correctUsages": 8,
+          "words": 1
+        },
+        {
+          "do": "encounter",
+          "ok": true,
+          "entry": {
+            "word": "merci",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": null,
+            "encountered": 10,
+            "correct": 8,
+            "incorrect": 0,
+            "halves": 18,
+            "last": 0,
+            "types": {
+              "active_use": 8,
+              "passive_hover": 2
+            },
+            "mastery": "mastered"
+          },
+          "isNew": false,
+          "masteryChanged": null,
+          "correctUsages": 8,
+          "words": 1
+        },
+        {
+          "do": "summary",
+          "language": "fr",
+          "clockMs": 0,
+          "fluency": 0,
+          "cefr": null,
+          "conversations": 0,
+          "correctUsages": 8,
+          "wordsLearned": 1,
+          "mastered": [
+            "merci"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: the bus events the book hears, and one it does not",
+      "op": "run",
+      "note": "vocabulary_used is an active use or a wrong answer; object_examined a reading in the event's language; vocabulary_overheard a hover; object_named a right or wrong answer. Anything else is somebody else's evidence.",
+      "input": {
+        "steps": [
+          {
+            "do": "event",
+            "event": {
+              "type": "vocabulary_used",
+              "word": "fromage",
+              "correct": true,
+              "category": "food"
+            }
+          },
+          {
+            "do": "event",
+            "event": {
+              "type": "vocabulary_used",
+              "word": "fromage",
+              "correct": false
+            }
+          },
+          {
+            "do": "event",
+            "event": {
+              "type": "object_examined",
+              "objectId": "o1",
+              "objectName": "anvil",
+              "targetWord": "enclume",
+              "targetLanguage": "fr",
+              "category": "tools"
+            }
+          },
+          {
+            "do": "event",
+            "event": {
+              "type": "object_examined",
+              "objectId": "o2",
+              "objectName": "anvil",
+              "targetWord": "yunque",
+              "targetLanguage": "es",
+              "category": "tools"
+            }
+          },
+          {
+            "do": "event",
+            "event": {
+              "type": "vocabulary_overheard",
+              "word": "bonsoir",
+              "translation": "good evening",
+              "language": "fr",
+              "context": "Cora to Dov",
+              "conversationId": "c1",
+              "speakerNpcId": "cora"
+            }
+          },
+          {
+            "do": "event",
+            "event": {
+              "type": "object_named",
+              "objectId": "anvil",
+              "targetWord": "enclume",
+              "category": "tools",
+              "correct": true,
+              "attempts": 1
+            }
+          },
+          {
+            "do": "event",
+            "event": {
+              "type": "object_named",
+              "objectId": "anvil",
+              "targetWord": "enclume",
+              "category": "tools",
+              "correct": false,
+              "attempts": 2
+            }
+          },
+          {
+            "do": "event",
+            "event": {
+              "type": "npc_talked",
+              "npcId": "ada"
+            }
+          },
+          {
+            "do": "summary"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "event",
+          "ok": true,
+          "entry": {
+            "word": "fromage",
+            "language": "fr",
+            "meaning": "",
+            "category": "food",
+            "context": null,
+            "encountered": 1,
+            "correct": 1,
+            "incorrect": 0,
+            "halves": 2,
+            "last": 0,
+            "types": {
+              "active_use": 1
+            },
+            "mastery": "new"
+          },
+          "isNew": true,
+          "masteryChanged": null,
+          "correctUsages": 1,
+          "words": 1
+        },
+        {
+          "do": "event",
+          "ok": true,
+          "entry": {
+            "word": "fromage",
+            "language": "fr",
+            "meaning": "",
+            "category": "food",
+            "context": null,
+            "encountered": 2,
+            "correct": 1,
+            "incorrect": 1,
+            "halves": 2,
+            "last": 0,
+            "types": {
+              "active_use": 1,
+              "quiz_incorrect": 1
+            },
+            "mastery": "learning"
+          },
+          "isNew": false,
+          "masteryChanged": "learning",
+          "correctUsages": 1,
+          "words": 1
+        },
+        {
+          "do": "event",
+          "ok": true,
+          "entry": {
+            "word": "enclume",
+            "language": "fr",
+            "meaning": "",
+            "category": "tools",
+            "context": null,
+            "encountered": 1,
+            "correct": 0,
+            "incorrect": 0,
+            "halves": 1,
+            "last": 0,
+            "types": {
+              "passive_read": 1
+            },
+            "mastery": "new"
+          },
+          "isNew": true,
+          "masteryChanged": null,
+          "correctUsages": 1,
+          "words": 2
+        },
+        {
+          "do": "event",
+          "ok": true,
+          "entry": {
+            "word": "yunque",
+            "language": "es",
+            "meaning": "",
+            "category": "tools",
+            "context": null,
+            "encountered": 1,
+            "correct": 0,
+            "incorrect": 0,
+            "halves": 1,
+            "last": 0,
+            "types": {
+              "passive_read": 1
+            },
+            "mastery": "new"
+          },
+          "isNew": true,
+          "masteryChanged": null,
+          "correctUsages": 1,
+          "words": 3
+        },
+        {
+          "do": "event",
+          "ok": true,
+          "entry": {
+            "word": "bonsoir",
+            "language": "fr",
+            "meaning": "good evening",
+            "category": null,
+            "context": "Cora to Dov",
+            "encountered": 1,
+            "correct": 0,
+            "incorrect": 0,
+            "halves": 1,
+            "last": 0,
+            "types": {
+              "passive_hover": 1
+            },
+            "mastery": "new"
+          },
+          "isNew": true,
+          "masteryChanged": null,
+          "correctUsages": 1,
+          "words": 4
+        },
+        {
+          "do": "event",
+          "ok": true,
+          "entry": {
+            "word": "enclume",
+            "language": "fr",
+            "meaning": "",
+            "category": "tools",
+            "context": null,
+            "encountered": 2,
+            "correct": 1,
+            "incorrect": 0,
+            "halves": 3,
+            "last": 0,
+            "types": {
+              "passive_read": 1,
+              "quiz_correct": 1
+            },
+            "mastery": "learning"
+          },
+          "isNew": false,
+          "masteryChanged": "learning",
+          "correctUsages": 2,
+          "words": 4
+        },
+        {
+          "do": "event",
+          "ok": true,
+          "entry": {
+            "word": "enclume",
+            "language": "fr",
+            "meaning": "",
+            "category": "tools",
+            "context": null,
+            "encountered": 3,
+            "correct": 1,
+            "incorrect": 1,
+            "halves": 3,
+            "last": 0,
+            "types": {
+              "passive_read": 1,
+              "quiz_correct": 1,
+              "quiz_incorrect": 1
+            },
+            "mastery": "learning"
+          },
+          "isNew": false,
+          "masteryChanged": null,
+          "correctUsages": 2,
+          "words": 4
+        },
+        {
+          "do": "event",
+          "heard": false
+        },
+        {
+          "do": "summary",
+          "language": "fr",
+          "clockMs": 0,
+          "fluency": 0,
+          "cefr": null,
+          "conversations": 0,
+          "correctUsages": 2,
+          "wordsLearned": 4,
+          "mastered": []
+        }
+      ]
+    },
+    {
+      "name": "run: grammar corrections create patterns, a clean turn reinforces them, and a weakness is announced once",
+      "op": "run",
+      "note": "A weakness is ≥ 4 attempts at an error rate ≥ 2/5, and it is announced only on a slip that crosses it (the tracker checks only there). Article agreement reaches 2 right and 2 wrong on a clean turn: weak, but not announced, and a further slip does not announce it either. Past tense crosses on its third slip (1 right, 3 wrong): announced, with the bus's fractional errorRate.",
+      "input": {
+        "steps": [
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "no_target_language"
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "corrected",
+              "errors": [
+                {
+                  "pattern": "article agreement",
+                  "incorrect": "le maison",
+                  "corrected": "la maison",
+                  "explanation": "maison is feminine"
+                }
+              ]
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "corrected",
+              "errors": [
+                {
+                  "pattern": "article agreement",
+                  "incorrect": "le maison",
+                  "corrected": "la maison",
+                  "explanation": "maison is feminine"
+                },
+                {
+                  "pattern": "past tense",
+                  "corrected": "j'ai mangé"
+                }
+              ]
+            }
+          },
+          {
+            "do": "weak"
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "corrected",
+              "errors": [
+                {
+                  "pattern": "article agreement",
+                  "incorrect": "le table",
+                  "corrected": "la table",
+                  "explanation": "table is feminine"
+                }
+              ]
+            }
+          },
+          {
+            "do": "weak"
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "corrected",
+              "errors": [
+                {
+                  "pattern": "past tense",
+                  "corrected": "j'ai bu"
+                }
+              ]
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "corrected",
+              "errors": [
+                {
+                  "pattern": "past tense"
+                }
+              ]
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "corrected",
+              "errors": [
+                {
+                  "pattern": "past tense"
+                }
+              ]
+            }
+          },
+          {
+            "do": "weak"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "grammar",
+          "touched": [],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "article agreement",
+              "correct": 0,
+              "incorrect": 1,
+              "mastered": false,
+              "examples": [
+                "la maison"
+              ],
+              "explanations": [
+                "maison is feminine"
+              ]
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "article agreement",
+              "correct": 1,
+              "incorrect": 1,
+              "mastered": false,
+              "examples": [
+                "la maison"
+              ],
+              "explanations": [
+                "maison is feminine"
+              ]
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "article agreement",
+              "correct": 1,
+              "incorrect": 2,
+              "mastered": false,
+              "examples": [
+                "la maison"
+              ],
+              "explanations": [
+                "maison is feminine"
+              ]
+            },
+            {
+              "pattern": "past tense",
+              "correct": 0,
+              "incorrect": 1,
+              "mastered": false,
+              "examples": [
+                "j'ai mangé"
+              ],
+              "explanations": []
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "weak",
+          "weak": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "article agreement",
+              "correct": 2,
+              "incorrect": 2,
+              "mastered": false,
+              "examples": [
+                "la maison"
+              ],
+              "explanations": [
+                "maison is feminine"
+              ]
+            },
+            {
+              "pattern": "past tense",
+              "correct": 1,
+              "incorrect": 1,
+              "mastered": false,
+              "examples": [
+                "j'ai mangé"
+              ],
+              "explanations": []
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "article agreement",
+              "correct": 2,
+              "incorrect": 3,
+              "mastered": false,
+              "examples": [
+                "la maison",
+                "la table"
+              ],
+              "explanations": [
+                "maison is feminine",
+                "table is feminine"
+              ]
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "weak",
+          "weak": [
+            "article agreement"
+          ]
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "past tense",
+              "correct": 1,
+              "incorrect": 2,
+              "mastered": false,
+              "examples": [
+                "j'ai mangé",
+                "j'ai bu"
+              ],
+              "explanations": []
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "past tense",
+              "correct": 1,
+              "incorrect": 3,
+              "mastered": false,
+              "examples": [
+                "j'ai mangé",
+                "j'ai bu"
+              ],
+              "explanations": []
+            }
+          ],
+          "signals": [
+            {
+              "type": "grammar_weakness_detected",
+              "pattern": "past tense",
+              "errorRate": 0.75,
+              "totalAttempts": 4
+            }
+          ]
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "past tense",
+              "correct": 1,
+              "incorrect": 4,
+              "mastered": false,
+              "examples": [
+                "j'ai mangé",
+                "j'ai bu"
+              ],
+              "explanations": []
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "weak",
+          "weak": [
+            "past tense",
+            "article agreement"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: five right uses master a pattern and a slip unmasters it",
+      "op": "run",
+      "input": {
+        "steps": [
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "corrected",
+              "errors": [
+                {
+                  "pattern": "gender"
+                }
+              ]
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "grammar",
+            "feedback": {
+              "status": "corrected",
+              "errors": [
+                {
+                  "pattern": "gender"
+                }
+              ]
+            }
+          },
+          {
+            "do": "weak"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "gender",
+              "correct": 0,
+              "incorrect": 1,
+              "mastered": false,
+              "examples": [],
+              "explanations": []
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "gender",
+              "correct": 1,
+              "incorrect": 1,
+              "mastered": false,
+              "examples": [],
+              "explanations": []
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "gender",
+              "correct": 2,
+              "incorrect": 1,
+              "mastered": false,
+              "examples": [],
+              "explanations": []
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "gender",
+              "correct": 3,
+              "incorrect": 1,
+              "mastered": false,
+              "examples": [],
+              "explanations": []
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "gender",
+              "correct": 4,
+              "incorrect": 1,
+              "mastered": false,
+              "examples": [],
+              "explanations": []
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "gender",
+              "correct": 5,
+              "incorrect": 1,
+              "mastered": true,
+              "examples": [],
+              "explanations": []
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "grammar",
+          "touched": [
+            {
+              "pattern": "gender",
+              "correct": 5,
+              "incorrect": 2,
+              "mastered": false,
+              "examples": [],
+              "explanations": []
+            }
+          ],
+          "signals": []
+        },
+        {
+          "do": "weak",
+          "weak": []
+        }
+      ]
+    },
+    {
+      "name": "run: a conversation moves fluency, counts new and reinforced words, and raises the band one step",
+      "op": "run",
+      "note": "At A1 with 19800 fluency, a 10-turn conversation with 5 different words, 9 of 10 right and 85% French earns 500 + 1000 + 300 + 500 + 500 = 2800, × (200000 − 19800) / 200000 = 2522: 22322 passes A2's floor of 20000. Words used twice count twice as new when unseen.",
+      "input": {
+        "book": {
+          "language": "fr",
+          "fluency": 19800,
+          "cefr": "A1",
+          "words": [
+            {
+              "word": "pain",
+              "language": "fr",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 2,
+              "last": 0,
+              "types": {
+                "active_use": 1
+              }
+            }
+          ]
+        },
+        "steps": [
+          {
+            "do": "conversation",
+            "conversation": {
+              "npcName": "Ada Thatch",
+              "turns": 10,
+              "wordsUsed": [
+                "pain",
+                "beurre",
+                "beurre",
+                "sel",
+                "farine",
+                "four"
+              ],
+              "targetPercent": 85,
+              "grammarCorrect": 9,
+              "grammarErrors": 1
+            }
+          },
+          {
+            "do": "weak",
+            "word": "beurre"
+          },
+          {
+            "do": "conversation",
+            "conversation": {
+              "npcName": "Ada Thatch",
+              "turns": 1,
+              "wordsUsed": [],
+              "targetPercent": 0,
+              "grammarCorrect": 0,
+              "grammarErrors": 0
+            }
+          },
+          {
+            "do": "summary"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "conversation",
+          "result": {
+            "previous": 19800,
+            "next": 22322,
+            "gain": 2522,
+            "wordsLearned": 5,
+            "wordsReinforced": 1,
+            "bonuses": [
+              "Vocab variety bonus!",
+              "Excellent grammar!",
+              "Long conversation bonus!",
+              "Full immersion bonus!"
+            ]
+          },
+          "signals": [
+            {
+              "type": "cefr_level_advanced",
+              "oldLevel": "A1",
+              "newLevel": "A2"
+            }
+          ],
+          "fluency": 22322,
+          "cefr": "A2",
+          "conversations": 1
+        },
+        {
+          "do": "weak",
+          "weak": [],
+          "word": {
+            "word": "beurre",
+            "language": "fr",
+            "meaning": "",
+            "category": null,
+            "context": "Ada Thatch",
+            "encountered": 2,
+            "correct": 2,
+            "incorrect": 0,
+            "halves": 4,
+            "last": 0,
+            "types": {
+              "active_use": 2
+            },
+            "mastery": "learning"
+          }
+        },
+        {
+          "do": "conversation",
+          "result": {
+            "previous": 22322,
+            "next": 22766,
+            "gain": 444,
+            "wordsLearned": 0,
+            "wordsReinforced": 0,
+            "bonuses": [
+              "Excellent grammar!"
+            ]
+          },
+          "signals": [],
+          "fluency": 22766,
+          "cefr": "A2",
+          "conversations": 2
+        },
+        {
+          "do": "summary",
+          "language": "fr",
+          "clockMs": 0,
+          "fluency": 22766,
+          "cefr": "A2",
+          "conversations": 2,
+          "correctUsages": 6,
+          "wordsLearned": 5,
+          "mastered": []
+        }
+      ]
+    },
+    {
+      "name": "run: with no band, fluency never raises one; at C2 there is no next band; fluency stops at 100000 while the gain is still reported",
+      "op": "run",
+      "input": {
+        "book": {
+          "language": "fr",
+          "fluency": 99500,
+          "cefr": null
+        },
+        "steps": [
+          {
+            "do": "conversation",
+            "conversation": {
+              "turns": 4,
+              "wordsUsed": [
+                "oui"
+              ],
+              "targetPercent": 90,
+              "grammarCorrect": 2,
+              "grammarErrors": 0
+            }
+          },
+          {
+            "do": "cefr",
+            "level": "C2"
+          },
+          {
+            "do": "conversation",
+            "conversation": {
+              "turns": 4,
+              "wordsUsed": [
+                "non"
+              ],
+              "targetPercent": 90,
+              "grammarCorrect": 2,
+              "grammarErrors": 0
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "conversation",
+          "result": {
+            "previous": 99500,
+            "next": 100000,
+            "gain": 854,
+            "wordsLearned": 1,
+            "wordsReinforced": 0,
+            "bonuses": [
+              "Excellent grammar!",
+              "Full immersion bonus!"
+            ]
+          },
+          "signals": [],
+          "fluency": 100000,
+          "cefr": null,
+          "conversations": 1
+        },
+        {
+          "do": "cefr",
+          "cefr": "C2",
+          "fluency": 100000,
+          "signals": []
+        },
+        {
+          "do": "conversation",
+          "result": {
+            "previous": 100000,
+            "next": 100000,
+            "gain": 850,
+            "wordsLearned": 1,
+            "wordsReinforced": 0,
+            "bonuses": [
+              "Excellent grammar!",
+              "Full immersion bonus!"
+            ]
+          },
+          "signals": [],
+          "fluency": 100000,
+          "cefr": "C2",
+          "conversations": 2
+        }
+      ]
+    },
+    {
+      "name": "run: an assessment sets the band, raises fluency to its floor, and announces only a change",
+      "op": "run",
+      "note": "The first band is set silently (there was none). B1 lifts 3000 to 40000; A2 keeps 40000 (a lower band never lowers fluency) and is announced; A2 again is not.",
+      "input": {
+        "book": {
+          "fluency": 3000
+        },
+        "steps": [
+          {
+            "do": "cefr",
+            "level": "A1"
+          },
+          {
+            "do": "cefr",
+            "level": "B1"
+          },
+          {
+            "do": "cefr",
+            "level": "A2"
+          },
+          {
+            "do": "cefr",
+            "level": "A2"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "cefr",
+          "cefr": "A1",
+          "fluency": 3000,
+          "signals": []
+        },
+        {
+          "do": "cefr",
+          "cefr": "B1",
+          "fluency": 40000,
+          "signals": [
+            {
+              "type": "cefr_level_advanced",
+              "oldLevel": "A1",
+              "newLevel": "B1"
+            }
+          ]
+        },
+        {
+          "do": "cefr",
+          "cefr": "A2",
+          "fluency": 40000,
+          "signals": [
+            {
+              "type": "cefr_level_advanced",
+              "oldLevel": "B1",
+              "newLevel": "A2"
+            }
+          ]
+        },
+        {
+          "do": "cefr",
+          "cefr": "A2",
+          "fluency": 40000,
+          "signals": []
+        }
+      ]
+    },
+    {
+      "name": "facts: the CEFR band from player_cefr_level, upper-cased; explicit weak areas",
+      "op": "facts",
+      "input": {
+        "facts": [
+          {
+            "predicate": "player_cefr_level",
+            "args": [
+              "player",
+              " b1 "
+            ]
+          },
+          {
+            "predicate": "weak_area",
+            "args": [
+              "player",
+              "grammar"
+            ]
+          },
+          {
+            "predicate": "weak_area",
+            "args": [
+              "player",
+              "listening"
+            ]
+          },
+          {
+            "predicate": "player_dimension_score",
+            "args": [
+              "player",
+              "vocabulary",
+              20
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "cefr": "B1",
+        "weak": [
+          "grammar",
+          "listening"
+        ]
+      }
+    },
+    {
+      "name": "facts: no weak_area facts, weak dimensions derived below 60, lowest first; a band that is not one is none",
+      "op": "facts",
+      "input": {
+        "facts": [
+          {
+            "predicate": "player_cefr_level",
+            "args": [
+              "player",
+              "D1"
+            ]
+          },
+          {
+            "predicate": "player_dimension_score",
+            "args": [
+              "player",
+              "grammar",
+              55
+            ]
+          },
+          {
+            "predicate": "player_dimension_score",
+            "args": [
+              "player",
+              "vocabulary",
+              30
+            ]
+          },
+          {
+            "predicate": "player_dimension_score",
+            "args": [
+              "player",
+              "listening",
+              60
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "cefr": null,
+        "weak": [
+          "vocabulary",
+          "grammar"
+        ]
+      }
+    },
+    {
+      "name": "facts: a custom threshold ignores weak_area facts and derives",
+      "op": "facts",
+      "input": {
+        "threshold": 70,
+        "facts": [
+          {
+            "predicate": "weak_area",
+            "args": [
+              "player",
+              "grammar"
+            ]
+          },
+          {
+            "predicate": "player_dimension_score",
+            "args": [
+              "player",
+              "listening",
+              65
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "cefr": null,
+        "weak": [
+          "listening"
+        ]
+      }
+    },
+    {
+      "name": "facts: no facts",
+      "op": "facts",
+      "input": {},
+      "expected": {
+        "cefr": null,
+        "weak": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,2898 @@
+{
+ "area": "language-hover",
+ "description": "core's language corpus conformance/language/hover.json (P9h.core) through the language.* rows, each op as core's reference runner (src/language-learning/systems-corpus.ts, runLanguageSystemsOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/language/hover.json": "ebd0b11f68d18593218184312117a8ee122a4d703a7e41de6aebb318c5ef825f"
+  }
+ },
+ "cases": [
+  {
+   "name": "language/hover tokens: tokens: words and the spaces between, punctuation-only tokens are not words",
+   "steps": [
+    {
+     "call": "language.hover.tokenize",
+     "args": {
+      "text": "« Bonjour », dit-elle…  Où est la gare ?"
+     },
+     "expect": {
+      "tokens": [
+       {
+        "text": "«",
+        "isWord": false
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "Bonjour",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "»,",
+        "isWord": false
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "dit-elle…",
+        "isWord": true
+       },
+       {
+        "text": "  ",
+        "isWord": false
+       },
+       {
+        "text": "Où",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "est",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "la",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "gare",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "?",
+        "isWord": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover run: run: hints fill the cache; a hit is a passive encounter; a miss asks once; the answer fills the cache",
+   "steps": [
+    {
+     "call": "language.hover.initial",
+     "args": {
+      "cefr": "A1",
+      "targetLanguage": "French"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.hover.addHints",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "hints": [
+       {
+        "word": "Pain!",
+        "translation": "bread",
+        "context": "at the bakery"
+       },
+       {
+        "word": "eau",
+        "translation": ""
+       },
+       {
+        "word": "",
+        "translation": "nothing"
+       },
+       {
+        "word": "come",
+        "translation": "eats (Spanish)"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "cache": [
+          [
+           "pain",
+           {
+            "$any": true
+           }
+          ],
+          [
+           "come",
+           {
+            "$any": true
+           }
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "word": "pain"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "Pain!",
+        "translation": "bread",
+        "source": "cache",
+        "context": "at the bakery"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "Pain!",
+         "translation": "bread",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "word": "fromage"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": null,
+       "request": {
+        "word": "fromage",
+        "targetLanguage": "French"
+       },
+       "signals": [],
+       "state": {
+        "$subset": {
+         "pending": [
+          "fromage"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "word": "Fromage."
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": null,
+       "request": "pending",
+       "signals": [],
+       "state": {
+        "$subset": {
+         "pending": [
+          "fromage"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.hover.resolve",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "fromage",
+      "translation": "cheese"
+     },
+     "expect": {
+      "$subset": {
+       "result": {
+        "word": "fromage",
+        "translation": "cheese",
+        "source": "api"
+       },
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "fromage",
+         "translation": "cheese",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "word": "fromage"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "fromage",
+        "translation": "cheese",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "fromage",
+         "translation": "cheese",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "word": "xyzzy"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": null,
+       "request": {
+        "word": "xyzzy",
+        "targetLanguage": "French"
+       },
+       "signals": [],
+       "state": {
+        "$subset": {
+         "pending": [
+          "xyzzy"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.hover.resolve",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "word": "xyzzy",
+      "translation": null
+     },
+     "expect": {
+      "$subset": {
+       "result": null,
+       "signals": [],
+       "state": {
+        "$subset": {
+         "pending": [],
+         "mastery": {
+          "pain": {
+           "encountered": 1,
+           "correct": 0
+          },
+          "fromage": {
+           "encountered": 2,
+           "correct": 0
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "word": "the"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "word": "a"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "word": "pain"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "word": "café"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "word": "Hello"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "word": "tonneau"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "word": "!"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "word": "à"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "word": "come"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.display",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      }
+     },
+     "expect": {
+      "mode": "inline",
+      "size": 3
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover run: run: with no target language a miss is refused",
+   "steps": [
+    {
+     "call": "language.hover.initial",
+     "args": {
+      "cefr": "A1",
+      "targetLanguage": null
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "word": "pain"
+     },
+     "expect": {
+      "$subset": {
+       "ok": false,
+       "refusal": "no_target_language"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover run: run: new words hint by the band's cadence; a seen word never hints again; a mastered word never hints",
+   "steps": [
+    {
+     "call": "language.hover.initial",
+     "args": {
+      "cefr": "A2",
+      "targetLanguage": "French"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "word": "pain"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": true,
+       "state": {
+        "$subset": {
+         "newWordIndex": 1
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "word": "pain"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 1
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "word": "eau"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 2
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "word": "sel"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 3
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "four"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": true,
+       "state": {
+        "$subset": {
+         "newWordIndex": 4
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "word": "farine",
+      "difficulty": "advanced"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 5
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "word": "lait"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 6
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.hover.setMastery",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "word": "beurre",
+      "encountered": 1,
+      "correct": 8
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "word": "Beurre,"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 7
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.hover.setMastery",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "word": "riz",
+      "encountered": 1,
+      "correct": 7
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "word": "riz"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 8
+        }
+       }
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b11.state"
+      },
+      "word": "sucre"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 9,
+         "mastery": {
+          "beurre": {
+           "encountered": 1,
+           "correct": 8
+          },
+          "riz": {
+           "encountered": 1,
+           "correct": 7
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b12"
+    },
+    {
+     "call": "language.hover.display",
+     "args": {
+      "state": {
+       "$ref": "b12.state"
+      }
+     },
+     "expect": {
+      "mode": "inline",
+      "size": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover run: run: at B1 only advanced words hint, and the tooltip is on hover",
+   "steps": [
+    {
+     "call": "language.hover.initial",
+     "args": {
+      "cefr": "B1",
+      "targetLanguage": "French"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "word": "pain",
+      "difficulty": "beginner"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 1
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "word": "boulangerie",
+      "difficulty": "advanced"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": true,
+       "state": {
+        "$subset": {
+         "newWordIndex": 2,
+         "mastery": {}
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.hover.display",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      }
+     },
+     "expect": {
+      "mode": "hover",
+      "size": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover tokens: tokens: Russian words are words, «» and the dash are not",
+   "steps": [
+    {
+     "call": "language.hover.tokenize",
+     "args": {
+      "text": "«Привет», — сказала Ольга. Где хлеб?"
+     },
+     "expect": {
+      "tokens": [
+       {
+        "text": "«Привет»,",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "—",
+        "isWord": false
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "сказала",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "Ольга.",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "Где",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "хлеб?",
+        "isWord": true
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover run: run: Russian hints key by their letters; a punctuated or capitalised lookup hits the cache",
+   "steps": [
+    {
+     "call": "language.hover.initial",
+     "args": {
+      "cefr": "A1",
+      "targetLanguage": "Russian"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.hover.addHints",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "hints": [
+       {
+        "word": "Хлеб!",
+        "translation": "bread"
+       },
+       {
+        "word": "«вода»",
+        "translation": "water"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "cache": [
+          [
+           "хлеб",
+           {
+            "$any": true
+           }
+          ],
+          [
+           "вода",
+           {
+            "$any": true
+           }
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "word": "хлеб,"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "Хлеб!",
+        "translation": "bread",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "Хлеб!",
+         "translation": "bread",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "word": "ВОДА"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "«вода»",
+        "translation": "water",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "«вода»",
+         "translation": "water",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "word": "молоко."
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": null,
+       "request": {
+        "word": "молоко.",
+        "targetLanguage": "Russian"
+       },
+       "signals": [],
+       "state": {
+        "$subset": {
+         "pending": [
+          "молоко"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.hover.resolve",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "молоко",
+      "translation": "milk"
+     },
+     "expect": {
+      "$subset": {
+       "result": {
+        "word": "молоко",
+        "translation": "milk",
+        "source": "api"
+       },
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "молоко",
+         "translation": "milk",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "word": "Хлеб"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": true,
+       "state": {
+        "$subset": {
+         "newWordIndex": 1
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "word": "хлеб!"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 1
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "word": "вода"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": true,
+       "state": {
+        "$subset": {
+         "newWordIndex": 2
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.hover.setMastery",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "word": "Соль",
+      "encountered": 1,
+      "correct": 8
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "word": "соль!"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 3,
+         "mastery": {
+          "хлеб": {
+           "encountered": 1,
+           "correct": 0
+          },
+          "вода": {
+           "encountered": 1,
+           "correct": 0
+          },
+          "молоко": {
+           "encountered": 1,
+           "correct": 0
+          },
+          "соль": {
+           "encountered": 1,
+           "correct": 8
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "word": "хлеб"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "word": "и"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "word": "—"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "word": "Привет!"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.display",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      }
+     },
+     "expect": {
+      "mode": "inline",
+      "size": 3
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover tokens: tokens: Greek words are words; the Greek question mark and ano teleia are not letters",
+   "steps": [
+    {
+     "call": "language.hover.tokenize",
+     "args": {
+      "text": "«Καλημέρα!» Πού είναι το ψωμί; Ευχαριστώ· ;"
+     },
+     "expect": {
+      "tokens": [
+       {
+        "text": "«Καλημέρα!»",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "Πού",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "είναι",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "το",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "ψωμί;",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "Ευχαριστώ·",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": ";",
+        "isWord": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover run: run: Greek hints keep their accents; a capital without its accent is another key",
+   "steps": [
+    {
+     "call": "language.hover.initial",
+     "args": {
+      "cefr": "A1",
+      "targetLanguage": "Greek"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.hover.addHints",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "hints": [
+       {
+        "word": "Ψωμί·",
+        "translation": "bread"
+       },
+       {
+        "word": "Νερό;",
+        "translation": "water"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "cache": [
+          [
+           "ψωμί",
+           {
+            "$any": true
+           }
+          ],
+          [
+           "νερό",
+           {
+            "$any": true
+           }
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "word": "«ψωμί»"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "Ψωμί·",
+        "translation": "bread",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "Ψωμί·",
+         "translation": "bread",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "word": "νερό"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "Νερό;",
+        "translation": "water",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "Νερό;",
+         "translation": "water",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "word": "ΨΩΜΙ"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": null,
+       "request": {
+        "word": "ΨΩΜΙ",
+        "targetLanguage": "Greek"
+       },
+       "signals": [],
+       "state": {
+        "$subset": {
+         "pending": [
+          "ψωμι"
+         ],
+         "mastery": {
+          "ψωμί": {
+           "encountered": 1,
+           "correct": 0
+          },
+          "νερό": {
+           "encountered": 1,
+           "correct": 0
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "ψωμί;"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "το"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "ο"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.display",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      }
+     },
+     "expect": {
+      "mode": "inline",
+      "size": 2
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover tokens: tokens: Arabic words are words; the Arabic comma and question mark are not",
+   "steps": [
+    {
+     "call": "language.hover.tokenize",
+     "args": {
+      "text": "مرحبا، أين الخبز؟ خُبْزٌ ؟"
+     },
+     "expect": {
+      "tokens": [
+       {
+        "text": "مرحبا،",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "أين",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "الخبز؟",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "خُبْزٌ",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "؟",
+        "isWord": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover run: run: Arabic hints key by their letters and marks; a miss asks the host once",
+   "steps": [
+    {
+     "call": "language.hover.initial",
+     "args": {
+      "cefr": "A1",
+      "targetLanguage": "Arabic"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.hover.addHints",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "hints": [
+       {
+        "word": "الخبز؟",
+        "translation": "the bread"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "cache": [
+          [
+           "الخبز",
+           {
+            "$any": true
+           }
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "word": "الخبز"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "الخبز؟",
+        "translation": "the bread",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "الخبز؟",
+         "translation": "the bread",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "word": "«ماء»"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": null,
+       "request": {
+        "word": "«ماء»",
+        "targetLanguage": "Arabic"
+       },
+       "signals": [],
+       "state": {
+        "$subset": {
+         "pending": [
+          "ماء"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.hover.resolve",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "word": "ماء",
+      "translation": "water"
+     },
+     "expect": {
+      "$subset": {
+       "result": {
+        "word": "ماء",
+        "translation": "water",
+        "source": "api"
+       },
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "ماء",
+         "translation": "water",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "ماء،"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "ماء",
+        "translation": "water",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "ماء",
+         "translation": "water",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": [],
+         "mastery": {
+          "الخبز": {
+           "encountered": 1,
+           "correct": 0
+          },
+          "ماء": {
+           "encountered": 2,
+           "correct": 0
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "word": "خُبْزٌ"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "word": "؟"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.display",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      }
+     },
+     "expect": {
+      "mode": "inline",
+      "size": 2
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover tokens: tokens: Hebrew words with bidi marks at their edges are words; a lone mark is not",
+   "steps": [
+    {
+     "call": "language.hover.tokenize",
+     "args": {
+      "text": "‏שלום‏, מה ⁧שלומך⁩? ‎ ‏"
+     },
+     "expect": {
+      "tokens": [
+       {
+        "text": "‏שלום‏,",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "מה",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "⁧שלומך⁩?",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "‎",
+        "isWord": false
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "‏",
+        "isWord": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover run: run: Hebrew with bidi marks keys without them; a marked lookup hits the cache",
+   "steps": [
+    {
+     "call": "language.hover.initial",
+     "args": {
+      "cefr": "A1",
+      "targetLanguage": "Hebrew"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.hover.addHints",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "hints": [
+       {
+        "word": "⁧לחם⁩",
+        "translation": "bread"
+       },
+       {
+        "word": "מים‎!",
+        "translation": "water"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "cache": [
+          [
+           "לחם",
+           {
+            "$any": true
+           }
+          ],
+          [
+           "מים",
+           {
+            "$any": true
+           }
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "word": "‏לחם.‏"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "⁧לחם⁩",
+        "translation": "bread",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "⁧לחם⁩",
+         "translation": "bread",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "word": "לחם"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "⁧לחם⁩",
+        "translation": "bread",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "⁧לחם⁩",
+         "translation": "bread",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "word": "‏מים"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "מים‎!",
+        "translation": "water",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "מים‎!",
+         "translation": "water",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": [],
+         "mastery": {
+          "לחם": {
+           "encountered": 2,
+           "correct": 0
+          },
+          "מים": {
+           "encountered": 1,
+           "correct": 0
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "‏לחם‏"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "‏"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.display",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      }
+     },
+     "expect": {
+      "mode": "inline",
+      "size": 2
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover tokens: tokens: Hindi words keep their vowel signs; the danda is not a letter",
+   "steps": [
+    {
+     "call": "language.hover.tokenize",
+     "args": {
+      "text": "नमस्ते। रोटी कहाँ है? ।"
+     },
+     "expect": {
+      "tokens": [
+       {
+        "text": "नमस्ते।",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "रोटी",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "कहाँ",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "है?",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "।",
+        "isWord": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover run: run: Hindi hints key with their vowel signs; a word without its vowel sign is another key",
+   "steps": [
+    {
+     "call": "language.hover.initial",
+     "args": {
+      "cefr": "A2",
+      "targetLanguage": "Hindi"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.hover.addHints",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "hints": [
+       {
+        "word": "रोटी!",
+        "translation": "bread"
+       },
+       {
+        "word": "पानी,",
+        "translation": "water"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "cache": [
+          [
+           "रोटी",
+           {
+            "$any": true
+           }
+          ],
+          [
+           "पानी",
+           {
+            "$any": true
+           }
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "word": "रोटी।"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "रोटी!",
+        "translation": "bread",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "रोटी!",
+         "translation": "bread",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "word": "रोट"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": null,
+       "request": {
+        "word": "रोट",
+        "targetLanguage": "Hindi"
+       },
+       "signals": [],
+       "state": {
+        "$subset": {
+         "pending": [
+          "रोट"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "word": "पानी"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": true,
+       "state": {
+        "$subset": {
+         "newWordIndex": 1
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "पानी।"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": false,
+       "state": {
+        "$subset": {
+         "newWordIndex": 1,
+         "mastery": {
+          "रोटी": {
+           "encountered": 1,
+           "correct": 0
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "word": "है"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "word": "कहाँ?"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.display",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      }
+     },
+     "expect": {
+      "mode": "inline",
+      "size": 2
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover tokens: tokens: Korean words are words; punctuation around them is not",
+   "steps": [
+    {
+     "call": "language.hover.tokenize",
+     "args": {
+      "text": "안녕하세요! 빵은 어디에 있어요? \"물\"."
+     },
+     "expect": {
+      "tokens": [
+       {
+        "text": "안녕하세요!",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "빵은",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "어디에",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "있어요?",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "\"물\".",
+        "isWord": true
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover run: run: Korean hints key by their syllables; a one-syllable word is cached but never likely",
+   "steps": [
+    {
+     "call": "language.hover.initial",
+     "args": {
+      "cefr": "A1",
+      "targetLanguage": "Korean"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.hover.addHints",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "hints": [
+       {
+        "word": "빵.",
+        "translation": "bread"
+       },
+       {
+        "word": "\"물\"",
+        "translation": "water"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "cache": [
+          [
+           "빵",
+           {
+            "$any": true
+           }
+          ],
+          [
+           "물",
+           {
+            "$any": true
+           }
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "word": "빵!"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "빵.",
+        "translation": "bread",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "빵.",
+         "translation": "bread",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "word": "물"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "\"물\"",
+        "translation": "water",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "\"물\"",
+         "translation": "water",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "word": "빵은"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": null,
+       "request": {
+        "word": "빵은",
+        "targetLanguage": "Korean"
+       },
+       "signals": [],
+       "state": {
+        "$subset": {
+         "pending": [
+          "빵은"
+         ],
+         "mastery": {
+          "빵": {
+           "encountered": 1,
+           "correct": 0
+          },
+          "물": {
+           "encountered": 1,
+           "correct": 0
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "빵"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "안녕하세요!"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.display",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      }
+     },
+     "expect": {
+      "mode": "inline",
+      "size": 2
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover tokens: tokens: Vietnamese words ending in Latin Extended Additional keep their last letter",
+   "steps": [
+    {
+     "call": "language.hover.tokenize",
+     "args": {
+      "text": "Mẹ ở nhà. Tôi muốn ăn phở!"
+     },
+     "expect": {
+      "tokens": [
+       {
+        "text": "Mẹ",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "ở",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "nhà.",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "Tôi",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "muốn",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "ăn",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "phở!",
+        "isWord": true
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover run: run: Vietnamese phở and phố are two keys; an edge diacritic is a letter",
+   "steps": [
+    {
+     "call": "language.hover.initial",
+     "args": {
+      "cefr": "A1",
+      "targetLanguage": "Vietnamese"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.hover.addHints",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "hints": [
+       {
+        "word": "Phở!",
+        "translation": "noodle soup"
+       },
+       {
+        "word": "phố,",
+        "translation": "street"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "cache": [
+          [
+           "phở",
+           {
+            "$any": true
+           }
+          ],
+          [
+           "phố",
+           {
+            "$any": true
+           }
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "word": "phở."
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "Phở!",
+        "translation": "noodle soup",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "Phở!",
+         "translation": "noodle soup",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.hover.lookup",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "word": "Phố"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "result": {
+        "word": "phố,",
+        "translation": "street",
+        "source": "cache"
+       },
+       "request": null,
+       "signals": [
+        {
+         "type": "word_encounter",
+         "word": "phố,",
+         "translation": "street",
+         "source": "passive_hover"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "pending": []
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.hover.seeWord",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "word": "ở"
+     },
+     "expect": {
+      "$subset": {
+       "showHint": true,
+       "state": {
+        "$subset": {
+         "newWordIndex": 1,
+         "mastery": {
+          "phở": {
+           "encountered": 1,
+           "correct": 0
+          },
+          "phố": {
+           "encountered": 1,
+           "correct": 0
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "ở"
+     },
+     "expect": {
+      "likely": false
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "phở"
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.isLikelyTarget",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "word": "mẹ."
+     },
+     "expect": {
+      "likely": true
+     }
+    },
+    {
+     "call": "language.hover.display",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      }
+     },
+     "expect": {
+      "mode": "inline",
+      "size": 2
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/hover tokens: tokens: at the edges of the old Latin range, × and ÷ are symbols and ª, º, µ, ² are letters or digits",
+   "steps": [
+    {
+     "call": "language.hover.tokenize",
+     "args": {
+      "text": "× ÷ ª º µ ² Ça, déjà-vu!"
+     },
+     "expect": {
+      "tokens": [
+       {
+        "text": "×",
+        "isWord": false
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "÷",
+        "isWord": false
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "ª",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "º",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "µ",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "²",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "Ça,",
+        "isWord": true
+       },
+       {
+        "text": " ",
+        "isWord": false
+       },
+       {
+        "text": "déjà-vu!",
+        "isWord": true
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

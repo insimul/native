@@ -1,0 +1,3391 @@
+{
+  "schema": "insimul.conformance.language/1",
+  "area": "language",
+  "file": "language/chat",
+  "phase": "P9h",
+  "description": "The chat language metrics (PL.core-chat-language-metrics, U110(4) Q3): a line's words and target words, the heard grammar checks, targetPercent, the quest's usages, and a chat's lines fed to recordTurn and its end to recordConversation (src/language-learning/chat-metrics.ts).",
+  "runner": "src/language-learning/systems-corpus.ts (runLanguageSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "language-adaptive-conversation-difficulty",
+    "language-progress-learning-profile",
+    "language-quest-feedback-grammar"
+  ],
+  "ops": [
+    "words",
+    "percent",
+    "hear",
+    "usages",
+    "run"
+  ],
+  "steps": {
+    "run": [
+      "start",
+      "line",
+      "hear",
+      "end"
+    ]
+  },
+  "cases": [
+    {
+      "name": "words: a target word is a book word after its edge punctuation is stripped, in lower case; every token is a word",
+      "op": "words",
+      "note": "totalWords = line.trim().split(/\\s+/), punctuation-only tokens included (the reference); a token counts as a target word when its chatKey (edge punctuation stripped, lower case) is a book word's, every time it occurs; wordsUsed once each, spelled as the book spells it. A row filed under another language still counts; a phrase matches no single token; an empty line has no words.",
+      "input": {
+        "book": {
+          "language": "fr",
+          "words": [
+            {
+              "word": "bonjour",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 3,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 4,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 2
+              }
+            },
+            {
+              "word": "pain",
+              "language": "fr",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 2,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 3,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "Merci",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "maison",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "pomme",
+              "language": "French",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "ça va",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "lines": [
+          "Bonjour, je voudrais du pain!",
+          "PAIN pain Pain.",
+          "merci beaucoup !",
+          "« Merci »",
+          "Une pomme, ça va ?",
+          "bonjourr hello maisons",
+          "...",
+          "",
+          "   "
+        ]
+      },
+      "expected": [
+        {
+          "line": "Bonjour, je voudrais du pain!",
+          "totalWords": 5,
+          "targetWords": 2,
+          "wordsUsed": [
+            "bonjour",
+            "pain"
+          ]
+        },
+        {
+          "line": "PAIN pain Pain.",
+          "totalWords": 3,
+          "targetWords": 3,
+          "wordsUsed": [
+            "pain"
+          ]
+        },
+        {
+          "line": "merci beaucoup !",
+          "totalWords": 3,
+          "targetWords": 1,
+          "wordsUsed": [
+            "Merci"
+          ]
+        },
+        {
+          "line": "« Merci »",
+          "totalWords": 3,
+          "targetWords": 1,
+          "wordsUsed": [
+            "Merci"
+          ]
+        },
+        {
+          "line": "Une pomme, ça va ?",
+          "totalWords": 5,
+          "targetWords": 1,
+          "wordsUsed": [
+            "pomme"
+          ]
+        },
+        {
+          "line": "bonjourr hello maisons",
+          "totalWords": 3,
+          "targetWords": 0,
+          "wordsUsed": []
+        },
+        {
+          "line": "...",
+          "totalWords": 1,
+          "targetWords": 0,
+          "wordsUsed": []
+        },
+        {
+          "line": "",
+          "totalWords": 0,
+          "targetWords": 0,
+          "wordsUsed": []
+        },
+        {
+          "line": "   ",
+          "totalWords": 0,
+          "targetWords": 0,
+          "wordsUsed": []
+        }
+      ]
+    },
+    {
+      "name": "words: the world language's words count as well; a book row's spelling comes before a world word's",
+      "op": "words",
+      "note": "worldWords are the language's sample words the host passes (the reference's sampleWords); a word whose key is empty (\"...\") matches nothing.",
+      "input": {
+        "book": {
+          "language": "fr",
+          "words": [
+            {
+              "word": "bonjour",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 3,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 4,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 2
+              }
+            },
+            {
+              "word": "pain",
+              "language": "fr",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 2,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 3,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "Merci",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "maison",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "pomme",
+              "language": "French",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "ça va",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "worldWords": [
+          "Fromage",
+          "boulangerie",
+          "PAIN",
+          "..."
+        ],
+        "lines": [
+          "pain, Fromage et boulangerie!",
+          "fromage FROMAGE ... !",
+          "du pain"
+        ]
+      },
+      "expected": [
+        {
+          "line": "pain, Fromage et boulangerie!",
+          "totalWords": 4,
+          "targetWords": 3,
+          "wordsUsed": [
+            "pain",
+            "Fromage",
+            "boulangerie"
+          ]
+        },
+        {
+          "line": "fromage FROMAGE ... !",
+          "totalWords": 4,
+          "targetWords": 2,
+          "wordsUsed": [
+            "Fromage"
+          ]
+        },
+        {
+          "line": "du pain",
+          "totalWords": 2,
+          "targetWords": 1,
+          "wordsUsed": [
+            "pain"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "words: an empty book and no world words: no line has a target word",
+      "op": "words",
+      "input": {
+        "book": {
+          "language": "fr"
+        },
+        "lines": [
+          "Bonjour, je voudrais du pain!",
+          "hello"
+        ]
+      },
+      "expected": [
+        {
+          "line": "Bonjour, je voudrais du pain!",
+          "totalWords": 5,
+          "targetWords": 0,
+          "wordsUsed": []
+        },
+        {
+          "line": "hello",
+          "totalWords": 1,
+          "targetWords": 0,
+          "wordsUsed": []
+        }
+      ]
+    },
+    {
+      "name": "words: Cyrillic target words count, edge punctuation stripped and in lower case",
+      "op": "words",
+      "note": "chatKey strips the characters at a token's edges that are not a letter, a combining mark, a digit or _ of any script, then lower-cases: \"Привет,\" is \"привет\", \"ХЛЕБ\" and «Хлеб» are \"хлеб\" (spelled as the book spells it, \"Хлеб\"). A near miss, a non-book word, a book word with a digit or _ at its edge (digits and _ are word characters, as \\w has them) and a dash or dots are words but not target words.",
+      "input": {
+        "book": {
+          "language": "ru",
+          "words": [
+            {
+              "word": "привет",
+              "language": "ru",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 2,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 2,
+              "last": 0,
+              "types": {
+                "passive_read": 2
+              }
+            },
+            {
+              "word": "Хлеб",
+              "language": "ru",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "спасибо",
+              "language": "ru",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "молоко",
+              "language": "ru",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "lines": [
+          "Привет, друг!",
+          "ХЛЕБ хлеб «Хлеб»",
+          "спасибо... молоко?",
+          "приветт кот хлеб2 хлеб_ хле ...",
+          "— !"
+        ]
+      },
+      "expected": [
+        {
+          "line": "Привет, друг!",
+          "totalWords": 2,
+          "targetWords": 1,
+          "wordsUsed": [
+            "привет"
+          ]
+        },
+        {
+          "line": "ХЛЕБ хлеб «Хлеб»",
+          "totalWords": 3,
+          "targetWords": 3,
+          "wordsUsed": [
+            "Хлеб"
+          ]
+        },
+        {
+          "line": "спасибо... молоко?",
+          "totalWords": 2,
+          "targetWords": 2,
+          "wordsUsed": [
+            "спасибо",
+            "молоко"
+          ]
+        },
+        {
+          "line": "приветт кот хлеб2 хлеб_ хле ...",
+          "totalWords": 6,
+          "targetWords": 0,
+          "wordsUsed": []
+        },
+        {
+          "line": "— !",
+          "totalWords": 2,
+          "targetWords": 0,
+          "wordsUsed": []
+        }
+      ]
+    },
+    {
+      "name": "words: Greek target words count (case folded, accents kept)",
+      "op": "words",
+      "input": {
+        "book": {
+          "language": "el",
+          "words": [
+            {
+              "word": "γεια",
+              "language": "el",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "ψωμί",
+              "language": "el",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "lines": [
+          "Γεια σου!",
+          "ΨΩΜΊ, παρακαλώ;",
+          "ψωμι"
+        ]
+      },
+      "expected": [
+        {
+          "line": "Γεια σου!",
+          "totalWords": 2,
+          "targetWords": 1,
+          "wordsUsed": [
+            "γεια"
+          ]
+        },
+        {
+          "line": "ΨΩΜΊ, παρακαλώ;",
+          "totalWords": 2,
+          "targetWords": 1,
+          "wordsUsed": [
+            "ψωμί"
+          ]
+        },
+        {
+          "line": "ψωμι",
+          "totalWords": 1,
+          "targetWords": 0,
+          "wordsUsed": []
+        }
+      ]
+    },
+    {
+      "name": "words: Arabic target words count (the Arabic comma and question mark stripped)",
+      "op": "words",
+      "input": {
+        "book": {
+          "language": "ar",
+          "words": [
+            {
+              "word": "مرحبا",
+              "language": "ar",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "خبز",
+              "language": "ar",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "lines": [
+          "مرحبا! أريد خبز،",
+          "خبز؟ شكرا"
+        ]
+      },
+      "expected": [
+        {
+          "line": "مرحبا! أريد خبز،",
+          "totalWords": 3,
+          "targetWords": 2,
+          "wordsUsed": [
+            "مرحبا",
+            "خبز"
+          ]
+        },
+        {
+          "line": "خبز؟ شكرا",
+          "totalWords": 2,
+          "targetWords": 1,
+          "wordsUsed": [
+            "خبز"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "words: Hebrew target words count",
+      "op": "words",
+      "input": {
+        "book": {
+          "language": "he",
+          "words": [
+            {
+              "word": "שלום",
+              "language": "he",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "לחם",
+              "language": "he",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "lines": [
+          "שלום, אני רוצה לחם.",
+          "\"לחם\""
+        ]
+      },
+      "expected": [
+        {
+          "line": "שלום, אני רוצה לחם.",
+          "totalWords": 4,
+          "targetWords": 2,
+          "wordsUsed": [
+            "שלום",
+            "לחם"
+          ]
+        },
+        {
+          "line": "\"לחם\"",
+          "totalWords": 1,
+          "targetWords": 1,
+          "wordsUsed": [
+            "לחם"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "words: Devanagari target words count (a word ending in a vowel sign keeps it; the danda is stripped)",
+      "op": "words",
+      "note": "नमस्ते ends in a combining vowel sign (U+0947, a mark), which chatKey keeps, so नमस्त (no vowel sign) is another word; the danda (।, U+0964) is punctuation and is stripped.",
+      "input": {
+        "book": {
+          "language": "hi",
+          "words": [
+            {
+              "word": "नमस्ते",
+              "language": "hi",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "रोटी",
+              "language": "hi",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "lines": [
+          "नमस्ते जी!",
+          "रोटी। धन्यवाद",
+          "नमस्त"
+        ]
+      },
+      "expected": [
+        {
+          "line": "नमस्ते जी!",
+          "totalWords": 2,
+          "targetWords": 1,
+          "wordsUsed": [
+            "नमस्ते"
+          ]
+        },
+        {
+          "line": "रोटी। धन्यवाद",
+          "totalWords": 2,
+          "targetWords": 1,
+          "wordsUsed": [
+            "रोटी"
+          ]
+        },
+        {
+          "line": "नमस्त",
+          "totalWords": 1,
+          "targetWords": 0,
+          "wordsUsed": []
+        }
+      ]
+    },
+    {
+      "name": "words: Hangul target words count",
+      "op": "words",
+      "input": {
+        "book": {
+          "language": "ko",
+          "words": [
+            {
+              "word": "안녕하세요",
+              "language": "ko",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "빵",
+              "language": "ko",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "lines": [
+          "안녕하세요! 빵 주세요."
+        ]
+      },
+      "expected": [
+        {
+          "line": "안녕하세요! 빵 주세요.",
+          "totalWords": 3,
+          "targetWords": 2,
+          "wordsUsed": [
+            "안녕하세요",
+            "빵"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "percent: min(100, floor(unique words used × 50 / turns)), 0 with no turns",
+      "op": "percent",
+      "note": "Floored to a whole percent, so the 50 and 80 thresholds of the fluency gain decide as the exact ratio does: 19/12 is 79 (79.17), 16/10 is 80, 8/5 is 80; 3 words in one turn is 150, clamped to 100.",
+      "input": {
+        "pairs": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            8,
+            5
+          ],
+          [
+            19,
+            12
+          ],
+          [
+            16,
+            10
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            4,
+            0
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "used": 0,
+          "turns": 1,
+          "targetPercent": 0
+        },
+        {
+          "used": 1,
+          "turns": 1,
+          "targetPercent": 50
+        },
+        {
+          "used": 2,
+          "turns": 1,
+          "targetPercent": 100
+        },
+        {
+          "used": 3,
+          "turns": 1,
+          "targetPercent": 100
+        },
+        {
+          "used": 1,
+          "turns": 2,
+          "targetPercent": 25
+        },
+        {
+          "used": 1,
+          "turns": 3,
+          "targetPercent": 16
+        },
+        {
+          "used": 2,
+          "turns": 3,
+          "targetPercent": 33
+        },
+        {
+          "used": 3,
+          "turns": 2,
+          "targetPercent": 75
+        },
+        {
+          "used": 5,
+          "turns": 3,
+          "targetPercent": 83
+        },
+        {
+          "used": 8,
+          "turns": 5,
+          "targetPercent": 80
+        },
+        {
+          "used": 19,
+          "turns": 12,
+          "targetPercent": 79
+        },
+        {
+          "used": 16,
+          "turns": 10,
+          "targetPercent": 80
+        },
+        {
+          "used": 0,
+          "turns": 0,
+          "targetPercent": 0
+        },
+        {
+          "used": 4,
+          "turns": 0,
+          "targetPercent": 0
+        }
+      ]
+    },
+    {
+      "name": "hear: correct is one right line, corrected adds errorCount (the errors' length when absent), no_target_language nothing",
+      "op": "hear",
+      "note": "grammarChecked = errors + correct lines (the tracker's getConversationGrammarCounts); a corrected check counts its errors, not one per line; a no_target_language check counts nothing, whatever it carries.",
+      "input": {
+        "checks": [
+          {
+            "status": "correct"
+          },
+          {
+            "status": "corrected",
+            "errorCount": 2,
+            "errors": [
+              {
+                "pattern": "Article Agreement",
+                "incorrect": "le maison",
+                "corrected": "la maison",
+                "explanation": "feminine"
+              }
+            ]
+          },
+          {
+            "status": "corrected",
+            "errors": [
+              {
+                "pattern": "Article Agreement",
+                "incorrect": "le maison",
+                "corrected": "la maison",
+                "explanation": "feminine"
+              },
+              {
+                "pattern": "past",
+                "incorrect": "le maison",
+                "corrected": "la maison",
+                "explanation": "feminine"
+              },
+              {
+                "pattern": "Article Agreement",
+                "incorrect": "le maison",
+                "corrected": "la maison",
+                "explanation": "feminine"
+              }
+            ]
+          },
+          {
+            "status": "no_target_language"
+          },
+          {
+            "status": "no_target_language",
+            "errorCount": 2,
+            "errors": [
+              {
+                "pattern": "past"
+              }
+            ]
+          },
+          {
+            "status": "corrected",
+            "errorCount": 0,
+            "errors": []
+          },
+          {
+            "status": "corrected"
+          },
+          {
+            "status": "correct",
+            "errors": []
+          }
+        ]
+      },
+      "expected": [
+        {
+          "status": "correct",
+          "grammarCorrect": 1,
+          "grammarErrors": 0,
+          "grammarChecked": 1
+        },
+        {
+          "status": "corrected",
+          "grammarCorrect": 1,
+          "grammarErrors": 2,
+          "grammarChecked": 3
+        },
+        {
+          "status": "corrected",
+          "grammarCorrect": 1,
+          "grammarErrors": 5,
+          "grammarChecked": 6
+        },
+        {
+          "status": "no_target_language",
+          "grammarCorrect": 1,
+          "grammarErrors": 5,
+          "grammarChecked": 6
+        },
+        {
+          "status": "no_target_language",
+          "grammarCorrect": 1,
+          "grammarErrors": 5,
+          "grammarChecked": 6
+        },
+        {
+          "status": "corrected",
+          "grammarCorrect": 1,
+          "grammarErrors": 5,
+          "grammarChecked": 6
+        },
+        {
+          "status": "corrected",
+          "grammarCorrect": 1,
+          "grammarErrors": 5,
+          "grammarChecked": 6
+        },
+        {
+          "status": "correct",
+          "grammarCorrect": 2,
+          "grammarErrors": 5,
+          "grammarChecked": 7
+        }
+      ]
+    },
+    {
+      "name": "usages: a line's target words as the quest's useVocabulary usages, quest words first",
+      "op": "usages",
+      "note": "The player's line only, its tokens keyed by chatKey (edge punctuation stripped, lower case): a quest word (spelled as the quest spells it), a book word or a world word; once each, in the line's order, usedCorrectly true. English and near misses are not usages.",
+      "input": {
+        "book": {
+          "language": "fr",
+          "words": [
+            {
+              "word": "bonjour",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 3,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 4,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 2
+              }
+            },
+            {
+              "word": "pain",
+              "language": "fr",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 2,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 3,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "Merci",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "maison",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "pomme",
+              "language": "French",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "ça va",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "worldWords": [
+          "fromage"
+        ],
+        "questWords": [
+          "Pain",
+          "croissant"
+        ],
+        "lines": [
+          "Bonjour! Un croissant et du PAIN, pain.",
+          "hello there, the bakery is lovely",
+          "Fromage? merci.",
+          ""
+        ]
+      },
+      "expected": [
+        {
+          "line": "Bonjour! Un croissant et du PAIN, pain.",
+          "usages": [
+            {
+              "word": "bonjour",
+              "usedCorrectly": true
+            },
+            {
+              "word": "croissant",
+              "usedCorrectly": true
+            },
+            {
+              "word": "Pain",
+              "usedCorrectly": true
+            }
+          ]
+        },
+        {
+          "line": "hello there, the bakery is lovely",
+          "usages": []
+        },
+        {
+          "line": "Fromage? merci.",
+          "usages": [
+            {
+              "word": "fromage",
+              "usedCorrectly": true
+            },
+            {
+              "word": "Merci",
+              "usedCorrectly": true
+            }
+          ]
+        },
+        {
+          "line": "",
+          "usages": []
+        }
+      ]
+    },
+    {
+      "name": "usages: no quest words: the book's and the world's words only",
+      "op": "usages",
+      "input": {
+        "book": {
+          "language": "fr",
+          "words": [
+            {
+              "word": "bonjour",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 3,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 4,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 2
+              }
+            },
+            {
+              "word": "pain",
+              "language": "fr",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 2,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 3,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "Merci",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "maison",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "pomme",
+              "language": "French",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "ça va",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "questWords": [],
+        "lines": [
+          "croissant, pain, maison"
+        ]
+      },
+      "expected": [
+        {
+          "line": "croissant, pain, maison",
+          "usages": [
+            {
+              "word": "pain",
+              "usedCorrectly": true
+            },
+            {
+              "word": "maison",
+              "usedCorrectly": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "usages: Cyrillic quest and book words are usages, spelled as the quest spells them",
+      "op": "usages",
+      "input": {
+        "book": {
+          "language": "ru",
+          "words": [
+            {
+              "word": "привет",
+              "language": "ru",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 2,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 2,
+              "last": 0,
+              "types": {
+                "passive_read": 2
+              }
+            },
+            {
+              "word": "Хлеб",
+              "language": "ru",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "спасибо",
+              "language": "ru",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "молоко",
+              "language": "ru",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "questWords": [
+          "ХЛЕБ"
+        ],
+        "lines": [
+          "Привет! Хлеб, хлеб.",
+          "кот"
+        ]
+      },
+      "expected": [
+        {
+          "line": "Привет! Хлеб, хлеб.",
+          "usages": [
+            {
+              "word": "привет",
+              "usedCorrectly": true
+            },
+            {
+              "word": "ХЛЕБ",
+              "usedCorrectly": true
+            }
+          ]
+        },
+        {
+          "line": "кот",
+          "usages": []
+        }
+      ]
+    },
+    {
+      "name": "run: Ada's four-line chat, its checks heard after each line, ended into recordConversation (Good grammar, a good mix)",
+      "op": "run",
+      "note": "Each line's metrics carry the checks heard before it (a line's own check comes with the NPC's answer). Three right lines and one with an error: 30 ≥ 24 but not 36, \"Good grammar!\". Four words over four turns: targetPercent 50. The words used are active uses in the book.",
+      "input": {
+        "book": {
+          "language": "fr",
+          "words": [
+            {
+              "word": "bonjour",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 3,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 4,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 2
+              }
+            },
+            {
+              "word": "pain",
+              "language": "fr",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 2,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 3,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "Merci",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "maison",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "pomme",
+              "language": "French",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "ça va",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "steps": [
+          {
+            "do": "start",
+            "npc": "Ada"
+          },
+          {
+            "do": "line",
+            "text": "Bonjour madame !"
+          },
+          {
+            "do": "hear",
+            "check": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "line",
+            "text": "Je voudrais du pain, merci."
+          },
+          {
+            "do": "hear",
+            "check": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "line",
+            "text": "Le maison est belle."
+          },
+          {
+            "do": "hear",
+            "check": {
+              "status": "corrected",
+              "errorCount": 1,
+              "errors": [
+                {
+                  "pattern": "Article Agreement",
+                  "incorrect": "le maison",
+                  "corrected": "la maison",
+                  "explanation": "feminine"
+                }
+              ]
+            }
+          },
+          {
+            "do": "line",
+            "text": "Merci, au revoir"
+          },
+          {
+            "do": "hear",
+            "check": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "end"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "start",
+          "session": {
+            "npcName": "Ada",
+            "turns": 0,
+            "wordsUsed": [],
+            "grammarCorrect": 0,
+            "grammarErrors": 0
+          }
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 0,
+            "targetWords": 1,
+            "totalWords": 3
+          },
+          "wordsUsed": [
+            "bonjour"
+          ],
+          "turns": 1,
+          "chatWords": [
+            "bonjour"
+          ],
+          "struggle": 266,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "hear",
+          "grammarCorrect": 1,
+          "grammarErrors": 0
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 1,
+            "targetWords": 2,
+            "totalWords": 5
+          },
+          "wordsUsed": [
+            "pain",
+            "Merci"
+          ],
+          "turns": 2,
+          "chatWords": [
+            "bonjour",
+            "pain",
+            "Merci"
+          ],
+          "struggle": 160,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "hear",
+          "grammarCorrect": 2,
+          "grammarErrors": 0
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 2,
+            "targetWords": 1,
+            "totalWords": 4
+          },
+          "wordsUsed": [
+            "maison"
+          ],
+          "turns": 3,
+          "chatWords": [
+            "bonjour",
+            "pain",
+            "Merci",
+            "maison"
+          ],
+          "struggle": 283,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "hear",
+          "grammarCorrect": 2,
+          "grammarErrors": 1
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 1,
+            "grammarChecked": 3,
+            "targetWords": 1,
+            "totalWords": 3
+          },
+          "wordsUsed": [
+            "Merci"
+          ],
+          "turns": 4,
+          "chatWords": [
+            "bonjour",
+            "pain",
+            "Merci",
+            "maison"
+          ],
+          "struggle": 366,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "hear",
+          "grammarCorrect": 3,
+          "grammarErrors": 1
+        },
+        {
+          "do": "end",
+          "ok": true,
+          "conversation": {
+            "npcName": "Ada",
+            "turns": 4,
+            "wordsUsed": [
+              "bonjour",
+              "pain",
+              "Merci",
+              "maison"
+            ],
+            "targetPercent": 50,
+            "grammarCorrect": 3,
+            "grammarErrors": 1
+          },
+          "result": {
+            "previous": 0,
+            "next": 1850,
+            "gain": 1850,
+            "wordsLearned": 0,
+            "wordsReinforced": 4,
+            "bonuses": [
+              "Good grammar!",
+              "Good language mix!"
+            ]
+          },
+          "signals": [],
+          "fluency": 1850,
+          "conversations": 1,
+          "bookWords": [
+            {
+              "word": "bonjour",
+              "encountered": 4,
+              "correct": 2
+            },
+            {
+              "word": "pain",
+              "encountered": 3,
+              "correct": 2
+            },
+            {
+              "word": "Merci",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "maison",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "pomme",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "ça va",
+              "encountered": 1,
+              "correct": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: an empty line is refused and is not a turn; a chat of no turns ends refused (no free fluency)",
+      "op": "run",
+      "input": {
+        "book": {
+          "language": "fr",
+          "words": [
+            {
+              "word": "bonjour",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 3,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 4,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 2
+              }
+            },
+            {
+              "word": "pain",
+              "language": "fr",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 2,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 3,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "Merci",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "maison",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "pomme",
+              "language": "French",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "ça va",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "steps": [
+          {
+            "do": "start",
+            "npc": "Bram"
+          },
+          {
+            "do": "line",
+            "text": ""
+          },
+          {
+            "do": "line",
+            "text": "  \t "
+          },
+          {
+            "do": "hear",
+            "check": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "end"
+          },
+          {
+            "do": "start"
+          },
+          {
+            "do": "line",
+            "text": "?"
+          },
+          {
+            "do": "end"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "start",
+          "session": {
+            "npcName": "Bram",
+            "turns": 0,
+            "wordsUsed": [],
+            "grammarCorrect": 0,
+            "grammarErrors": 0
+          }
+        },
+        {
+          "do": "line",
+          "ok": false,
+          "refusal": "empty_line",
+          "turns": 0
+        },
+        {
+          "do": "line",
+          "ok": false,
+          "refusal": "empty_line",
+          "turns": 0
+        },
+        {
+          "do": "hear",
+          "grammarCorrect": 1,
+          "grammarErrors": 0
+        },
+        {
+          "do": "end",
+          "ok": false,
+          "refusal": "no_turns",
+          "conversations": 0
+        },
+        {
+          "do": "start",
+          "session": {
+            "npcName": "",
+            "turns": 0,
+            "wordsUsed": [],
+            "grammarCorrect": 0,
+            "grammarErrors": 0
+          }
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 0,
+            "targetWords": 0,
+            "totalWords": 1
+          },
+          "wordsUsed": [],
+          "turns": 1,
+          "chatWords": [],
+          "struggle": 500,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "end",
+          "ok": true,
+          "conversation": {
+            "npcName": "",
+            "turns": 1,
+            "wordsUsed": [],
+            "targetPercent": 0,
+            "grammarCorrect": 0,
+            "grammarErrors": 0
+          },
+          "result": {
+            "previous": 0,
+            "next": 500,
+            "gain": 500,
+            "wordsLearned": 0,
+            "wordsReinforced": 0,
+            "bonuses": [
+              "Excellent grammar!"
+            ]
+          },
+          "signals": [],
+          "fluency": 500,
+          "conversations": 1,
+          "bookWords": [
+            {
+              "word": "bonjour",
+              "encountered": 3,
+              "correct": 1
+            },
+            {
+              "word": "pain",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "Merci",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "maison",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "pomme",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "ça va",
+              "encountered": 1,
+              "correct": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: a chat begun again before the last ended starts at none; world words used are learned",
+      "op": "run",
+      "note": "Bram's chat is left open and Cora's starts: its turns, words and checks start at none. Cora's words (two world words) are new to the book: wordsLearned 2, each now a row with one active use. No check heard: core's gain reads it as perfect.",
+      "input": {
+        "book": {
+          "language": "fr",
+          "words": [
+            {
+              "word": "bonjour",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 3,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 4,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 2
+              }
+            },
+            {
+              "word": "pain",
+              "language": "fr",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 2,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 3,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "Merci",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "maison",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "pomme",
+              "language": "French",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "ça va",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "worldWords": [
+          "fromage",
+          "boulangerie"
+        ],
+        "steps": [
+          {
+            "do": "start",
+            "npc": "Bram"
+          },
+          {
+            "do": "line",
+            "text": "fromage!"
+          },
+          {
+            "do": "hear",
+            "check": {
+              "status": "corrected",
+              "errors": [
+                {
+                  "pattern": "Article Agreement",
+                  "incorrect": "le maison",
+                  "corrected": "la maison",
+                  "explanation": "feminine"
+                },
+                {
+                  "pattern": "past",
+                  "incorrect": "le maison",
+                  "corrected": "la maison",
+                  "explanation": "feminine"
+                }
+              ]
+            }
+          },
+          {
+            "do": "start",
+            "npc": "Cora"
+          },
+          {
+            "do": "line",
+            "text": "Fromage, fromage... boulangerie?"
+          },
+          {
+            "do": "end"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "start",
+          "session": {
+            "npcName": "Bram",
+            "turns": 0,
+            "wordsUsed": [],
+            "grammarCorrect": 0,
+            "grammarErrors": 0
+          }
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 0,
+            "targetWords": 1,
+            "totalWords": 1
+          },
+          "wordsUsed": [
+            "fromage"
+          ],
+          "turns": 1,
+          "chatWords": [
+            "fromage"
+          ],
+          "struggle": 200,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "hear",
+          "grammarCorrect": 0,
+          "grammarErrors": 2
+        },
+        {
+          "do": "start",
+          "session": {
+            "npcName": "Cora",
+            "turns": 0,
+            "wordsUsed": [],
+            "grammarCorrect": 0,
+            "grammarErrors": 0
+          }
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 0,
+            "targetWords": 3,
+            "totalWords": 3
+          },
+          "wordsUsed": [
+            "fromage",
+            "boulangerie"
+          ],
+          "turns": 1,
+          "chatWords": [
+            "fromage",
+            "boulangerie"
+          ],
+          "struggle": 166,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "end",
+          "ok": true,
+          "conversation": {
+            "npcName": "Cora",
+            "turns": 1,
+            "wordsUsed": [
+              "fromage",
+              "boulangerie"
+            ],
+            "targetPercent": 100,
+            "grammarCorrect": 0,
+            "grammarErrors": 0
+          },
+          "result": {
+            "previous": 0,
+            "next": 1400,
+            "gain": 1400,
+            "wordsLearned": 2,
+            "wordsReinforced": 0,
+            "bonuses": [
+              "Excellent grammar!",
+              "Full immersion bonus!"
+            ]
+          },
+          "signals": [],
+          "fluency": 1400,
+          "conversations": 1,
+          "bookWords": [
+            {
+              "word": "bonjour",
+              "encountered": 3,
+              "correct": 1
+            },
+            {
+              "word": "pain",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "Merci",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "maison",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "pomme",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "ça va",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "fromage",
+              "encountered": 1,
+              "correct": 1
+            },
+            {
+              "word": "boulangerie",
+              "encountered": 1,
+              "correct": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: Olga's Russian chat: Cyrillic words used are target words, targetPercent 50, active uses in the book",
+      "op": "run",
+      "note": "Two book words (привет, Хлеб) over two turns: targetPercent 50, both reinforced (no word learned): each now has one active use. Each line has a target word, so neither turn reads as a struggle on target words.",
+      "input": {
+        "book": {
+          "language": "ru",
+          "words": [
+            {
+              "word": "привет",
+              "language": "ru",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 2,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 2,
+              "last": 0,
+              "types": {
+                "passive_read": 2
+              }
+            },
+            {
+              "word": "Хлеб",
+              "language": "ru",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "спасибо",
+              "language": "ru",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "молоко",
+              "language": "ru",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "steps": [
+          {
+            "do": "start",
+            "npc": "Olga"
+          },
+          {
+            "do": "line",
+            "text": "Привет!"
+          },
+          {
+            "do": "hear",
+            "check": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "line",
+            "text": "Хлеб, пожалуйста."
+          },
+          {
+            "do": "hear",
+            "check": {
+              "status": "correct"
+            }
+          },
+          {
+            "do": "end"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "start",
+          "session": {
+            "npcName": "Olga",
+            "turns": 0,
+            "wordsUsed": [],
+            "grammarCorrect": 0,
+            "grammarErrors": 0
+          }
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 0,
+            "targetWords": 1,
+            "totalWords": 1
+          },
+          "wordsUsed": [
+            "привет"
+          ],
+          "turns": 1,
+          "chatWords": [
+            "привет"
+          ],
+          "struggle": 200,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "hear",
+          "grammarCorrect": 1,
+          "grammarErrors": 0
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 1,
+            "targetWords": 1,
+            "totalWords": 2
+          },
+          "wordsUsed": [
+            "Хлеб"
+          ],
+          "turns": 2,
+          "chatWords": [
+            "привет",
+            "Хлеб"
+          ],
+          "struggle": 200,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "hear",
+          "grammarCorrect": 2,
+          "grammarErrors": 0
+        },
+        {
+          "do": "end",
+          "ok": true,
+          "conversation": {
+            "npcName": "Olga",
+            "turns": 2,
+            "wordsUsed": [
+              "привет",
+              "Хлеб"
+            ],
+            "targetPercent": 50,
+            "grammarCorrect": 2,
+            "grammarErrors": 0
+          },
+          "result": {
+            "previous": 0,
+            "next": 1300,
+            "gain": 1300,
+            "wordsLearned": 0,
+            "wordsReinforced": 2,
+            "bonuses": [
+              "Excellent grammar!",
+              "Good language mix!"
+            ]
+          },
+          "signals": [],
+          "fluency": 1300,
+          "conversations": 1,
+          "bookWords": [
+            {
+              "word": "привет",
+              "encountered": 3,
+              "correct": 1
+            },
+            {
+              "word": "Хлеб",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "спасибо",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "молоко",
+              "encountered": 1,
+              "correct": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: three lines of eight target words stretch; sixteen words over three turns clamp at 100 (full immersion)",
+      "op": "run",
+      "input": {
+        "book": {
+          "language": "fr",
+          "words": [
+            {
+              "word": "bonjour",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "pain",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "merci",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "maison",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "croissant",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "beurre",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "lait",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "sucre",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "farine",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "four",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "table",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "chaise",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "porte",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "rue",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "ville",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "marché",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "steps": [
+          {
+            "do": "start",
+            "npc": "Dov"
+          },
+          {
+            "do": "line",
+            "text": "bonjour pain merci maison croissant beurre lait sucre"
+          },
+          {
+            "do": "line",
+            "text": "Farine, four, table, chaise, porte, rue, ville, marché!"
+          },
+          {
+            "do": "line",
+            "text": "pain pain pain pain pain pain pain pain"
+          },
+          {
+            "do": "end"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "start",
+          "session": {
+            "npcName": "Dov",
+            "turns": 0,
+            "wordsUsed": [],
+            "grammarCorrect": 0,
+            "grammarErrors": 0
+          }
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 0,
+            "targetWords": 8,
+            "totalWords": 8
+          },
+          "wordsUsed": [
+            "bonjour",
+            "pain",
+            "merci",
+            "maison",
+            "croissant",
+            "beurre",
+            "lait",
+            "sucre"
+          ],
+          "turns": 1,
+          "chatWords": [
+            "bonjour",
+            "pain",
+            "merci",
+            "maison",
+            "croissant",
+            "beurre",
+            "lait",
+            "sucre"
+          ],
+          "struggle": 0,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 0,
+            "targetWords": 8,
+            "totalWords": 8
+          },
+          "wordsUsed": [
+            "farine",
+            "four",
+            "table",
+            "chaise",
+            "porte",
+            "rue",
+            "ville",
+            "marché"
+          ],
+          "turns": 2,
+          "chatWords": [
+            "bonjour",
+            "pain",
+            "merci",
+            "maison",
+            "croissant",
+            "beurre",
+            "lait",
+            "sucre",
+            "farine",
+            "four",
+            "table",
+            "chaise",
+            "porte",
+            "rue",
+            "ville",
+            "marché"
+          ],
+          "struggle": 0,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 0,
+            "targetWords": 8,
+            "totalWords": 8
+          },
+          "wordsUsed": [
+            "pain"
+          ],
+          "turns": 3,
+          "chatWords": [
+            "bonjour",
+            "pain",
+            "merci",
+            "maison",
+            "croissant",
+            "beurre",
+            "lait",
+            "sucre",
+            "farine",
+            "four",
+            "table",
+            "chaise",
+            "porte",
+            "rue",
+            "ville",
+            "marché"
+          ],
+          "struggle": 0,
+          "level": "stretch",
+          "adjustment": {
+            "level": "stretch",
+            "reason": "Player is performing exceptionally well — increasing complexity.",
+            "struggle": 0,
+            "consecutiveTurns": 3
+          }
+        },
+        {
+          "do": "end",
+          "ok": true,
+          "conversation": {
+            "npcName": "Dov",
+            "turns": 3,
+            "wordsUsed": [
+              "bonjour",
+              "pain",
+              "merci",
+              "maison",
+              "croissant",
+              "beurre",
+              "lait",
+              "sucre",
+              "farine",
+              "four",
+              "table",
+              "chaise",
+              "porte",
+              "rue",
+              "ville",
+              "marché"
+            ],
+            "targetPercent": 100,
+            "grammarCorrect": 0,
+            "grammarErrors": 0
+          },
+          "result": {
+            "previous": 0,
+            "next": 3000,
+            "gain": 3000,
+            "wordsLearned": 0,
+            "wordsReinforced": 16,
+            "bonuses": [
+              "Vocab variety bonus!",
+              "Excellent grammar!",
+              "Full immersion bonus!"
+            ]
+          },
+          "signals": [],
+          "fluency": 3000,
+          "conversations": 1,
+          "bookWords": [
+            {
+              "word": "bonjour",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "pain",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "merci",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "maison",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "croissant",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "beurre",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "lait",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "sucre",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "farine",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "four",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "table",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "chaise",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "porte",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "rue",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "ville",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "marché",
+              "encountered": 2,
+              "correct": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: English lines with errors heard scaffold on the second struggling line; no target word, no grammar bonus",
+      "op": "run",
+      "note": "Line 1 has no check heard yet (struggle 500); two errors heard make line 2's grammar signal 1000 (800); line 3 (3 of 3) is the second high turn and scaffolds. targetPercent 0; grammarCorrect 0 of 3: no grammar bonus.",
+      "input": {
+        "book": {
+          "language": "fr",
+          "words": [
+            {
+              "word": "bonjour",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 3,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 4,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 2
+              }
+            },
+            {
+              "word": "pain",
+              "language": "fr",
+              "meaning": "bread",
+              "category": null,
+              "context": null,
+              "encountered": 2,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 3,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "Merci",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "maison",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "pomme",
+              "language": "French",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            },
+            {
+              "word": "ça va",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 0,
+              "halves": 1,
+              "last": 0,
+              "types": {
+                "passive_read": 1
+              }
+            }
+          ]
+        },
+        "steps": [
+          {
+            "do": "start",
+            "npc": "Dov"
+          },
+          {
+            "do": "line",
+            "text": "hello there"
+          },
+          {
+            "do": "hear",
+            "check": {
+              "status": "corrected",
+              "errorCount": 2,
+              "errors": [
+                {
+                  "pattern": "Article Agreement",
+                  "incorrect": "le maison",
+                  "corrected": "la maison",
+                  "explanation": "feminine"
+                },
+                {
+                  "pattern": "past",
+                  "incorrect": "le maison",
+                  "corrected": "la maison",
+                  "explanation": "feminine"
+                }
+              ]
+            }
+          },
+          {
+            "do": "line",
+            "text": "yes ok"
+          },
+          {
+            "do": "hear",
+            "check": {
+              "status": "corrected",
+              "errorCount": 1,
+              "errors": [
+                {
+                  "pattern": "Article Agreement",
+                  "incorrect": "le maison",
+                  "corrected": "la maison",
+                  "explanation": "feminine"
+                }
+              ]
+            }
+          },
+          {
+            "do": "hear",
+            "check": {
+              "status": "no_target_language"
+            }
+          },
+          {
+            "do": "line",
+            "text": "what?"
+          },
+          {
+            "do": "end"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "start",
+          "session": {
+            "npcName": "Dov",
+            "turns": 0,
+            "wordsUsed": [],
+            "grammarCorrect": 0,
+            "grammarErrors": 0
+          }
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 0,
+            "grammarChecked": 0,
+            "targetWords": 0,
+            "totalWords": 2
+          },
+          "wordsUsed": [],
+          "turns": 1,
+          "chatWords": [],
+          "struggle": 500,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "hear",
+          "grammarCorrect": 0,
+          "grammarErrors": 2
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 2,
+            "grammarChecked": 2,
+            "targetWords": 0,
+            "totalWords": 2
+          },
+          "wordsUsed": [],
+          "turns": 2,
+          "chatWords": [],
+          "struggle": 800,
+          "level": "none",
+          "adjustment": null
+        },
+        {
+          "do": "hear",
+          "grammarCorrect": 0,
+          "grammarErrors": 3
+        },
+        {
+          "do": "hear",
+          "grammarCorrect": 0,
+          "grammarErrors": 3
+        },
+        {
+          "do": "line",
+          "ok": true,
+          "metrics": {
+            "grammarErrors": 3,
+            "grammarChecked": 3,
+            "targetWords": 0,
+            "totalWords": 1
+          },
+          "wordsUsed": [],
+          "turns": 3,
+          "chatWords": [],
+          "struggle": 800,
+          "level": "scaffolded",
+          "adjustment": {
+            "level": "scaffolded",
+            "reason": "Player is struggling: high grammar error rate, low target language usage, very short responses. Activating scaffolding.",
+            "struggle": 800,
+            "consecutiveTurns": 2
+          }
+        },
+        {
+          "do": "end",
+          "ok": true,
+          "conversation": {
+            "npcName": "Dov",
+            "turns": 3,
+            "wordsUsed": [],
+            "targetPercent": 0,
+            "grammarCorrect": 0,
+            "grammarErrors": 3
+          },
+          "result": {
+            "previous": 0,
+            "next": 600,
+            "gain": 600,
+            "wordsLearned": 0,
+            "wordsReinforced": 0,
+            "bonuses": []
+          },
+          "signals": [],
+          "fluency": 600,
+          "conversations": 1,
+          "bookWords": [
+            {
+              "word": "bonjour",
+              "encountered": 3,
+              "correct": 1
+            },
+            {
+              "word": "pain",
+              "encountered": 2,
+              "correct": 1
+            },
+            {
+              "word": "Merci",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "maison",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "pomme",
+              "encountered": 1,
+              "correct": 0
+            },
+            {
+              "word": "ça va",
+              "encountered": 1,
+              "correct": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

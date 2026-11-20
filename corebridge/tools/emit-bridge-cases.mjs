@@ -656,6 +656,535 @@ function quests(root, coreCommit) {
 	);
 }
 
+// ── language: conformance/language/ (systems-corpus.ts, runLanguageSystemsOp) ─────
+//
+// PL.native-language-rows: core's P9h corpora that the language.* rows answer, each
+// case transcribed as core's reference runner (src/language-learning/systems-corpus.ts)
+// composes its op: the same kernels, called in the same order, over the state the
+// last call answered. Where the runner reads part of an answer (a book's
+// `correctUsages`, a session's `turns`), the call's expectation is a subset holding
+// exactly what the runner reads; where it reads state no call of the step answers
+// (hover's `encounters`, an unchanged register), the expectation goes on the call that
+// last answered that state (the state has not changed since). Every value expected is
+// the corpus's own.
+
+/** The corpus files the language rows answer (slice 1), by their `file` key. */
+export const LANGUAGE_CASE_FILES = ['progress', 'save', 'prompts', 'hover', 'chat'];
+
+class LanguageSteps {
+	constructor(where) {
+		this.where = where;
+		this.steps = [];
+		this.binds = 0;
+	}
+	/** A call, its expectation exact when given (else built from `want`, or none: it must succeed). */
+	call(call, args, expect) {
+		const step = { call, args };
+		if (expect !== undefined) step.expect = expect;
+		this.steps.push(step);
+		return step;
+	}
+	/** A `$ref` to a path of a step's answer; the step is bound on first use. */
+	ref(step, ...p) {
+		if (!step.bind) step.bind = `b${this.binds++}`;
+		return { $ref: [step.bind, ...p].join('.') };
+	}
+	/** The state a slot names (`{ step, path, set? }`), as an argument. */
+	cur(slot) {
+		const r = this.ref(slot.step, ...slot.path);
+		return slot.set ? { ...r, $set: slot.set } : r;
+	}
+	/** Part of a step's answer the runner reads: a nested subset at `p`. */
+	want(step, p, value) {
+		if (step.expect !== undefined) throw new Error(`emit-bridge-cases: ${this.where}: ${step.call} has an exact expectation already`);
+		if (value === undefined) throw new Error(`emit-bridge-cases: ${this.where}: the corpus answers no ${p.join('.')}`);
+		step.want ??= {};
+		let node = step.want;
+		for (const k of p.slice(0, -1)) {
+			node[k] ??= {};
+			if ('$leaf' in node[k]) throw new Error(`emit-bridge-cases: ${this.where}: ${p.join('.')} under a whole value`);
+			node = node[k];
+		}
+		const k = p[p.length - 1];
+		if (node[k] && !('$leaf' in node[k])) throw new Error(`emit-bridge-cases: ${this.where}: ${p.join('.')} over a subset`);
+		if (node[k] && JSON.stringify(node[k].$leaf) !== JSON.stringify(value)) {
+			throw new Error(`emit-bridge-cases: ${this.where}: the corpus answers ${p.join('.')} twice for one state, differently`);
+		}
+		node[k] = { $leaf: value };
+	}
+	/** A slot's state, read where no call answers it: on the call that last answered it. */
+	wantState(slot, key, value) {
+		if (slot.set) throw new Error(`emit-bridge-cases: ${this.where}: a state read before any call answered it`);
+		this.want(slot.step, [...slot.path, key], value);
+	}
+	done() {
+		// tests/corebridge_cases.c keeps 64 bindings a case.
+		if (this.binds > 64) throw new Error(`emit-bridge-cases: ${this.where}: ${this.binds} bindings, more than the C harness keeps (64)`);
+		const finish = (node) => sub(Object.fromEntries(Object.entries(node).map(([k, v]) => [k, '$leaf' in v ? v.$leaf : finish(v)])));
+		return this.steps.map(({ want, bind, ...st }) => ({ ...st, ...(want ? { expect: finish(want) } : {}), ...(bind ? { bind } : {}) }));
+	}
+}
+
+const langCheck = (ok, where, what) => {
+	if (!ok) throw new Error(`emit-bridge-cases: ${where}: ${what}`);
+};
+const slotOf = (step, ...p) => ({ step, path: p });
+const withoutKeys = (o, ...keys) => Object.fromEntries(Object.entries(o).filter(([k]) => !keys.includes(k)));
+
+/** core's `bookOf`: `emptyBook(b.language ?? 'fr')` with the case's book over it. */
+function langBook(S, v) {
+	const b = v ?? {};
+	const empty = S.call('language.book.empty', { language: b.language ?? 'fr' });
+	return Object.keys(b).length ? { ...slotOf(empty, 'book'), set: JSON.parse(JSON.stringify(b)) } : slotOf(empty, 'book');
+}
+
+function langProgress(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	switch (c.op) {
+		case 'mastery':
+			langCheck(e.length === i.pairs.length, S.where, 'one answer per pair');
+			i.pairs.forEach(([encountered, halves], k) => {
+				langCheck(e[k].encountered === encountered && e[k].halves === halves, S.where, `pair ${k} is not echoed`);
+				S.call('language.book.mastery', { encountered, halves }, { mastery: e[k].mastery });
+			});
+			return;
+		case 'gain':
+			langCheck(e.length === i.conversations.length, S.where, 'one answer per conversation');
+			i.conversations.forEach((cv, k) => {
+				const args = { fluency: cv.fluency, uniqueWords: cv.unique, grammarCorrect: cv.grammarCorrect, grammarAttempted: cv.grammarAttempted, turns: cv.turns, targetPercent: cv.targetPercent };
+				S.call('language.book.fluencyGain', args, e[k]);
+			});
+			return;
+		case 'facts': {
+			const facts = i.facts ?? null;
+			S.call('language.facts.cefr', { facts }, { cefr: e.cefr });
+			S.call('language.facts.weakDimensions', typeof i.threshold === 'number' ? { facts, threshold: i.threshold } : { facts }, { weak: e.weak });
+			return;
+		}
+		case 'run': {
+			let book = langBook(S, i.book);
+			langCheck(e.length === i.steps.length, S.where, 'one answer per step');
+			i.steps.forEach((st, k) => {
+				const x = e[k];
+				langCheck(x.do === st.do, S.where, `step ${k} answers ${x.do}, not ${st.do}`);
+				switch (st.do) {
+					case 'advance': {
+						const s = S.call('language.book.advance', { book: S.cur(book), ms: st.ms });
+						S.want(s, ['book', 'clockMs'], x.clockMs);
+						book = slotOf(s, 'book');
+						return;
+					}
+					case 'encounter':
+					case 'event': {
+						let encounter;
+						if (st.do === 'event') {
+							if (x.heard === false) {
+								S.call('language.book.encounterOfEvent', { event: st.event }, { encounter: null });
+								return;
+							}
+							const ev = S.call('language.book.encounterOfEvent', { event: st.event }, { encounter: { $type: 'object' } });
+							encounter = S.ref(ev, 'encounter');
+						} else encounter = withoutKeys(st, 'do');
+						const s = S.call('language.book.recordEncounter', { book: S.cur(book), encounter });
+						S.want(s, ['ok'], x.ok);
+						if (x.ok) {
+							for (const key of ['entry', 'isNew', 'masteryChanged']) S.want(s, [key], x[key]);
+							S.want(s, ['book', 'correctUsages'], x.correctUsages);
+							S.want(s, ['book', 'words'], { $len: x.words });
+						} else S.want(s, ['refusal'], x.refusal);
+						book = slotOf(s, 'book');
+						return;
+					}
+					case 'grammar': {
+						const s = S.call('language.book.recordGrammar', { book: S.cur(book), feedback: st.feedback });
+						S.want(s, ['touched'], x.touched);
+						S.want(s, ['signals'], x.signals);
+						book = slotOf(s, 'book');
+						return;
+					}
+					case 'conversation': {
+						const s = S.call('language.book.recordConversation', { book: S.cur(book), conversation: st.conversation });
+						S.want(s, ['result'], x.result);
+						S.want(s, ['signals'], x.signals);
+						for (const key of ['fluency', 'cefr', 'conversations']) S.want(s, ['book', key], x[key]);
+						book = slotOf(s, 'book');
+						return;
+					}
+					case 'cefr': {
+						const s = S.call('language.book.setCefr', { book: S.cur(book), level: st.level });
+						S.want(s, ['signals'], x.signals);
+						for (const key of ['cefr', 'fluency']) S.want(s, ['book', key], x[key]);
+						book = slotOf(s, 'book');
+						return;
+					}
+					case 'weak': {
+						S.call('language.book.weakPatterns', { book: S.cur(book) }, { patterns: { $ids: x.weak, $key: 'pattern' } });
+						langCheck(('word' in x) === (typeof st.word === 'string'), S.where, `step ${k}: a word view without a word, or none for one`);
+						if (typeof st.word === 'string') {
+							if (x.word === null) S.call('language.book.findWord', { book: S.cur(book), word: st.word }, { row: null });
+							else {
+								const f = S.call('language.book.findWord', { book: S.cur(book), word: st.word }, { row: { $type: 'object' } });
+								S.call('language.book.wordView', { row: S.ref(f, 'row') }, { view: x.word });
+							}
+						}
+						return;
+					}
+					case 'summary':
+						S.call('language.book.summary', { book: S.cur(book) }, withoutKeys(x, 'do'));
+						return;
+					default:
+						throw new Error(`emit-bridge-cases: ${S.where}: progress run step ${st.do} has no transcription`);
+				}
+			});
+			return;
+		}
+	}
+	throw new Error(`emit-bridge-cases: ${S.where}: progress op ${c.op} has no transcription`);
+}
+
+function langSave(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	switch (c.op) {
+		case 'block': {
+			const args = {};
+			if (Array.isArray(i.encounters)) {
+				let book = langBook(S, { language: i.language ?? 'fr' });
+				for (const enc of i.encounters) book = slotOf(S.call('language.book.recordEncounter', { book: S.cur(book), encounter: enc }), 'book');
+				for (const fb of i.grammar ?? []) book = slotOf(S.call('language.book.recordGrammar', { book: S.cur(book), feedback: fb }), 'book');
+				if (i.cefr) book = slotOf(S.call('language.book.setCefr', { book: S.cur(book), level: i.cefr }), 'book');
+				args.book = S.cur(book);
+			}
+			for (const k of ['collected', 'naming', 'identification']) if (i[k] !== undefined && i[k] !== null) args[k] = i[k];
+			const block = S.call('language.save.block', args);
+			S.call('language.save.blockOf', { block: S.ref(block, 'block') }, { block: e });
+			return;
+		}
+		case 'read':
+			S.call('language.save.read', 'block' in i ? { block: i.block } : {}, e);
+			return;
+		case 'restore': {
+			const args = 'block' in i ? { block: i.block } : {};
+			if (e.ok === false) {
+				S.call('language.save.read', args, { ok: false, keys: e.keys });
+				return;
+			}
+			const read = S.call('language.save.read', args);
+			S.want(read, ['ok'], true);
+			const none = i.block === undefined || i.block === null;
+			const from = none ? S.ref(S.call('language.save.block', {}), 'block') : S.ref(read, 'value');
+			S.call('language.save.blockOf', { block: from }, { block: e.block });
+			if (e.summary === null) {
+				langCheck(e.mastery.length === 0 && e.weak.length === 0, S.where, 'no book, yet mastery or weakness');
+				return;
+			}
+			S.call('language.book.summary', { book: S.ref(read, 'value', 'book') }, e.summary);
+			e.mastery.forEach((m, k) => {
+				langCheck(m.word === e.block.book.words[k].word, S.where, `mastery ${k} is not the book's word ${k}`);
+				const w = ['value', 'book', 'words', String(k)];
+				S.call('language.book.mastery', { encountered: S.ref(read, ...w, 'encountered'), halves: S.ref(read, ...w, 'halves') }, { mastery: m.mastery });
+			});
+			S.call('language.book.weakPatterns', { book: S.ref(read, 'value', 'book') }, { patterns: { $ids: e.weak, $key: 'pattern' } });
+			return;
+		}
+	}
+	throw new Error(`emit-bridge-cases: ${S.where}: save op ${c.op} has no transcription`);
+}
+
+function langPrompts(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	langCheck(c.op === 'run', S.where, `prompts op ${c.op} has no transcription`);
+	const params = i.params ?? {};
+	const contract = S.call('language.contract', {});
+	const tuning = (key, over) => ({ ...S.ref(contract, key), ...(over && Object.keys(over).length ? { $set: over } : {}) });
+	const identifyTuning = tuning('identificationTuning', params.identification);
+	const namingTuning = tuning('namingTuning', params.naming);
+	const collectionTuning = tuning('collectionTuning', params.collection);
+	let ident = slotOf(S.call('language.identification.initial', {}), 'state');
+	let naming = slotOf(S.call('language.naming.initial', {}), 'state');
+	let prompts = slotOf(S.call('language.prompts.initial', {}), 'state');
+	let collection = null;
+	const tags = () => (collection ??= slotOf(S.call('language.collection.initial', { seed: i.seed }), 'state'));
+	const world = () => ({ identification: S.cur(ident), naming: S.cur(naming), targetLanguage: i.targetLanguage, identifyTuning, namingTuning });
+	langCheck(e.length === i.steps.length, S.where, 'one answer per step');
+	i.steps.forEach((st, k) => {
+		const x = e[k];
+		langCheck(x.do === st.do, S.where, `step ${k} answers ${x.do}, not ${st.do}`);
+		switch (st.do) {
+			case 'register': {
+				if (st.targets !== undefined) ident = slotOf(S.call('language.identification.registerTargets', { state: S.cur(ident), targets: st.targets }), 'state');
+				if (st.world !== undefined) {
+					const named = S.call('language.naming.nameableObjects', { objects: st.world, targetLanguage: i.targetLanguage });
+					naming = slotOf(S.call('language.naming.registerNameable', { state: S.cur(naming), objects: S.ref(named, 'objects') }), 'state');
+				}
+				if (st.tags !== undefined) collection = slotOf(S.call('language.collection.registerTags', { state: S.cur(tags()), tags: st.tags }), 'state');
+				S.wantState(ident, 'targets', { $ids: x.targets });
+				S.wantState(naming, 'objects', { $ids: x.nameable, $key: 'objectId' });
+				if (collection) S.wantState(collection, 'tags', { $ids: x.tagged, $key: 'objectId' });
+				else langCheck(x.tagged.length === 0, S.where, `step ${k}: tagged objects with no collection`);
+				return;
+			}
+			case 'pick': {
+				const at = { x: st.at.x, z: st.at.z };
+				let pick;
+				if (st.object !== undefined) {
+					pick = st.object;
+					langCheck(x.picked === (x.ok ? (st.object?.id ?? null) : null), S.where, `step ${k}: picked is not the object's id`);
+				} else {
+					const p = S.call('props.interactables.examinePick', { objects: st.objects ?? [], at }, { pick: x.picked === null ? null : sub({ id: x.picked }) });
+					pick = S.ref(p, 'pick');
+				}
+				const s = S.call('language.prompts.onPick', { state: S.cur(prompts), pick, at, world: world() });
+				S.want(s, ['ok'], x.ok);
+				if (x.ok) for (const key of ['prompt', 'checked', 'events']) S.want(s, [key], x[key]);
+				else S.want(s, ['refusal'], x.refusal);
+				S.want(s, ['state', 'pick'], x.standing);
+				prompts = slotOf(s, 'state');
+				return;
+			}
+			case 'standing': {
+				const s = S.call('language.prompts.standing', { state: S.cur(prompts), world: world() });
+				S.want(s, ['prompt'], x.pick);
+				S.want(s, ['state', 'quiz'], x.quiz);
+				prompts = slotOf(s, 'state');
+				return;
+			}
+			case 'answer': {
+				const s = S.call('language.prompts.answer', { state: S.cur(prompts), input: st.input, world: world() });
+				S.want(s, ['ok'], x.ok);
+				if (x.ok) for (const key of ['kind', 'id', 'result', 'standing']) S.want(s, [key], x[key]);
+				else S.want(s, ['refusal'], x.refusal);
+				prompts = slotOf(s, 'state');
+				ident = slotOf(s, 'identification');
+				naming = slotOf(s, 'naming');
+				return;
+			}
+			case 'reach': {
+				const s = S.call('language.prompts.quizOnReach', { state: S.cur(prompts), collection: S.cur(tags()), at: st.at, tuning: collectionTuning });
+				S.want(s, ['inReach'], x.inReach);
+				S.want(s, ['quiz'], x.quiz);
+				S.want(s, ['state', 'quiz'], x.standing);
+				S.want(s, ['state', 'offered'], x.offered);
+				prompts = slotOf(s, 'state');
+				collection = slotOf(s, 'collection');
+				return;
+			}
+			case 'choose': {
+				const s = S.call('language.prompts.answerQuiz', { state: S.cur(prompts), collection: S.cur(tags()), answer: st.answer, tuning: collectionTuning });
+				S.want(s, ['ok'], x.ok);
+				if (x.ok) {
+					S.want(s, ['objectId'], x.objectId);
+					S.want(s, ['answer'], withoutKeys(x, 'do', 'ok', 'objectId', 'collected', 'standing'));
+					S.want(s, ['collection', 'collected'], x.collected);
+					S.want(s, ['state', 'quiz'], x.standing);
+				} else S.want(s, ['refusal'], x.refusal);
+				prompts = slotOf(s, 'state');
+				collection = slotOf(s, 'collection');
+				return;
+			}
+		}
+		throw new Error(`emit-bridge-cases: ${S.where}: prompts run step ${st.do} has no transcription`);
+	});
+}
+
+function langHover(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	if (c.op === 'tokens') {
+		S.call('language.hover.tokenize', { text: i.text }, { tokens: e.tokens });
+		return;
+	}
+	langCheck(c.op === 'run', S.where, `hover op ${c.op} has no transcription`);
+	const init = S.call('language.hover.initial', { cefr: i.cefr ?? 'A1', targetLanguage: typeof i.targetLanguage === 'string' ? i.targetLanguage : null });
+	let hover = slotOf(init, 'state');
+	langCheck(e.length === i.steps.length, S.where, 'one answer per step');
+	i.steps.forEach((st, k) => {
+		const x = e[k];
+		langCheck(x.do === st.do, S.where, `step ${k} answers ${x.do}, not ${st.do}`);
+		switch (st.do) {
+			case 'hints': {
+				const s = S.call('language.hover.addHints', { state: S.cur(hover), hints: st.hints });
+				S.want(s, ['state', 'cache'], x.cached.map((key) => [key, { $any: true }]));
+				hover = slotOf(s, 'state');
+				return;
+			}
+			case 'see': {
+				const s = S.call('language.hover.seeWord', { state: S.cur(hover), word: st.word, ...(st.difficulty === undefined ? {} : { difficulty: st.difficulty }) });
+				S.want(s, ['showHint'], x.showHint);
+				S.want(s, ['state', 'newWordIndex'], x.newWordIndex);
+				hover = slotOf(s, 'state');
+				return;
+			}
+			case 'mastery':
+				hover = slotOf(S.call('language.hover.setMastery', { state: S.cur(hover), word: st.word, encountered: st.encountered, correct: st.correct }), 'state');
+				return;
+			case 'lookup': {
+				const s = S.call('language.hover.lookup', { state: S.cur(hover), word: st.word });
+				S.want(s, ['ok'], x.ok);
+				if (x.ok) {
+					for (const key of ['result', 'request', 'signals']) S.want(s, [key], x[key]);
+					S.want(s, ['state', 'pending'], x.pending);
+				} else S.want(s, ['refusal'], x.refusal);
+				hover = slotOf(s, 'state');
+				return;
+			}
+			case 'resolve': {
+				const args = { state: S.cur(hover), word: st.word, translation: st.translation ?? null, ...(typeof st.context === 'string' ? { context: st.context } : {}) };
+				const s = S.call('language.hover.resolve', args);
+				S.want(s, ['result'], x.result);
+				S.want(s, ['signals'], x.signals);
+				S.want(s, ['state', 'pending'], x.pending);
+				hover = slotOf(s, 'state');
+				return;
+			}
+			case 'likely':
+				langCheck(x.words.length === st.words.length, S.where, `step ${k}: one answer per word`);
+				st.words.forEach((word, n) => {
+					langCheck(x.words[n].word === word, S.where, `step ${k}: word ${n} is not echoed`);
+					S.call('language.hover.isLikelyTarget', { state: S.cur(hover), word }, { likely: x.words[n].likely });
+				});
+				return;
+			case 'display':
+				S.call('language.hover.display', { state: S.cur(hover) }, { mode: x.mode, size: x.size });
+				S.wantState(hover, 'mastery', x.encounters);
+				return;
+		}
+		throw new Error(`emit-bridge-cases: ${S.where}: hover run step ${st.do} has no transcription`);
+	});
+}
+
+function langChat(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	const worldWords = i.worldWords === undefined ? {} : { worldWords: i.worldWords };
+	switch (c.op) {
+		case 'words': {
+			const book = langBook(S, i.book);
+			langCheck(e.length === i.lines.length, S.where, 'one answer per line');
+			i.lines.forEach((line, k) => {
+				langCheck(e[k].line === line, S.where, `line ${k} is not echoed`);
+				S.call('language.chat.lineWords', { line, book: S.cur(book), ...worldWords }, withoutKeys(e[k], 'line'));
+			});
+			return;
+		}
+		case 'percent':
+			langCheck(e.length === i.pairs.length, S.where, 'one answer per pair');
+			i.pairs.forEach(([used, turns], k) => {
+				langCheck(e[k].used === used && e[k].turns === turns, S.where, `pair ${k} is not echoed`);
+				S.call('language.chat.targetPercent', { used, turns }, { targetPercent: e[k].targetPercent });
+			});
+			return;
+		case 'hear': {
+			let session = slotOf(S.call('language.chat.start', {}), 'session');
+			langCheck(e.length === i.checks.length, S.where, 'one answer per check');
+			i.checks.forEach((check, k) => {
+				const x = e[k];
+				langCheck(x.status === check.status && x.grammarChecked === x.grammarCorrect + x.grammarErrors, S.where, `check ${k}: status or grammarChecked`);
+				const s = S.call('language.chat.hear', { session: S.cur(session), check });
+				S.want(s, ['session', 'grammarCorrect'], x.grammarCorrect);
+				S.want(s, ['session', 'grammarErrors'], x.grammarErrors);
+				session = slotOf(s, 'session');
+			});
+			return;
+		}
+		case 'usages': {
+			const book = langBook(S, i.book);
+			langCheck(e.length === i.lines.length, S.where, 'one answer per line');
+			i.lines.forEach((line, k) => {
+				langCheck(e[k].line === line, S.where, `line ${k} is not echoed`);
+				S.call('language.chat.questUsages', { line, questWords: i.questWords, book: S.cur(book), ...worldWords }, { usages: e[k].usages });
+			});
+			return;
+		}
+		case 'run': {
+			let book = langBook(S, i.book);
+			let session = null;
+			let difficulty = null;
+			langCheck(e.length === i.steps.length, S.where, 'one answer per step');
+			i.steps.forEach((st, k) => {
+				const x = e[k];
+				langCheck(x.do === st.do, S.where, `step ${k} answers ${x.do}, not ${st.do}`);
+				langCheck(st.do === 'start' || session, S.where, `step ${k}: ${st.do} with no chat open`);
+				switch (st.do) {
+					case 'start':
+						session = slotOf(S.call('language.chat.start', st.npc === undefined ? {} : { npcName: st.npc }, { session: x.session }), 'session');
+						difficulty = slotOf(S.call('language.difficulty.initial', {}), 'state');
+						return;
+					case 'line': {
+						const s = S.call('language.chat.line', { session: S.cur(session), line: st.text, book: S.cur(book), ...worldWords });
+						S.want(s, ['ok'], x.ok);
+						S.want(s, ['session', 'turns'], x.turns);
+						if (x.ok) {
+							S.want(s, ['metrics'], x.metrics);
+							S.want(s, ['wordsUsed'], x.wordsUsed);
+							S.want(s, ['session', 'wordsUsed'], x.chatWords);
+							const t = S.call('language.difficulty.recordTurn', { state: S.cur(difficulty), metrics: S.ref(s, 'metrics') });
+							S.want(t, ['struggle'], x.struggle);
+							S.want(t, ['adjustment'], x.adjustment);
+							S.want(t, ['state', 'level'], x.level);
+							difficulty = slotOf(t, 'state');
+						} else S.want(s, ['refusal'], x.refusal);
+						session = slotOf(s, 'session');
+						return;
+					}
+					case 'hear': {
+						const s = S.call('language.chat.hear', { session: S.cur(session), check: st.check });
+						S.want(s, ['session', 'grammarCorrect'], x.grammarCorrect);
+						S.want(s, ['session', 'grammarErrors'], x.grammarErrors);
+						session = slotOf(s, 'session');
+						return;
+					}
+					case 'end': {
+						const s = S.call('language.chat.finish', { book: S.cur(book), session: S.cur(session) });
+						S.want(s, ['ok'], x.ok);
+						if (x.ok) {
+							for (const key of ['conversation', 'result', 'signals']) S.want(s, [key], x[key]);
+							S.want(s, ['book', 'fluency'], x.fluency);
+							S.want(s, ['book', 'words'], x.bookWords.map((w) => sub(w)));
+						} else S.want(s, ['refusal'], x.refusal);
+						S.want(s, ['book', 'conversations'], x.conversations);
+						book = slotOf(s, 'book');
+						session = null;
+						return;
+					}
+				}
+				throw new Error(`emit-bridge-cases: ${S.where}: chat run step ${st.do} has no transcription`);
+			});
+			return;
+		}
+	}
+	throw new Error(`emit-bridge-cases: ${S.where}: chat op ${c.op} has no transcription`);
+}
+
+const LANGUAGE_TRANSCRIBERS = { progress: langProgress, save: langSave, prompts: langPrompts, hover: langHover, chat: langChat };
+
+/** One case file per language corpus file: `core-language-<file>.json`. */
+function language(root, coreCommit) {
+	const out = {};
+	for (const base of LANGUAGE_CASE_FILES) {
+		const r = reader(root);
+		const file = r.json(`conformance/language/${base}.json`);
+		if (file.area !== 'language' || file.file !== `language/${base}`) throw new Error(`emit-bridge-cases: conformance/language/${base}.json is not core's language/${base} corpus`);
+		const cases = file.cases.map((c) => {
+			const name = `language/${base} ${c.op}: ${c.name}`;
+			const S = new LanguageSteps(name);
+			LANGUAGE_TRANSCRIBERS[base](S, c);
+			return { name, steps: S.done() };
+		});
+		out[`core-language-${base}.json`] = caseFile(
+			`language-${base}`,
+			`core's language corpus conformance/language/${base}.json (P9h.core) through the language.* rows, each op as ` +
+				"core's reference runner (src/language-learning/systems-corpus.ts, runLanguageSystemsOp) composes it.",
+			coreCommit,
+			r.files,
+			cases,
+		);
+	}
+	return out;
+}
+
 /** Every generated case file, keyed by file name. */
 export function emitBridgeCases(root, coreCommit) {
 	return {
@@ -669,5 +1198,6 @@ export function emitBridgeCases(root, coreCommit) {
 		'core-ui-trade.json': trade(root, coreCommit),
 		'core-weather-progression.json': weather(root, coreCommit),
 		...genres(root, coreCommit),
+		...language(root, coreCommit),
 	};
 }

@@ -714,6 +714,41 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   case as `tests/village_save_corpus.cpp` does: one row per op, `roundTrip` as a write
   whose two bodies are put over the save and then read, `stamp` as the four stamp
   readers, a refusal compared without its `message`.
+- **The language kernels, slice 1 (Unreal's `P9h.unreal.retire-language-copy`, after
+  every slice of PL.native-language-rows; U118, U128, U107(2)).** Core's P9h language
+  kernels are the `language.*` rows (`README.md`, "The language rows"). The retirement
+  row binds them in place of the interim copy on unreal main (`234fc83`, read only):
+  `Portable/InsimulLanguage.{h,cpp}` (282 + 1,437 lines), `InsimulLanguageInternal.h`
+  (189), `InsimulLanguageWorld.cpp` (1,615), `InsimulLanguagePrompts.cpp` (197),
+  `InsimulLanguageChat.cpp` (239), `InsimulLanguageQuests.cpp` (230) and the generated
+  `InsimulLanguageTables.generated.inl` (51), held to core's language corpus by its
+  `language_corpus` (+ `_negative`). The rows are stateless: the binding's `FSession`
+  keeps the JSON states (the book, the collection, naming, identification, the prompt
+  state, the hover state, a chat's session and difficulty state) and hands each to the
+  row that moves it. Slice 1 answers these, file by file of the header's list; the rest
+  (bank and profile, adaptation beyond the monitor, pronunciation, objects, collection
+  quizzes and writing, quest feedback, quest types) is the later slices', and the
+  retirement waits on all of them.
+
+  | Unreal's interim copy (`insimul::language`) | Row |
+  |---|---|
+  | `kCefrOrder`, the encounter weights, the book's thresholds, the save block's keys, `kChatPercentPerWordPerTurn`, the three tunings' defaults (`CollectionTuning`/`IdentificationTuning`/`NamingTuning` of no params) | `language.contract {}` (a game's own tuning is the default with its parameters over it) |
+  | progress.ts: `EmptyBook`, `MasteryOf`, `WordView`, `FindWord`, `AdvanceBook`, `RecordEncounter`, `EncounterOfEvent`, `IsWeak`, `RecordGrammar`, `FluencyGain`, `RecordConversation`, `SetCefr`, `WeakPatterns`, `BookSummary` | `language.book.empty`, `.mastery`, `.wordView`, `.findWord`, `.advance`, `.recordEncounter`, `.encounterOfEvent`, `.isWeak`, `.recordGrammar`, `.fluencyGain`, `.recordConversation`, `.setCefr`, `.weakPatterns`, `.summary` |
+  | player-language-state.ts: `PlayerCefrFromFacts`, `PlayerWeakDimensions` | `language.facts.cefr { facts }`, `language.facts.weakDimensions { facts, threshold? }` |
+  | language-save.ts: `LanguageSaveBlock` (the reader and writer were already the village save's: `villagesave::ReadLanguage` / `WrittenLanguage`) | `language.save.block`; `language.save.read` (`readLanguageBlock`) and `language.save.blockOf` (`languageBlockOf`) for a binding that shows the block between saves; the save itself carries it through `save.village.write`/`.read` |
+  | world-words.ts, the registers the prompt selector reads: `InitialIdentification`, `RegisterTargets`, `InitialNaming`, `RegisterNameable`, `NameableObjects`, `InitialCollection`, `RegisterTags` | `language.identification.initial`, `.registerTargets`; `language.naming.initial`, `.registerNameable`, `.nameableObjects`; `language.collection.initial`, `.registerTags` |
+  | prompt-selector.ts (`InsimulLanguagePrompts.cpp`): `InitialPrompts`, `ExaminePick`, `PickTargetIds`, `PromptOnPick`, `StandingPick`, `AnswerPick`, `QuizOnReach`, `AnswerStandingQuiz` | `language.prompts.initial`, `props.interactables.examinePick` (already bound for the E press), `language.prompts.pickTargetIds`, `.onPick`, `.standing`, `.answer`, `.quizOnReach`, `.answerQuiz` |
+  | word-key.ts and the hover half of reading-writing.ts: `StripPunctuation`/`StripWordEdges`, `HoverKey`/`ChatKey`, `Tokenize`, `InitialHover`, `AddHints`, `SeeWord`, `SetMastery`, `IsLikelyTarget`, `Lookup`, `ResolveLookup`, `HoverDisplay` | `language.word.stripEdges`, `language.word.key`, `language.hover.tokenize`, `.initial`, `.addHints`, `.seeWord`, `.setMastery`, `.isLikelyTarget`, `.lookup`, `.resolve`, `.display` |
+  | chat-metrics.ts (`InsimulLanguageChat.cpp`): `LineTokens`, `ChatLineWords`, `ChatQuestUsages`, `ChatTargetPercent`, `StartChat`, `CheckErrors`, `HearChatGrammar`, `ChatLine`, `EndChat`, `FinishChat`; adaptation.ts's `InitialDifficulty`, `RecordTurn` (the monitor a line's metrics feed) | `language.chat.lineTokens`, `.lineWords`, `.questUsages`, `.targetPercent`, `.start`, `.checkErrors`, `.hear`, `.line`, `.end`, `.finish`; `language.difficulty.initial`, `.recordTurn` |
+  | `Utf32`, `JsLower`, `JsTrim`, `CompareUtf16` and the other JavaScript string semantics | gone with the copy: QuickJS is JavaScript |
+
+  Re-vendor `conformance/language/{progress,save,prompts,hover,chat}.json` from core at
+  this library's pin and drive each case as `tests/language_corpus.cpp` does: each op
+  composed from the rows as core's `runLanguageSystemsOp` composes its kernels (a case's
+  book is `language.book.empty` with the case's book over it, core's `bookOf`; a prompts
+  run's tunings are `language.contract`'s defaults with the case's params over them),
+  exact comparison, key sets included. `chat-strip.json` (the NPC reply's marker strip,
+  which `InsimulChatCefr` holds) is not this row's: it goes with PL.native-chat-cefr-rows.
 - **Run 22's cases, from the 45409ed pin** (PL.native-bundle-core-r2; U124, U126). What
   each Unreal cell binds, and what it does not get here:
   - **One E press, one object** (`P6.unreal.interact-press`; core's

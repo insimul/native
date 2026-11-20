@@ -623,6 +623,103 @@ import {
 // language world's examine pick, which a press weighs against the target above.
 import { EXAMINE_RANGE, examinePick } from '@insimul/core/language-learning/prompt-selector';
 
+// ── language learning (PL.native-language-rows, slice 1: U128, U118, U107(2)) ──
+// Core's P9h language kernels: the language book and the player's CEFR facts, the
+// language save block, the prompt selector (with the identification, naming and
+// collection registers it reads), hover and its word key, and the chat metrics
+// (with the difficulty monitor a chat's lines feed). Every rule is core's; the rows
+// pass JSON state in and out (core's kernels are pure: a state in, a new state out).
+// Core's corpus runner (`language-learning/systems-corpus`) is NOT imported.
+import {
+	BOOK_REFUSALS,
+	CEFR_ORDER,
+	ENCOUNTER_HALVES,
+	ENCOUNTER_TYPES,
+	FLUENCY_GAIN_MAX,
+	FLUENCY_GAIN_MIN,
+	FLUENCY_MAX,
+	GRAMMAR_MASTERY_CORRECT_USES,
+	GRAMMAR_WEAKNESS_MIN_ATTEMPTS,
+	GRAMMAR_WEAKNESS_RATE,
+	advanceBook,
+	bookSummary,
+	emptyBook,
+	encounterOfEvent,
+	findWord,
+	fluencyGain,
+	isWeak,
+	masteryOf,
+	recordConversation,
+	recordEncounter,
+	recordGrammar,
+	setCefr,
+	weakPatterns,
+	wordView,
+} from '@insimul/core/language-learning/progress';
+import { extractPlayerCefrFromFacts, extractPlayerWeakDimensions } from '@insimul/core/prolog/player-language-state';
+import {
+	LANGUAGE_BLOCK_MEMBERS,
+	LANGUAGE_BOOK_KEYS,
+	LANGUAGE_EXTENSION_KEY,
+	LANGUAGE_GRAMMAR_KEYS,
+	LANGUAGE_IDENTIFICATION_KEYS,
+	LANGUAGE_NAMING_KEYS,
+	LANGUAGE_WORD_KEYS,
+	languageBlockOf,
+	languageSaveBlock,
+	readLanguageBlock,
+} from '@insimul/core/language-learning/language-save';
+import {
+	PROMPT_REFUSALS,
+	answerPick,
+	answerStandingQuiz,
+	initialPrompts,
+	pickTargetIds,
+	promptOnPick,
+	quizOnReach,
+	standingPick,
+} from '@insimul/core/language-learning/prompt-selector';
+import {
+	COLLECTION_TUNING,
+	IDENTIFICATION_TUNING,
+	NAMING_TUNING,
+	initialCollection,
+	initialIdentification,
+	initialNaming,
+	nameableObjects,
+	registerNameable,
+	registerTags,
+	registerTargets,
+} from '@insimul/core/language-learning/world-words';
+import {
+	HOVER_REFUSALS,
+	addHints,
+	hoverDisplay,
+	initialHover,
+	isLikelyTarget,
+	lookup as hoverLookup,
+	resolveLookup,
+	seeWord,
+	setMastery,
+	tokenize,
+} from '@insimul/core/language-learning/reading-writing';
+import { stripWordEdges, wordKey } from '@insimul/core/language-learning/word-key';
+import {
+	CHAT_PERCENT_PER_WORD_PER_TURN,
+	CHAT_REFUSALS,
+	chatLine,
+	chatLineWords,
+	chatQuestUsages,
+	chatTargetPercent,
+	checkErrors,
+	endChat,
+	finishChat,
+	hearChatGrammar,
+	lineTokens,
+	startChat,
+} from '@insimul/core/language-learning/chat-metrics';
+import { initialDifficulty, recordTurn } from '@insimul/core/language-learning/adaptation';
+
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
 // settings and activation, over the pack catalog the caller sends.
@@ -2050,6 +2147,281 @@ function villageRead(r) {
 	return { ok: true, gameState: plain(r.value) };
 }
 
+// ── the language rows (PL.native-language-rows) ───────────────────────────────
+// Core's language kernels take a state and return a new one; a row hands the state
+// over as JSON and answers core's result as JSON. Core's refusals (`empty_word`,
+// `unknown_encounter`, `no_target_language`, `empty_line`, `no_turns`,
+// `nothing_in_reach`, `no_prompt`, `no_quiz`) are VALUES in core's shape (`{ ok:
+// false, ..., refusal }`); core states them as codes and no message, so none is
+// added. `[invalid-input]` is only for what core dereferences unread: a book core's
+// own save reader cannot read, a state, list or string a kernel indexes, an
+// enumeration core's types declare.
+
+/**
+ * A language book: read with core's own reader of a stored book (`readLanguageBlock`,
+ * the reader the village save's checked write and read use for
+ * `extensions.languageLearning`), so a book the save would refuse is refused here,
+ * naming core's keys. The book core reads (every member defaulted as core's reader
+ * defaults it) is what the row hands core.
+ */
+function languageBookArg(method, value, name = 'book') {
+	coded('invalid-input', () => needObject(method, value, name));
+	const read = readLanguageBlock({ book: value });
+	if (!read.ok) {
+		coded('invalid-input', () => {
+			throw refuse(method, `\`${name}\` is not a book core's save reader reads: ${read.keys.map((k) => k.replace(/^book/, name)).join(', ')}`);
+		});
+	}
+	return read.value.book;
+}
+
+/** One of core's CEFR bands (`CEFRLevel`). */
+function cefrArg(method, value, name) {
+	return coded('invalid-input', () => oneOf(method, value, CEFR_ORDER, name));
+}
+
+/** A string, absent or null (core reads these through `??` or truthiness). */
+function optStringOrNull(method, value, name) {
+	if (value !== undefined && value !== null) needString(method, value, name);
+	return value;
+}
+
+/** An `Encounter`: `word` a string (core trims it), the rest strings when present; `type` is core's to refuse. */
+function encounterArg(method, value) {
+	return coded('invalid-input', () => {
+		needObject(method, value, 'encounter');
+		needString(method, value.word, 'encounter.word');
+		for (const k of ['meaning', 'language', 'category', 'context']) optStringOrNull(method, value[k], `encounter.${k}`);
+		const { do: _do, ...e } = value;
+		return e;
+	});
+}
+
+/** A `GrammarFeedbackIn`: core's three statuses; each error's `pattern` a string (it keys a row). */
+function grammarFeedbackArg(method, value) {
+	return coded('invalid-input', () => {
+		needObject(method, value, 'feedback');
+		oneOf(method, value.status, ['correct', 'corrected', 'no_target_language'], 'feedback.status');
+		(optArrayValue(method, value.errors, 'feedback.errors') ?? []).forEach((err, i) => {
+			needObject(method, err, `feedback.errors[${i}]`);
+			needString(method, err.pattern, `feedback.errors[${i}].pattern`);
+			for (const k of ['incorrect', 'corrected', 'explanation']) optStringOrNull(method, err[k], `feedback.errors[${i}].${k}`);
+		});
+		return value;
+	});
+}
+
+/** A `ConversationIn`: the counts are numbers, `wordsUsed` strings. */
+function conversationArg(method, value) {
+	return coded('invalid-input', () => {
+		needObject(method, value, 'conversation');
+		for (const k of ['turns', 'targetPercent', 'grammarCorrect', 'grammarErrors']) needNumber(method, value[k], `conversation.${k}`);
+		stringList(method, value.wordsUsed, 'conversation.wordsUsed');
+		optStringOrNull(method, value.npcName, 'conversation.npcName');
+		return value;
+	});
+}
+
+/** `SerializedFact[]` or null: each fact an object whose `args` is a list (core reads its length). */
+function factsArg(method, value) {
+	return coded('invalid-input', () => {
+		if (value === undefined || value === null) return null;
+		needArray(method, value, 'facts').forEach((f, i) => {
+			needObject(method, f, `facts[${i}]`);
+			needArray(method, f.args, `facts[${i}].args`);
+		});
+		return value;
+	});
+}
+
+/** A tuning: absent or null (core's default applies), else every key of core's default, of the same JSON type. */
+function tuningArg(method, value, name, defaults) {
+	return coded('invalid-input', () => {
+		if (value === undefined || value === null) return undefined;
+		needObject(method, value, name);
+		for (const [k, d] of Object.entries(defaults)) {
+			if (typeof value[k] !== typeof d || (typeof d === 'number' && !Number.isFinite(value[k]))) {
+				throw refuse(method, `\`${name}.${k}\` must be a ${typeof d} (core's tuning)`);
+			}
+		}
+		if ('kind' in defaults) oneOf(method, value.kind, ['vocabulary', 'knowledge'], `${name}.kind`);
+		return value;
+	});
+}
+
+/** A record of JSON objects (core spreads or indexes each member). */
+function objectRecord(method, value, name) {
+	needObject(method, value, name);
+	for (const [k, v] of Object.entries(value)) needObject(method, v, `${name}.${k}`);
+	return value;
+}
+
+/** An `IdentificationState`: `targets` objects with a string `id`, `progress` a record of objects. */
+function identificationStateArg(method, value, name = 'identification') {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		needArray(method, value.targets, `${name}.targets`).forEach((t, i) => {
+			needObject(method, t, `${name}.targets[${i}]`);
+			needString(method, t.id, `${name}.targets[${i}].id`);
+		});
+		objectRecord(method, value.progress, `${name}.progress`);
+		return value;
+	});
+}
+
+/** A `NamingState`: `objects` with a string `objectId`, `attempts` a record, `named` strings. */
+function namingStateArg(method, value, name = 'naming') {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		needArray(method, value.objects, `${name}.objects`).forEach((o, i) => {
+			needObject(method, o, `${name}.objects[${i}]`);
+			needString(method, o.objectId, `${name}.objects[${i}].objectId`);
+		});
+		needObject(method, value.attempts, `${name}.attempts`);
+		stringList(method, value.named, `${name}.named`);
+		return value;
+	});
+}
+
+/** A `CollectionState`: the seed, tags with a string `objectId` and a position, the pool's `[category, answers]`, `collected`, `quizzes`. */
+function collectionStateArg(method, value, name = 'collection') {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		needString(method, value.seed, `${name}.seed`);
+		needArray(method, value.tags, `${name}.tags`).forEach((t, i) => {
+			needObject(method, t, `${name}.tags[${i}]`);
+			needString(method, t.objectId, `${name}.tags[${i}].objectId`);
+			needObject(method, t.position, `${name}.tags[${i}].position`);
+		});
+		needArray(method, value.pool, `${name}.pool`).forEach((p, i) => {
+			needArray(method, p, `${name}.pool[${i}]`);
+			stringList(method, p[1], `${name}.pool[${i}][1]`);
+		});
+		stringList(method, value.collected, `${name}.collected`);
+		needObject(method, value.quizzes, `${name}.quizzes`);
+		return value;
+	});
+}
+
+/** A `LanguagePromptState`: `pick` null or `{ kind: identify|name, id }`, `quiz` null or an object id, `offered` ids. */
+function promptStateArg(method, value, name = 'state') {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		if (value.pick !== null) {
+			needObject(method, value.pick, `${name}.pick`);
+			oneOf(method, value.pick.kind, ['identify', 'name'], `${name}.pick.kind`);
+			needString(method, value.pick.id, `${name}.pick.id`);
+		}
+		if (value.quiz !== null) needString(method, value.quiz, `${name}.quiz`);
+		stringList(method, value.offered, `${name}.offered`);
+		return value;
+	});
+}
+
+/** A `PickWorld`: the identification and naming states, the translations' key, the two tunings (absent: core's). */
+function pickWorldArg(method, value) {
+	coded('invalid-input', () => needObject(method, value, 'world'));
+	const world = {
+		identification: identificationStateArg(method, value.identification, 'world.identification'),
+		naming: namingStateArg(method, value.naming, 'world.naming'),
+		targetLanguage: coded('invalid-input', () => needString(method, value.targetLanguage, 'world.targetLanguage')),
+	};
+	const identifyTuning = tuningArg(method, value.identifyTuning, 'world.identifyTuning', IDENTIFICATION_TUNING);
+	const namingTuning = tuningArg(method, value.namingTuning, 'world.namingTuning', NAMING_TUNING);
+	if (identifyTuning) world.identifyTuning = identifyTuning;
+	if (namingTuning) world.namingTuning = namingTuning;
+	return world;
+}
+
+/** A `WorldObjectIn`: a string `id`, a string `role` (core lower-cases it), a position with numeric `x` and `z`. */
+function worldObjectArg(method, value, name) {
+	needObject(method, value, name);
+	needString(method, value.id, `${name}.id`);
+	optStringOrNull(method, value.role, `${name}.role`);
+	needObject(method, value.position, `${name}.position`);
+	needNumber(method, value.position.x, `${name}.position.x`);
+	needNumber(method, value.position.z, `${name}.position.z`);
+	if (value.translations !== undefined && value.translations !== null) objectRecord(method, value.translations, `${name}.translations`);
+	return value;
+}
+
+/** A point `{ x, z }` (a `y` is carried as sent; the prompt selector reads x and z). */
+function xzArg(method, value, name) {
+	needObject(method, value, name);
+	needNumber(method, value.x, `${name}.x`);
+	needNumber(method, value.z, `${name}.z`);
+	return value;
+}
+
+/** A `HoverState`: its band, its target language (or null), the cache's `[key, hint]` pairs, the records, the counter, the pending keys. */
+function hoverStateArg(method, value, name = 'state') {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		oneOf(method, value.cefr, CEFR_ORDER, `${name}.cefr`);
+		optStringOrNull(method, value.targetLanguage, `${name}.targetLanguage`);
+		needArray(method, value.cache, `${name}.cache`).forEach((pair, i) => {
+			needArray(method, pair, `${name}.cache[${i}]`);
+			needString(method, pair[0], `${name}.cache[${i}][0]`);
+			needObject(method, pair[1], `${name}.cache[${i}][1]`);
+		});
+		needObject(method, value.seen, `${name}.seen`);
+		objectRecord(method, value.mastery, `${name}.mastery`);
+		needNumber(method, value.newWordIndex, `${name}.newWordIndex`);
+		stringList(method, value.pending, `${name}.pending`);
+		return value;
+	});
+}
+
+/** A `ChatSession`: the NPC's name, the turns, the words used (strings), the grammar counts. */
+function chatSessionArg(method, value, name = 'session') {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		needString(method, value.npcName, `${name}.npcName`);
+		for (const k of ['turns', 'grammarCorrect', 'grammarErrors']) needNumber(method, value[k], `${name}.${k}`);
+		stringList(method, value.wordsUsed, `${name}.wordsUsed`);
+		return value;
+	});
+}
+
+/** A heard `ChatGrammarCheck`: core's three statuses, `errorCount` a number and `errors` a list when present. */
+function chatCheckArg(method, value) {
+	return coded('invalid-input', () => {
+		needObject(method, value, 'check');
+		oneOf(method, value.status, ['correct', 'corrected', 'no_target_language'], 'check.status');
+		if (value.errorCount !== undefined && value.errorCount !== null) needNumber(method, value.errorCount, 'check.errorCount');
+		optArrayValue(method, value.errors, 'check.errors');
+		return value;
+	});
+}
+
+/** `ChatWordsIn`: the book (read as `language.book.*` reads it) and the world's words when given. */
+function chatWordsArg(method, args) {
+	const book = languageBookArg(method, args.book);
+	if (args.worldWords === undefined) return { book };
+	return { book, worldWords: coded('invalid-input', () => stringList(method, args.worldWords, 'worldWords')) };
+}
+
+/** A `DifficultyState`: its level, the turn count, the last scores, the run counters. */
+function difficultyStateArg(method, value, name = 'state') {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		oneOf(method, value.level, ['none', 'scaffolded', 'stretch'], `${name}.level`);
+		for (const k of ['turns', 'high', 'low', 'scaffolded', 'stretched']) needNumber(method, value[k], `${name}.${k}`);
+		needArray(method, value.history, `${name}.history`).forEach((h, i) => needNumber(method, h, `${name}.history[${i}]`));
+		return value;
+	});
+}
+
+/** `TurnMetrics`: four counts, and `quality` (0..100) when present. */
+function turnMetricsArg(method, value) {
+	return coded('invalid-input', () => {
+		needObject(method, value, 'metrics');
+		for (const k of ['grammarErrors', 'grammarChecked', 'targetWords', 'totalWords']) needNumber(method, value[k], `metrics.${k}`);
+		if (value.quality !== undefined && value.quality !== null) needNumber(method, value.quality, 'metrics.quality');
+		return value;
+	});
+}
+
 // ── quests ────────────────────────────────────────────────────────────────────
 
 const QUEST_STATUSES = ['available', 'active', 'completed'];
@@ -2522,6 +2894,531 @@ const METHODS = {
 
 	/** `save.village.conversations.epochMs { timestamp }` → `{ epochMs }`: core's `epochMsOfConversationTimestamp`, the round trip back, or null. */
 	'save.village.conversations.epochMs': (args) => ({ epochMs: epochMsOfConversationTimestamp(args.timestamp) }),
+
+	// ── language learning (PL.native-language-rows, slice 1) ────────────────────
+	// One core function per row, state in and out as JSON (README "The language
+	// rows"). Core's corpus runner composes them per op; tests/language_corpus.cpp
+	// replays conformance/language/{progress,save,prompts,hover,chat}.json the same way.
+
+	/**
+	 * `language.contract` → the constants a binding must not hard-code: the CEFR
+	 * bands, the encounter kinds and their weights in halves, the grammar and
+	 * fluency thresholds, the book's refusals, the save block's extension key,
+	 * members and row keys, the prompt selector's refusals and examine reach, the
+	 * three default tunings (a game's own are these with its parameters over them),
+	 * the hover and chat refusals and the chat's percent per word per turn.
+	 */
+	'language.contract': () => ({
+		cefrOrder: [...CEFR_ORDER],
+		encounterTypes: [...ENCOUNTER_TYPES],
+		encounterHalves: { ...ENCOUNTER_HALVES },
+		grammarWeaknessMinAttempts: GRAMMAR_WEAKNESS_MIN_ATTEMPTS,
+		grammarWeaknessRate: { ...GRAMMAR_WEAKNESS_RATE },
+		grammarMasteryCorrectUses: GRAMMAR_MASTERY_CORRECT_USES,
+		fluencyMax: FLUENCY_MAX,
+		fluencyGainMin: FLUENCY_GAIN_MIN,
+		fluencyGainMax: FLUENCY_GAIN_MAX,
+		bookRefusals: [...BOOK_REFUSALS],
+		extensionKey: LANGUAGE_EXTENSION_KEY,
+		blockMembers: [...LANGUAGE_BLOCK_MEMBERS],
+		bookKeys: [...LANGUAGE_BOOK_KEYS],
+		wordKeys: [...LANGUAGE_WORD_KEYS],
+		grammarKeys: [...LANGUAGE_GRAMMAR_KEYS],
+		namingKeys: [...LANGUAGE_NAMING_KEYS],
+		identificationKeys: [...LANGUAGE_IDENTIFICATION_KEYS],
+		promptRefusals: [...PROMPT_REFUSALS],
+		examineRange: EXAMINE_RANGE,
+		identificationTuning: { ...IDENTIFICATION_TUNING },
+		namingTuning: { ...NAMING_TUNING },
+		collectionTuning: { ...COLLECTION_TUNING },
+		hoverRefusals: [...HOVER_REFUSALS],
+		chatRefusals: [...CHAT_REFUSALS],
+		chatPercentPerWordPerTurn: CHAT_PERCENT_PER_WORD_PER_TURN,
+	}),
+
+	// The language book (progress.ts) and the player's CEFR facts (prolog/player-language-state.ts).
+
+	/** `language.book.empty { language? }` → `{ book }`: core's `emptyBook` (absent: core's default, 'target'). */
+	'language.book.empty': (args) => {
+		const language = coded('invalid-input', () => optStringOrNull('language.book.empty', args.language, 'language'));
+		return { book: plain(language === undefined || language === null ? emptyBook() : emptyBook(language)) };
+	},
+
+	/** `language.book.mastery { encountered, halves }` → `{ mastery }`: core's `masteryOf`, the band of a word's counts. */
+	'language.book.mastery': (args) => {
+		const m = 'language.book.mastery';
+		const [encountered, halves] = coded('invalid-input', () => [needNumber(m, args.encountered, 'encountered'), needNumber(m, args.halves, 'halves')]);
+		return { mastery: masteryOf(encountered, halves) };
+	},
+
+	/** `language.book.wordView { row }` → `{ view }`: core's `wordView`, a word row with its mastery band (the row read as core's save reader reads one). */
+	'language.book.wordView': (args) => {
+		const m = 'language.book.wordView';
+		coded('invalid-input', () => needObject(m, args.row, 'row'));
+		const read = readLanguageBlock({ book: { words: [args.row] } });
+		if (!read.ok) coded('invalid-input', () => { throw refuse(m, `\`row\` is not a word row core's save reader reads`); });
+		return { view: plain(wordView(read.value.book.words[0])) };
+	},
+
+	/** `language.book.findWord { book, word, language? }` → `{ row }`: core's `findWord` (trimmed, any case; the book's language when absent), or null. */
+	'language.book.findWord': (args) => {
+		const m = 'language.book.findWord';
+		const book = languageBookArg(m, args.book);
+		const [word, language] = coded('invalid-input', () => [needString(m, args.word, 'word'), optStringOrNull(m, args.language, 'language') ?? undefined]);
+		return { row: plain(findWord(book, word, language) ?? null) };
+	},
+
+	/** `language.book.advance { book, ms }` → `{ book }`: core's `advanceBook`, the book's own clock moved on. */
+	'language.book.advance': (args) => {
+		const m = 'language.book.advance';
+		const book = languageBookArg(m, args.book);
+		return { book: plain(advanceBook(book, coded('invalid-input', () => needNumber(m, args.ms, 'ms')))) };
+	},
+
+	/**
+	 * `language.book.recordEncounter { book, encounter }` → core's `recordEncounter`:
+	 * `{ ok: true, book, entry, isNew, masteryChanged }` or `{ ok: false, book,
+	 * refusal }` (`empty_word`, `unknown_encounter`: VALUES, the book unchanged).
+	 */
+	'language.book.recordEncounter': (args) => {
+		const m = 'language.book.recordEncounter';
+		const book = languageBookArg(m, args.book);
+		return plain(recordEncounter(book, encounterArg(m, args.encounter)));
+	},
+
+	/** `language.book.encounterOfEvent { event }` → `{ encounter }`: core's `encounterOfEvent`, the encounter a bus event is, or null. */
+	'language.book.encounterOfEvent': (args) => {
+		const event = coded('invalid-input', () => needObject('language.book.encounterOfEvent', args.event, 'event'));
+		return { encounter: plain(encounterOfEvent(event) ?? null) };
+	},
+
+	/** `language.book.isWeak { row }` → `{ weak }`: core's `isWeak` over a grammar row's `correct` and `incorrect`. */
+	'language.book.isWeak': (args) => {
+		const m = 'language.book.isWeak';
+		const row = coded('invalid-input', () => {
+			needObject(m, args.row, 'row');
+			needNumber(m, args.row.correct, 'row.correct');
+			needNumber(m, args.row.incorrect, 'row.incorrect');
+			return args.row;
+		});
+		return { weak: isWeak(row) };
+	},
+
+	/** `language.book.recordGrammar { book, feedback }` → `{ book, touched, signals }`: core's `recordGrammar`. */
+	'language.book.recordGrammar': (args) => {
+		const m = 'language.book.recordGrammar';
+		const book = languageBookArg(m, args.book);
+		return plain(recordGrammar(book, grammarFeedbackArg(m, args.feedback)));
+	},
+
+	/** `language.book.weakPatterns { book }` → `{ patterns }`: core's `weakPatterns`, most errors first. */
+	'language.book.weakPatterns': (args) => ({ patterns: plain(weakPatterns(languageBookArg('language.book.weakPatterns', args.book))) }),
+
+	/**
+	 * `language.book.fluencyGain { fluency, uniqueWords, grammarCorrect,
+	 * grammarAttempted, turns, targetPercent }` → `{ gain, bonuses }`: core's
+	 * `fluencyGain` (thousandths of a point).
+	 */
+	'language.book.fluencyGain': (args) => {
+		const m = 'language.book.fluencyGain';
+		const n = coded('invalid-input', () =>
+			['fluency', 'uniqueWords', 'grammarCorrect', 'grammarAttempted', 'turns', 'targetPercent'].map((k) => needNumber(m, args[k], k)),
+		);
+		return plain(fluencyGain(...n));
+	},
+
+	/** `language.book.recordConversation { book, conversation }` → `{ book, result, signals }`: core's `recordConversation`. */
+	'language.book.recordConversation': (args) => {
+		const m = 'language.book.recordConversation';
+		const book = languageBookArg(m, args.book);
+		return plain(recordConversation(book, conversationArg(m, args.conversation)));
+	},
+
+	/** `language.book.setCefr { book, level }` → `{ book, signals }`: core's `setCefr` (an assessment raises the fluency floor). */
+	'language.book.setCefr': (args) => {
+		const m = 'language.book.setCefr';
+		const book = languageBookArg(m, args.book);
+		return plain(setCefr(book, cefrArg(m, args.level, 'level')));
+	},
+
+	/** `language.book.summary { book }` → core's `bookSummary`. */
+	'language.book.summary': (args) => plain(bookSummary(languageBookArg('language.book.summary', args.book))),
+
+	/** `language.facts.cefr { facts }` → `{ cefr }`: core's `extractPlayerCefrFromFacts` (null: none). */
+	'language.facts.cefr': (args) => ({ cefr: extractPlayerCefrFromFacts(factsArg('language.facts.cefr', args.facts)) }),
+
+	/** `language.facts.weakDimensions { facts, threshold? }` → `{ weak }`: core's `extractPlayerWeakDimensions` (absent threshold: core's 60). */
+	'language.facts.weakDimensions': (args) => {
+		const m = 'language.facts.weakDimensions';
+		const facts = factsArg(m, args.facts);
+		const threshold = coded('invalid-input', () => optNumber(m, args.threshold, 'threshold'));
+		return { weak: plain(threshold === undefined ? extractPlayerWeakDimensions(facts) : extractPlayerWeakDimensions(facts, threshold)) };
+	},
+
+	// The language save block (language-save.ts): the village save's own reader and writer path.
+
+	/**
+	 * `language.save.block { book?, collected?, naming?, identification? }` → `{ block }`:
+	 * core's `languageSaveBlock`, the block a game hands the save
+	 * (`gameState.languageLearning`) from the kernels it runs (`naming` is `{ attempts,
+	 * named }`, `identification` a record of `{ attempts, identified, bestScore }`; absent
+	 * or null: none).
+	 */
+	'language.save.block': (args) => {
+		const m = 'language.save.block';
+		const parts = {};
+		if (args.book !== undefined && args.book !== null) parts.book = languageBookArg(m, args.book);
+		coded('invalid-input', () => {
+			if (args.collected !== undefined && args.collected !== null) parts.collected = stringList(m, args.collected, 'collected');
+			if (args.naming !== undefined && args.naming !== null) {
+				needObject(m, args.naming, 'naming');
+				needObject(m, args.naming.attempts, 'naming.attempts');
+				parts.naming = { attempts: args.naming.attempts, named: stringList(m, args.naming.named, 'naming.named') };
+			}
+			if (args.identification !== undefined && args.identification !== null) parts.identification = objectRecord(m, args.identification, 'identification');
+		});
+		return { block: plain(languageSaveBlock(parts)) };
+	},
+
+	/**
+	 * `language.save.read { block }` → core's `readLanguageBlock`, the village save's
+	 * reader of `extensions.languageLearning`: `{ ok: true, value }` (absent or null:
+	 * no block, value null) or `{ ok: false, keys }`, every unreadable member named in
+	 * ascending order (none when the block is not an object).
+	 */
+	'language.save.read': (args) => plain(readLanguageBlock(args.block)),
+
+	/**
+	 * `language.save.blockOf { block }` → `{ block }`: core's `languageBlockOf`, the
+	 * block the save stores (its members only, each row its keys only, maps in
+	 * canonical key order). The block is read first with core's reader, as the
+	 * village save's writer reads `gameState.languageLearning`; one it cannot read, or
+	 * none, is `[invalid-input]` naming core's keys.
+	 */
+	'language.save.blockOf': (args) => {
+		const m = 'language.save.blockOf';
+		const read = readLanguageBlock(args.block);
+		if (!read.ok || read.value === null) {
+			coded('invalid-input', () => {
+				throw refuse(m, `\`block\` cannot be read: ${!read.ok ? (read.keys.length ? read.keys.join(', ') : 'not an object') : 'no block'}`);
+			});
+		}
+		return { block: plain(languageBlockOf(read.value)) };
+	},
+
+	// The registers the prompt selector reads (world-words.ts; the rest of world-words is a later slice).
+
+	/** `language.identification.initial {}` → `{ state }`: core's `initialIdentification`. */
+	'language.identification.initial': () => ({ state: plain(initialIdentification()) }),
+
+	/** `language.identification.registerTargets { state, targets }` → `{ state }`: core's `registerTargets` (a target by its id replaces, its progress starts again). */
+	'language.identification.registerTargets': (args) => {
+		const m = 'language.identification.registerTargets';
+		const state = identificationStateArg(m, args.state, 'state');
+		const targets = coded('invalid-input', () => {
+			objectList(m, args.targets, 'targets').forEach((t, i) => needString(m, t.id, `targets[${i}].id`));
+			return args.targets;
+		});
+		return { state: plain(registerTargets(state, targets)) };
+	},
+
+	/** `language.naming.initial {}` → `{ state }`: core's `initialNaming`. */
+	'language.naming.initial': () => ({ state: plain(initialNaming()) }),
+
+	/** `language.naming.registerNameable { state, objects }` → `{ state }`: core's `registerNameable` (an object by its id replaces). */
+	'language.naming.registerNameable': (args) => {
+		const m = 'language.naming.registerNameable';
+		const state = namingStateArg(m, args.state, 'state');
+		const objects = coded('invalid-input', () => {
+			objectList(m, args.objects, 'objects').forEach((o, i) => needString(m, o.objectId, `objects[${i}].objectId`));
+			return args.objects;
+		});
+		return { state: plain(registerNameable(state, objects)) };
+	},
+
+	/** `language.naming.nameableObjects { objects, targetLanguage }` → `{ objects }`: core's `nameableObjects`, a world's role-bearing objects with a translation, keyed by their lower-cased role. */
+	'language.naming.nameableObjects': (args) => {
+		const m = 'language.naming.nameableObjects';
+		const [objects, targetLanguage] = coded('invalid-input', () => [
+			needArray(m, args.objects, 'objects').map((o, i) => worldObjectArg(m, o, `objects[${i}]`)),
+			needString(m, args.targetLanguage, 'targetLanguage'),
+		]);
+		return { objects: plain(nameableObjects(objects, targetLanguage)) };
+	},
+
+	/** `language.collection.initial { seed }` → `{ state }`: core's `initialCollection` (the seed draws the quizzes). */
+	'language.collection.initial': (args) => ({
+		state: plain(initialCollection(coded('invalid-input', () => needString('language.collection.initial', args.seed, 'seed')))),
+	}),
+
+	/** `language.collection.registerTags { state, tags }` → `{ state }`: core's `registerTags` (a tag by its object replaces; its answer joins the distractor pool). */
+	'language.collection.registerTags': (args) => {
+		const m = 'language.collection.registerTags';
+		const state = collectionStateArg(m, args.state, 'state');
+		const tags = coded('invalid-input', () => {
+			objectList(m, args.tags, 'tags').forEach((t, i) => {
+				needString(m, t.objectId, `tags[${i}].objectId`);
+				needObject(m, t.position, `tags[${i}].position`);
+			});
+			return args.tags;
+		});
+		return { state: plain(registerTags(state, tags)) };
+	},
+
+	// The prompt selector (prompt-selector.ts): which object a pick or the reach offers, when.
+
+	/** `language.prompts.initial {}` → `{ state }`: core's `initialPrompts`, `{ pick: null, quiz: null, offered: [] }`. */
+	'language.prompts.initial': () => ({ state: plain(initialPrompts()) }),
+
+	/** `language.prompts.pickTargetIds { identification, pick }` → `{ ids }`: core's `pickTargetIds`, the targets a pick asks about (its id, then its lower-cased role). */
+	'language.prompts.pickTargetIds': (args) => {
+		const m = 'language.prompts.pickTargetIds';
+		const identification = identificationStateArg(m, args.identification);
+		const pick = coded('invalid-input', () => {
+			worldObjectArg(m, args.pick, 'pick');
+			needString(m, args.pick.role, 'pick.role');
+			return args.pick;
+		});
+		return { ids: plain(pickTargetIds(identification, pick)) };
+	},
+
+	/**
+	 * `language.prompts.onPick { state, pick, at, world }` → core's `promptOnPick`:
+	 * `{ ok: true, state, prompt, checked, events }` or `{ ok: false, state, refusal:
+	 * nothing_in_reach }` (pick null). `pick` is examine's pick
+	 * (`props.interactables.examinePick`) or the object a pointer picked; `at` the
+	 * player's position; `world` core's `PickWorld` (`{ identification, naming,
+	 * targetLanguage, identifyTuning?, namingTuning? }`).
+	 */
+	'language.prompts.onPick': (args) => {
+		const m = 'language.prompts.onPick';
+		const state = promptStateArg(m, args.state);
+		const [pick, at] = coded('invalid-input', () => {
+			if (args.pick !== null) {
+				worldObjectArg(m, args.pick, 'pick');
+				needString(m, args.pick.role, 'pick.role');
+			}
+			return [args.pick, xzArg(m, args.at, 'at')];
+		});
+		return plain(promptOnPick(state, pick, at, pickWorldArg(m, args.world)));
+	},
+
+	/** `language.prompts.standing { state, world }` → `{ state, prompt }`: core's `standingPick`, the standing pick prompt read again (one no longer standing is cleared). */
+	'language.prompts.standing': (args) => {
+		const m = 'language.prompts.standing';
+		const state = promptStateArg(m, args.state);
+		return plain(standingPick(state, pickWorldArg(m, args.world)));
+	},
+
+	/**
+	 * `language.prompts.answer { state, input, world }` → core's `answerPick`: `{ ok:
+	 * true, state, identification, naming, kind, id, result, standing }` or `{ ok:
+	 * false, state, identification, naming, refusal: no_prompt }`.
+	 */
+	'language.prompts.answer': (args) => {
+		const m = 'language.prompts.answer';
+		const state = promptStateArg(m, args.state);
+		const input = coded('invalid-input', () => needString(m, args.input, 'input'));
+		return plain(answerPick(state, input, pickWorldArg(m, args.world)));
+	},
+
+	/**
+	 * `language.prompts.quizOnReach { state, collection, at, tuning? }` → `{ state,
+	 * collection, inReach, quiz }`: core's `quizOnReach`, the player at `at` (`{ x, y,
+	 * z }`): an object in reach is asked a quiz once per stay, one standing at a time.
+	 */
+	'language.prompts.quizOnReach': (args) => {
+		const m = 'language.prompts.quizOnReach';
+		const state = promptStateArg(m, args.state);
+		const collection = collectionStateArg(m, args.collection);
+		const at = coded('invalid-input', () => {
+			xzArg(m, args.at, 'at');
+			needNumber(m, args.at.y, 'at.y');
+			return args.at;
+		});
+		const tuning = tuningArg(m, args.tuning, 'tuning', COLLECTION_TUNING);
+		return plain(tuning ? quizOnReach(state, collection, at, tuning) : quizOnReach(state, collection, at));
+	},
+
+	/**
+	 * `language.prompts.answerQuiz { state, collection, answer, tuning? }` → core's
+	 * `answerStandingQuiz`: `{ ok: true, state, collection, objectId, answer }` or `{
+	 * ok: false, state, collection, refusal: no_quiz }`.
+	 */
+	'language.prompts.answerQuiz': (args) => {
+		const m = 'language.prompts.answerQuiz';
+		const state = promptStateArg(m, args.state);
+		const collection = collectionStateArg(m, args.collection);
+		const answer = coded('invalid-input', () => needString(m, args.answer, 'answer'));
+		const tuning = tuningArg(m, args.tuning, 'tuning', COLLECTION_TUNING);
+		return plain(tuning ? answerStandingQuiz(state, collection, answer, tuning) : answerStandingQuiz(state, collection, answer));
+	},
+
+	// A word's key (word-key.ts) and hover translation (the hover half of reading-writing.ts).
+
+	/** `language.word.key { word }` → `{ key }`: core's `wordKey` (= hover's and the chat's key): the edges stripped, then lower case. */
+	'language.word.key': (args) => ({ key: wordKey(coded('invalid-input', () => needString('language.word.key', args.word, 'word'))) }),
+
+	/** `language.word.stripEdges { word }` → `{ word }`: core's `stripWordEdges`, the edge characters that are not a letter, mark, digit or `_` removed. */
+	'language.word.stripEdges': (args) => ({ word: stripWordEdges(coded('invalid-input', () => needString('language.word.stripEdges', args.word, 'word'))) }),
+
+	/** `language.hover.tokenize { text }` → `{ tokens }`: core's `tokenize`, the words and the spaces between (`{ text, isWord }`). */
+	'language.hover.tokenize': (args) => ({ tokens: plain(tokenize(coded('invalid-input', () => needString('language.hover.tokenize', args.text, 'text')))) }),
+
+	/** `language.hover.initial { cefr?, targetLanguage? }` → `{ state }`: core's `initialHover` (absent: A1, no target language). */
+	'language.hover.initial': (args) => {
+		const m = 'language.hover.initial';
+		const cefr = args.cefr === undefined ? undefined : cefrArg(m, args.cefr, 'cefr');
+		const targetLanguage = coded('invalid-input', () => optStringOrNull(m, args.targetLanguage, 'targetLanguage'));
+		return { state: plain(initialHover(cefr, targetLanguage ?? null)) };
+	},
+
+	/** `language.hover.addHints { state, hints }` → `{ state }`: core's `addHints`, an NPC's hints into the cache. */
+	'language.hover.addHints': (args) => {
+		const m = 'language.hover.addHints';
+		const state = hoverStateArg(m, args.state);
+		const hints = coded('invalid-input', () => {
+			objectList(m, args.hints, 'hints').forEach((h, i) => {
+				for (const k of ['word', 'translation', 'context']) optStringOrNull(m, h[k], `hints[${i}].${k}`);
+			});
+			return args.hints;
+		});
+		return { state: plain(addHints(state, hints)) };
+	},
+
+	/** `language.hover.seeWord { state, word, difficulty? }` → `{ state, showHint }`: core's `seeWord`, a word's sighting and whether it hints. */
+	'language.hover.seeWord': (args) => {
+		const m = 'language.hover.seeWord';
+		const state = hoverStateArg(m, args.state);
+		const [word, difficulty] = coded('invalid-input', () => [
+			needString(m, args.word, 'word'),
+			args.difficulty === undefined ? undefined : oneOf(m, args.difficulty, ['beginner', 'intermediate', 'advanced'], 'difficulty'),
+		]);
+		return plain(seeWord(state, word, difficulty));
+	},
+
+	/** `language.hover.setMastery { state, word, encountered, correct }` → `{ state }`: core's `setMastery`, the book's counts for a word. */
+	'language.hover.setMastery': (args) => {
+		const m = 'language.hover.setMastery';
+		const state = hoverStateArg(m, args.state);
+		const [word, encountered, correct] = coded('invalid-input', () => [
+			needString(m, args.word, 'word'),
+			needNumber(m, args.encountered, 'encountered'),
+			needNumber(m, args.correct, 'correct'),
+		]);
+		return { state: plain(setMastery(state, word, encountered, correct)) };
+	},
+
+	/** `language.hover.isLikelyTarget { state, word }` → `{ likely }`: core's `isLikelyTarget`. */
+	'language.hover.isLikelyTarget': (args) => {
+		const m = 'language.hover.isLikelyTarget';
+		const state = hoverStateArg(m, args.state);
+		return { likely: isLikelyTarget(state, coded('invalid-input', () => needString(m, args.word, 'word'))) };
+	},
+
+	/**
+	 * `language.hover.lookup { state, word }` → core's `lookup`: `{ ok: true, state,
+	 * result, request, signals }` (a cache hit, a pending ask, or a new ask for the
+	 * host's translator) or `{ ok: false, state, refusal: no_target_language }`.
+	 */
+	'language.hover.lookup': (args) => {
+		const m = 'language.hover.lookup';
+		const state = hoverStateArg(m, args.state);
+		return plain(hoverLookup(state, coded('invalid-input', () => needString(m, args.word, 'word'))));
+	},
+
+	/** `language.hover.resolve { state, word, translation, context? }` → `{ state, result, signals }`: core's `resolveLookup`, the translator's answer (null: it failed). */
+	'language.hover.resolve': (args) => {
+		const m = 'language.hover.resolve';
+		const state = hoverStateArg(m, args.state);
+		const [word, translation, context] = coded('invalid-input', () => [
+			needString(m, args.word, 'word'),
+			optStringOrNull(m, args.translation, 'translation') ?? null,
+			args.context === undefined ? undefined : needString(m, args.context, 'context'),
+		]);
+		return plain(resolveLookup(state, word, translation, context));
+	},
+
+	/** `language.hover.display { state }` → `{ mode, size }`: core's `hoverDisplay`, the band's translation mode and the cache's size. */
+	'language.hover.display': (args) => plain(hoverDisplay(hoverStateArg('language.hover.display', args.state))),
+
+	// The chat language metrics (chat-metrics.ts) and the difficulty monitor its lines feed (adaptation.ts).
+
+	/** `language.chat.lineTokens { line }` → `{ tokens }`: core's `lineTokens`, a line's whitespace-separated tokens. */
+	'language.chat.lineTokens': (args) => ({ tokens: plain(lineTokens(coded('invalid-input', () => needString('language.chat.lineTokens', args.line, 'line')))) }),
+
+	/** `language.chat.lineWords { line, book, worldWords? }` → `{ totalWords, targetWords, wordsUsed }`: core's `chatLineWords`. */
+	'language.chat.lineWords': (args) => {
+		const m = 'language.chat.lineWords';
+		const line = coded('invalid-input', () => needString(m, args.line, 'line'));
+		return plain(chatLineWords(line, chatWordsArg(m, args)));
+	},
+
+	/** `language.chat.questUsages { line, questWords, book, worldWords? }` → `{ usages }`: core's `chatQuestUsages`, quest words first. */
+	'language.chat.questUsages': (args) => {
+		const m = 'language.chat.questUsages';
+		const [line, questWords] = coded('invalid-input', () => [needString(m, args.line, 'line'), stringList(m, args.questWords, 'questWords')]);
+		return { usages: plain(chatQuestUsages(line, questWords, chatWordsArg(m, args))) };
+	},
+
+	/** `language.chat.targetPercent { used, turns }` → `{ targetPercent }`: core's `chatTargetPercent`. */
+	'language.chat.targetPercent': (args) => {
+		const m = 'language.chat.targetPercent';
+		const [used, turns] = coded('invalid-input', () => [needNumber(m, args.used, 'used'), needNumber(m, args.turns, 'turns')]);
+		return { targetPercent: chatTargetPercent(used, turns) };
+	},
+
+	/** `language.chat.start { npcName? }` → `{ session }`: core's `startChat`, a chat's counts at none. */
+	'language.chat.start': (args) => {
+		const npcName = coded('invalid-input', () => optStringOrNull('language.chat.start', args.npcName, 'npcName'));
+		return { session: plain(npcName === undefined || npcName === null ? startChat() : startChat(npcName)) };
+	},
+
+	/** `language.chat.checkErrors { check }` → `{ errors }`: core's `checkErrors`, the errors a heard check adds. */
+	'language.chat.checkErrors': (args) => ({ errors: checkErrors(chatCheckArg('language.chat.checkErrors', args.check)) }),
+
+	/** `language.chat.hear { session, check }` → `{ session }`: core's `hearChatGrammar`, a heard check into the chat's counts. */
+	'language.chat.hear': (args) => {
+		const m = 'language.chat.hear';
+		const session = chatSessionArg(m, args.session);
+		return { session: plain(hearChatGrammar(session, chatCheckArg(m, args.check))) };
+	},
+
+	/**
+	 * `language.chat.line { session, line, book, worldWords? }` → core's `chatLine`:
+	 * `{ ok: true, session, metrics, wordsUsed }` (the metrics `language.difficulty.recordTurn`
+	 * takes) or `{ ok: false, session, refusal: empty_line }`.
+	 */
+	'language.chat.line': (args) => {
+		const m = 'language.chat.line';
+		const session = chatSessionArg(m, args.session);
+		const line = coded('invalid-input', () => needString(m, args.line, 'line'));
+		return plain(chatLine(session, line, chatWordsArg(m, args)));
+	},
+
+	/** `language.chat.end { session }` → core's `endChat`: `{ ok: true, conversation }` or `{ ok: false, refusal: no_turns }`. */
+	'language.chat.end': (args) => plain(endChat(chatSessionArg('language.chat.end', args.session))),
+
+	/**
+	 * `language.chat.finish { book, session }` → core's `finishChat`: `{ ok: true,
+	 * book, conversation, result, signals }` (the chat folded into the book by
+	 * `recordConversation`) or `{ ok: false, book, refusal: no_turns }`.
+	 */
+	'language.chat.finish': (args) => {
+		const m = 'language.chat.finish';
+		const book = languageBookArg(m, args.book);
+		return plain(finishChat(book, chatSessionArg(m, args.session)));
+	},
+
+	/** `language.difficulty.initial {}` → `{ state }`: core's `initialDifficulty`, the difficulty monitor at the start of a chat. */
+	'language.difficulty.initial': () => ({ state: plain(initialDifficulty()) }),
+
+	/** `language.difficulty.recordTurn { state, metrics }` → `{ state, struggle, adjustment }`: core's `recordTurn`, a line's metrics into the monitor. */
+	'language.difficulty.recordTurn': (args) => {
+		const m = 'language.difficulty.recordTurn';
+		const state = difficultyStateArg(m, args.state);
+		return plain(recordTurn(state, turnMetricsArg(m, args.metrics)));
+	},
 
 	// ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
 

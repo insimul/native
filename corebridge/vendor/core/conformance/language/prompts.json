@@ -1,0 +1,4604 @@
+{
+  "schema": "insimul.conformance.language/1",
+  "area": "language",
+  "file": "language/prompts",
+  "phase": "P9h",
+  "description": "The prompt selector (PL.core-language-prompt-selector, U110(4) Q4): which object a pick offers for identification (first) or point and name, the one pick prompt standing and the answers it takes, and which object in reach is asked the collection quiz, when (src/language-learning/prompt-selector.ts).",
+  "runner": "src/language-learning/systems-corpus.ts (runLanguageSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "language-knowledge-collection",
+    "language-object-identification",
+    "interaction-world-object-actions"
+  ],
+  "ops": [
+    "run"
+  ],
+  "steps": {
+    "run": [
+      "register",
+      "pick",
+      "standing",
+      "answer",
+      "reach",
+      "choose"
+    ]
+  },
+  "cases": [
+    {
+      "name": "run: a pick raises one prompt, identification first; the last pick that raised one stands",
+      "op": "run",
+      "note": "Examine's pick is the nearest object with a role within 5 (x/z): from (0, 9.5) the Fountain, 5.5 away, is out of reach. The well is a target and nameable: it asks identification, not both. The cauldron then stands in its place; a pick that raises nothing (the crate, no word) or picks nothing leaves it standing. Once the well is identified, its pick offers point and name.",
+      "input": {
+        "targetLanguage": "French",
+        "steps": [
+          {
+            "do": "register",
+            "targets": [
+              {
+                "id": "well",
+                "questId": "q_square",
+                "objectiveId": "o1",
+                "expected": "puits",
+                "hint": "a deep hole for water",
+                "objectName": "well"
+              },
+              {
+                "id": "fountain",
+                "questId": "q_square",
+                "objectiveId": "o2",
+                "expected": "fontaine",
+                "hint": "water that sprays"
+              },
+              {
+                "id": "w_apple",
+                "questId": "q_market",
+                "objectiveId": "o1",
+                "expected": "pomme",
+                "hint": "a red fruit"
+              }
+            ],
+            "world": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0.5,
+              "z": 0
+            },
+            "objects": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 2,
+              "z": 0.5
+            },
+            "objects": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": -2,
+              "z": 0.1
+            },
+            "objects": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 9.5
+            },
+            "objects": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "standing"
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": -0.5
+            },
+            "objects": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "answer",
+            "input": "seau"
+          },
+          {
+            "do": "answer",
+            "input": "xx"
+          },
+          {
+            "do": "standing"
+          },
+          {
+            "do": "answer",
+            "input": "Puits!"
+          },
+          {
+            "do": "standing"
+          },
+          {
+            "do": "answer",
+            "input": "puits"
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": -0.5
+            },
+            "objects": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "answer",
+            "input": "puits"
+          },
+          {
+            "do": "standing"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "targets": [
+            "well",
+            "fountain",
+            "w_apple"
+          ],
+          "nameable": [
+            "well",
+            "cauldron",
+            "fountain",
+            "bench",
+            "apple"
+          ],
+          "tagged": []
+        },
+        {
+          "do": "pick",
+          "picked": "w_well",
+          "ok": true,
+          "prompt": {
+            "kind": "identify",
+            "id": "well",
+            "prompt": {
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "promptText": "What is this? Answer in the target language.",
+              "isActivity": false
+            }
+          },
+          "checked": {
+            "identify": "raised"
+          },
+          "events": [
+            {
+              "type": "identification_prompted",
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "isActivity": false
+            },
+            {
+              "type": "visual_vocab_prompted",
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "isActivity": false
+            }
+          ],
+          "standing": {
+            "kind": "identify",
+            "id": "well"
+          }
+        },
+        {
+          "do": "pick",
+          "picked": "w_cauldron",
+          "ok": true,
+          "prompt": {
+            "kind": "name",
+            "id": "cauldron",
+            "prompt": "Name this object in the target language (3 attempts left):",
+            "attemptsLeft": 3
+          },
+          "checked": {
+            "identify": "not_a_target",
+            "name": "raised"
+          },
+          "events": [],
+          "standing": {
+            "kind": "name",
+            "id": "cauldron"
+          }
+        },
+        {
+          "do": "pick",
+          "picked": "w_crate",
+          "ok": true,
+          "prompt": null,
+          "checked": {
+            "identify": "not_a_target",
+            "name": "no_translation"
+          },
+          "events": [],
+          "standing": {
+            "kind": "name",
+            "id": "cauldron"
+          }
+        },
+        {
+          "do": "pick",
+          "picked": null,
+          "ok": false,
+          "refusal": "nothing_in_reach",
+          "standing": {
+            "kind": "name",
+            "id": "cauldron"
+          }
+        },
+        {
+          "do": "standing",
+          "pick": {
+            "kind": "name",
+            "id": "cauldron",
+            "prompt": "Name this object in the target language (3 attempts left):",
+            "attemptsLeft": 3
+          },
+          "quiz": null
+        },
+        {
+          "do": "pick",
+          "picked": "w_well",
+          "ok": true,
+          "prompt": {
+            "kind": "identify",
+            "id": "well",
+            "prompt": {
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "promptText": "What is this? Answer in the target language.",
+              "isActivity": false
+            }
+          },
+          "checked": {
+            "identify": "raised"
+          },
+          "events": [
+            {
+              "type": "identification_prompted",
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "isActivity": false
+            },
+            {
+              "type": "visual_vocab_prompted",
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "isActivity": false
+            }
+          ],
+          "standing": {
+            "kind": "identify",
+            "id": "well"
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "identify",
+          "id": "well",
+          "result": {
+            "passed": false,
+            "score": 0,
+            "feedback": "That doesn't seem right.",
+            "bestMatch": null,
+            "objectiveCompleted": false,
+            "events": [
+              {
+                "type": "identification_incorrect",
+                "targetId": "well",
+                "questId": "q_square",
+                "score": 0,
+                "playerAnswer": "seau"
+              },
+              {
+                "type": "vocabulary_used",
+                "word": "seau",
+                "correct": false
+              },
+              {
+                "type": "visual_vocab_answered",
+                "targetId": "well",
+                "questId": "q_square",
+                "passed": false,
+                "score": 0,
+                "playerAnswer": "seau"
+              }
+            ]
+          },
+          "standing": {
+            "kind": "identify",
+            "id": "well",
+            "prompt": {
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "promptText": "What is this? Answer in the target language.",
+              "isActivity": false
+            }
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "identify",
+          "id": "well",
+          "result": {
+            "passed": false,
+            "score": 0,
+            "feedback": "That doesn't seem right. Hint: a deep hole for water",
+            "bestMatch": null,
+            "objectiveCompleted": false,
+            "events": [
+              {
+                "type": "identification_incorrect",
+                "targetId": "well",
+                "questId": "q_square",
+                "score": 0,
+                "playerAnswer": "xx"
+              },
+              {
+                "type": "vocabulary_used",
+                "word": "xx",
+                "correct": false
+              },
+              {
+                "type": "visual_vocab_answered",
+                "targetId": "well",
+                "questId": "q_square",
+                "passed": false,
+                "score": 0,
+                "playerAnswer": "xx"
+              }
+            ]
+          },
+          "standing": {
+            "kind": "identify",
+            "id": "well",
+            "prompt": {
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "promptText": "What is this? Answer in the target language.",
+              "isActivity": false,
+              "hint": "a deep hole for water"
+            }
+          }
+        },
+        {
+          "do": "standing",
+          "pick": {
+            "kind": "identify",
+            "id": "well",
+            "prompt": {
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "promptText": "What is this? Answer in the target language.",
+              "isActivity": false,
+              "hint": "a deep hole for water"
+            }
+          },
+          "quiz": null
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "identify",
+          "id": "well",
+          "result": {
+            "passed": true,
+            "score": 100,
+            "feedback": "Excellent! Perfect identification!",
+            "bestMatch": "puits",
+            "objectiveCompleted": true,
+            "events": [
+              {
+                "type": "identification_correct",
+                "targetId": "well",
+                "questId": "q_square",
+                "score": 100,
+                "playerAnswer": "Puits!"
+              },
+              {
+                "type": "vocabulary_used",
+                "word": "puits",
+                "correct": true
+              },
+              {
+                "type": "visual_vocab_answered",
+                "targetId": "well",
+                "questId": "q_square",
+                "passed": true,
+                "score": 100,
+                "playerAnswer": "Puits!"
+              },
+              {
+                "type": "object_identified",
+                "objectId": "well",
+                "objectName": "well",
+                "targetWord": "puits"
+              }
+            ]
+          },
+          "standing": null
+        },
+        {
+          "do": "standing",
+          "pick": null,
+          "quiz": null
+        },
+        {
+          "do": "answer",
+          "ok": false,
+          "refusal": "no_prompt"
+        },
+        {
+          "do": "pick",
+          "picked": "w_well",
+          "ok": true,
+          "prompt": {
+            "kind": "name",
+            "id": "well",
+            "prompt": "Name this object in the target language (3 attempts left):",
+            "attemptsLeft": 3
+          },
+          "checked": {
+            "identify": "identified",
+            "name": "raised"
+          },
+          "events": [],
+          "standing": {
+            "kind": "name",
+            "id": "well"
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "name",
+          "id": "well",
+          "result": {
+            "correct": true,
+            "xp": 5,
+            "attempts": 1,
+            "revealed": false,
+            "toasts": [
+              {
+                "title": "Correct!",
+                "text": "puits = well (+5 XP)"
+              }
+            ],
+            "events": [
+              {
+                "type": "object_named",
+                "objectId": "well",
+                "targetWord": "puits",
+                "category": "places",
+                "correct": true,
+                "attempts": 1
+              },
+              {
+                "type": "vocabulary_used",
+                "word": "puits",
+                "correct": true
+              },
+              {
+                "type": "object_identified",
+                "objectId": "well",
+                "objectName": "well",
+                "targetWord": "puits",
+                "category": "places"
+              }
+            ]
+          },
+          "standing": null
+        },
+        {
+          "do": "standing",
+          "pick": null,
+          "quiz": null
+        }
+      ]
+    },
+    {
+      "name": "run: a target by the pick's own id or its lower-cased role; point and name within 8 of the player, never twice",
+      "op": "run",
+      "note": "The apple is a quest's own item, a target by its id; the Fountain a target by \"fountain\". A pointer's pick is any object: the bench exactly 8 away is offered, 8.01 away it is not; the lamp has a word but is not registered (pointAt refuses unknown_object); the cauldron, once named, is already_named.",
+      "input": {
+        "targetLanguage": "French",
+        "steps": [
+          {
+            "do": "register",
+            "targets": [
+              {
+                "id": "well",
+                "questId": "q_square",
+                "objectiveId": "o1",
+                "expected": "puits",
+                "hint": "a deep hole for water",
+                "objectName": "well"
+              },
+              {
+                "id": "fountain",
+                "questId": "q_square",
+                "objectiveId": "o2",
+                "expected": "fontaine",
+                "hint": "water that sprays"
+              },
+              {
+                "id": "w_apple",
+                "questId": "q_market",
+                "objectiveId": "o1",
+                "expected": "pomme",
+                "hint": "a red fruit"
+              }
+            ],
+            "world": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "object": {
+              "id": "w_apple",
+              "role": "apple",
+              "name": "apple",
+              "position": {
+                "x": 1,
+                "z": 1
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "pomme",
+                  "category": "food"
+                }
+              }
+            }
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "object": {
+              "id": "w_fountain",
+              "role": "Fountain",
+              "name": "fountain",
+              "position": {
+                "x": 0,
+                "z": 4
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "fontaine",
+                  "category": "places"
+                }
+              }
+            }
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "object": {
+              "id": "w_bench",
+              "role": "bench",
+              "name": "bench",
+              "position": {
+                "x": 8,
+                "z": 0
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "banc"
+                }
+              }
+            }
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": -0.01,
+              "z": 0
+            },
+            "object": {
+              "id": "w_bench",
+              "role": "bench",
+              "name": "bench",
+              "position": {
+                "x": 8,
+                "z": 0
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "banc"
+                }
+              }
+            }
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "object": {
+              "id": "w_lamp",
+              "role": "lamp",
+              "name": "lamp",
+              "position": {
+                "x": 1,
+                "z": 0
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "lampe"
+                }
+              }
+            }
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "object": {
+              "id": "w_cauldron",
+              "role": "cauldron",
+              "name": "cauldron",
+              "position": {
+                "x": 2,
+                "z": 0
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "chaudron"
+                }
+              }
+            }
+          },
+          {
+            "do": "answer",
+            "input": " Chaudron "
+          },
+          {
+            "do": "standing"
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "object": {
+              "id": "w_cauldron",
+              "role": "cauldron",
+              "name": "cauldron",
+              "position": {
+                "x": 2,
+                "z": 0
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "chaudron"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "targets": [
+            "well",
+            "fountain",
+            "w_apple"
+          ],
+          "nameable": [
+            "well",
+            "cauldron",
+            "fountain",
+            "bench",
+            "apple"
+          ],
+          "tagged": []
+        },
+        {
+          "do": "pick",
+          "picked": "w_apple",
+          "ok": true,
+          "prompt": {
+            "kind": "identify",
+            "id": "w_apple",
+            "prompt": {
+              "targetId": "w_apple",
+              "questId": "q_market",
+              "objectiveId": "o1",
+              "promptText": "What is this? Answer in the target language.",
+              "isActivity": false
+            }
+          },
+          "checked": {
+            "identify": "raised"
+          },
+          "events": [
+            {
+              "type": "identification_prompted",
+              "targetId": "w_apple",
+              "questId": "q_market",
+              "objectiveId": "o1",
+              "isActivity": false
+            },
+            {
+              "type": "visual_vocab_prompted",
+              "targetId": "w_apple",
+              "questId": "q_market",
+              "objectiveId": "o1",
+              "isActivity": false
+            }
+          ],
+          "standing": {
+            "kind": "identify",
+            "id": "w_apple"
+          }
+        },
+        {
+          "do": "pick",
+          "picked": "w_fountain",
+          "ok": true,
+          "prompt": {
+            "kind": "identify",
+            "id": "fountain",
+            "prompt": {
+              "targetId": "fountain",
+              "questId": "q_square",
+              "objectiveId": "o2",
+              "promptText": "What is this? Answer in the target language.",
+              "isActivity": false
+            }
+          },
+          "checked": {
+            "identify": "raised"
+          },
+          "events": [
+            {
+              "type": "identification_prompted",
+              "targetId": "fountain",
+              "questId": "q_square",
+              "objectiveId": "o2",
+              "isActivity": false
+            },
+            {
+              "type": "visual_vocab_prompted",
+              "targetId": "fountain",
+              "questId": "q_square",
+              "objectiveId": "o2",
+              "isActivity": false
+            }
+          ],
+          "standing": {
+            "kind": "identify",
+            "id": "fountain"
+          }
+        },
+        {
+          "do": "pick",
+          "picked": "w_bench",
+          "ok": true,
+          "prompt": {
+            "kind": "name",
+            "id": "bench",
+            "prompt": "Name this object in the target language (3 attempts left):",
+            "attemptsLeft": 3
+          },
+          "checked": {
+            "identify": "not_a_target",
+            "name": "raised"
+          },
+          "events": [],
+          "standing": {
+            "kind": "name",
+            "id": "bench"
+          }
+        },
+        {
+          "do": "pick",
+          "picked": "w_bench",
+          "ok": true,
+          "prompt": null,
+          "checked": {
+            "identify": "not_a_target",
+            "name": "out_of_range"
+          },
+          "events": [],
+          "standing": {
+            "kind": "name",
+            "id": "bench"
+          }
+        },
+        {
+          "do": "pick",
+          "picked": "w_lamp",
+          "ok": true,
+          "prompt": null,
+          "checked": {
+            "identify": "not_a_target",
+            "name": "unknown_object"
+          },
+          "events": [],
+          "standing": {
+            "kind": "name",
+            "id": "bench"
+          }
+        },
+        {
+          "do": "pick",
+          "picked": "w_cauldron",
+          "ok": true,
+          "prompt": {
+            "kind": "name",
+            "id": "cauldron",
+            "prompt": "Name this object in the target language (3 attempts left):",
+            "attemptsLeft": 3
+          },
+          "checked": {
+            "identify": "not_a_target",
+            "name": "raised"
+          },
+          "events": [],
+          "standing": {
+            "kind": "name",
+            "id": "cauldron"
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "name",
+          "id": "cauldron",
+          "result": {
+            "correct": true,
+            "xp": 5,
+            "attempts": 1,
+            "revealed": false,
+            "toasts": [
+              {
+                "title": "Correct!",
+                "text": "chaudron = cauldron (+5 XP)"
+              }
+            ],
+            "events": [
+              {
+                "type": "object_named",
+                "objectId": "cauldron",
+                "targetWord": "chaudron",
+                "category": "general",
+                "correct": true,
+                "attempts": 1
+              },
+              {
+                "type": "vocabulary_used",
+                "word": "chaudron",
+                "correct": true
+              },
+              {
+                "type": "object_identified",
+                "objectId": "cauldron",
+                "objectName": "cauldron",
+                "targetWord": "chaudron",
+                "category": "general"
+              }
+            ]
+          },
+          "standing": null
+        },
+        {
+          "do": "standing",
+          "pick": null,
+          "quiz": null
+        },
+        {
+          "do": "pick",
+          "picked": "w_cauldron",
+          "ok": true,
+          "prompt": null,
+          "checked": {
+            "identify": "not_a_target",
+            "name": "already_named"
+          },
+          "events": [],
+          "standing": null
+        }
+      ]
+    },
+    {
+      "name": "run: a pick whose id and role both name targets asks by its id first, then by its role, then offers its name",
+      "op": "run",
+      "note": "The well object is the target of a quest about this well (w_well) and of one about any well (well). Each pick asks the first of its targets that still asks.",
+      "input": {
+        "targetLanguage": "French",
+        "steps": [
+          {
+            "do": "register",
+            "targets": [
+              {
+                "id": "well",
+                "questId": "q_square",
+                "objectiveId": "o1",
+                "expected": "puits",
+                "hint": "a deep hole for water",
+                "objectName": "well"
+              },
+              {
+                "id": "w_well",
+                "questId": "q_this_well",
+                "objectiveId": "o1",
+                "expected": "puits",
+                "hint": "this well"
+              }
+            ],
+            "world": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "objects": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "answer",
+            "input": "puits"
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "objects": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "answer",
+            "input": "puits"
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "objects": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "targets": [
+            "well",
+            "w_well"
+          ],
+          "nameable": [
+            "well",
+            "cauldron",
+            "fountain",
+            "bench",
+            "apple"
+          ],
+          "tagged": []
+        },
+        {
+          "do": "pick",
+          "picked": "w_well",
+          "ok": true,
+          "prompt": {
+            "kind": "identify",
+            "id": "w_well",
+            "prompt": {
+              "targetId": "w_well",
+              "questId": "q_this_well",
+              "objectiveId": "o1",
+              "promptText": "What is this? Answer in the target language.",
+              "isActivity": false
+            }
+          },
+          "checked": {
+            "identify": "raised"
+          },
+          "events": [
+            {
+              "type": "identification_prompted",
+              "targetId": "w_well",
+              "questId": "q_this_well",
+              "objectiveId": "o1",
+              "isActivity": false
+            },
+            {
+              "type": "visual_vocab_prompted",
+              "targetId": "w_well",
+              "questId": "q_this_well",
+              "objectiveId": "o1",
+              "isActivity": false
+            }
+          ],
+          "standing": {
+            "kind": "identify",
+            "id": "w_well"
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "identify",
+          "id": "w_well",
+          "result": {
+            "passed": true,
+            "score": 100,
+            "feedback": "Excellent! Perfect identification!",
+            "bestMatch": "puits",
+            "objectiveCompleted": true,
+            "events": [
+              {
+                "type": "identification_correct",
+                "targetId": "w_well",
+                "questId": "q_this_well",
+                "score": 100,
+                "playerAnswer": "puits"
+              },
+              {
+                "type": "vocabulary_used",
+                "word": "puits",
+                "correct": true
+              },
+              {
+                "type": "visual_vocab_answered",
+                "targetId": "w_well",
+                "questId": "q_this_well",
+                "passed": true,
+                "score": 100,
+                "playerAnswer": "puits"
+              },
+              {
+                "type": "object_identified",
+                "objectId": "w_well",
+                "objectName": "w_well",
+                "targetWord": "puits"
+              }
+            ]
+          },
+          "standing": null
+        },
+        {
+          "do": "pick",
+          "picked": "w_well",
+          "ok": true,
+          "prompt": {
+            "kind": "identify",
+            "id": "well",
+            "prompt": {
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "promptText": "What is this? Answer in the target language.",
+              "isActivity": false
+            }
+          },
+          "checked": {
+            "identify": "raised"
+          },
+          "events": [
+            {
+              "type": "identification_prompted",
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "isActivity": false
+            },
+            {
+              "type": "visual_vocab_prompted",
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "isActivity": false
+            }
+          ],
+          "standing": {
+            "kind": "identify",
+            "id": "well"
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "identify",
+          "id": "well",
+          "result": {
+            "passed": true,
+            "score": 100,
+            "feedback": "Excellent! Perfect identification!",
+            "bestMatch": "puits",
+            "objectiveCompleted": true,
+            "events": [
+              {
+                "type": "identification_correct",
+                "targetId": "well",
+                "questId": "q_square",
+                "score": 100,
+                "playerAnswer": "puits"
+              },
+              {
+                "type": "vocabulary_used",
+                "word": "puits",
+                "correct": true
+              },
+              {
+                "type": "visual_vocab_answered",
+                "targetId": "well",
+                "questId": "q_square",
+                "passed": true,
+                "score": 100,
+                "playerAnswer": "puits"
+              },
+              {
+                "type": "object_identified",
+                "objectId": "well",
+                "objectName": "well",
+                "targetWord": "puits"
+              }
+            ]
+          },
+          "standing": null
+        },
+        {
+          "do": "pick",
+          "picked": "w_well",
+          "ok": true,
+          "prompt": {
+            "kind": "name",
+            "id": "well",
+            "prompt": "Name this object in the target language (3 attempts left):",
+            "attemptsLeft": 3
+          },
+          "checked": {
+            "identify": "identified",
+            "name": "raised"
+          },
+          "events": [],
+          "standing": {
+            "kind": "name",
+            "id": "well"
+          }
+        }
+      ]
+    },
+    {
+      "name": "run: three wrong names reveal the word and the naming prompt stands no more; that object is offered no more",
+      "op": "run",
+      "input": {
+        "targetLanguage": "French",
+        "steps": [
+          {
+            "do": "register",
+            "targets": [
+              {
+                "id": "well",
+                "questId": "q_square",
+                "objectiveId": "o1",
+                "expected": "puits",
+                "hint": "a deep hole for water",
+                "objectName": "well"
+              },
+              {
+                "id": "fountain",
+                "questId": "q_square",
+                "objectiveId": "o2",
+                "expected": "fontaine",
+                "hint": "water that sprays"
+              },
+              {
+                "id": "w_apple",
+                "questId": "q_market",
+                "objectiveId": "o1",
+                "expected": "pomme",
+                "hint": "a red fruit"
+              }
+            ],
+            "world": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "object": {
+              "id": "w_bench",
+              "role": "bench",
+              "name": "bench",
+              "position": {
+                "x": 8,
+                "z": 0
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "banc"
+                }
+              }
+            }
+          },
+          {
+            "do": "answer",
+            "input": "chaise"
+          },
+          {
+            "do": "answer",
+            "input": "table"
+          },
+          {
+            "do": "standing"
+          },
+          {
+            "do": "answer",
+            "input": "lit"
+          },
+          {
+            "do": "standing"
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "object": {
+              "id": "w_bench",
+              "role": "bench",
+              "name": "bench",
+              "position": {
+                "x": 8,
+                "z": 0
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "banc"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "targets": [
+            "well",
+            "fountain",
+            "w_apple"
+          ],
+          "nameable": [
+            "well",
+            "cauldron",
+            "fountain",
+            "bench",
+            "apple"
+          ],
+          "tagged": []
+        },
+        {
+          "do": "pick",
+          "picked": "w_bench",
+          "ok": true,
+          "prompt": {
+            "kind": "name",
+            "id": "bench",
+            "prompt": "Name this object in the target language (3 attempts left):",
+            "attemptsLeft": 3
+          },
+          "checked": {
+            "identify": "not_a_target",
+            "name": "raised"
+          },
+          "events": [],
+          "standing": {
+            "kind": "name",
+            "id": "bench"
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "name",
+          "id": "bench",
+          "result": {
+            "correct": false,
+            "xp": 0,
+            "attempts": 1,
+            "revealed": false,
+            "toasts": [
+              {
+                "title": "Try again",
+                "text": "That's not quite right. Expected: banc"
+              }
+            ],
+            "events": [
+              {
+                "type": "vocabulary_used",
+                "word": "banc",
+                "correct": false
+              }
+            ]
+          },
+          "standing": {
+            "kind": "name",
+            "id": "bench",
+            "prompt": "Name this object in the target language (2 attempts left):",
+            "attemptsLeft": 2
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "name",
+          "id": "bench",
+          "result": {
+            "correct": false,
+            "xp": 0,
+            "attempts": 2,
+            "revealed": false,
+            "toasts": [
+              {
+                "title": "Try again",
+                "text": "That's not quite right. Expected: banc"
+              }
+            ],
+            "events": [
+              {
+                "type": "vocabulary_used",
+                "word": "banc",
+                "correct": false
+              }
+            ]
+          },
+          "standing": {
+            "kind": "name",
+            "id": "bench",
+            "prompt": "Name this object in the target language (1 attempts left):",
+            "attemptsLeft": 1
+          }
+        },
+        {
+          "do": "standing",
+          "pick": {
+            "kind": "name",
+            "id": "bench",
+            "prompt": "Name this object in the target language (1 attempts left):",
+            "attemptsLeft": 1
+          },
+          "quiz": null
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "name",
+          "id": "bench",
+          "result": {
+            "correct": false,
+            "xp": 0,
+            "attempts": 3,
+            "revealed": true,
+            "toasts": [
+              {
+                "title": "Answer revealed",
+                "text": "The word is: banc (bench)"
+              },
+              {
+                "title": "Try again",
+                "text": "That's not quite right. Expected: banc"
+              }
+            ],
+            "events": [
+              {
+                "type": "vocabulary_used",
+                "word": "banc",
+                "correct": false
+              }
+            ]
+          },
+          "standing": null
+        },
+        {
+          "do": "standing",
+          "pick": null,
+          "quiz": null
+        },
+        {
+          "do": "pick",
+          "picked": "w_bench",
+          "ok": true,
+          "prompt": null,
+          "checked": {
+            "identify": "not_a_target",
+            "name": "no_attempts_left"
+          },
+          "events": [],
+          "standing": null
+        }
+      ]
+    },
+    {
+      "name": "run: the game's tunings: a nearer naming range (x and z), fewer tries, a stricter pass, an earlier hint, another prompt text",
+      "op": "run",
+      "input": {
+        "targetLanguage": "French",
+        "params": {
+          "naming": {
+            "range": 1.5,
+            "maxAttempts": 2
+          },
+          "identification": {
+            "hintAfter": 1,
+            "passScore": 90,
+            "promptForObject": "Name it."
+          }
+        },
+        "steps": [
+          {
+            "do": "register",
+            "targets": [
+              {
+                "id": "well",
+                "questId": "q_square",
+                "objectiveId": "o1",
+                "expected": "puits",
+                "hint": "a deep hole for water",
+                "objectName": "well"
+              },
+              {
+                "id": "fountain",
+                "questId": "q_square",
+                "objectiveId": "o2",
+                "expected": "fontaine",
+                "hint": "water that sprays"
+              },
+              {
+                "id": "w_apple",
+                "questId": "q_market",
+                "objectiveId": "o1",
+                "expected": "pomme",
+                "hint": "a red fruit"
+              }
+            ],
+            "world": [
+              {
+                "id": "w_well",
+                "role": "well",
+                "name": "well",
+                "position": {
+                  "x": 0,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "puits",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_cauldron",
+                "role": "cauldron",
+                "name": "cauldron",
+                "position": {
+                  "x": 2,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "chaudron"
+                  }
+                }
+              },
+              {
+                "id": "w_crate",
+                "role": "crate",
+                "name": "crate",
+                "position": {
+                  "x": -2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "w_fountain",
+                "role": "Fountain",
+                "name": "fountain",
+                "position": {
+                  "x": 0,
+                  "z": 4
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "fontaine",
+                    "category": "places"
+                  }
+                }
+              },
+              {
+                "id": "w_bench",
+                "role": "bench",
+                "name": "bench",
+                "position": {
+                  "x": 8,
+                  "z": 0
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "banc"
+                  }
+                }
+              },
+              {
+                "id": "w_apple",
+                "role": "apple",
+                "name": "apple",
+                "position": {
+                  "x": 1,
+                  "z": 1
+                },
+                "translations": {
+                  "French": {
+                    "targetWord": "pomme",
+                    "category": "food"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "object": {
+              "id": "w_cauldron",
+              "role": "cauldron",
+              "name": "cauldron",
+              "position": {
+                "x": 2,
+                "z": 0
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "chaudron"
+                }
+              }
+            }
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 2,
+              "z": 1.6
+            },
+            "object": {
+              "id": "w_cauldron",
+              "role": "cauldron",
+              "name": "cauldron",
+              "position": {
+                "x": 2,
+                "z": 0
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "chaudron"
+                }
+              }
+            }
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0.5,
+              "z": 0
+            },
+            "object": {
+              "id": "w_cauldron",
+              "role": "cauldron",
+              "name": "cauldron",
+              "position": {
+                "x": 2,
+                "z": 0
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "chaudron"
+                }
+              }
+            }
+          },
+          {
+            "do": "standing"
+          },
+          {
+            "do": "answer",
+            "input": "marmite"
+          },
+          {
+            "do": "answer",
+            "input": "pot"
+          },
+          {
+            "do": "pick",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "object": {
+              "id": "w_well",
+              "role": "well",
+              "name": "well",
+              "position": {
+                "x": 0,
+                "z": 0
+              },
+              "translations": {
+                "French": {
+                  "targetWord": "puits",
+                  "category": "places"
+                }
+              }
+            }
+          },
+          {
+            "do": "answer",
+            "input": "puit"
+          },
+          {
+            "do": "standing"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "targets": [
+            "well",
+            "fountain",
+            "w_apple"
+          ],
+          "nameable": [
+            "well",
+            "cauldron",
+            "fountain",
+            "bench",
+            "apple"
+          ],
+          "tagged": []
+        },
+        {
+          "do": "pick",
+          "picked": "w_cauldron",
+          "ok": true,
+          "prompt": null,
+          "checked": {
+            "identify": "not_a_target",
+            "name": "out_of_range"
+          },
+          "events": [],
+          "standing": null
+        },
+        {
+          "do": "pick",
+          "picked": "w_cauldron",
+          "ok": true,
+          "prompt": null,
+          "checked": {
+            "identify": "not_a_target",
+            "name": "out_of_range"
+          },
+          "events": [],
+          "standing": null
+        },
+        {
+          "do": "pick",
+          "picked": "w_cauldron",
+          "ok": true,
+          "prompt": {
+            "kind": "name",
+            "id": "cauldron",
+            "prompt": "Name this object in the target language (2 attempts left):",
+            "attemptsLeft": 2
+          },
+          "checked": {
+            "identify": "not_a_target",
+            "name": "raised"
+          },
+          "events": [],
+          "standing": {
+            "kind": "name",
+            "id": "cauldron"
+          }
+        },
+        {
+          "do": "standing",
+          "pick": {
+            "kind": "name",
+            "id": "cauldron",
+            "prompt": "Name this object in the target language (2 attempts left):",
+            "attemptsLeft": 2
+          },
+          "quiz": null
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "name",
+          "id": "cauldron",
+          "result": {
+            "correct": false,
+            "xp": 0,
+            "attempts": 1,
+            "revealed": false,
+            "toasts": [
+              {
+                "title": "Try again",
+                "text": "That's not quite right. Expected: chaudron"
+              }
+            ],
+            "events": [
+              {
+                "type": "vocabulary_used",
+                "word": "chaudron",
+                "correct": false
+              }
+            ]
+          },
+          "standing": {
+            "kind": "name",
+            "id": "cauldron",
+            "prompt": "Name this object in the target language (1 attempts left):",
+            "attemptsLeft": 1
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "name",
+          "id": "cauldron",
+          "result": {
+            "correct": false,
+            "xp": 0,
+            "attempts": 2,
+            "revealed": true,
+            "toasts": [
+              {
+                "title": "Answer revealed",
+                "text": "The word is: chaudron (cauldron)"
+              },
+              {
+                "title": "Try again",
+                "text": "That's not quite right. Expected: chaudron"
+              }
+            ],
+            "events": [
+              {
+                "type": "vocabulary_used",
+                "word": "chaudron",
+                "correct": false
+              }
+            ]
+          },
+          "standing": null
+        },
+        {
+          "do": "pick",
+          "picked": "w_well",
+          "ok": true,
+          "prompt": {
+            "kind": "identify",
+            "id": "well",
+            "prompt": {
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "promptText": "Name it.",
+              "isActivity": false
+            }
+          },
+          "checked": {
+            "identify": "raised"
+          },
+          "events": [
+            {
+              "type": "identification_prompted",
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "isActivity": false
+            },
+            {
+              "type": "visual_vocab_prompted",
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "isActivity": false
+            }
+          ],
+          "standing": {
+            "kind": "identify",
+            "id": "well"
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "kind": "identify",
+          "id": "well",
+          "result": {
+            "passed": false,
+            "score": 80,
+            "feedback": "Close! Try again. Hint: a deep hole for water",
+            "bestMatch": "puits",
+            "objectiveCompleted": false,
+            "events": [
+              {
+                "type": "identification_incorrect",
+                "targetId": "well",
+                "questId": "q_square",
+                "score": 80,
+                "playerAnswer": "puit"
+              },
+              {
+                "type": "vocabulary_used",
+                "word": "puit",
+                "correct": false
+              },
+              {
+                "type": "visual_vocab_answered",
+                "targetId": "well",
+                "questId": "q_square",
+                "passed": false,
+                "score": 80,
+                "playerAnswer": "puit"
+              }
+            ]
+          },
+          "standing": {
+            "kind": "identify",
+            "id": "well",
+            "prompt": {
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "promptText": "Name it.",
+              "isActivity": false,
+              "hint": "a deep hole for water"
+            }
+          }
+        },
+        {
+          "do": "standing",
+          "pick": {
+            "kind": "identify",
+            "id": "well",
+            "prompt": {
+              "targetId": "well",
+              "questId": "q_square",
+              "objectiveId": "o1",
+              "promptText": "Name it.",
+              "isActivity": false,
+              "hint": "a deep hole for water"
+            }
+          },
+          "quiz": null
+        }
+      ]
+    },
+    {
+      "name": "run: objects that come into reach together are each asked in turn, once per stay; a wrong answer waits for the next stay",
+      "op": "run",
+      "note": "From (3, 0, 4) all three stalls are within 5 (the bread stall and the anvil exactly 5). One quiz stands until it is chosen, right or wrong; then the next object in reach not yet offered this stay is asked, in registration order. The bread stall, answered wrongly, is not asked again until it has left reach and come back.",
+      "input": {
+        "seed": "brightwater",
+        "steps": [
+          {
+            "do": "register",
+            "tags": [
+              {
+                "objectId": "bread_stall",
+                "label": "pain",
+                "answer": "bread",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "partOfSpeech": "noun"
+              },
+              {
+                "objectId": "cheese_stall",
+                "label": "fromage",
+                "answer": "cheese",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 4
+                }
+              },
+              {
+                "objectId": "anvil",
+                "label": "enclume",
+                "answer": "anvil",
+                "category": "tools",
+                "difficulty": "intermediate",
+                "position": {
+                  "x": 6,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 4
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 4
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "cheese"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 4
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "cheese"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 4
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "anvil"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 4
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 100,
+              "y": 0,
+              "z": 100
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "bread"
+          },
+          {
+            "do": "choose",
+            "answer": "bread"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "targets": [],
+          "nameable": [],
+          "tagged": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": {
+            "objectId": "bread_stall",
+            "label": "pain",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"pain\" mean?",
+            "options": [
+              {
+                "text": "anvil",
+                "isCorrect": false
+              },
+              {
+                "text": "bread",
+                "isCorrect": true
+              },
+              {
+                "text": "cheese",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "bread_stall",
+          "offered": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": null,
+          "standing": "bread_stall",
+          "offered": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "bread_stall",
+          "correct": false,
+          "alreadyCollected": false,
+          "xp": 0,
+          "label": "pain",
+          "answer": "bread",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "pain",
+              "correct": false
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "pain",
+              "correct": false
+            }
+          ],
+          "collected": [],
+          "standing": null
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": {
+            "objectId": "cheese_stall",
+            "label": "fromage",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"fromage\" mean?",
+            "options": [
+              {
+                "text": "bread",
+                "isCorrect": false
+              },
+              {
+                "text": "cheese",
+                "isCorrect": true
+              },
+              {
+                "text": "anvil",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "cheese_stall",
+          "offered": [
+            "bread_stall",
+            "cheese_stall"
+          ]
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "cheese_stall",
+          "correct": true,
+          "alreadyCollected": false,
+          "xp": 3,
+          "label": "fromage",
+          "answer": "cheese",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "fromage",
+              "correct": true
+            },
+            {
+              "type": "item_collected",
+              "itemId": "vocab_cheese_stall",
+              "itemName": "fromage",
+              "quantity": 1,
+              "taxonomy": {
+                "category": "food",
+                "itemType": "vocabulary",
+                "baseType": "noun"
+              }
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "fromage",
+              "correct": true
+            }
+          ],
+          "collected": [
+            "cheese_stall"
+          ],
+          "standing": null
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "anvil"
+          ],
+          "quiz": {
+            "objectId": "anvil",
+            "label": "enclume",
+            "category": "tools",
+            "difficulty": "intermediate",
+            "prompt": "What does \"enclume\" mean?",
+            "options": [
+              {
+                "text": "anvil",
+                "isCorrect": true
+              },
+              {
+                "text": "bread",
+                "isCorrect": false
+              },
+              {
+                "text": "cheese",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "anvil",
+          "offered": [
+            "bread_stall",
+            "anvil"
+          ]
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "anvil",
+          "correct": true,
+          "alreadyCollected": false,
+          "xp": 3,
+          "label": "enclume",
+          "answer": "anvil",
+          "category": "tools",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "enclume",
+              "correct": true
+            },
+            {
+              "type": "item_collected",
+              "itemId": "vocab_anvil",
+              "itemName": "enclume",
+              "quantity": 1,
+              "taxonomy": {
+                "category": "tools",
+                "itemType": "vocabulary",
+                "baseType": "noun"
+              }
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "enclume",
+              "correct": true
+            }
+          ],
+          "collected": [
+            "cheese_stall",
+            "anvil"
+          ],
+          "standing": null
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall"
+          ],
+          "quiz": null,
+          "standing": null,
+          "offered": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [],
+          "quiz": null,
+          "standing": null,
+          "offered": []
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall"
+          ],
+          "quiz": {
+            "objectId": "bread_stall",
+            "label": "pain",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"pain\" mean?",
+            "options": [
+              {
+                "text": "bread",
+                "isCorrect": true
+              },
+              {
+                "text": "cheese",
+                "isCorrect": false
+              },
+              {
+                "text": "anvil",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "bread_stall",
+          "offered": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "bread_stall",
+          "correct": true,
+          "alreadyCollected": false,
+          "xp": 3,
+          "label": "pain",
+          "answer": "bread",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "pain",
+              "correct": true
+            },
+            {
+              "type": "item_collected",
+              "itemId": "vocab_bread_stall",
+              "itemName": "pain",
+              "quantity": 1,
+              "taxonomy": {
+                "category": "food",
+                "itemType": "vocabulary",
+                "baseType": "noun"
+              }
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "pain",
+              "correct": true
+            }
+          ],
+          "collected": [
+            "cheese_stall",
+            "anvil",
+            "bread_stall"
+          ],
+          "standing": null
+        },
+        {
+          "do": "choose",
+          "ok": false,
+          "refusal": "no_quiz"
+        },
+        {
+          "do": "reach",
+          "inReach": [],
+          "quiz": null,
+          "standing": null,
+          "offered": []
+        }
+      ]
+    },
+    {
+      "name": "run: an object that comes into reach while a quiz stands is asked after it; a quiz stands while its object is out of reach",
+      "op": "run",
+      "note": "The cheese stall and the anvil arrive while the bread stall's quiz stands, and are asked after it. The cheese stall's quiz still stands after the player walks away; answered wrongly there, it is asked again when the stall comes back into reach.",
+      "input": {
+        "seed": "brightwater",
+        "steps": [
+          {
+            "do": "register",
+            "tags": [
+              {
+                "objectId": "bread_stall",
+                "label": "pain",
+                "answer": "bread",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "partOfSpeech": "noun"
+              },
+              {
+                "objectId": "cheese_stall",
+                "label": "fromage",
+                "answer": "cheese",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 4
+                }
+              },
+              {
+                "objectId": "anvil",
+                "label": "enclume",
+                "answer": "anvil",
+                "category": "tools",
+                "difficulty": "intermediate",
+                "position": {
+                  "x": 6,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": -1,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 2,
+              "y": 0,
+              "z": 2
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "bread"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 2,
+              "y": 0,
+              "z": 2
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 50,
+              "y": 0,
+              "z": 50
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "bread"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 2,
+              "y": 0,
+              "z": 2
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "targets": [],
+          "nameable": [],
+          "tagged": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall"
+          ],
+          "quiz": {
+            "objectId": "bread_stall",
+            "label": "pain",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"pain\" mean?",
+            "options": [
+              {
+                "text": "anvil",
+                "isCorrect": false
+              },
+              {
+                "text": "bread",
+                "isCorrect": true
+              },
+              {
+                "text": "cheese",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "bread_stall",
+          "offered": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": null,
+          "standing": "bread_stall",
+          "offered": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "bread_stall",
+          "correct": true,
+          "alreadyCollected": false,
+          "xp": 3,
+          "label": "pain",
+          "answer": "bread",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "pain",
+              "correct": true
+            },
+            {
+              "type": "item_collected",
+              "itemId": "vocab_bread_stall",
+              "itemName": "pain",
+              "quantity": 1,
+              "taxonomy": {
+                "category": "food",
+                "itemType": "vocabulary",
+                "baseType": "noun"
+              }
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "pain",
+              "correct": true
+            }
+          ],
+          "collected": [
+            "bread_stall"
+          ],
+          "standing": null
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": {
+            "objectId": "cheese_stall",
+            "label": "fromage",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"fromage\" mean?",
+            "options": [
+              {
+                "text": "bread",
+                "isCorrect": false
+              },
+              {
+                "text": "cheese",
+                "isCorrect": true
+              },
+              {
+                "text": "anvil",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "cheese_stall",
+          "offered": [
+            "cheese_stall"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [],
+          "quiz": null,
+          "standing": "cheese_stall",
+          "offered": []
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "cheese_stall",
+          "correct": false,
+          "alreadyCollected": false,
+          "xp": 0,
+          "label": "fromage",
+          "answer": "cheese",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "fromage",
+              "correct": false
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "fromage",
+              "correct": false
+            }
+          ],
+          "collected": [
+            "bread_stall"
+          ],
+          "standing": null
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": {
+            "objectId": "cheese_stall",
+            "label": "fromage",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"fromage\" mean?",
+            "options": [
+              {
+                "text": "bread",
+                "isCorrect": false
+              },
+              {
+                "text": "anvil",
+                "isCorrect": false
+              },
+              {
+                "text": "cheese",
+                "isCorrect": true
+              }
+            ]
+          },
+          "standing": "cheese_stall",
+          "offered": [
+            "cheese_stall"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: the game's collection range and options; a knowledge world",
+      "op": "run",
+      "input": {
+        "seed": "survival",
+        "params": {
+          "collection": {
+            "range": 1,
+            "options": 2,
+            "kind": "knowledge",
+            "xpPerEntry": 7
+          }
+        },
+        "steps": [
+          {
+            "do": "register",
+            "tags": [
+              {
+                "objectId": "fern",
+                "label": "Bracken",
+                "answer": "a fern",
+                "category": "plants",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                }
+              },
+              {
+                "objectId": "fox",
+                "label": "Fox",
+                "answer": "a canid",
+                "category": "animals",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 1.5,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "a fern"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "targets": [],
+          "nameable": [],
+          "tagged": [
+            "fern",
+            "fox"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [],
+          "quiz": null,
+          "standing": null,
+          "offered": []
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "fern"
+          ],
+          "quiz": {
+            "objectId": "fern",
+            "label": "Bracken",
+            "category": "plants",
+            "difficulty": "beginner",
+            "prompt": "What does \"Bracken\" mean?",
+            "options": [
+              {
+                "text": "a fern",
+                "isCorrect": true
+              },
+              {
+                "text": "a canid",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "fern",
+          "offered": [
+            "fern"
+          ]
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "fern",
+          "correct": true,
+          "alreadyCollected": false,
+          "xp": 7,
+          "label": "Bracken",
+          "answer": "a fern",
+          "category": "plants",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "Bracken",
+              "correct": true
+            },
+            {
+              "type": "item_collected",
+              "itemId": "knowledge_fern",
+              "itemName": "Bracken",
+              "quantity": 1,
+              "taxonomy": {
+                "category": "plants",
+                "itemType": "knowledge"
+              }
+            }
+          ],
+          "collected": [
+            "fern"
+          ],
+          "standing": null
+        }
+      ]
+    },
+    {
+      "name": "run: a quiz carried out of reach and back is the offer of the stay it returns to; answered wrongly there, it is not asked again in that stay",
+      "op": "run",
+      "note": "PL.core-learning-history-fields (m1-quiz-reasked-same-stay). The bread stall is asked from (-1, 0, 0); the player walks away with its quiz standing and comes back to (2, 0, 2), where all three stalls are in reach: the bread stall counts as offered in this stay (offered [bread_stall]) and the cheese stall and the anvil wait. Answered wrongly, the bread stall is not asked again: the cheese stall is, then the anvil. Only after the bread stall leaves reach and comes back is it asked again.",
+      "input": {
+        "seed": "brightwater",
+        "steps": [
+          {
+            "do": "register",
+            "tags": [
+              {
+                "objectId": "bread_stall",
+                "label": "pain",
+                "answer": "bread",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "partOfSpeech": "noun"
+              },
+              {
+                "objectId": "cheese_stall",
+                "label": "fromage",
+                "answer": "cheese",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 4
+                }
+              },
+              {
+                "objectId": "anvil",
+                "label": "enclume",
+                "answer": "anvil",
+                "category": "tools",
+                "difficulty": "intermediate",
+                "position": {
+                  "x": 6,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": -1,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 50,
+              "y": 0,
+              "z": 50
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 2,
+              "y": 0,
+              "z": 2
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "anvil"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 2,
+              "y": 0,
+              "z": 2
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "cheese"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 2,
+              "y": 0,
+              "z": 2
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "anvil"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 2,
+              "y": 0,
+              "z": 2
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 50,
+              "y": 0,
+              "z": 50
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": -1,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "targets": [],
+          "nameable": [],
+          "tagged": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall"
+          ],
+          "quiz": {
+            "objectId": "bread_stall",
+            "label": "pain",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"pain\" mean?",
+            "options": [
+              {
+                "text": "anvil",
+                "isCorrect": false
+              },
+              {
+                "text": "bread",
+                "isCorrect": true
+              },
+              {
+                "text": "cheese",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "bread_stall",
+          "offered": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [],
+          "quiz": null,
+          "standing": "bread_stall",
+          "offered": []
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": null,
+          "standing": "bread_stall",
+          "offered": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "bread_stall",
+          "correct": false,
+          "alreadyCollected": false,
+          "xp": 0,
+          "label": "pain",
+          "answer": "bread",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "pain",
+              "correct": false
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "pain",
+              "correct": false
+            }
+          ],
+          "collected": [],
+          "standing": null
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": {
+            "objectId": "cheese_stall",
+            "label": "fromage",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"fromage\" mean?",
+            "options": [
+              {
+                "text": "bread",
+                "isCorrect": false
+              },
+              {
+                "text": "cheese",
+                "isCorrect": true
+              },
+              {
+                "text": "anvil",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "cheese_stall",
+          "offered": [
+            "bread_stall",
+            "cheese_stall"
+          ]
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "cheese_stall",
+          "correct": true,
+          "alreadyCollected": false,
+          "xp": 3,
+          "label": "fromage",
+          "answer": "cheese",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "fromage",
+              "correct": true
+            },
+            {
+              "type": "item_collected",
+              "itemId": "vocab_cheese_stall",
+              "itemName": "fromage",
+              "quantity": 1,
+              "taxonomy": {
+                "category": "food",
+                "itemType": "vocabulary",
+                "baseType": "noun"
+              }
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "fromage",
+              "correct": true
+            }
+          ],
+          "collected": [
+            "cheese_stall"
+          ],
+          "standing": null
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "anvil"
+          ],
+          "quiz": {
+            "objectId": "anvil",
+            "label": "enclume",
+            "category": "tools",
+            "difficulty": "intermediate",
+            "prompt": "What does \"enclume\" mean?",
+            "options": [
+              {
+                "text": "anvil",
+                "isCorrect": true
+              },
+              {
+                "text": "bread",
+                "isCorrect": false
+              },
+              {
+                "text": "cheese",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "anvil",
+          "offered": [
+            "bread_stall",
+            "anvil"
+          ]
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "anvil",
+          "correct": true,
+          "alreadyCollected": false,
+          "xp": 3,
+          "label": "enclume",
+          "answer": "anvil",
+          "category": "tools",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "enclume",
+              "correct": true
+            },
+            {
+              "type": "item_collected",
+              "itemId": "vocab_anvil",
+              "itemName": "enclume",
+              "quantity": 1,
+              "taxonomy": {
+                "category": "tools",
+                "itemType": "vocabulary",
+                "baseType": "noun"
+              }
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "enclume",
+              "correct": true
+            }
+          ],
+          "collected": [
+            "cheese_stall",
+            "anvil"
+          ],
+          "standing": null
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall"
+          ],
+          "quiz": null,
+          "standing": null,
+          "offered": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [],
+          "quiz": null,
+          "standing": null,
+          "offered": []
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall"
+          ],
+          "quiz": {
+            "objectId": "bread_stall",
+            "label": "pain",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"pain\" mean?",
+            "options": [
+              {
+                "text": "bread",
+                "isCorrect": true
+              },
+              {
+                "text": "cheese",
+                "isCorrect": false
+              },
+              {
+                "text": "anvil",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "bread_stall",
+          "offered": [
+            "bread_stall"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: a returning standing quiz joins the objects still offered this stay, after them",
+      "op": "run",
+      "note": "PL.core-learning-history-fields. From (3, 0, 0) all three stalls are in reach. The bread stall is asked and answered wrongly (it stays offered); the cheese stall is asked. At (-1, 0, 0) only the bread stall is in reach: offered keeps it, and the cheese stall's quiz stands out of reach. Back at (3, 0, 0) the cheese stall returns while its quiz stands and is added after the objects still offered (offered [bread_stall, cheese_stall]). Answered wrongly, neither is asked again this stay: the anvil is.",
+      "input": {
+        "seed": "brightwater",
+        "steps": [
+          {
+            "do": "register",
+            "tags": [
+              {
+                "objectId": "bread_stall",
+                "label": "pain",
+                "answer": "bread",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "partOfSpeech": "noun"
+              },
+              {
+                "objectId": "cheese_stall",
+                "label": "fromage",
+                "answer": "cheese",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 4
+                }
+              },
+              {
+                "objectId": "anvil",
+                "label": "enclume",
+                "answer": "anvil",
+                "category": "tools",
+                "difficulty": "intermediate",
+                "position": {
+                  "x": 6,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "cheese"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": -1,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "do": "choose",
+            "answer": "bread"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "targets": [],
+          "nameable": [],
+          "tagged": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": {
+            "objectId": "bread_stall",
+            "label": "pain",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"pain\" mean?",
+            "options": [
+              {
+                "text": "anvil",
+                "isCorrect": false
+              },
+              {
+                "text": "bread",
+                "isCorrect": true
+              },
+              {
+                "text": "cheese",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "bread_stall",
+          "offered": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "bread_stall",
+          "correct": false,
+          "alreadyCollected": false,
+          "xp": 0,
+          "label": "pain",
+          "answer": "bread",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "pain",
+              "correct": false
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "pain",
+              "correct": false
+            }
+          ],
+          "collected": [],
+          "standing": null
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": {
+            "objectId": "cheese_stall",
+            "label": "fromage",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"fromage\" mean?",
+            "options": [
+              {
+                "text": "bread",
+                "isCorrect": false
+              },
+              {
+                "text": "cheese",
+                "isCorrect": true
+              },
+              {
+                "text": "anvil",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "cheese_stall",
+          "offered": [
+            "bread_stall",
+            "cheese_stall"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall"
+          ],
+          "quiz": null,
+          "standing": "cheese_stall",
+          "offered": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": null,
+          "standing": "cheese_stall",
+          "offered": [
+            "bread_stall",
+            "cheese_stall"
+          ]
+        },
+        {
+          "do": "choose",
+          "ok": true,
+          "objectId": "cheese_stall",
+          "correct": false,
+          "alreadyCollected": false,
+          "xp": 0,
+          "label": "fromage",
+          "answer": "cheese",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "fromage",
+              "correct": false
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "fromage",
+              "correct": false
+            }
+          ],
+          "collected": [],
+          "standing": null
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "quiz": {
+            "objectId": "anvil",
+            "label": "enclume",
+            "category": "tools",
+            "difficulty": "intermediate",
+            "prompt": "What does \"enclume\" mean?",
+            "options": [
+              {
+                "text": "anvil",
+                "isCorrect": true
+              },
+              {
+                "text": "bread",
+                "isCorrect": false
+              },
+              {
+                "text": "cheese",
+                "isCorrect": false
+              }
+            ]
+          },
+          "standing": "anvil",
+          "offered": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ]
+        }
+      ]
+    }
+  ]
+}

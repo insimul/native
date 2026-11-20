@@ -148,6 +148,63 @@ game; **meta** = about the bridge itself.
 | `save.village.conversations.records` | `{ rows }` → `{ records }`: the rows split back, one record per conversation | `save-file-game-state` `conversationRecordsOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
 | `save.village.conversations.timestamp` | `{ epochMs }` → `{ timestamp }` (null outside the range) | `save-file-game-state` `conversationTimestampOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
 | `save.village.conversations.epochMs` | `{ timestamp }` → `{ epochMs }` (null unless it writes back to itself) | `save-file-game-state` `epochMsOfConversationTimestamp` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `language.contract` | `{}` → `{ cefrOrder, encounterTypes, encounterHalves, grammarWeaknessMinAttempts, grammarWeaknessRate, grammarMasteryCorrectUses, fluencyMax, fluencyGainMin, fluencyGainMax, bookRefusals, extensionKey, blockMembers, bookKeys, wordKeys, grammarKeys, namingKeys, identificationKeys, promptRefusals, examineRange, identificationTuning, namingTuning, collectionTuning, hoverRefusals, chatRefusals, chatPercentPerWordPerTurn }` | `language-learning/{progress,language-save,prompt-selector,world-words,reading-writing,chat-metrics}` constants | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.empty` | `{ language? }` → `{ book }` | `language-learning/progress` `emptyBook` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.mastery` | `{ encountered, halves }` → `{ mastery }` | `language-learning/progress` `masteryOf` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.wordView` | `{ row }` → `{ view }` (a row core's save reader cannot read: `[invalid-input]`) | `language-learning/progress` `wordView` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.findWord` | `{ book, word, language? }` → `{ row }` (null: none) | `language-learning/progress` `findWord` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.advance` | `{ book, ms }` → `{ book }` | `language-learning/progress` `advanceBook` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.recordEncounter` | `{ book, encounter }` → `{ ok: true, book, entry, isNew, masteryChanged }` or `{ ok: false, book, refusal }` | `language-learning/progress` `recordEncounter` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.encounterOfEvent` | `{ event }` → `{ encounter }` (null: not a word event) | `language-learning/progress` `encounterOfEvent` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.isWeak` | `{ row }` → `{ weak }` | `language-learning/progress` `isWeak` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.recordGrammar` | `{ book, feedback }` → `{ book, touched, signals }` | `language-learning/progress` `recordGrammar` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.weakPatterns` | `{ book }` → `{ patterns }` | `language-learning/progress` `weakPatterns` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.fluencyGain` | `{ fluency, uniqueWords, grammarCorrect, grammarAttempted, turns, targetPercent }` → `{ gain, bonuses }` | `language-learning/progress` `fluencyGain` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.recordConversation` | `{ book, conversation }` → `{ book, result, signals }` | `language-learning/progress` `recordConversation` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.setCefr` | `{ book, level }` → `{ book, signals }` | `language-learning/progress` `setCefr` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.book.summary` | `{ book }` → `{ language, clockMs, fluency, cefr, conversations, correctUsages, wordsLearned, mastered }` | `language-learning/progress` `bookSummary` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.facts.cefr` | `{ facts }` → `{ cefr }` (null: none) | `prolog/player-language-state` `extractPlayerCefrFromFacts` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.facts.weakDimensions` | `{ facts, threshold? }` → `{ weak }` | `prolog/player-language-state` `extractPlayerWeakDimensions` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.save.block` | `{ book?, collected?, naming?, identification? }` → `{ block }` | `language-learning/language-save` `languageSaveBlock` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.save.read` | `{ block }` → `{ ok: true, value }` or `{ ok: false, keys }` | `language-learning/language-save` `readLanguageBlock` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.save.blockOf` | `{ block }` → `{ block }`: the stored block (one core's reader cannot read: `[invalid-input]`) | `language-learning/language-save` `readLanguageBlock` then `languageBlockOf` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.identification.initial` | `{}` → `{ state }` | `language-learning/world-words` `initialIdentification` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.identification.registerTargets` | `{ state, targets }` → `{ state }` | `language-learning/world-words` `registerTargets` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.naming.initial` | `{}` → `{ state }` | `language-learning/world-words` `initialNaming` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.naming.registerNameable` | `{ state, objects }` → `{ state }` | `language-learning/world-words` `registerNameable` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.naming.nameableObjects` | `{ objects, targetLanguage }` → `{ objects }` | `language-learning/world-words` `nameableObjects` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.collection.initial` | `{ seed }` → `{ state }` | `language-learning/world-words` `initialCollection` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.collection.registerTags` | `{ state, tags }` → `{ state }` | `language-learning/world-words` `registerTags` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.prompts.initial` | `{}` → `{ state }` | `language-learning/prompt-selector` `initialPrompts` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.prompts.pickTargetIds` | `{ identification, pick }` → `{ ids }` | `language-learning/prompt-selector` `pickTargetIds` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.prompts.onPick` | `{ state, pick, at, world }` → `{ ok: true, state, prompt, checked, events }` or `{ ok: false, state, refusal }` | `language-learning/prompt-selector` `promptOnPick` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.prompts.standing` | `{ state, world }` → `{ state, prompt }` | `language-learning/prompt-selector` `standingPick` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.prompts.answer` | `{ state, input, world }` → `{ ok: true, state, identification, naming, kind, id, result, standing }` or `{ ok: false, state, identification, naming, refusal }` | `language-learning/prompt-selector` `answerPick` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.prompts.quizOnReach` | `{ state, collection, at, tuning? }` → `{ state, collection, inReach, quiz }` | `language-learning/prompt-selector` `quizOnReach` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.prompts.answerQuiz` | `{ state, collection, answer, tuning? }` → `{ ok: true, state, collection, objectId, answer }` or `{ ok: false, state, collection, refusal }` | `language-learning/prompt-selector` `answerStandingQuiz` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.word.key` | `{ word }` → `{ key }` | `language-learning/word-key` `wordKey` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.word.stripEdges` | `{ word }` → `{ word }` | `language-learning/word-key` `stripWordEdges` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.hover.tokenize` | `{ text }` → `{ tokens }` | `language-learning/reading-writing` `tokenize` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.hover.initial` | `{ cefr?, targetLanguage? }` → `{ state }` | `language-learning/reading-writing` `initialHover` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.hover.addHints` | `{ state, hints }` → `{ state }` | `language-learning/reading-writing` `addHints` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.hover.seeWord` | `{ state, word, difficulty? }` → `{ state, showHint }` | `language-learning/reading-writing` `seeWord` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.hover.setMastery` | `{ state, word, encountered, correct }` → `{ state }` | `language-learning/reading-writing` `setMastery` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.hover.isLikelyTarget` | `{ state, word }` → `{ likely }` | `language-learning/reading-writing` `isLikelyTarget` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.hover.lookup` | `{ state, word }` → `{ ok: true, state, result, request, signals }` or `{ ok: false, state, refusal }` | `language-learning/reading-writing` `lookup` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.hover.resolve` | `{ state, word, translation, context? }` → `{ state, result, signals }` | `language-learning/reading-writing` `resolveLookup` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.hover.display` | `{ state }` → `{ mode, size }` | `language-learning/reading-writing` `hoverDisplay` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.chat.lineTokens` | `{ line }` → `{ tokens }` | `language-learning/chat-metrics` `lineTokens` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.chat.lineWords` | `{ line, book, worldWords? }` → `{ totalWords, targetWords, wordsUsed }` | `language-learning/chat-metrics` `chatLineWords` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.chat.questUsages` | `{ line, questWords, book, worldWords? }` → `{ usages }` | `language-learning/chat-metrics` `chatQuestUsages` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.chat.targetPercent` | `{ used, turns }` → `{ targetPercent }` | `language-learning/chat-metrics` `chatTargetPercent` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.chat.start` | `{ npcName? }` → `{ session }` | `language-learning/chat-metrics` `startChat` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.chat.checkErrors` | `{ check }` → `{ errors }` | `language-learning/chat-metrics` `checkErrors` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.chat.hear` | `{ session, check }` → `{ session }` | `language-learning/chat-metrics` `hearChatGrammar` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.chat.line` | `{ session, line, book, worldWords? }` → `{ ok: true, session, metrics, wordsUsed }` or `{ ok: false, session, refusal }` | `language-learning/chat-metrics` `chatLine` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.chat.end` | `{ session }` → `{ ok: true, conversation }` or `{ ok: false, refusal }` | `language-learning/chat-metrics` `endChat` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.chat.finish` | `{ book, session }` → `{ ok: true, book, conversation, result, signals }` or `{ ok: false, book, refusal }` | `language-learning/chat-metrics` `finishChat` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.difficulty.initial` | `{}` → `{ state }` | `language-learning/adaptation` `initialDifficulty` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.difficulty.recordTurn` | `{ state, metrics }` → `{ state, struggle, adjustment }` | `language-learning/adaptation` `recordTurn` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `ui.loadRefusal` | `{ refusal }` → `{ outcome, message }`: every string `invalid_format` with its message; any other value `{ outcome: null, message: '' }` | `ui/save-slot-model` `slotOutcomeOfLoadRefusal`, `loadRefusalMessage` | P1 refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1), U126(2)) |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
@@ -1965,6 +2022,78 @@ foreign-world and foreign-runtime ownership through `ownership` and `readRuntime
 the checked write and read, the conversation clock, the sky against a `weather.create`
 session), every expectation computed by core's own functions at the pin.
 
+### The language rows: the book, the save block, the prompt selector, hover, the chat (PL.native-language-rows, slice 1)
+
+Core's P9h language kernels (`src/language-learning/`, `docs/language-systems.md`) are
+rows (U118, U128), so an engine binds them instead of keeping a copy (Unreal's interim
+`Portable/InsimulLanguage*`, which `P9h.unreal.retire-language-copy` retires once the
+row's last slice lands; `ENGINE_BINDINGS.md` maps them function by function). Core's
+kernels are PURE: each takes a state and returns a new one, so each row takes the state
+as JSON and answers core's result as JSON, and the host keeps the state between calls
+(no session). Slice 1 binds five of core's thirteen corpus files; the bank and learning
+profile, adaptation, pronunciation, objects, collection and writing, then the quest
+feedback and the quest types follow in later slices (`chat-strip.json`, the NPC reply's
+marker strip, is the chat-cefr copy's and goes with `PL.native-chat-cefr-rows`).
+
+- **The book** (`progress.ts`): `language.book.empty`, `.recordEncounter`, `.advance`,
+  `.recordGrammar`, `.recordConversation`, `.setCefr` move a book; `.findWord`,
+  `.wordView`, `.mastery`, `.isWeak`, `.weakPatterns`, `.fluencyGain`, `.summary` and
+  `.encounterOfEvent` read one. A book is read with core's own reader of a stored book
+  (`readLanguageBlock`, the reader the village save's checked write and read use for
+  `extensions.languageLearning`), so a book the save would refuse is `[invalid-input]`
+  naming core's keys (`book.words[0]`, `book.fluency`, ...), and a book with members
+  missing reads with core's defaults. `language.facts.cefr` and `.weakDimensions` are
+  `prolog/player-language-state.ts`, the player's band and weak dimensions from facts.
+- **The save block** (`language-save.ts`): `language.save.block` is `languageSaveBlock`
+  (the block a game hands the save from its kernels), `language.save.read` is
+  `readLanguageBlock` (`{ ok, value }` or `{ ok: false, keys }`), and
+  `language.save.blockOf` is `languageBlockOf`, the stored form, over the block read
+  first with that reader, as the village save's writer reads `gameState.languageLearning`.
+  The checked write and read (`save.village.*`) carry the block already; these rows are
+  for a binding that builds or shows it between saves.
+- **The prompt selector** (`prompt-selector.ts`): `language.prompts.onPick`,
+  `.standing`, `.answer`, `.quizOnReach`, `.answerQuiz`, `.pickTargetIds` and `.initial`,
+  over core's `PickWorld` (`{ identification, naming, targetLanguage, identifyTuning?,
+  namingTuning? }`); a pick is examine's (`props.interactables.examinePick`) or a
+  pointer's. The registers it reads are core's `world-words.ts`:
+  `language.identification.initial`/`.registerTargets`, `language.naming.initial`/
+  `.registerNameable`/`.nameableObjects`, `language.collection.initial`/`.registerTags`
+  (the rest of `world-words` is a later slice). A tuning given is checked to hold every
+  key of core's default with the same JSON type; `language.contract` states the defaults.
+- **Hover and the word key** (the hover half of `reading-writing.ts`; `word-key.ts`):
+  `language.hover.initial`, `.tokenize`, `.addHints`, `.seeWord`, `.setMastery`,
+  `.isLikelyTarget`, `.lookup`, `.resolve`, `.display`; `language.word.key` and
+  `.stripEdges` are the one key hover and the chat share.
+- **The chat metrics** (`chat-metrics.ts`): `language.chat.start`, `.line`, `.hear`,
+  `.end`, `.finish`, `.lineTokens`, `.lineWords`, `.questUsages`, `.targetPercent`,
+  `.checkErrors`; a line's metrics feed core's difficulty monitor,
+  `language.difficulty.initial` and `.recordTurn` (`adaptation.ts`; the rest of
+  adaptation is a later slice).
+- **Refusals are values** in core's shape: `empty_word`, `unknown_encounter`
+  (the book handed back unchanged), `no_target_language`, `empty_line`, `no_turns`,
+  `nothing_in_reach`, `no_prompt`, `no_quiz`. Core states them as codes with no message,
+  so none is added. **`[invalid-input]` only for what core dereferences unread**: a book
+  core's reader cannot read, a state, list or string a kernel indexes, an enumeration
+  core's types declare (a CEFR band, a grammar status, a word difficulty, a tuning's
+  kind). **`language.contract`** states the constants a binding must not hard-code.
+
+Evidence: `language_corpus` (`tests/language_corpus.cpp`) drives core's
+`conformance/language/{progress,save,prompts,hover,chat}.json` (76 cases at 45409ed:
+14, 12, 10, 20 and 20), copied byte for byte at the pin, each op composed from the
+rows as core's reference runner (`systems-corpus.ts`, `runLanguageSystemsOp`) composes
+core's kernels, and needs each file's declared `ops` and `steps` to be exactly the ones
+it drives (0 undriven, every step driven). Its refusal probes show that core's eight
+refusals are values, that an unreadable book is `[invalid-input]` naming its key, that an
+unknown op or step fails its case and that an unknown row is the method table's error.
+`language_corpus_negative` perturbs every case's expectation. The same 76 cases also run
+on both case legs (and `corebridge_cases_parity`) as
+`vendor/core/cases/core-language-{progress,save,prompts,hover,chat}.json`, which
+`emit-bridge-cases.mjs` transcribes and `core_vendor` holds to the vendored corpora case by
+case (by name, by the first call core's runner makes, and to `language.*` rows only).
+Hand cases: `tests/cases/bridge-language.json` (every row; malformed books and the
+`[invalid-input]` boundary of every state; core's refusals as values; a game's own
+tunings), every expectation computed by core's own functions at the pin.
+
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 
 `save.rules`' `extensionKeys` is `Object.keys(extensionRegistry).sort()` over core's
@@ -2085,6 +2214,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `build_corpus`, `build_corpus_negative` | core's P10 headless build corpus (`conformance/build/headless.json`, 233 cases at 6cd4b4e) driven whole through the `build.*` rows by `tests/build_corpus.cpp` (credential markers expanded as core's runner does; 0 undriven; `build.contract` held to the file's contract; no credential repeated in a detail or a line; every out-dir refusal asked of the fold rows, with at least one case only the macOS fold catches and one only the Windows fold catches), and EVERY case's expectation perturbed and seen as wrong, with purposeful perturbations (a credential not caught or shown, a path escaping the build folder under either fold, an artefact outside it, a path outside the project) each refused |
 | `progression_corpus`, `progression_corpus_negative` | core's P9i progression corpora (`conformance/progression/{gamification,modules,skills,save}.json`, 87 cases at 45409ed with skills.json's `compose` and `kb` through the `skill.kb.*` rows, 73 at 6cd4b4e), its skill-tree corpora (`conformance/skills/*.json`, 52) and the `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json` (3) driven whole through the `progression.*` and `skill.*` rows by `tests/progression_corpus.cpp` (0 undriven per file; a gamification `run` one `progression.gamification.step` per step, every step kind driven; each progression file's catalog, ops and steps held to core's; a KB-backed `skill.unlock` per `can_unlock` case, with a no-KB control; refusal probes for an unknown op, step, area and row); the negative pass perturbs every expectation and needs every one refused |
 | `village_save_corpus`, `village_save_corpus_negative` | core's village-state save corpus (`conformance/saves/village-state.json`, 399 cases at 45409ed) driven whole through the `save.village.*` rows and `skill.kb.loadJson` by `tests/village_save_corpus.cpp`, each op as core's reference runner composes it (0 undriven; `save.village.contract` held to the file's contract; refusal probes for another version, an unregistered extension, another world and runtime, `[invalid-input]` and an unknown op or row); the negative perturbs every case |
+| `language_corpus`, `language_corpus_negative` | core's P9h language corpora `conformance/language/{progress,save,prompts,hover,chat}.json` (76 cases at 45409ed) driven whole through the `language.*` rows (and `props.interactables.examinePick` for the prompts' examine pick) by `tests/language_corpus.cpp`, each op as core's reference runner composes it (every op and step of each file driven, 0 undriven; each file's declared ops and steps held to the runner's; refusal probes for core's eight refusal values, an unreadable book's `[invalid-input]`, an unknown op, step or row); the negative perturbs every case |
 | `tutorial_progress_corpus`, `tutorial_progress_corpus_negative` | core's tutorial progress corpus driven whole through `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows' `save` op (23 cases, 0 undriven; contract tables held to `ui.tutorial.contract`, the runner lists to the steps it maps), and a wrong contract table, a wrong runner list, four wrong answers and an undrivable step seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's

@@ -642,6 +642,78 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language-learning/progress",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.book.* rows (core's language book: words, mastery bands, grammar patterns, fluency and the CEFR band) (PL.native-language-rows slice 1, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s1-book-prompts-hover-chat (Features Gauntlet PL.native-language-rows slice 1)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/prolog/player-language-state",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.facts.* rows (the player's CEFR band and weak dimensions from core's player-language facts) (PL.native-language-rows slice 1, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s1-book-prompts-hover-chat (Features Gauntlet PL.native-language-rows slice 1)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language-learning/language-save",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.save.* rows (core's language save block: its writer, the stored form and its reader, the village save's own) (PL.native-language-rows slice 1, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s1-book-prompts-hover-chat (Features Gauntlet PL.native-language-rows slice 1)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language-learning/world-words",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.identification.*, language.naming.* and language.collection.* rows the prompt selector reads (core's registers of identification targets, nameable objects and tagged objects) (PL.native-language-rows slice 1, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s1-book-prompts-hover-chat (Features Gauntlet PL.native-language-rows slice 1)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language-learning/reading-writing",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.hover.* rows (core's hover translation: tokens, the cache, lookups and sightings) (PL.native-language-rows slice 1, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s1-book-prompts-hover-chat (Features Gauntlet PL.native-language-rows slice 1)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language-learning/word-key",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.word.* rows (core's word key, shared by hover and the chat) (PL.native-language-rows slice 1, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s1-book-prompts-hover-chat (Features Gauntlet PL.native-language-rows slice 1)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language-learning/chat-metrics",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.chat.* rows (core's chat language metrics) (PL.native-language-rows slice 1, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s1-book-prompts-hover-chat (Features Gauntlet PL.native-language-rows slice 1)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language-learning/adaptation",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.difficulty.* rows (core's difficulty monitor, which a chat's lines feed) (PL.native-language-rows slice 1, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s1-book-prompts-hover-chat (Features Gauntlet PL.native-language-rows slice 1)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/progression/skill-kb",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the skill.kb.* rows (core's skill KB that sees the live facts: which facts a skill KB holds, the program a recomposing host consults, and its reference session, PL.core-skill-kb-live-facts and PL.core-skill-kb-rule-head-facts) (PL.native-bundle-core-r2, rulings U124, U126 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

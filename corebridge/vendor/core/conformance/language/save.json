@@ -1,0 +1,862 @@
+{
+  "schema": "insimul.conformance.language/1",
+  "area": "language",
+  "file": "language/save",
+  "phase": "P9h",
+  "description": "The language save block in currentState.extensions.languageLearning: built, read (every unreadable member named) and restored (src/language-learning/language-save.ts).",
+  "runner": "src/language-learning/systems-corpus.ts (runLanguageSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "language-progress-learning-profile",
+    "language-vocabulary-bank",
+    "language-knowledge-collection",
+    "language-object-identification",
+    "interaction-world-object-actions"
+  ],
+  "ops": [
+    "block",
+    "read",
+    "restore"
+  ],
+  "steps": {},
+  "cases": [
+    {
+      "name": "block: the kernels' states as the writer stores them",
+      "op": "block",
+      "input": {
+        "language": "fr",
+        "encounters": [
+          {
+            "word": "pain",
+            "type": "active_use",
+            "meaning": "bread",
+            "category": "food"
+          },
+          {
+            "word": "pain",
+            "type": "passive_hover"
+          },
+          {
+            "word": "eau",
+            "type": "quiz_incorrect"
+          }
+        ],
+        "grammar": [
+          {
+            "status": "corrected",
+            "errors": [
+              {
+                "pattern": "gender",
+                "corrected": "la table"
+              }
+            ]
+          }
+        ],
+        "cefr": "A1",
+        "collected": [
+          "bread_stall"
+        ],
+        "naming": {
+          "attempts": {
+            "anvil": 2,
+            "barrel": 1
+          },
+          "named": [
+            "barrel"
+          ]
+        },
+        "identification": {
+          "well": {
+            "attempts": 1,
+            "identified": false,
+            "bestScore": 40
+          }
+        }
+      },
+      "expected": {
+        "book": {
+          "language": "fr",
+          "clockMs": 0,
+          "fluency": 0,
+          "cefr": "A1",
+          "conversations": 0,
+          "correctUsages": 1,
+          "words": [
+            {
+              "word": "pain",
+              "language": "fr",
+              "meaning": "bread",
+              "category": "food",
+              "context": null,
+              "encountered": 2,
+              "correct": 1,
+              "incorrect": 0,
+              "halves": 3,
+              "last": 0,
+              "types": {
+                "active_use": 1,
+                "passive_hover": 1
+              }
+            },
+            {
+              "word": "eau",
+              "language": "fr",
+              "meaning": "",
+              "category": null,
+              "context": null,
+              "encountered": 1,
+              "correct": 0,
+              "incorrect": 1,
+              "halves": 0,
+              "last": 0,
+              "types": {
+                "quiz_incorrect": 1
+              }
+            }
+          ],
+          "grammar": [
+            {
+              "pattern": "gender",
+              "correct": 0,
+              "incorrect": 1,
+              "mastered": false,
+              "examples": [
+                "la table"
+              ],
+              "explanations": []
+            }
+          ]
+        },
+        "collected": [
+          "bread_stall"
+        ],
+        "naming": {
+          "anvil": {
+            "attempts": 2,
+            "named": false
+          },
+          "barrel": {
+            "attempts": 1,
+            "named": true
+          }
+        },
+        "identification": {
+          "well": {
+            "attempts": 1,
+            "identified": false,
+            "bestScore": 40
+          }
+        }
+      }
+    },
+    {
+      "name": "block: a game that runs none of the kernels",
+      "op": "block",
+      "input": {},
+      "expected": {
+        "book": null,
+        "collected": [],
+        "naming": {},
+        "identification": {}
+      }
+    },
+    {
+      "name": "read: a saved block reads back as written",
+      "op": "read",
+      "input": {
+        "block": {
+          "book": {
+            "language": "fr",
+            "clockMs": 9000,
+            "fluency": 22503,
+            "cefr": "A2",
+            "conversations": 1,
+            "correctUsages": 3,
+            "words": [
+              {
+                "word": "pain",
+                "language": "fr",
+                "meaning": "bread",
+                "category": "food",
+                "context": null,
+                "encountered": 3,
+                "correct": 2,
+                "incorrect": 0,
+                "halves": 5,
+                "last": 4000,
+                "types": {
+                  "active_use": 2,
+                  "passive_read": 1
+                }
+              },
+              {
+                "word": "eau",
+                "language": "fr",
+                "meaning": "water",
+                "category": null,
+                "context": "Cora Vale",
+                "encountered": 1,
+                "correct": 0,
+                "incorrect": 1,
+                "halves": 0,
+                "last": 9000,
+                "types": {
+                  "quiz_incorrect": 1
+                }
+              }
+            ],
+            "grammar": [
+              {
+                "pattern": "article agreement",
+                "correct": 2,
+                "incorrect": 3,
+                "mastered": false,
+                "examples": [
+                  "la maison"
+                ],
+                "explanations": [
+                  "maison is feminine"
+                ]
+              }
+            ]
+          },
+          "collected": [
+            "bread_stall"
+          ],
+          "naming": {
+            "barrel": {
+              "attempts": 1,
+              "named": true
+            },
+            "anvil": {
+              "attempts": 3,
+              "named": false
+            }
+          },
+          "identification": {
+            "apple": {
+              "attempts": 2,
+              "identified": true,
+              "bestScore": 83
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "book": {
+            "language": "fr",
+            "clockMs": 9000,
+            "fluency": 22503,
+            "cefr": "A2",
+            "conversations": 1,
+            "correctUsages": 3,
+            "words": [
+              {
+                "word": "pain",
+                "language": "fr",
+                "meaning": "bread",
+                "category": "food",
+                "context": null,
+                "encountered": 3,
+                "correct": 2,
+                "incorrect": 0,
+                "halves": 5,
+                "last": 4000,
+                "types": {
+                  "active_use": 2,
+                  "passive_read": 1
+                }
+              },
+              {
+                "word": "eau",
+                "language": "fr",
+                "meaning": "water",
+                "category": null,
+                "context": "Cora Vale",
+                "encountered": 1,
+                "correct": 0,
+                "incorrect": 1,
+                "halves": 0,
+                "last": 9000,
+                "types": {
+                  "quiz_incorrect": 1
+                }
+              }
+            ],
+            "grammar": [
+              {
+                "pattern": "article agreement",
+                "correct": 2,
+                "incorrect": 3,
+                "mastered": false,
+                "examples": [
+                  "la maison"
+                ],
+                "explanations": [
+                  "maison is feminine"
+                ]
+              }
+            ]
+          },
+          "collected": [
+            "bread_stall"
+          ],
+          "naming": {
+            "barrel": {
+              "attempts": 1,
+              "named": true
+            },
+            "anvil": {
+              "attempts": 3,
+              "named": false
+            }
+          },
+          "identification": {
+            "apple": {
+              "attempts": 2,
+              "identified": true,
+              "bestScore": 83
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "read: absent or null is no block",
+      "op": "read",
+      "input": {
+        "block": null
+      },
+      "expected": {
+        "ok": true,
+        "value": null
+      }
+    },
+    {
+      "name": "read: missing members read empty; unknown members are ignored",
+      "op": "read",
+      "input": {
+        "block": {
+          "book": {
+            "words": []
+          },
+          "hover": {
+            "pain": "bread"
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "book": {
+            "language": "target",
+            "clockMs": 0,
+            "fluency": 0,
+            "cefr": null,
+            "conversations": 0,
+            "correctUsages": 0,
+            "words": [],
+            "grammar": []
+          },
+          "collected": [],
+          "naming": {},
+          "identification": {}
+        }
+      }
+    },
+    {
+      "name": "read refused: a block that is not an object",
+      "op": "read",
+      "input": {
+        "block": [
+          "pain"
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "keys": []
+      }
+    },
+    {
+      "name": "read refused: every unreadable member named, in ascending order",
+      "op": "read",
+      "note": "A fluency over 100000, a band that is not one, a word whose kinds do not add up to its encounters, a second row for the same word ignoring case, a fractional clock, a repeated collected id, a naming row without named, a best score over 100.",
+      "input": {
+        "block": {
+          "book": {
+            "language": "fr",
+            "clockMs": 1.5,
+            "fluency": 100001,
+            "cefr": "D1",
+            "conversations": -1,
+            "correctUsages": 0,
+            "words": [
+              {
+                "word": "pain",
+                "language": "fr",
+                "meaning": "",
+                "category": null,
+                "context": null,
+                "encountered": 1,
+                "correct": 1,
+                "incorrect": 0,
+                "halves": 2,
+                "last": 0,
+                "types": {
+                  "active_use": 1
+                }
+              },
+              {
+                "word": "eau",
+                "language": "fr",
+                "meaning": "",
+                "category": null,
+                "context": null,
+                "encountered": 2,
+                "correct": 1,
+                "incorrect": 0,
+                "halves": 2,
+                "last": 0,
+                "types": {
+                  "active_use": 1
+                }
+              },
+              {
+                "word": "the",
+                "language": "fr",
+                "meaning": "",
+                "category": null,
+                "context": null,
+                "encountered": 1,
+                "correct": 1,
+                "incorrect": 0,
+                "halves": 2,
+                "last": 0,
+                "types": {
+                  "active_use": 1,
+                  "passive_read": 0
+                }
+              },
+              {
+                "word": "",
+                "language": "fr",
+                "meaning": "",
+                "category": null,
+                "context": null,
+                "encountered": 1,
+                "correct": 1,
+                "incorrect": 0,
+                "halves": 2,
+                "last": 0,
+                "types": {
+                  "active_use": 1
+                }
+              },
+              {
+                "word": "PAIN",
+                "language": "fr",
+                "meaning": "",
+                "category": null,
+                "context": null,
+                "encountered": 1,
+                "correct": 1,
+                "incorrect": 0,
+                "halves": 2,
+                "last": 0,
+                "types": {
+                  "active_use": 1
+                }
+              },
+              {
+                "word": "sel",
+                "language": "fr",
+                "meaning": "",
+                "category": null,
+                "context": null,
+                "encountered": 1,
+                "correct": 1,
+                "incorrect": 0,
+                "halves": 3,
+                "last": 0,
+                "types": {
+                  "active_use": 1
+                }
+              },
+              {
+                "word": "lait",
+                "language": "fr",
+                "meaning": "",
+                "category": null,
+                "context": null,
+                "encountered": 0,
+                "correct": 0,
+                "incorrect": 0,
+                "halves": 0,
+                "last": 0,
+                "types": {
+                  "shouted": 1
+                }
+              },
+              {
+                "word": "vin",
+                "language": "fr",
+                "meaning": "",
+                "category": null,
+                "context": null,
+                "encountered": 1,
+                "correct": 0,
+                "incorrect": 0,
+                "halves": 2,
+                "last": 0,
+                "types": {
+                  "active_use": 1
+                }
+              },
+              {
+                "word": " riz ",
+                "language": "fr",
+                "meaning": "",
+                "category": null,
+                "context": null,
+                "encountered": 1,
+                "correct": 1,
+                "incorrect": 0,
+                "halves": 2,
+                "last": 0,
+                "types": {
+                  "active_use": 1
+                }
+              }
+            ],
+            "grammar": [
+              {
+                "pattern": "gender",
+                "correct": 1,
+                "incorrect": 0,
+                "mastered": false,
+                "examples": [],
+                "explanations": []
+              },
+              {
+                "pattern": "gender",
+                "correct": 0,
+                "incorrect": 1,
+                "mastered": false,
+                "examples": [],
+                "explanations": []
+              },
+              {
+                "pattern": "plural",
+                "correct": 1,
+                "incorrect": 0,
+                "mastered": "no",
+                "examples": [],
+                "explanations": []
+              }
+            ]
+          },
+          "collected": [
+            "a",
+            "a",
+            3
+          ],
+          "naming": {
+            "anvil": {
+              "attempts": 1
+            }
+          },
+          "identification": {
+            "apple": {
+              "attempts": 1,
+              "identified": true,
+              "bestScore": 101
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "book.cefr",
+          "book.clockMs",
+          "book.conversations",
+          "book.fluency",
+          "book.grammar[1]",
+          "book.grammar[2]",
+          "book.words[1]",
+          "book.words[2]",
+          "book.words[3]",
+          "book.words[4]",
+          "book.words[5]",
+          "book.words[6]",
+          "book.words[7]",
+          "book.words[8]",
+          "collected[1]",
+          "collected[2]",
+          "identification.apple",
+          "naming.anvil"
+        ]
+      }
+    },
+    {
+      "name": "read refused: members of the wrong kind",
+      "op": "read",
+      "input": {
+        "block": {
+          "book": "fr",
+          "collected": {},
+          "naming": [],
+          "identification": 7
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "book",
+          "collected",
+          "identification",
+          "naming"
+        ]
+      }
+    },
+    {
+      "name": "read refused: a book whose lists are not lists",
+      "op": "read",
+      "input": {
+        "block": {
+          "book": {
+            "words": {},
+            "grammar": "gender"
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "book.grammar",
+          "book.words"
+        ]
+      }
+    },
+    {
+      "name": "restore: a load hands the book back; mastery and weakness are derived again",
+      "op": "restore",
+      "input": {
+        "block": {
+          "book": {
+            "language": "fr",
+            "clockMs": 9000,
+            "fluency": 22503,
+            "cefr": "A2",
+            "conversations": 1,
+            "correctUsages": 3,
+            "words": [
+              {
+                "word": "pain",
+                "language": "fr",
+                "meaning": "bread",
+                "category": "food",
+                "context": null,
+                "encountered": 3,
+                "correct": 2,
+                "incorrect": 0,
+                "halves": 5,
+                "last": 4000,
+                "types": {
+                  "active_use": 2,
+                  "passive_read": 1
+                }
+              },
+              {
+                "word": "eau",
+                "language": "fr",
+                "meaning": "water",
+                "category": null,
+                "context": "Cora Vale",
+                "encountered": 1,
+                "correct": 0,
+                "incorrect": 1,
+                "halves": 0,
+                "last": 9000,
+                "types": {
+                  "quiz_incorrect": 1
+                }
+              }
+            ],
+            "grammar": [
+              {
+                "pattern": "article agreement",
+                "correct": 2,
+                "incorrect": 3,
+                "mastered": false,
+                "examples": [
+                  "la maison"
+                ],
+                "explanations": [
+                  "maison is feminine"
+                ]
+              }
+            ]
+          },
+          "collected": [
+            "bread_stall"
+          ],
+          "naming": {
+            "barrel": {
+              "attempts": 1,
+              "named": true
+            },
+            "anvil": {
+              "attempts": 3,
+              "named": false
+            }
+          },
+          "identification": {
+            "apple": {
+              "attempts": 2,
+              "identified": true,
+              "bestScore": 83
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "block": {
+          "book": {
+            "language": "fr",
+            "clockMs": 9000,
+            "fluency": 22503,
+            "cefr": "A2",
+            "conversations": 1,
+            "correctUsages": 3,
+            "words": [
+              {
+                "word": "pain",
+                "language": "fr",
+                "meaning": "bread",
+                "category": "food",
+                "context": null,
+                "encountered": 3,
+                "correct": 2,
+                "incorrect": 0,
+                "halves": 5,
+                "last": 4000,
+                "types": {
+                  "active_use": 2,
+                  "passive_read": 1
+                }
+              },
+              {
+                "word": "eau",
+                "language": "fr",
+                "meaning": "water",
+                "category": null,
+                "context": "Cora Vale",
+                "encountered": 1,
+                "correct": 0,
+                "incorrect": 1,
+                "halves": 0,
+                "last": 9000,
+                "types": {
+                  "quiz_incorrect": 1
+                }
+              }
+            ],
+            "grammar": [
+              {
+                "pattern": "article agreement",
+                "correct": 2,
+                "incorrect": 3,
+                "mastered": false,
+                "examples": [
+                  "la maison"
+                ],
+                "explanations": [
+                  "maison is feminine"
+                ]
+              }
+            ]
+          },
+          "collected": [
+            "bread_stall"
+          ],
+          "naming": {
+            "anvil": {
+              "attempts": 3,
+              "named": false
+            },
+            "barrel": {
+              "attempts": 1,
+              "named": true
+            }
+          },
+          "identification": {
+            "apple": {
+              "attempts": 2,
+              "identified": true,
+              "bestScore": 83
+            }
+          }
+        },
+        "summary": {
+          "language": "fr",
+          "clockMs": 9000,
+          "fluency": 22503,
+          "cefr": "A2",
+          "conversations": 1,
+          "correctUsages": 3,
+          "wordsLearned": 2,
+          "mastered": []
+        },
+        "mastery": [
+          {
+            "word": "pain",
+            "mastery": "learning"
+          },
+          {
+            "word": "eau",
+            "mastery": "new"
+          }
+        ],
+        "weak": [
+          "article agreement"
+        ]
+      }
+    },
+    {
+      "name": "restore: no block restores an empty one",
+      "op": "restore",
+      "input": {},
+      "expected": {
+        "ok": true,
+        "block": {
+          "book": null,
+          "collected": [],
+          "naming": {},
+          "identification": {}
+        },
+        "summary": null,
+        "mastery": [],
+        "weak": []
+      }
+    },
+    {
+      "name": "restore refused: an unreadable block restores nothing",
+      "op": "restore",
+      "input": {
+        "block": {
+          "collected": "bread_stall"
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "collected"
+        ]
+      }
+    }
+  ]
+}

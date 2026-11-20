@@ -1,0 +1,2037 @@
+{
+  "schema": "insimul.conformance.language/1",
+  "area": "language",
+  "file": "language/hover",
+  "phase": "P9h",
+  "description": "Hover-to-translate: tokens, the translation cache, lookups and their answers, passive encounters, new-word hints (src/language-learning/reading-writing.ts).",
+  "runner": "src/language-learning/systems-corpus.ts (runLanguageSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "language-hover-translation"
+  ],
+  "ops": [
+    "tokens",
+    "run"
+  ],
+  "steps": {
+    "run": [
+      "hints",
+      "see",
+      "mastery",
+      "lookup",
+      "resolve",
+      "likely",
+      "display"
+    ]
+  },
+  "cases": [
+    {
+      "name": "tokens: words and the spaces between, punctuation-only tokens are not words",
+      "op": "tokens",
+      "input": {
+        "text": "« Bonjour », dit-elle…  Où est la gare ?"
+      },
+      "expected": {
+        "tokens": [
+          {
+            "text": "«",
+            "isWord": false
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "Bonjour",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "»,",
+            "isWord": false
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "dit-elle…",
+            "isWord": true
+          },
+          {
+            "text": "  ",
+            "isWord": false
+          },
+          {
+            "text": "Où",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "est",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "la",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "gare",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "?",
+            "isWord": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "run: hints fill the cache; a hit is a passive encounter; a miss asks once; the answer fills the cache",
+      "op": "run",
+      "input": {
+        "cefr": "A1",
+        "targetLanguage": "French",
+        "steps": [
+          {
+            "do": "hints",
+            "hints": [
+              {
+                "word": "Pain!",
+                "translation": "bread",
+                "context": "at the bakery"
+              },
+              {
+                "word": "eau",
+                "translation": ""
+              },
+              {
+                "word": "",
+                "translation": "nothing"
+              },
+              {
+                "word": "come",
+                "translation": "eats (Spanish)"
+              }
+            ]
+          },
+          {
+            "do": "lookup",
+            "word": "pain"
+          },
+          {
+            "do": "lookup",
+            "word": "fromage"
+          },
+          {
+            "do": "lookup",
+            "word": "Fromage."
+          },
+          {
+            "do": "resolve",
+            "word": "fromage",
+            "translation": "cheese"
+          },
+          {
+            "do": "lookup",
+            "word": "fromage"
+          },
+          {
+            "do": "lookup",
+            "word": "xyzzy"
+          },
+          {
+            "do": "resolve",
+            "word": "xyzzy",
+            "translation": null
+          },
+          {
+            "do": "likely",
+            "words": [
+              "the",
+              "a",
+              "pain",
+              "café",
+              "Hello",
+              "tonneau",
+              "!",
+              "à",
+              "come"
+            ]
+          },
+          {
+            "do": "display"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "hints",
+          "cached": [
+            "pain",
+            "come"
+          ]
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "Pain!",
+            "translation": "bread",
+            "source": "cache",
+            "context": "at the bakery"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "Pain!",
+              "translation": "bread",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": null,
+          "request": {
+            "word": "fromage",
+            "targetLanguage": "French"
+          },
+          "signals": [],
+          "pending": [
+            "fromage"
+          ]
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": null,
+          "request": "pending",
+          "signals": [],
+          "pending": [
+            "fromage"
+          ]
+        },
+        {
+          "do": "resolve",
+          "result": {
+            "word": "fromage",
+            "translation": "cheese",
+            "source": "api"
+          },
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "fromage",
+              "translation": "cheese",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "fromage",
+            "translation": "cheese",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "fromage",
+              "translation": "cheese",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": null,
+          "request": {
+            "word": "xyzzy",
+            "targetLanguage": "French"
+          },
+          "signals": [],
+          "pending": [
+            "xyzzy"
+          ]
+        },
+        {
+          "do": "resolve",
+          "result": null,
+          "signals": [],
+          "pending": []
+        },
+        {
+          "do": "likely",
+          "words": [
+            {
+              "word": "the",
+              "likely": false
+            },
+            {
+              "word": "a",
+              "likely": false
+            },
+            {
+              "word": "pain",
+              "likely": true
+            },
+            {
+              "word": "café",
+              "likely": true
+            },
+            {
+              "word": "Hello",
+              "likely": false
+            },
+            {
+              "word": "tonneau",
+              "likely": false
+            },
+            {
+              "word": "!",
+              "likely": false
+            },
+            {
+              "word": "à",
+              "likely": false
+            },
+            {
+              "word": "come",
+              "likely": false
+            }
+          ]
+        },
+        {
+          "do": "display",
+          "mode": "inline",
+          "size": 3,
+          "encounters": {
+            "pain": {
+              "encountered": 1,
+              "correct": 0
+            },
+            "fromage": {
+              "encountered": 2,
+              "correct": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "run: with no target language a miss is refused",
+      "op": "run",
+      "input": {
+        "steps": [
+          {
+            "do": "lookup",
+            "word": "pain"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "lookup",
+          "ok": false,
+          "refusal": "no_target_language"
+        }
+      ]
+    },
+    {
+      "name": "run: new words hint by the band's cadence; a seen word never hints again; a mastered word never hints",
+      "op": "run",
+      "note": "A2 hints every third new word (indices 0, 3, 6, 9): pain and four hint; Beurre is new word 6 but mastered (8 right uses and an encounter), so it does not; riz at 7 right uses is not mastered and sucre is index 8. An advanced word follows the cadence like any other at A2.",
+      "input": {
+        "cefr": "A2",
+        "targetLanguage": "French",
+        "steps": [
+          {
+            "do": "see",
+            "word": "pain"
+          },
+          {
+            "do": "see",
+            "word": "pain"
+          },
+          {
+            "do": "see",
+            "word": "eau"
+          },
+          {
+            "do": "see",
+            "word": "sel"
+          },
+          {
+            "do": "see",
+            "word": "four"
+          },
+          {
+            "do": "see",
+            "word": "farine",
+            "difficulty": "advanced"
+          },
+          {
+            "do": "see",
+            "word": "lait"
+          },
+          {
+            "do": "mastery",
+            "word": "beurre",
+            "encountered": 1,
+            "correct": 8
+          },
+          {
+            "do": "see",
+            "word": "Beurre,"
+          },
+          {
+            "do": "mastery",
+            "word": "riz",
+            "encountered": 1,
+            "correct": 7
+          },
+          {
+            "do": "see",
+            "word": "riz"
+          },
+          {
+            "do": "see",
+            "word": "sucre"
+          },
+          {
+            "do": "display"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "see",
+          "showHint": true,
+          "newWordIndex": 1
+        },
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 1
+        },
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 2
+        },
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 3
+        },
+        {
+          "do": "see",
+          "showHint": true,
+          "newWordIndex": 4
+        },
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 5
+        },
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 6
+        },
+        {
+          "do": "mastery"
+        },
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 7
+        },
+        {
+          "do": "mastery"
+        },
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 8
+        },
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 9
+        },
+        {
+          "do": "display",
+          "mode": "inline",
+          "size": 0,
+          "encounters": {
+            "beurre": {
+              "encountered": 1,
+              "correct": 8
+            },
+            "riz": {
+              "encountered": 1,
+              "correct": 7
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "run: at B1 only advanced words hint, and the tooltip is on hover",
+      "op": "run",
+      "input": {
+        "cefr": "B1",
+        "targetLanguage": "French",
+        "steps": [
+          {
+            "do": "see",
+            "word": "pain",
+            "difficulty": "beginner"
+          },
+          {
+            "do": "see",
+            "word": "boulangerie",
+            "difficulty": "advanced"
+          },
+          {
+            "do": "display"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 1
+        },
+        {
+          "do": "see",
+          "showHint": true,
+          "newWordIndex": 2
+        },
+        {
+          "do": "display",
+          "mode": "hover",
+          "size": 0,
+          "encounters": {}
+        }
+      ]
+    },
+    {
+      "name": "tokens: Russian words are words, «» and the dash are not",
+      "op": "tokens",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). The guillemets, the comma, the full stop and the question mark are trimmed; the em dash alone is not a word.",
+      "input": {
+        "text": "«Привет», — сказала Ольга. Где хлеб?"
+      },
+      "expected": {
+        "tokens": [
+          {
+            "text": "«Привет»,",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "—",
+            "isWord": false
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "сказала",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "Ольга.",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "Где",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "хлеб?",
+            "isWord": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "run: Russian hints key by their letters; a punctuated or capitalised lookup hits the cache",
+      "op": "run",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). \"Хлеб!\" and \"«вода»\" are cached as хлеб and вода; \"хлеб,\" and \"ВОДА\" hit them as passive encounters; \"молоко.\" asks the host once as молоко. A second sighting of \"хлеб!\" is the same word as \"Хлеб\", so it shows no hint; \"вода\" is another word, a first sighting (new-word index 2) that hints at A1. \"Соль\" set mastered keys as соль, so \"соль!\" is a first sighting (index 3) that shows no hint, and the encounters hold соль. \"и\" is one letter, so not likely.",
+      "input": {
+        "cefr": "A1",
+        "targetLanguage": "Russian",
+        "steps": [
+          {
+            "do": "hints",
+            "hints": [
+              {
+                "word": "Хлеб!",
+                "translation": "bread"
+              },
+              {
+                "word": "«вода»",
+                "translation": "water"
+              }
+            ]
+          },
+          {
+            "do": "lookup",
+            "word": "хлеб,"
+          },
+          {
+            "do": "lookup",
+            "word": "ВОДА"
+          },
+          {
+            "do": "lookup",
+            "word": "молоко."
+          },
+          {
+            "do": "resolve",
+            "word": "молоко",
+            "translation": "milk"
+          },
+          {
+            "do": "see",
+            "word": "Хлеб"
+          },
+          {
+            "do": "see",
+            "word": "хлеб!"
+          },
+          {
+            "do": "see",
+            "word": "вода"
+          },
+          {
+            "do": "mastery",
+            "word": "Соль",
+            "encountered": 1,
+            "correct": 8
+          },
+          {
+            "do": "see",
+            "word": "соль!"
+          },
+          {
+            "do": "likely",
+            "words": [
+              "хлеб",
+              "и",
+              "—",
+              "Привет!"
+            ]
+          },
+          {
+            "do": "display"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "hints",
+          "cached": [
+            "хлеб",
+            "вода"
+          ]
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "Хлеб!",
+            "translation": "bread",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "Хлеб!",
+              "translation": "bread",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "«вода»",
+            "translation": "water",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "«вода»",
+              "translation": "water",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": null,
+          "request": {
+            "word": "молоко.",
+            "targetLanguage": "Russian"
+          },
+          "signals": [],
+          "pending": [
+            "молоко"
+          ]
+        },
+        {
+          "do": "resolve",
+          "result": {
+            "word": "молоко",
+            "translation": "milk",
+            "source": "api"
+          },
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "молоко",
+              "translation": "milk",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "see",
+          "showHint": true,
+          "newWordIndex": 1
+        },
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 1
+        },
+        {
+          "do": "see",
+          "showHint": true,
+          "newWordIndex": 2
+        },
+        {
+          "do": "mastery"
+        },
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 3
+        },
+        {
+          "do": "likely",
+          "words": [
+            {
+              "word": "хлеб",
+              "likely": true
+            },
+            {
+              "word": "и",
+              "likely": false
+            },
+            {
+              "word": "—",
+              "likely": false
+            },
+            {
+              "word": "Привет!",
+              "likely": true
+            }
+          ]
+        },
+        {
+          "do": "display",
+          "mode": "inline",
+          "size": 3,
+          "encounters": {
+            "хлеб": {
+              "encountered": 1,
+              "correct": 0
+            },
+            "вода": {
+              "encountered": 1,
+              "correct": 0
+            },
+            "молоко": {
+              "encountered": 1,
+              "correct": 0
+            },
+            "соль": {
+              "encountered": 1,
+              "correct": 8
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "tokens: Greek words are words; the Greek question mark and ano teleia are not letters",
+      "op": "tokens",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). The Greek question mark (U+037E) and the ano teleia (U+0387) are punctuation, trimmed at an edge.",
+      "input": {
+        "text": "«Καλημέρα!» Πού είναι το ψωμί; Ευχαριστώ· ;"
+      },
+      "expected": {
+        "tokens": [
+          {
+            "text": "«Καλημέρα!»",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "Πού",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "είναι",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "το",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "ψωμί;",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "Ευχαριστώ·",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": ";",
+            "isWord": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "run: Greek hints keep their accents; a capital without its accent is another key",
+      "op": "run",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). \"Ψωμί·\" is cached as ψωμί; \"«ψωμί»\" hits it; \"ΨΩΜΙ\" lower-cases to ψωμι, which is not ψωμί (no accent folding), so it asks the host.",
+      "input": {
+        "cefr": "A1",
+        "targetLanguage": "Greek",
+        "steps": [
+          {
+            "do": "hints",
+            "hints": [
+              {
+                "word": "Ψωμί·",
+                "translation": "bread"
+              },
+              {
+                "word": "Νερό;",
+                "translation": "water"
+              }
+            ]
+          },
+          {
+            "do": "lookup",
+            "word": "«ψωμί»"
+          },
+          {
+            "do": "lookup",
+            "word": "νερό"
+          },
+          {
+            "do": "lookup",
+            "word": "ΨΩΜΙ"
+          },
+          {
+            "do": "likely",
+            "words": [
+              "ψωμί;",
+              "το",
+              "ο"
+            ]
+          },
+          {
+            "do": "display"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "hints",
+          "cached": [
+            "ψωμί",
+            "νερό"
+          ]
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "Ψωμί·",
+            "translation": "bread",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "Ψωμί·",
+              "translation": "bread",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "Νερό;",
+            "translation": "water",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "Νερό;",
+              "translation": "water",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": null,
+          "request": {
+            "word": "ΨΩΜΙ",
+            "targetLanguage": "Greek"
+          },
+          "signals": [],
+          "pending": [
+            "ψωμι"
+          ]
+        },
+        {
+          "do": "likely",
+          "words": [
+            {
+              "word": "ψωμί;",
+              "likely": true
+            },
+            {
+              "word": "το",
+              "likely": true
+            },
+            {
+              "word": "ο",
+              "likely": false
+            }
+          ]
+        },
+        {
+          "do": "display",
+          "mode": "inline",
+          "size": 2,
+          "encounters": {
+            "ψωμί": {
+              "encountered": 1,
+              "correct": 0
+            },
+            "νερό": {
+              "encountered": 1,
+              "correct": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "tokens: Arabic words are words; the Arabic comma and question mark are not",
+      "op": "tokens",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). The Arabic comma (U+060C) and question mark (U+061F) are trimmed; a final tanween (U+064C, a combining mark) is kept.",
+      "input": {
+        "text": "مرحبا، أين الخبز؟ خُبْزٌ ؟"
+      },
+      "expected": {
+        "tokens": [
+          {
+            "text": "مرحبا،",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "أين",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "الخبز؟",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "خُبْزٌ",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "؟",
+            "isWord": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "run: Arabic hints key by their letters and marks; a miss asks the host once",
+      "op": "run",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). \"الخبز؟\" is cached as الخبز and \"الخبز\" hits it; \"«ماء»\" asks the host as ماء; \"ماء،\" hits the answer. \"خُبْزٌ\" ends in a tanween, a combining mark kept, so it is a word and likely; \"؟\" alone is not.",
+      "input": {
+        "cefr": "A1",
+        "targetLanguage": "Arabic",
+        "steps": [
+          {
+            "do": "hints",
+            "hints": [
+              {
+                "word": "الخبز؟",
+                "translation": "the bread"
+              }
+            ]
+          },
+          {
+            "do": "lookup",
+            "word": "الخبز"
+          },
+          {
+            "do": "lookup",
+            "word": "«ماء»"
+          },
+          {
+            "do": "resolve",
+            "word": "ماء",
+            "translation": "water"
+          },
+          {
+            "do": "lookup",
+            "word": "ماء،"
+          },
+          {
+            "do": "likely",
+            "words": [
+              "خُبْزٌ",
+              "؟"
+            ]
+          },
+          {
+            "do": "display"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "hints",
+          "cached": [
+            "الخبز"
+          ]
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "الخبز؟",
+            "translation": "the bread",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "الخبز؟",
+              "translation": "the bread",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": null,
+          "request": {
+            "word": "«ماء»",
+            "targetLanguage": "Arabic"
+          },
+          "signals": [],
+          "pending": [
+            "ماء"
+          ]
+        },
+        {
+          "do": "resolve",
+          "result": {
+            "word": "ماء",
+            "translation": "water",
+            "source": "api"
+          },
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "ماء",
+              "translation": "water",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "ماء",
+            "translation": "water",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "ماء",
+              "translation": "water",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "likely",
+          "words": [
+            {
+              "word": "خُبْزٌ",
+              "likely": true
+            },
+            {
+              "word": "؟",
+              "likely": false
+            }
+          ]
+        },
+        {
+          "do": "display",
+          "mode": "inline",
+          "size": 2,
+          "encounters": {
+            "الخبز": {
+              "encountered": 1,
+              "correct": 0
+            },
+            "ماء": {
+              "encountered": 2,
+              "correct": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "tokens: Hebrew words with bidi marks at their edges are words; a lone mark is not",
+      "op": "tokens",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). The right-to-left mark (U+200F), the left-to-right mark (U+200E) and the isolates (U+2067, U+2069) are format characters, not letters: trimmed at an edge, and a token of marks alone is not a word.",
+      "input": {
+        "text": "‏שלום‏, מה ⁧שלומך⁩? ‎ ‏"
+      },
+      "expected": {
+        "tokens": [
+          {
+            "text": "‏שלום‏,",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "מה",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "⁧שלומך⁩?",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "‎",
+            "isWord": false
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "‏",
+            "isWord": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "run: Hebrew with bidi marks keys without them; a marked lookup hits the cache",
+      "op": "run",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). \"⁧לחם⁩\" (in a right-to-left isolate) is cached as לחם; \"‏לחם.‏\" and \"לחם\" both hit it. A mark is trimmed only at a token's edge.",
+      "input": {
+        "cefr": "A1",
+        "targetLanguage": "Hebrew",
+        "steps": [
+          {
+            "do": "hints",
+            "hints": [
+              {
+                "word": "⁧לחם⁩",
+                "translation": "bread"
+              },
+              {
+                "word": "מים‎!",
+                "translation": "water"
+              }
+            ]
+          },
+          {
+            "do": "lookup",
+            "word": "‏לחם.‏"
+          },
+          {
+            "do": "lookup",
+            "word": "לחם"
+          },
+          {
+            "do": "lookup",
+            "word": "‏מים"
+          },
+          {
+            "do": "likely",
+            "words": [
+              "‏לחם‏",
+              "‏"
+            ]
+          },
+          {
+            "do": "display"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "hints",
+          "cached": [
+            "לחם",
+            "מים"
+          ]
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "⁧לחם⁩",
+            "translation": "bread",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "⁧לחם⁩",
+              "translation": "bread",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "⁧לחם⁩",
+            "translation": "bread",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "⁧לחם⁩",
+              "translation": "bread",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "מים‎!",
+            "translation": "water",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "מים‎!",
+              "translation": "water",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "likely",
+          "words": [
+            {
+              "word": "‏לחם‏",
+              "likely": true
+            },
+            {
+              "word": "‏",
+              "likely": false
+            }
+          ]
+        },
+        {
+          "do": "display",
+          "mode": "inline",
+          "size": 2,
+          "encounters": {
+            "לחם": {
+              "encountered": 2,
+              "correct": 0
+            },
+            "מים": {
+              "encountered": 1,
+              "correct": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "tokens: Hindi words keep their vowel signs; the danda is not a letter",
+      "op": "tokens",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). नमस्ते ends in a vowel sign (U+0947) and कहाँ in a candrabindu (U+0901), combining marks kept at the edge; the danda (U+0964) is trimmed.",
+      "input": {
+        "text": "नमस्ते। रोटी कहाँ है? ।"
+      },
+      "expected": {
+        "tokens": [
+          {
+            "text": "नमस्ते।",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "रोटी",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "कहाँ",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "है?",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "।",
+            "isWord": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "run: Hindi hints key with their vowel signs; a word without its vowel sign is another key",
+      "op": "run",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). \"रोटी!\" is cached as रोटी and \"रोटी।\" hits it; \"रोट\" (no final vowel sign) is another word and asks the host. \"है\" is two code units, so it can be likely.",
+      "input": {
+        "cefr": "A2",
+        "targetLanguage": "Hindi",
+        "steps": [
+          {
+            "do": "hints",
+            "hints": [
+              {
+                "word": "रोटी!",
+                "translation": "bread"
+              },
+              {
+                "word": "पानी,",
+                "translation": "water"
+              }
+            ]
+          },
+          {
+            "do": "lookup",
+            "word": "रोटी।"
+          },
+          {
+            "do": "lookup",
+            "word": "रोट"
+          },
+          {
+            "do": "see",
+            "word": "पानी"
+          },
+          {
+            "do": "see",
+            "word": "पानी।"
+          },
+          {
+            "do": "likely",
+            "words": [
+              "है",
+              "कहाँ?"
+            ]
+          },
+          {
+            "do": "display"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "hints",
+          "cached": [
+            "रोटी",
+            "पानी"
+          ]
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "रोटी!",
+            "translation": "bread",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "रोटी!",
+              "translation": "bread",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": null,
+          "request": {
+            "word": "रोट",
+            "targetLanguage": "Hindi"
+          },
+          "signals": [],
+          "pending": [
+            "रोट"
+          ]
+        },
+        {
+          "do": "see",
+          "showHint": true,
+          "newWordIndex": 1
+        },
+        {
+          "do": "see",
+          "showHint": false,
+          "newWordIndex": 1
+        },
+        {
+          "do": "likely",
+          "words": [
+            {
+              "word": "है",
+              "likely": true
+            },
+            {
+              "word": "कहाँ?",
+              "likely": true
+            }
+          ]
+        },
+        {
+          "do": "display",
+          "mode": "inline",
+          "size": 2,
+          "encounters": {
+            "रोटी": {
+              "encountered": 1,
+              "correct": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "tokens: Korean words are words; punctuation around them is not",
+      "op": "tokens",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses).",
+      "input": {
+        "text": "안녕하세요! 빵은 어디에 있어요? \"물\"."
+      },
+      "expected": {
+        "tokens": [
+          {
+            "text": "안녕하세요!",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "빵은",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "어디에",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "있어요?",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "\"물\".",
+            "isWord": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "run: Korean hints key by their syllables; a one-syllable word is cached but never likely",
+      "op": "run",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). \"빵.\" and \"\"물\"\" are cached as 빵 and 물 and hit by \"빵!\" and \"물\"; \"빵은\" (with its particle) is another word. isLikelyTarget's one-letter rule comes first, so 빵, one syllable, is not likely even cached.",
+      "input": {
+        "cefr": "A1",
+        "targetLanguage": "Korean",
+        "steps": [
+          {
+            "do": "hints",
+            "hints": [
+              {
+                "word": "빵.",
+                "translation": "bread"
+              },
+              {
+                "word": "\"물\"",
+                "translation": "water"
+              }
+            ]
+          },
+          {
+            "do": "lookup",
+            "word": "빵!"
+          },
+          {
+            "do": "lookup",
+            "word": "물"
+          },
+          {
+            "do": "lookup",
+            "word": "빵은"
+          },
+          {
+            "do": "likely",
+            "words": [
+              "빵",
+              "안녕하세요!"
+            ]
+          },
+          {
+            "do": "display"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "hints",
+          "cached": [
+            "빵",
+            "물"
+          ]
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "빵.",
+            "translation": "bread",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "빵.",
+              "translation": "bread",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "\"물\"",
+            "translation": "water",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "\"물\"",
+              "translation": "water",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": null,
+          "request": {
+            "word": "빵은",
+            "targetLanguage": "Korean"
+          },
+          "signals": [],
+          "pending": [
+            "빵은"
+          ]
+        },
+        {
+          "do": "likely",
+          "words": [
+            {
+              "word": "빵",
+              "likely": false
+            },
+            {
+              "word": "안녕하세요!",
+              "likely": true
+            }
+          ]
+        },
+        {
+          "do": "display",
+          "mode": "inline",
+          "size": 2,
+          "encounters": {
+            "빵": {
+              "encountered": 1,
+              "correct": 0
+            },
+            "물": {
+              "encountered": 1,
+              "correct": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "tokens: Vietnamese words ending in Latin Extended Additional keep their last letter",
+      "op": "tokens",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). ở (U+1EDF) and mẹ's ẹ (U+1EB9) are Latin Extended Additional (U+1E00–U+1EFF), letters: \"ở\" alone is a word.",
+      "input": {
+        "text": "Mẹ ở nhà. Tôi muốn ăn phở!"
+      },
+      "expected": {
+        "tokens": [
+          {
+            "text": "Mẹ",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "ở",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "nhà.",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "Tôi",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "muốn",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "ăn",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "phở!",
+            "isWord": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "run: Vietnamese phở and phố are two keys; an edge diacritic is a letter",
+      "op": "run",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). \"Phở!\" is cached as phở and \"phố,\" as phố: two keys, so \"phở.\" finds the soup and \"Phố\" the street. Hover's old class trimmed ở and ố at the edge, keying both ph. \"ở\" is a word of one letter, so seen but not likely.",
+      "input": {
+        "cefr": "A1",
+        "targetLanguage": "Vietnamese",
+        "steps": [
+          {
+            "do": "hints",
+            "hints": [
+              {
+                "word": "Phở!",
+                "translation": "noodle soup"
+              },
+              {
+                "word": "phố,",
+                "translation": "street"
+              }
+            ]
+          },
+          {
+            "do": "lookup",
+            "word": "phở."
+          },
+          {
+            "do": "lookup",
+            "word": "Phố"
+          },
+          {
+            "do": "see",
+            "word": "ở"
+          },
+          {
+            "do": "likely",
+            "words": [
+              "ở",
+              "phở",
+              "mẹ."
+            ]
+          },
+          {
+            "do": "display"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "hints",
+          "cached": [
+            "phở",
+            "phố"
+          ]
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "Phở!",
+            "translation": "noodle soup",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "Phở!",
+              "translation": "noodle soup",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "lookup",
+          "ok": true,
+          "result": {
+            "word": "phố,",
+            "translation": "street",
+            "source": "cache"
+          },
+          "request": null,
+          "signals": [
+            {
+              "type": "word_encounter",
+              "word": "phố,",
+              "translation": "street",
+              "source": "passive_hover"
+            }
+          ],
+          "pending": []
+        },
+        {
+          "do": "see",
+          "showHint": true,
+          "newWordIndex": 1
+        },
+        {
+          "do": "likely",
+          "words": [
+            {
+              "word": "ở",
+              "likely": false
+            },
+            {
+              "word": "phở",
+              "likely": true
+            },
+            {
+              "word": "mẹ.",
+              "likely": true
+            }
+          ]
+        },
+        {
+          "do": "display",
+          "mode": "inline",
+          "size": 2,
+          "encounters": {
+            "phở": {
+              "encountered": 1,
+              "correct": 0
+            },
+            "phố": {
+              "encountered": 1,
+              "correct": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "tokens: at the edges of the old Latin range, × and ÷ are symbols and ª, º, µ, ² are letters or digits",
+      "op": "tokens",
+      "note": "A token is a word, and keys, by the letters, combining marks and digits of any script left once its edges lose everything else, then lower case (word-key.ts, the class chatKey uses). × (U+00D7) and ÷ (U+00F7) sit inside U+00C0–U+024F but are symbols, so they are not words; ª, º and µ are letters and ² a digit below that range, so they are. Latin words keep their keys.",
+      "input": {
+        "text": "× ÷ ª º µ ² Ça, déjà-vu!"
+      },
+      "expected": {
+        "tokens": [
+          {
+            "text": "×",
+            "isWord": false
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "÷",
+            "isWord": false
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "ª",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "º",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "µ",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "²",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "Ça,",
+            "isWord": true
+          },
+          {
+            "text": " ",
+            "isWord": false
+          },
+          {
+            "text": "déjà-vu!",
+            "isWord": true
+          }
+        ]
+      }
+    }
+  ]
+}

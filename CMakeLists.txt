@@ -1111,6 +1111,37 @@ add_test(NAME village_save_corpus_negative COMMAND insimulcore_village_save_corp
 set_tests_properties(village_save_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\n.*village_save_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nvillage_save_corpus --negative: PASS")
 
+# language_corpus (PL.native-language-rows slice 1, rulings U128, U118, U107(2), U49(3) and
+# U36): core's P9h language kernels (src/language-learning/: the book, the save block, the
+# prompt selector with the registers it reads, hover and its word key, the chat metrics
+# with the difficulty monitor its lines feed; src/prolog/player-language-state.ts) as
+# libinsimulcore's `language.*` rows, held to core's own corpora
+# conformance/language/{progress,save,prompts,hover,chat}.json, COPIED byte for byte into
+# corebridge/vendor/core/conformance/language/ at the pin (vendor-core-bundle.mjs
+# LANGUAGE_CORPUS_FILES; hashed, and byte-compared under --check --core).
+# tests/language_corpus.cpp composes each op from the rows as core's reference runner
+# (src/language-learning/systems-corpus.ts) composes core's kernels; the same cases also run
+# on both legs as the transcribed cases/core-language-*.json. Unreal's interim language copy
+# (Portable/InsimulLanguage*) is what these rows, with the later slices, retire. The regex
+# demands every refusal probe refused, each file's driven line with every op and step of
+# core's runner driven and 0 undriven, every row it names called, then PASS. It holds no ';'.
+add_executable(insimulcore_language_corpus tests/language_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_language_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_language_corpus PRIVATE insimulcore)
+set(INSIMUL_LANGUAGE_CORPORA
+  ${INSIMUL_PROPS_CORPUS}/language/progress.json
+  ${INSIMUL_PROPS_CORPUS}/language/save.json
+  ${INSIMUL_PROPS_CORPUS}/language/prompts.json
+  ${INSIMUL_PROPS_CORPUS}/language/hover.json
+  ${INSIMUL_PROPS_CORPUS}/language/chat.json)
+add_test(NAME language_corpus COMMAND insimulcore_language_corpus ${INSIMUL_LANGUAGE_CORPORA})
+set_tests_properties(language_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 12 of 12 probe[(]s[)] refused as core refuses[^\n]*\n.*language/progress: driven mastery [1-9][0-9]*, gain [1-9][0-9]*, run [1-9][0-9]*, facts [1-9][0-9]*. 0 undriven. steps advance [1-9][0-9]*, encounter [1-9][0-9]*, event [1-9][0-9]*, grammar [1-9][0-9]*, conversation [1-9][0-9]*, cefr [1-9][0-9]*, weak [1-9][0-9]*, summary [1-9][0-9]*\n.*language/save: driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*language/prompts: driven run [1-9][0-9]*. 0 undriven. steps register [1-9][0-9]*, pick [1-9][0-9]*, standing [1-9][0-9]*, answer [1-9][0-9]*, reach [1-9][0-9]*, choose [1-9][0-9]*\n.*language/hover: driven tokens [1-9][0-9]*, run [1-9][0-9]*. 0 undriven. steps hints [1-9][0-9]*, see [1-9][0-9]*, mastery [1-9][0-9]*, lookup [1-9][0-9]*, resolve [1-9][0-9]*, likely [1-9][0-9]*, display [1-9][0-9]*\n.*language/chat: driven words [1-9][0-9]*, percent [1-9][0-9]*, hear [1-9][0-9]*, usages [1-9][0-9]*, run [1-9][0-9]*. 0 undriven. steps start [1-9][0-9]*, line [1-9][0-9]*, hear [1-9][0-9]*, end [1-9][0-9]*\n.*rows: 51 of 51 called by the corpora's cases\nlanguage_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nlanguage_corpus: PASS")
+# Its negative pass: every case's expectation perturbed (its last leaf) must be refused.
+add_test(NAME language_corpus_negative COMMAND insimulcore_language_corpus --negative ${INSIMUL_LANGUAGE_CORPORA})
+set_tests_properties(language_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 12 of 12 probe[(]s[)] refused as core refuses[^\n]*\n.*rows: 51 of 51 called by the corpora's cases\nlanguage_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nlanguage_corpus --negative: PASS")
+
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest
 # (TutorialQuestSystem) and the onboarding flow on it (OnboardingManager) — as

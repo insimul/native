@@ -269,6 +269,23 @@ const PROGRESSION_CORPUS_FILES = [
   'conformance/skills/unlocks.json',
 ];
 
+// core's P9h language corpora that the language.* rows answer (PL.native-language-rows,
+// U128, U118; core's P9h.core), copied verbatim the same way and driven through the rows
+// by tests/language_corpus.cpp, each op composed as core's reference runner
+// (src/language-learning/systems-corpus.ts) composes it; emit-bridge-cases.mjs also
+// transcribes each into cases/core-language-<file>.json. Slice 1 copies five of the
+// directory's thirteen: the book (progress), the save block (save), the prompt selector
+// (prompts), hover (hover) and the chat metrics (chat). The rest join with the slices
+// that bind them (chat-strip.json with PL.native-chat-cefr-rows). conformance/language/
+// is this set's alone, so a file an earlier pin left there is seen, hashed and removed.
+const LANGUAGE_CORPUS_FILES = [
+  'conformance/language/chat.json',
+  'conformance/language/hover.json',
+  'conformance/language/progress.json',
+  'conformance/language/prompts.json',
+  'conformance/language/save.json',
+];
+
 // Core modules the bundle must NOT carry (PL.native-interact-target, U94(2)/(3)): core's
 // village-state comparator. No row needs it; it came in only through a corpus RUNNER
 // module's comparator import (the P8 rows once imported `quests/tutorial-corpus` and
@@ -407,6 +424,56 @@ function villageTranscriptionProblems() {
   if (wrongCalls.length) problems.push(`${wrongCalls.length} case(s) not transcribed as core's runner calls their op, first: ${wrongCalls[0]}`);
   if (names.size !== want) problems.push(`it carries ${names.size} case(s), not the corpus's ${corpus.length} and the contract case`);
   return { problems, count: corpus.length };
+}
+
+// The language transcriptions (PL.native-language-rows): each vendored
+// conformance/language/<file>.json has cases/core-language-<file>.json, holding one case
+// per corpus case by name (`language/<file> <op>: <name>`), whose first call is the one
+// core's runner makes first for that op (systems-corpus.ts, through the rows) and whose
+// every call is a language.* row (or examine's pick, props.interactables.examinePick, which
+// the prompts runner's `examinePick` is). A self-consistent re-vendor with an emitter that
+// dropped or mis-transcribed cases would otherwise pass `--check --core`.
+const LANGUAGE_FIRST_CALL = {
+  progress: { mastery: 'language.book.mastery', gain: 'language.book.fluencyGain', run: 'language.book.empty', facts: 'language.facts.cefr' },
+  save: { block: (c) => (Array.isArray(c.input.encounters) ? 'language.book.empty' : 'language.save.block'), read: 'language.save.read', restore: 'language.save.read' },
+  prompts: { run: 'language.contract' },
+  hover: { tokens: 'language.hover.tokenize', run: 'language.hover.initial' },
+  chat: { words: 'language.book.empty', percent: 'language.chat.targetPercent', hear: 'language.chat.start', usages: 'language.book.empty', run: 'language.book.empty' },
+};
+function languageTranscriptionProblems() {
+  const problems = [];
+  let count = 0;
+  const files = [];
+  for (const rel of LANGUAGE_CORPUS_FILES) {
+    const base = path.basename(rel, '.json');
+    files.push(base);
+    const firstCall = LANGUAGE_FIRST_CALL[base];
+    if (!firstCall) {
+      problems.push(`${rel} has no first-call table here`);
+      continue;
+    }
+    const casesFile = path.join(CASES_DIR, `core-language-${base}.json`);
+    if (!fs.existsSync(casesFile)) {
+      problems.push(`cases/core-language-${base}.json is missing`);
+      continue;
+    }
+    const corpus = JSON.parse(fs.readFileSync(path.join(OUT_DIR, rel), 'utf8')).cases;
+    const transcribed = JSON.parse(fs.readFileSync(casesFile, 'utf8')).cases;
+    const byName = new Map(transcribed.map((c) => [c.name, c]));
+    count += corpus.length;
+    const nameOf = (c) => `language/${base} ${c.op}: ${c.name}`;
+    const missing = corpus.filter((c) => !byName.has(nameOf(c))).map((c) => c.name);
+    const wrong = corpus.filter((c) => {
+      const calls = (byName.get(nameOf(c))?.steps ?? []).map((st) => st.call);
+      if (calls.length === 0) return false;
+      const first = typeof firstCall[c.op] === 'function' ? firstCall[c.op](c) : firstCall[c.op];
+      return calls[0] !== first || calls.some((call) => !call.startsWith('language.') && call !== 'props.interactables.examinePick');
+    }).map((c) => c.name);
+    if (missing.length) problems.push(`core-language-${base}.json: ${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
+    if (wrong.length) problems.push(`core-language-${base}.json: ${wrong.length} case(s) not transcribed as core's runner calls their op, first: ${wrong[0]}`);
+    if (byName.size !== corpus.length) problems.push(`core-language-${base}.json carries ${byName.size} case(s), not the corpus's ${corpus.length}`);
+  }
+  return { problems, count, files };
 }
 
 function loadRefusalCasesOnDisk() {
@@ -725,6 +792,16 @@ function progressionFilesOnDisk() {
 /** core's P9i progression and skill-tree corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
 function progressionFilesAtPin(src) {
   return filesAtPin(src, PROGRESSION_CORPUS_FILES, 'the progression.* and skill.* rows');
+}
+
+/** The vendored language corpus files on disk: the camera set's rule (no other set copies into `conformance/language/`). */
+function languageFilesOnDisk() {
+  return ownDirFilesOnDisk(LANGUAGE_CORPUS_FILES);
+}
+
+/** core's P9h language corpora the language.* rows answer, at the pin, as { 'vendor/core/<path>': Buffer }. */
+function languageFilesAtPin(src) {
+  return filesAtPin(src, LANGUAGE_CORPUS_FILES, 'the language.* rows');
 }
 
 /** The vendored headless build corpus on disk: the camera set's rule (no other set copies into `conformance/build/`). */
@@ -1148,6 +1225,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The language corpora: the same exact-set replacement (only the listed files).
+    const language = languageFilesAtPin(src);
+    for (const rel of languageFilesOnDisk()) if (!(rel in language)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(language)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     const js = fs.readFileSync(BUNDLE_JS, 'utf8');
     const manifest = {
       description:
@@ -1174,6 +1259,7 @@ async function write(coreDir) {
       traversalCorpus: TRAVERSAL_CORPUS_FILES,
       buildCorpus: BUILD_CORPUS_FROM,
       progressionCorpus: PROGRESSION_CORPUS_FILES,
+      languageCorpus: LANGUAGE_CORPUS_FILES,
       bundleBytes: Buffer.byteLength(js, 'utf8'),
       bundleSha256: sha256(js),
     };
@@ -1196,6 +1282,7 @@ async function write(coreDir) {
       ...traversalFilesOnDisk(),
       ...buildFilesOnDisk(),
       ...progressionFilesOnDisk(),
+      ...languageFilesOnDisk(),
       ...ADAPTER_MODULES,
       ...TOOL_INPUTS,
     ]);
@@ -1216,6 +1303,7 @@ async function write(coreDir) {
     console.log(`  traversal corpus files (${Object.keys(traversal).length}), copied unchanged`);
     console.log(`  headless build corpus files (${Object.keys(build).length}), copied unchanged`);
     console.log(`  progression and skill corpus files (${Object.keys(progression).length}), copied unchanged`);
+    console.log(`  language corpus files (${Object.keys(language).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -1300,6 +1388,10 @@ async function check(coreDir) {
   for (const rel of PROGRESSION_CORPUS_FILES) {
     if (!progressionFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the progression corpus gate would run nothing`);
   }
+  const languageFiles = languageFilesOnDisk();
+  for (const rel of LANGUAGE_CORPUS_FILES) {
+    if (!languageFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the language corpus gate would run nothing`);
+  }
   // conformance/ui/ is shared by the P9a, P6 and P8 sets: a file belongs to exactly one.
   const claimedTwice = propsFiles.filter((rel) => p9aFiles.includes(rel));
   if (claimedTwice.length) fail(`${claimedTwice.join(', ')} is listed as both a P9a and a P6 corpus file`);
@@ -1320,6 +1412,7 @@ async function check(coreDir) {
     ...traversalFiles,
     ...buildFiles,
     ...progressionFiles,
+    ...languageFiles,
     ...ADAPTER_MODULES,
     ...TOOL_INPUTS,
   ];
@@ -1366,7 +1459,8 @@ async function check(coreDir) {
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
       `${savesFiles.length} saves (slots, tutorial progress, village state), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ` +
       `${cameraFiles.length} camera movement, ${audioFiles.length} audio ground, ${survivalFiles.length} survival, ` +
-      `${traversalFiles.length} traversal, ${buildFiles.length} headless build and ${progressionFiles.length} progression/skill corpus file(s), ` +
+      `${traversalFiles.length} traversal, ${buildFiles.length} headless build, ${progressionFiles.length} progression/skill and ` +
+      `${languageFiles.length} language corpus file(s), ` +
       `core ${manifest.coreCommit}, ` +
       `esbuild ${manifest.esbuild})`,
   );
@@ -1387,6 +1481,12 @@ async function check(coreDir) {
   console.log(
     `vendor-core-bundle: village state — cases/core-saves-village.json transcribes all ${village.count} case(s) of ` +
       'conformance/saves/village-state.json, by name and by the calls core\'s runner makes, and its contract',
+  );
+  const lang = languageTranscriptionProblems();
+  if (lang.problems.length) fail(`the language transcription does not hold the vendored language corpora: ${lang.problems.join('; ')}`);
+  console.log(
+    `vendor-core-bundle: language — cases/core-language-{${lang.files.join(',')}}.json transcribe all ${lang.count} case(s) of ` +
+      'the vendored conformance/language/ files, by name and by the calls core\'s runner makes',
   );
 
   if (coreDir) {
@@ -1539,6 +1639,16 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
+      const languageAtPin = languageFilesAtPin(src);
+      const wantLanguage = Object.keys(languageAtPin).sort();
+      if (JSON.stringify(wantLanguage) !== JSON.stringify(languageFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s language corpora are ${wantLanguage.join(', ')} but vendor/core/ holds ${languageFiles.join(', ')}`);
+      }
+      for (const rel of wantLanguage) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(languageAtPin[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       const keysAtPin = await checkExtensionKeys(js, SAVE_RULES_CASES_DIR, src.root);
       console.log(
         `vendor-core-bundle: core ${pin.coreCommit}'s src/save-extensions.ts registers the same ${keysAtPin.count} ` +
@@ -1551,8 +1661,8 @@ async function check(coreDir) {
           `${wantProps.length} P6 props/inventory corpus file(s), all ${wantTitle.length} P8 title/tutorial ` +
           `corpus file(s), all ${wantCamera.length} camera movement corpus file(s), all ${wantAudio.length} audio ground ` +
           `corpus file(s), all ${wantSurvival.length} survival corpus file(s), all ${wantTraversal.length} traversal ` +
-          `corpus file(s), all ${wantBuild.length} headless build corpus file(s) and all ${wantProgression.length} progression/skill ` +
-          `corpus file(s) byte for byte`,
+          `corpus file(s), all ${wantBuild.length} headless build corpus file(s), all ${wantProgression.length} progression/skill ` +
+          `corpus file(s) and all ${wantLanguage.length} language corpus file(s) byte for byte`,
       );
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });

@@ -1,0 +1,3117 @@
+{
+ "area": "language-progress",
+ "description": "core's language corpus conformance/language/progress.json (P9h.core) through the language.* rows, each op as core's reference runner (src/language-learning/systems-corpus.ts, runLanguageSystemsOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/language/progress.json": "ac13b43485b5517e53e6091a062c8e84703bba7776708a1fe374000cd9c4d4b0"
+  }
+ },
+ "cases": [
+  {
+   "name": "language/progress mastery: mastery: bands from encounters and weighted halves",
+   "steps": [
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 0,
+      "halves": 0
+     },
+     "expect": {
+      "mastery": "new"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 0,
+      "halves": 6
+     },
+     "expect": {
+      "mastery": "new"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 1,
+      "halves": 0
+     },
+     "expect": {
+      "mastery": "new"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 1,
+      "halves": 2
+     },
+     "expect": {
+      "mastery": "new"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 2,
+      "halves": 0
+     },
+     "expect": {
+      "mastery": "learning"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 1,
+      "halves": 5
+     },
+     "expect": {
+      "mastery": "new"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 1,
+      "halves": 6
+     },
+     "expect": {
+      "mastery": "learning"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 3,
+      "halves": 5
+     },
+     "expect": {
+      "mastery": "learning"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 4,
+      "halves": 9
+     },
+     "expect": {
+      "mastery": "learning"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 5,
+      "halves": 10
+     },
+     "expect": {
+      "mastery": "familiar"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 9,
+      "halves": 15
+     },
+     "expect": {
+      "mastery": "familiar"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 8,
+      "halves": 16
+     },
+     "expect": {
+      "mastery": "mastered"
+     }
+    },
+    {
+     "call": "language.book.mastery",
+     "args": {
+      "encountered": 12,
+      "halves": 30
+     },
+     "expect": {
+      "mastery": "mastered"
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress gain: gain: the parts, the bonuses and the diminishing multiplier, in thousandths",
+   "steps": [
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 0,
+      "uniqueWords": 0,
+      "grammarCorrect": 0,
+      "grammarAttempted": 0,
+      "turns": 0,
+      "targetPercent": 0
+     },
+     "expect": {
+      "gain": 300,
+      "bonuses": [
+       "Excellent grammar!"
+      ]
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 0,
+      "uniqueWords": 5,
+      "grammarCorrect": 9,
+      "grammarAttempted": 10,
+      "turns": 10,
+      "targetPercent": 80
+     },
+     "expect": {
+      "gain": 2800,
+      "bonuses": [
+       "Vocab variety bonus!",
+       "Excellent grammar!",
+       "Long conversation bonus!",
+       "Full immersion bonus!"
+      ]
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 0,
+      "uniqueWords": 4,
+      "grammarCorrect": 8,
+      "grammarAttempted": 9,
+      "turns": 3,
+      "targetPercent": 79
+     },
+     "expect": {
+      "gain": 1750,
+      "bonuses": [
+       "Good grammar!",
+       "Good language mix!"
+      ]
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 0,
+      "uniqueWords": 2,
+      "grammarCorrect": 6,
+      "grammarAttempted": 10,
+      "turns": 2,
+      "targetPercent": 50
+     },
+     "expect": {
+      "gain": 1150,
+      "bonuses": [
+       "Good grammar!",
+       "Good language mix!"
+      ]
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 0,
+      "uniqueWords": 2,
+      "grammarCorrect": 5,
+      "grammarAttempted": 9,
+      "turns": 2,
+      "targetPercent": 49
+     },
+     "expect": {
+      "gain": 850,
+      "bonuses": [
+       "Keep practicing grammar!"
+      ]
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 0,
+      "uniqueWords": 1,
+      "grammarCorrect": 1,
+      "grammarAttempted": 10,
+      "turns": 1,
+      "targetPercent": 0
+     },
+     "expect": {
+      "gain": 450,
+      "bonuses": [
+       "Keep practicing grammar!"
+      ]
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 0,
+      "uniqueWords": 1,
+      "grammarCorrect": 0,
+      "grammarAttempted": 4,
+      "turns": 1,
+      "targetPercent": 0
+     },
+     "expect": {
+      "gain": 400,
+      "bonuses": []
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 0,
+      "uniqueWords": 20,
+      "grammarCorrect": 3,
+      "grammarAttempted": 3,
+      "turns": 20,
+      "targetPercent": 100
+     },
+     "expect": {
+      "gain": 3000,
+      "bonuses": [
+       "Vocab variety bonus!",
+       "Excellent grammar!",
+       "Long conversation bonus!",
+       "Full immersion bonus!"
+      ]
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 0,
+      "uniqueWords": 0,
+      "grammarCorrect": 0,
+      "grammarAttempted": 0,
+      "turns": 9,
+      "targetPercent": 0
+     },
+     "expect": {
+      "gain": 1250,
+      "bonuses": [
+       "Excellent grammar!"
+      ]
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 0,
+      "uniqueWords": 12,
+      "grammarCorrect": 0,
+      "grammarAttempted": 0,
+      "turns": 0,
+      "targetPercent": 0
+     },
+     "expect": {
+      "gain": 2300,
+      "bonuses": [
+       "Vocab variety bonus!",
+       "Excellent grammar!"
+      ]
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 50000,
+      "uniqueWords": 3,
+      "grammarCorrect": 2,
+      "grammarAttempted": 2,
+      "turns": 4,
+      "targetPercent": 60
+     },
+     "expect": {
+      "gain": 1350,
+      "bonuses": [
+       "Excellent grammar!",
+       "Good language mix!"
+      ]
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 99900,
+      "uniqueWords": 0,
+      "grammarCorrect": 0,
+      "grammarAttempted": 1,
+      "turns": 0,
+      "targetPercent": 0
+     },
+     "expect": {
+      "gain": 100,
+      "bonuses": []
+     }
+    },
+    {
+     "call": "language.book.fluencyGain",
+     "args": {
+      "fluency": 1000,
+      "uniqueWords": 8,
+      "grammarCorrect": 0,
+      "grammarAttempted": 0,
+      "turns": 1,
+      "targetPercent": 0
+     },
+     "expect": {
+      "gain": 2089,
+      "bonuses": [
+       "Vocab variety bonus!",
+       "Excellent grammar!"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress run: run: encounters build the book; a word is per language and ignores case; exposure is not a correct use",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr"
+       }
+      },
+      "encounter": {
+       "word": " pain ",
+       "type": "passive_read",
+       "meaning": "bread",
+       "category": "food"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "pain",
+        "language": "fr",
+        "meaning": "bread",
+        "category": "food",
+        "context": null,
+        "encountered": 1,
+        "correct": 0,
+        "incorrect": 0,
+        "halves": 1,
+        "last": 0,
+        "types": {
+         "passive_read": 1
+        },
+        "mastery": "new"
+       },
+       "isNew": true,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 0,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.book.advance",
+     "args": {
+      "book": {
+       "$ref": "b1.book"
+      },
+      "ms": 1500
+     },
+     "expect": {
+      "$subset": {
+       "book": {
+        "$subset": {
+         "clockMs": 1500
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b2.book"
+      },
+      "encounter": {
+       "word": "Pain",
+       "type": "active_use",
+       "context": "Ada Thatch"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "pain",
+        "language": "fr",
+        "meaning": "bread",
+        "category": "food",
+        "context": "Ada Thatch",
+        "encountered": 2,
+        "correct": 1,
+        "incorrect": 0,
+        "halves": 3,
+        "last": 1500,
+        "types": {
+         "passive_read": 1,
+         "active_use": 1
+        },
+        "mastery": "learning"
+       },
+       "isNew": false,
+       "masteryChanged": "learning",
+       "book": {
+        "$subset": {
+         "correctUsages": 1,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b3.book"
+      },
+      "encounter": {
+       "word": "pain",
+       "type": "passive_hover"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "pain",
+        "language": "fr",
+        "meaning": "bread",
+        "category": "food",
+        "context": "Ada Thatch",
+        "encountered": 3,
+        "correct": 1,
+        "incorrect": 0,
+        "halves": 4,
+        "last": 1500,
+        "types": {
+         "passive_read": 1,
+         "active_use": 1,
+         "passive_hover": 1
+        },
+        "mastery": "learning"
+       },
+       "isNew": false,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 1,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b4.book"
+      },
+      "encounter": {
+       "word": "pain",
+       "type": "quiz_correct"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "pain",
+        "language": "fr",
+        "meaning": "bread",
+        "category": "food",
+        "context": "Ada Thatch",
+        "encountered": 4,
+        "correct": 2,
+        "incorrect": 0,
+        "halves": 6,
+        "last": 1500,
+        "types": {
+         "passive_read": 1,
+         "active_use": 1,
+         "passive_hover": 1,
+         "quiz_correct": 1
+        },
+        "mastery": "learning"
+       },
+       "isNew": false,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 2,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b5.book"
+      },
+      "encounter": {
+       "word": "pain",
+       "type": "quiz_incorrect",
+       "meaning": ""
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "pain",
+        "language": "fr",
+        "meaning": "bread",
+        "category": "food",
+        "context": "Ada Thatch",
+        "encountered": 5,
+        "correct": 2,
+        "incorrect": 1,
+        "halves": 6,
+        "last": 1500,
+        "types": {
+         "passive_read": 1,
+         "active_use": 1,
+         "passive_hover": 1,
+         "quiz_correct": 1,
+         "quiz_incorrect": 1
+        },
+        "mastery": "learning"
+       },
+       "isNew": false,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 2,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b6.book"
+      },
+      "encounter": {
+       "word": "pain",
+       "language": "en",
+       "type": "active_use",
+       "meaning": "hurt"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "pain",
+        "language": "en",
+        "meaning": "hurt",
+        "category": null,
+        "context": null,
+        "encountered": 1,
+        "correct": 1,
+        "incorrect": 0,
+        "halves": 2,
+        "last": 1500,
+        "types": {
+         "active_use": 1
+        },
+        "mastery": "new"
+       },
+       "isNew": true,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 3,
+         "words": {
+          "$len": 2
+         }
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b7.book"
+      },
+      "encounter": {
+       "word": "eau"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "eau",
+        "language": "fr",
+        "meaning": "",
+        "category": null,
+        "context": null,
+        "encountered": 1,
+        "correct": 0,
+        "incorrect": 0,
+        "halves": 1,
+        "last": 1500,
+        "types": {
+         "passive_read": 1
+        },
+        "mastery": "new"
+       },
+       "isNew": true,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 3,
+         "words": {
+          "$len": 3
+         }
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b8.book"
+      },
+      "encounter": {
+       "word": "pain",
+       "category": "bakery"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "pain",
+        "language": "fr",
+        "meaning": "bread",
+        "category": "bakery",
+        "context": "Ada Thatch",
+        "encountered": 6,
+        "correct": 2,
+        "incorrect": 1,
+        "halves": 7,
+        "last": 1500,
+        "types": {
+         "passive_read": 2,
+         "active_use": 1,
+         "passive_hover": 1,
+         "quiz_correct": 1,
+         "quiz_incorrect": 1
+        },
+        "mastery": "learning"
+       },
+       "isNew": false,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 3,
+         "words": {
+          "$len": 3
+         }
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b9.book"
+      },
+      "encounter": {
+       "word": "   ",
+       "type": "active_use"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": false,
+       "refusal": "empty_word"
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b10.book"
+      },
+      "encounter": {
+       "word": "lait",
+       "type": "shouted"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": false,
+       "refusal": "unknown_encounter"
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.book.summary",
+     "args": {
+      "book": {
+       "$ref": "b11.book"
+      }
+     },
+     "expect": {
+      "language": "fr",
+      "clockMs": 1500,
+      "fluency": 0,
+      "cefr": null,
+      "conversations": 0,
+      "correctUsages": 3,
+      "wordsLearned": 3,
+      "mastered": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress run: run: a word climbs learning, familiar and mastered as its weighted uses reach 3, 5 and 8",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b0.book"
+      },
+      "encounter": {
+       "word": "merci",
+       "type": "active_use"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "merci",
+        "language": "fr",
+        "meaning": "",
+        "category": null,
+        "context": null,
+        "encountered": 1,
+        "correct": 1,
+        "incorrect": 0,
+        "halves": 2,
+        "last": 0,
+        "types": {
+         "active_use": 1
+        },
+        "mastery": "new"
+       },
+       "isNew": true,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 1,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b1.book"
+      },
+      "encounter": {
+       "word": "merci",
+       "type": "active_use"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "merci",
+        "language": "fr",
+        "meaning": "",
+        "category": null,
+        "context": null,
+        "encountered": 2,
+        "correct": 2,
+        "incorrect": 0,
+        "halves": 4,
+        "last": 0,
+        "types": {
+         "active_use": 2
+        },
+        "mastery": "learning"
+       },
+       "isNew": false,
+       "masteryChanged": "learning",
+       "book": {
+        "$subset": {
+         "correctUsages": 2,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b2.book"
+      },
+      "encounter": {
+       "word": "merci",
+       "type": "active_use"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "merci",
+        "language": "fr",
+        "meaning": "",
+        "category": null,
+        "context": null,
+        "encountered": 3,
+        "correct": 3,
+        "incorrect": 0,
+        "halves": 6,
+        "last": 0,
+        "types": {
+         "active_use": 3
+        },
+        "mastery": "learning"
+       },
+       "isNew": false,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 3,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b3.book"
+      },
+      "encounter": {
+       "word": "merci",
+       "type": "active_use"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "merci",
+        "language": "fr",
+        "meaning": "",
+        "category": null,
+        "context": null,
+        "encountered": 4,
+        "correct": 4,
+        "incorrect": 0,
+        "halves": 8,
+        "last": 0,
+        "types": {
+         "active_use": 4
+        },
+        "mastery": "learning"
+       },
+       "isNew": false,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 4,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b4.book"
+      },
+      "encounter": {
+       "word": "merci",
+       "type": "active_use"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "merci",
+        "language": "fr",
+        "meaning": "",
+        "category": null,
+        "context": null,
+        "encountered": 5,
+        "correct": 5,
+        "incorrect": 0,
+        "halves": 10,
+        "last": 0,
+        "types": {
+         "active_use": 5
+        },
+        "mastery": "familiar"
+       },
+       "isNew": false,
+       "masteryChanged": "familiar",
+       "book": {
+        "$subset": {
+         "correctUsages": 5,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b5.book"
+      },
+      "encounter": {
+       "word": "merci",
+       "type": "active_use"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "merci",
+        "language": "fr",
+        "meaning": "",
+        "category": null,
+        "context": null,
+        "encountered": 6,
+        "correct": 6,
+        "incorrect": 0,
+        "halves": 12,
+        "last": 0,
+        "types": {
+         "active_use": 6
+        },
+        "mastery": "familiar"
+       },
+       "isNew": false,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 6,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b6.book"
+      },
+      "encounter": {
+       "word": "merci",
+       "type": "active_use"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "merci",
+        "language": "fr",
+        "meaning": "",
+        "category": null,
+        "context": null,
+        "encountered": 7,
+        "correct": 7,
+        "incorrect": 0,
+        "halves": 14,
+        "last": 0,
+        "types": {
+         "active_use": 7
+        },
+        "mastery": "familiar"
+       },
+       "isNew": false,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 7,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b7.book"
+      },
+      "encounter": {
+       "word": "merci",
+       "type": "active_use"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "merci",
+        "language": "fr",
+        "meaning": "",
+        "category": null,
+        "context": null,
+        "encountered": 8,
+        "correct": 8,
+        "incorrect": 0,
+        "halves": 16,
+        "last": 0,
+        "types": {
+         "active_use": 8
+        },
+        "mastery": "mastered"
+       },
+       "isNew": false,
+       "masteryChanged": "mastered",
+       "book": {
+        "$subset": {
+         "correctUsages": 8,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b8.book"
+      },
+      "encounter": {
+       "word": "merci",
+       "type": "passive_hover"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "merci",
+        "language": "fr",
+        "meaning": "",
+        "category": null,
+        "context": null,
+        "encountered": 9,
+        "correct": 8,
+        "incorrect": 0,
+        "halves": 17,
+        "last": 0,
+        "types": {
+         "active_use": 8,
+         "passive_hover": 1
+        },
+        "mastery": "mastered"
+       },
+       "isNew": false,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 8,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b9.book"
+      },
+      "encounter": {
+       "word": "merci",
+       "type": "passive_hover"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "merci",
+        "language": "fr",
+        "meaning": "",
+        "category": null,
+        "context": null,
+        "encountered": 10,
+        "correct": 8,
+        "incorrect": 0,
+        "halves": 18,
+        "last": 0,
+        "types": {
+         "active_use": 8,
+         "passive_hover": 2
+        },
+        "mastery": "mastered"
+       },
+       "isNew": false,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 8,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.book.summary",
+     "args": {
+      "book": {
+       "$ref": "b10.book"
+      }
+     },
+     "expect": {
+      "language": "fr",
+      "clockMs": 0,
+      "fluency": 0,
+      "cefr": null,
+      "conversations": 0,
+      "correctUsages": 8,
+      "wordsLearned": 1,
+      "mastered": [
+       "merci"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress run: run: the bus events the book hears, and one it does not",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.book.encounterOfEvent",
+     "args": {
+      "event": {
+       "type": "vocabulary_used",
+       "word": "fromage",
+       "correct": true,
+       "category": "food"
+      }
+     },
+     "expect": {
+      "encounter": {
+       "$type": "object"
+      }
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b1.book"
+      },
+      "encounter": {
+       "$ref": "b0.encounter"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "fromage",
+        "language": "fr",
+        "meaning": "",
+        "category": "food",
+        "context": null,
+        "encountered": 1,
+        "correct": 1,
+        "incorrect": 0,
+        "halves": 2,
+        "last": 0,
+        "types": {
+         "active_use": 1
+        },
+        "mastery": "new"
+       },
+       "isNew": true,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 1,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.book.encounterOfEvent",
+     "args": {
+      "event": {
+       "type": "vocabulary_used",
+       "word": "fromage",
+       "correct": false
+      }
+     },
+     "expect": {
+      "encounter": {
+       "$type": "object"
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b3.book"
+      },
+      "encounter": {
+       "$ref": "b2.encounter"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "fromage",
+        "language": "fr",
+        "meaning": "",
+        "category": "food",
+        "context": null,
+        "encountered": 2,
+        "correct": 1,
+        "incorrect": 1,
+        "halves": 2,
+        "last": 0,
+        "types": {
+         "active_use": 1,
+         "quiz_incorrect": 1
+        },
+        "mastery": "learning"
+       },
+       "isNew": false,
+       "masteryChanged": "learning",
+       "book": {
+        "$subset": {
+         "correctUsages": 1,
+         "words": {
+          "$len": 1
+         }
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.book.encounterOfEvent",
+     "args": {
+      "event": {
+       "type": "object_examined",
+       "objectId": "o1",
+       "objectName": "anvil",
+       "targetWord": "enclume",
+       "targetLanguage": "fr",
+       "category": "tools"
+      }
+     },
+     "expect": {
+      "encounter": {
+       "$type": "object"
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b5.book"
+      },
+      "encounter": {
+       "$ref": "b4.encounter"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "enclume",
+        "language": "fr",
+        "meaning": "",
+        "category": "tools",
+        "context": null,
+        "encountered": 1,
+        "correct": 0,
+        "incorrect": 0,
+        "halves": 1,
+        "last": 0,
+        "types": {
+         "passive_read": 1
+        },
+        "mastery": "new"
+       },
+       "isNew": true,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 1,
+         "words": {
+          "$len": 2
+         }
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.book.encounterOfEvent",
+     "args": {
+      "event": {
+       "type": "object_examined",
+       "objectId": "o2",
+       "objectName": "anvil",
+       "targetWord": "yunque",
+       "targetLanguage": "es",
+       "category": "tools"
+      }
+     },
+     "expect": {
+      "encounter": {
+       "$type": "object"
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b7.book"
+      },
+      "encounter": {
+       "$ref": "b6.encounter"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "yunque",
+        "language": "es",
+        "meaning": "",
+        "category": "tools",
+        "context": null,
+        "encountered": 1,
+        "correct": 0,
+        "incorrect": 0,
+        "halves": 1,
+        "last": 0,
+        "types": {
+         "passive_read": 1
+        },
+        "mastery": "new"
+       },
+       "isNew": true,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 1,
+         "words": {
+          "$len": 3
+         }
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.book.encounterOfEvent",
+     "args": {
+      "event": {
+       "type": "vocabulary_overheard",
+       "word": "bonsoir",
+       "translation": "good evening",
+       "language": "fr",
+       "context": "Cora to Dov",
+       "conversationId": "c1",
+       "speakerNpcId": "cora"
+      }
+     },
+     "expect": {
+      "encounter": {
+       "$type": "object"
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b9.book"
+      },
+      "encounter": {
+       "$ref": "b8.encounter"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "bonsoir",
+        "language": "fr",
+        "meaning": "good evening",
+        "category": null,
+        "context": "Cora to Dov",
+        "encountered": 1,
+        "correct": 0,
+        "incorrect": 0,
+        "halves": 1,
+        "last": 0,
+        "types": {
+         "passive_hover": 1
+        },
+        "mastery": "new"
+       },
+       "isNew": true,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 1,
+         "words": {
+          "$len": 4
+         }
+        }
+       }
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.book.encounterOfEvent",
+     "args": {
+      "event": {
+       "type": "object_named",
+       "objectId": "anvil",
+       "targetWord": "enclume",
+       "category": "tools",
+       "correct": true,
+       "attempts": 1
+      }
+     },
+     "expect": {
+      "encounter": {
+       "$type": "object"
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b11.book"
+      },
+      "encounter": {
+       "$ref": "b10.encounter"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "enclume",
+        "language": "fr",
+        "meaning": "",
+        "category": "tools",
+        "context": null,
+        "encountered": 2,
+        "correct": 1,
+        "incorrect": 0,
+        "halves": 3,
+        "last": 0,
+        "types": {
+         "passive_read": 1,
+         "quiz_correct": 1
+        },
+        "mastery": "learning"
+       },
+       "isNew": false,
+       "masteryChanged": "learning",
+       "book": {
+        "$subset": {
+         "correctUsages": 2,
+         "words": {
+          "$len": 4
+         }
+        }
+       }
+      }
+     },
+     "bind": "b13"
+    },
+    {
+     "call": "language.book.encounterOfEvent",
+     "args": {
+      "event": {
+       "type": "object_named",
+       "objectId": "anvil",
+       "targetWord": "enclume",
+       "category": "tools",
+       "correct": false,
+       "attempts": 2
+      }
+     },
+     "expect": {
+      "encounter": {
+       "$type": "object"
+      }
+     },
+     "bind": "b12"
+    },
+    {
+     "call": "language.book.recordEncounter",
+     "args": {
+      "book": {
+       "$ref": "b13.book"
+      },
+      "encounter": {
+       "$ref": "b12.encounter"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "entry": {
+        "word": "enclume",
+        "language": "fr",
+        "meaning": "",
+        "category": "tools",
+        "context": null,
+        "encountered": 3,
+        "correct": 1,
+        "incorrect": 1,
+        "halves": 3,
+        "last": 0,
+        "types": {
+         "passive_read": 1,
+         "quiz_correct": 1,
+         "quiz_incorrect": 1
+        },
+        "mastery": "learning"
+       },
+       "isNew": false,
+       "masteryChanged": null,
+       "book": {
+        "$subset": {
+         "correctUsages": 2,
+         "words": {
+          "$len": 4
+         }
+        }
+       }
+      }
+     },
+     "bind": "b14"
+    },
+    {
+     "call": "language.book.encounterOfEvent",
+     "args": {
+      "event": {
+       "type": "npc_talked",
+       "npcId": "ada"
+      }
+     },
+     "expect": {
+      "encounter": null
+     }
+    },
+    {
+     "call": "language.book.summary",
+     "args": {
+      "book": {
+       "$ref": "b14.book"
+      }
+     },
+     "expect": {
+      "language": "fr",
+      "clockMs": 0,
+      "fluency": 0,
+      "cefr": null,
+      "conversations": 0,
+      "correctUsages": 2,
+      "wordsLearned": 4,
+      "mastered": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress run: run: grammar corrections create patterns, a clean turn reinforces them, and a weakness is announced once",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b0.book"
+      },
+      "feedback": {
+       "status": "no_target_language"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [],
+       "signals": []
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b1.book"
+      },
+      "feedback": {
+       "status": "correct"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [],
+       "signals": []
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b2.book"
+      },
+      "feedback": {
+       "status": "corrected",
+       "errors": [
+        {
+         "pattern": "article agreement",
+         "incorrect": "le maison",
+         "corrected": "la maison",
+         "explanation": "maison is feminine"
+        }
+       ]
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "article agreement",
+         "correct": 0,
+         "incorrect": 1,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b3.book"
+      },
+      "feedback": {
+       "status": "correct"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "article agreement",
+         "correct": 1,
+         "incorrect": 1,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b4.book"
+      },
+      "feedback": {
+       "status": "corrected",
+       "errors": [
+        {
+         "pattern": "article agreement",
+         "incorrect": "le maison",
+         "corrected": "la maison",
+         "explanation": "maison is feminine"
+        },
+        {
+         "pattern": "past tense",
+         "corrected": "j'ai mangé"
+        }
+       ]
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "article agreement",
+         "correct": 1,
+         "incorrect": 2,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "past tense",
+         "correct": 0,
+         "incorrect": 1,
+         "mastered": false,
+         "examples": [
+          "j'ai mangé"
+         ],
+         "explanations": []
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.book.weakPatterns",
+     "args": {
+      "book": {
+       "$ref": "b5.book"
+      }
+     },
+     "expect": {
+      "patterns": {
+       "$ids": [],
+       "$key": "pattern"
+      }
+     }
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b5.book"
+      },
+      "feedback": {
+       "status": "correct"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "article agreement",
+         "correct": 2,
+         "incorrect": 2,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "past tense",
+         "correct": 1,
+         "incorrect": 1,
+         "mastered": false,
+         "examples": [
+          "j'ai mangé"
+         ],
+         "explanations": []
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b6.book"
+      },
+      "feedback": {
+       "status": "corrected",
+       "errors": [
+        {
+         "pattern": "article agreement",
+         "incorrect": "le table",
+         "corrected": "la table",
+         "explanation": "table is feminine"
+        }
+       ]
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "article agreement",
+         "correct": 2,
+         "incorrect": 3,
+         "mastered": false,
+         "examples": [
+          "la maison",
+          "la table"
+         ],
+         "explanations": [
+          "maison is feminine",
+          "table is feminine"
+         ]
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.book.weakPatterns",
+     "args": {
+      "book": {
+       "$ref": "b7.book"
+      }
+     },
+     "expect": {
+      "patterns": {
+       "$ids": [
+        "article agreement"
+       ],
+       "$key": "pattern"
+      }
+     }
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b7.book"
+      },
+      "feedback": {
+       "status": "corrected",
+       "errors": [
+        {
+         "pattern": "past tense",
+         "corrected": "j'ai bu"
+        }
+       ]
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "past tense",
+         "correct": 1,
+         "incorrect": 2,
+         "mastered": false,
+         "examples": [
+          "j'ai mangé",
+          "j'ai bu"
+         ],
+         "explanations": []
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b8.book"
+      },
+      "feedback": {
+       "status": "corrected",
+       "errors": [
+        {
+         "pattern": "past tense"
+        }
+       ]
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "past tense",
+         "correct": 1,
+         "incorrect": 3,
+         "mastered": false,
+         "examples": [
+          "j'ai mangé",
+          "j'ai bu"
+         ],
+         "explanations": []
+        }
+       ],
+       "signals": [
+        {
+         "type": "grammar_weakness_detected",
+         "pattern": "past tense",
+         "errorRate": 0.75,
+         "totalAttempts": 4
+        }
+       ]
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b9.book"
+      },
+      "feedback": {
+       "status": "corrected",
+       "errors": [
+        {
+         "pattern": "past tense"
+        }
+       ]
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "past tense",
+         "correct": 1,
+         "incorrect": 4,
+         "mastered": false,
+         "examples": [
+          "j'ai mangé",
+          "j'ai bu"
+         ],
+         "explanations": []
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.book.weakPatterns",
+     "args": {
+      "book": {
+       "$ref": "b10.book"
+      }
+     },
+     "expect": {
+      "patterns": {
+       "$ids": [
+        "past tense",
+        "article agreement"
+       ],
+       "$key": "pattern"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress run: run: five right uses master a pattern and a slip unmasters it",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b0.book"
+      },
+      "feedback": {
+       "status": "corrected",
+       "errors": [
+        {
+         "pattern": "gender"
+        }
+       ]
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "gender",
+         "correct": 0,
+         "incorrect": 1,
+         "mastered": false,
+         "examples": [],
+         "explanations": []
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b1.book"
+      },
+      "feedback": {
+       "status": "correct"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "gender",
+         "correct": 1,
+         "incorrect": 1,
+         "mastered": false,
+         "examples": [],
+         "explanations": []
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b2.book"
+      },
+      "feedback": {
+       "status": "correct"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "gender",
+         "correct": 2,
+         "incorrect": 1,
+         "mastered": false,
+         "examples": [],
+         "explanations": []
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b3.book"
+      },
+      "feedback": {
+       "status": "correct"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "gender",
+         "correct": 3,
+         "incorrect": 1,
+         "mastered": false,
+         "examples": [],
+         "explanations": []
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b4.book"
+      },
+      "feedback": {
+       "status": "correct"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "gender",
+         "correct": 4,
+         "incorrect": 1,
+         "mastered": false,
+         "examples": [],
+         "explanations": []
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b5.book"
+      },
+      "feedback": {
+       "status": "correct"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "gender",
+         "correct": 5,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [],
+         "explanations": []
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.book.recordGrammar",
+     "args": {
+      "book": {
+       "$ref": "b6.book"
+      },
+      "feedback": {
+       "status": "corrected",
+       "errors": [
+        {
+         "pattern": "gender"
+        }
+       ]
+      }
+     },
+     "expect": {
+      "$subset": {
+       "touched": [
+        {
+         "pattern": "gender",
+         "correct": 5,
+         "incorrect": 2,
+         "mastered": false,
+         "examples": [],
+         "explanations": []
+        }
+       ],
+       "signals": []
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.book.weakPatterns",
+     "args": {
+      "book": {
+       "$ref": "b7.book"
+      }
+     },
+     "expect": {
+      "patterns": {
+       "$ids": [],
+       "$key": "pattern"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress run: run: a conversation moves fluency, counts new and reinforced words, and raises the band one step",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.book.recordConversation",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "fluency": 19800,
+        "cefr": "A1",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": null,
+          "context": null,
+          "encountered": 1,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 2,
+          "last": 0,
+          "types": {
+           "active_use": 1
+          }
+         }
+        ]
+       }
+      },
+      "conversation": {
+       "npcName": "Ada Thatch",
+       "turns": 10,
+       "wordsUsed": [
+        "pain",
+        "beurre",
+        "beurre",
+        "sel",
+        "farine",
+        "four"
+       ],
+       "targetPercent": 85,
+       "grammarCorrect": 9,
+       "grammarErrors": 1
+      }
+     },
+     "expect": {
+      "$subset": {
+       "result": {
+        "previous": 19800,
+        "next": 22322,
+        "gain": 2522,
+        "wordsLearned": 5,
+        "wordsReinforced": 1,
+        "bonuses": [
+         "Vocab variety bonus!",
+         "Excellent grammar!",
+         "Long conversation bonus!",
+         "Full immersion bonus!"
+        ]
+       },
+       "signals": [
+        {
+         "type": "cefr_level_advanced",
+         "oldLevel": "A1",
+         "newLevel": "A2"
+        }
+       ],
+       "book": {
+        "$subset": {
+         "fluency": 22322,
+         "cefr": "A2",
+         "conversations": 1
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.book.weakPatterns",
+     "args": {
+      "book": {
+       "$ref": "b1.book"
+      }
+     },
+     "expect": {
+      "patterns": {
+       "$ids": [],
+       "$key": "pattern"
+      }
+     }
+    },
+    {
+     "call": "language.book.findWord",
+     "args": {
+      "book": {
+       "$ref": "b1.book"
+      },
+      "word": "beurre"
+     },
+     "expect": {
+      "row": {
+       "$type": "object"
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.book.wordView",
+     "args": {
+      "row": {
+       "$ref": "b2.row"
+      }
+     },
+     "expect": {
+      "view": {
+       "word": "beurre",
+       "language": "fr",
+       "meaning": "",
+       "category": null,
+       "context": "Ada Thatch",
+       "encountered": 2,
+       "correct": 2,
+       "incorrect": 0,
+       "halves": 4,
+       "last": 0,
+       "types": {
+        "active_use": 2
+       },
+       "mastery": "learning"
+      }
+     }
+    },
+    {
+     "call": "language.book.recordConversation",
+     "args": {
+      "book": {
+       "$ref": "b1.book"
+      },
+      "conversation": {
+       "npcName": "Ada Thatch",
+       "turns": 1,
+       "wordsUsed": [],
+       "targetPercent": 0,
+       "grammarCorrect": 0,
+       "grammarErrors": 0
+      }
+     },
+     "expect": {
+      "$subset": {
+       "result": {
+        "previous": 22322,
+        "next": 22766,
+        "gain": 444,
+        "wordsLearned": 0,
+        "wordsReinforced": 0,
+        "bonuses": [
+         "Excellent grammar!"
+        ]
+       },
+       "signals": [],
+       "book": {
+        "$subset": {
+         "fluency": 22766,
+         "cefr": "A2",
+         "conversations": 2
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.book.summary",
+     "args": {
+      "book": {
+       "$ref": "b3.book"
+      }
+     },
+     "expect": {
+      "language": "fr",
+      "clockMs": 0,
+      "fluency": 22766,
+      "cefr": "A2",
+      "conversations": 2,
+      "correctUsages": 6,
+      "wordsLearned": 5,
+      "mastered": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress run: run: with no band, fluency never raises one; at C2 there is no next band; fluency stops at 100000 while the gain is still reported",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.book.recordConversation",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "fluency": 99500,
+        "cefr": null
+       }
+      },
+      "conversation": {
+       "turns": 4,
+       "wordsUsed": [
+        "oui"
+       ],
+       "targetPercent": 90,
+       "grammarCorrect": 2,
+       "grammarErrors": 0
+      }
+     },
+     "expect": {
+      "$subset": {
+       "result": {
+        "previous": 99500,
+        "next": 100000,
+        "gain": 854,
+        "wordsLearned": 1,
+        "wordsReinforced": 0,
+        "bonuses": [
+         "Excellent grammar!",
+         "Full immersion bonus!"
+        ]
+       },
+       "signals": [],
+       "book": {
+        "$subset": {
+         "fluency": 100000,
+         "cefr": null,
+         "conversations": 1
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.book.setCefr",
+     "args": {
+      "book": {
+       "$ref": "b1.book"
+      },
+      "level": "C2"
+     },
+     "expect": {
+      "$subset": {
+       "signals": [],
+       "book": {
+        "$subset": {
+         "cefr": "C2",
+         "fluency": 100000
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.book.recordConversation",
+     "args": {
+      "book": {
+       "$ref": "b2.book"
+      },
+      "conversation": {
+       "turns": 4,
+       "wordsUsed": [
+        "non"
+       ],
+       "targetPercent": 90,
+       "grammarCorrect": 2,
+       "grammarErrors": 0
+      }
+     },
+     "expect": {
+      "$subset": {
+       "result": {
+        "previous": 100000,
+        "next": 100000,
+        "gain": 850,
+        "wordsLearned": 1,
+        "wordsReinforced": 0,
+        "bonuses": [
+         "Excellent grammar!",
+         "Full immersion bonus!"
+        ]
+       },
+       "signals": [],
+       "book": {
+        "$subset": {
+         "fluency": 100000,
+         "cefr": "C2",
+         "conversations": 2
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress run: run: an assessment sets the band, raises fluency to its floor, and announces only a change",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.book.setCefr",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "fluency": 3000
+       }
+      },
+      "level": "A1"
+     },
+     "expect": {
+      "$subset": {
+       "signals": [],
+       "book": {
+        "$subset": {
+         "cefr": "A1",
+         "fluency": 3000
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.book.setCefr",
+     "args": {
+      "book": {
+       "$ref": "b1.book"
+      },
+      "level": "B1"
+     },
+     "expect": {
+      "$subset": {
+       "signals": [
+        {
+         "type": "cefr_level_advanced",
+         "oldLevel": "A1",
+         "newLevel": "B1"
+        }
+       ],
+       "book": {
+        "$subset": {
+         "cefr": "B1",
+         "fluency": 40000
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.book.setCefr",
+     "args": {
+      "book": {
+       "$ref": "b2.book"
+      },
+      "level": "A2"
+     },
+     "expect": {
+      "$subset": {
+       "signals": [
+        {
+         "type": "cefr_level_advanced",
+         "oldLevel": "B1",
+         "newLevel": "A2"
+        }
+       ],
+       "book": {
+        "$subset": {
+         "cefr": "A2",
+         "fluency": 40000
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.book.setCefr",
+     "args": {
+      "book": {
+       "$ref": "b3.book"
+      },
+      "level": "A2"
+     },
+     "expect": {
+      "$subset": {
+       "signals": [],
+       "book": {
+        "$subset": {
+         "cefr": "A2",
+         "fluency": 40000
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress facts: facts: the CEFR band from player_cefr_level, upper-cased; explicit weak areas",
+   "steps": [
+    {
+     "call": "language.facts.cefr",
+     "args": {
+      "facts": [
+       {
+        "predicate": "player_cefr_level",
+        "args": [
+         "player",
+         " b1 "
+        ]
+       },
+       {
+        "predicate": "weak_area",
+        "args": [
+         "player",
+         "grammar"
+        ]
+       },
+       {
+        "predicate": "weak_area",
+        "args": [
+         "player",
+         "listening"
+        ]
+       },
+       {
+        "predicate": "player_dimension_score",
+        "args": [
+         "player",
+         "vocabulary",
+         20
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "cefr": "B1"
+     }
+    },
+    {
+     "call": "language.facts.weakDimensions",
+     "args": {
+      "facts": [
+       {
+        "predicate": "player_cefr_level",
+        "args": [
+         "player",
+         " b1 "
+        ]
+       },
+       {
+        "predicate": "weak_area",
+        "args": [
+         "player",
+         "grammar"
+        ]
+       },
+       {
+        "predicate": "weak_area",
+        "args": [
+         "player",
+         "listening"
+        ]
+       },
+       {
+        "predicate": "player_dimension_score",
+        "args": [
+         "player",
+         "vocabulary",
+         20
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "weak": [
+       "grammar",
+       "listening"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress facts: facts: no weak_area facts, weak dimensions derived below 60, lowest first; a band that is not one is none",
+   "steps": [
+    {
+     "call": "language.facts.cefr",
+     "args": {
+      "facts": [
+       {
+        "predicate": "player_cefr_level",
+        "args": [
+         "player",
+         "D1"
+        ]
+       },
+       {
+        "predicate": "player_dimension_score",
+        "args": [
+         "player",
+         "grammar",
+         55
+        ]
+       },
+       {
+        "predicate": "player_dimension_score",
+        "args": [
+         "player",
+         "vocabulary",
+         30
+        ]
+       },
+       {
+        "predicate": "player_dimension_score",
+        "args": [
+         "player",
+         "listening",
+         60
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "cefr": null
+     }
+    },
+    {
+     "call": "language.facts.weakDimensions",
+     "args": {
+      "facts": [
+       {
+        "predicate": "player_cefr_level",
+        "args": [
+         "player",
+         "D1"
+        ]
+       },
+       {
+        "predicate": "player_dimension_score",
+        "args": [
+         "player",
+         "grammar",
+         55
+        ]
+       },
+       {
+        "predicate": "player_dimension_score",
+        "args": [
+         "player",
+         "vocabulary",
+         30
+        ]
+       },
+       {
+        "predicate": "player_dimension_score",
+        "args": [
+         "player",
+         "listening",
+         60
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "weak": [
+       "vocabulary",
+       "grammar"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress facts: facts: a custom threshold ignores weak_area facts and derives",
+   "steps": [
+    {
+     "call": "language.facts.cefr",
+     "args": {
+      "facts": [
+       {
+        "predicate": "weak_area",
+        "args": [
+         "player",
+         "grammar"
+        ]
+       },
+       {
+        "predicate": "player_dimension_score",
+        "args": [
+         "player",
+         "listening",
+         65
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "cefr": null
+     }
+    },
+    {
+     "call": "language.facts.weakDimensions",
+     "args": {
+      "facts": [
+       {
+        "predicate": "weak_area",
+        "args": [
+         "player",
+         "grammar"
+        ]
+       },
+       {
+        "predicate": "player_dimension_score",
+        "args": [
+         "player",
+         "listening",
+         65
+        ]
+       }
+      ],
+      "threshold": 70
+     },
+     "expect": {
+      "weak": [
+       "listening"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/progress facts: facts: no facts",
+   "steps": [
+    {
+     "call": "language.facts.cefr",
+     "args": {
+      "facts": null
+     },
+     "expect": {
+      "cefr": null
+     }
+    },
+    {
+     "call": "language.facts.weakDimensions",
+     "args": {
+      "facts": null
+     },
+     "expect": {
+      "weak": []
+     }
+    }
+   ]
+  }
+ ]
+}

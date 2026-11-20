@@ -866,6 +866,20 @@
   `message`; `[invalid-input]` only for what core dereferences unread. The bundle now
   carries `src/save-file-game-state.ts` on purpose (it left `UNBUNDLED_CORE_MODULES`);
   never import `save-file-game-state-corpus` (core's runner), which stays refused.
+- **The language rows (PL.native-language-rows, U118, U128; landed in SLICES) run core's
+  `conformance/language/*.json` UNCHANGED**, copied as the language set
+  (`LANGUAGE_CORPUS_FILES`; slice 1: progress, save, prompts, hover, chat) and driven by
+  `tests/language_corpus.cpp` as `language_corpus` (+ `_negative`), which composes each op
+  as core's `systems-corpus.ts` composes its kernels and fails unless each file's declared
+  `ops` and `steps` are exactly the ones it drives; `emit-bridge-cases.mjs` transcribes each
+  file into `vendor/core/cases/core-language-<file>.json` and `core_vendor` holds each
+  transcription to its corpus by name and first call. `language.<area>.<fn>` is one core
+  kernel each, STATELESS (a JSON state in, core's result out; the host keeps the state), a
+  refusal a value in core's shape (core's codes, no message: core states none). A book is
+  read with core's own `readLanguageBlock` (the village save's reader), so an unreadable one
+  is `[invalid-input]` naming core's keys. A later slice adds its files to the set, its
+  steps to the runner's table and its rows; never import `language-learning/systems-corpus`
+  (core's runner). `chat-strip.json` belongs to PL.native-chat-cefr-rows.
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain
