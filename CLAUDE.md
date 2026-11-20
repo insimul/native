@@ -877,7 +877,8 @@
   transcription to its corpus by name, by the calls core's runner makes (row for row,
   count for count) and by every run answer being stated, for slice 2's and 3's files every
   answer member but the runner's input echoes and a run's reshaped members
-  (`LANGUAGE_ANSWER_ECHOES`; `core_vendor_language_negative` must see thirteen
+  (`LANGUAGE_ANSWER_ECHOES`; each reshaped member still required in its own shape,
+  `LANGUAGE_RESHAPED_FORMS`; `core_vendor_language_negative` must see fourteen
   perturbations named). `language.<area>.<fn>` is one core
   kernel each, STATELESS (a JSON state in, core's result out; the host keeps the state), a
   refusal a value in core's shape (core's codes, no message: core states none). A book is

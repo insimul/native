@@ -91,7 +91,7 @@
 //       answer weakened to a subset, a mode at one band dropped; slice 3: an
 //       identification answer dropped, an examine weakened, a collection run's first call
 //       changed, a collection's collected words expected nowhere, a listening chat dropped,
-//       a composition's submit weakened) and fails unless the guard names each (the
+//       a listening chat's quests not expected, a composition's submit weakened) and fails unless the guard names each (the
 //       core_vendor_language_negative ctest).
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --check-extension-keys <case dir>
@@ -714,6 +714,18 @@ const LANGUAGE_RESHAPED_KEYS = {
   objects: ['do', 'targets'],
   writing: ['do', 'quests'],
 };
+// Slice 3's reshaped members are still held: each must appear in the case's expectations
+// in exactly the shape the emitter states it (its form here), so an emitter that drops
+// one is red (self-sweep V5: a listening chat's quests, dropped, went unseen).
+const LANGUAGE_RESHAPED_FORMS = {
+  collection: { objects: (v) => ({ $ids: v, $key: 'objectId' }) },
+  objects: { targets: (v) => ({ $ids: v }) },
+  writing: {
+    quests: (v, x) => (x.do === 'register'
+      ? { $ids: v, $key: 'questId' }
+      : v.map((q) => ({ $subset: { questId: q.questId, storyHeard: q.storyHeard, answers: { $len: q.answers }, evaluated: q.evaluated, score: q.score } }))),
+  },
+};
 // Slice 2's and slice 3's files hold EVERY case to the stated-value check, not only a run's
 // steps: each member of an answer (each member of each element, for a list of objects)
 // must be stated in some expectation of the case, except the members the runner echoes
@@ -730,6 +742,18 @@ const LANGUAGE_ANSWER_ECHOES = {
   objects: { normalize: [], identify: ['do', 'targets'], naming: ['do'], examine: [] },
   writing: { composition: ['text'], listening: ['do', 'quests'] },
 };
+
+/** Every subtree of a transcribed case's expectations, operators included, as JSON text (for LANGUAGE_RESHAPED_FORMS). */
+function expectationNodes(kase) {
+  const out = new Set();
+  const walk = (v) => {
+    out.add(JSON.stringify(v));
+    if (Array.isArray(v)) v.forEach(walk);
+    else if (v !== null && typeof v === 'object') Object.values(v).forEach(walk);
+  };
+  for (const st of kase.steps ?? []) if ('expect' in st) walk(st.expect);
+  return out;
+}
 
 /** Every value a transcribed case's expectations state, as JSON text (a `$subset`'s contents count; other operators do not). */
 function statedValues(kase) {
@@ -800,9 +824,13 @@ function languageTranscriptionProblems(load = (base) => {
       const kase = byName.get(nameOf(c));
       if (!kase || !Array.isArray(c.expected) || !c.expected.every((x) => x && typeof x === 'object' && 'do' in x)) continue;
       const stated = statedValues(kase);
+      const forms = LANGUAGE_RESHAPED_FORMS[base] ?? {};
+      const nodes = Object.keys(forms).length ? expectationNodes(kase) : null;
       c.expected.forEach((x, k) => {
         for (const [key, v] of Object.entries(x)) {
-          if (!LANGUAGE_RESHAPED_KEYS[base].includes(key) && !stated.has(JSON.stringify(v))) unstated.push(`${c.name} (step ${k} ${x.do}: ${key})`);
+          if (forms[key]) {
+            if (!nodes.has(JSON.stringify(forms[key](v, x)))) unstated.push(`${c.name} (step ${k} ${x.do}: ${key}, reshaped)`);
+          } else if (!LANGUAGE_RESHAPED_KEYS[base].includes(key) && !stated.has(JSON.stringify(v))) unstated.push(`${c.name} (step ${k} ${x.do}: ${key})`);
         }
       });
     }
@@ -895,6 +923,11 @@ function languageTranscriptionNegative() {
       const kase = d.cases.find((c) => c.steps.some((x) => x.call === 'language.listening.chat'));
       kase.steps.splice(kase.steps.findIndex((x) => x.call === 'language.listening.chat'), 1);
     }, "not transcribed as core's runner calls their op"],
+    ['a listening chat\'s quests not expected (a reshaped member)', 'writing', (d) => {
+      // Every chat of the first listening case loses its quests (one alone may repeat another's).
+      const kase = d.cases.find((c) => c.steps.some((x) => x.call === 'language.listening.chat'));
+      for (const st of kase.steps) if (st.call === 'language.listening.chat') delete st.expect.$subset.state;
+    }, 'answer(s) of the corpus expected nowhere'],
     ['an answer weakened to a subset (a submitted composition without its events)', 'writing', (d) => {
       const st = d.cases.flatMap((c) => c.steps).find((x) => x.call === 'language.writing.submit' && x.expect.ok === true);
       st.expect = { $subset: { ok: true } };

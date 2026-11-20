@@ -612,19 +612,19 @@ set_tests_properties(core_vendor_extension_keys_negative PROPERTIES
 
 # Its sibling for the language transcriptions (PL.native-language-rows): the guard that
 # holds cases/core-language-*.json to the vendored corpora (by name, by the calls core's
-# runner makes, row for row, and with every answer stated) is given thirteen perturbations of
+# runner makes, row for row, and with every answer stated) is given fourteen perturbations of
 # those files in memory (a dropped case, a dropped call, a first call changed, an answer
 # expected nowhere, a call that is no language row; slice 2: an answer weakened to a subset,
 # an NPC's mode at one band dropped; slice 3: an identification answer dropped, an examine
 # weakened to a subset, a collection run's first call changed, a knowledge world's collected
-# words expected nowhere, a listening chat dropped, a submitted composition weakened) and
-# passes only when all thirteen are named.
+# words expected nowhere, a listening chat dropped, a listening chat's quests not expected,
+# a submitted composition weakened) and passes only when all fourteen are named.
 add_test(NAME core_vendor_language_negative COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
        --check-language-transcription-negative)
 set_tests_properties(core_vendor_language_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "language transcription negative [^ ]* 13 of 13 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_language_negative")
+  PASS_REGULAR_EXPRESSION "language transcription negative [^ ]* 14 of 14 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_language_negative")
 
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus
