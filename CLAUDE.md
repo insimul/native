@@ -924,7 +924,7 @@
   `worldOf`) is the ONE import of `genre-systems/systems-corpus` (core's runner): no row runs
   `runGenreSystemsOp`. Slice 2 adds the platformer the same way
   (`platformer/{course,run,save}.json`, 32 cases, transcribed as
-  `core-genre-platformer-<file>.json`; `core_vendor_genre_negative` then names sixteen
+  `core-genre-platformer-<file>.json`; `core_vendor_genre_negative` then names seventeen
   perturbations): the course rows are stateless, `platformer.director.*` is a session whose KB
   is its own (`GamePrologEngine` genre `platformer`, which selects traversal; movement is
   core's `TraversalPlanner` inside the director), and its probe and locomotion hosts are

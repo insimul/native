@@ -635,13 +635,17 @@ set_tests_properties(core_vendor_language_negative PROPERTIES
 # with every answer stated) is given nine perturbations in memory (a dropped case, a case no
 # corpus case names, a run's answer dropped, a read's first call changed, a riddle's choices
 # dropped, an answer key expected nowhere, an unlock outcome weakened to a subset, a restored
-# run's states expected nowhere, a KB run put on both legs) and passes only when all nine are named.
+# run's states expected nowhere, a KB run put on both legs); slice 2 (the platformer) adds
+# cases/core-genre-platformer-*.json and eight more (a step call dropped, a step's movement
+# weakened, its probed links changed, its outcome weakened to a subset, its host orders stated
+# non-empty, two runs' stars swapped, a course case put on the C leg only, a restored run put on
+# both legs). It passes only when all seventeen are named.
 add_test(NAME core_vendor_genre_negative COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
        --check-genre-transcription-negative)
 set_tests_properties(core_vendor_genre_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "genre transcription negative [^ ]* 9 of 9 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_genre_negative")
+  PASS_REGULAR_EXPRESSION "genre transcription negative [^ ]* 17 of 17 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_genre_negative")
 
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus

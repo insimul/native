@@ -2428,7 +2428,7 @@ movement is reduced to core's `movementView`). `emit-bridge-cases.mjs` transcrib
 exactly but for its `movement`, held as a subset (performed, refusal, cost, location, the
 affordance's mode and id); `core_vendor` reads core's view back out of each such expectation
 and requires it to be the corpus's answer, holds the stars in place, and
-`core_vendor_genre_negative` names sixteen perturbations. Hand cases:
+`core_vendor_genre_negative` names seventeen perturbations. Hand cases:
 `tests/cases/bridge-platformer.json` (the contract, junction atoms and labels, the graph,
 generate and fromIR alone, the row's sections over the world's own, routes with modes and
 tuning, the stars at their edges, the save block's defaults and refusals, ids naming

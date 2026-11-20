@@ -91,7 +91,8 @@
 //       call changed, a riddle's choices dropped, an answer key expected nowhere, an unlock
 //       outcome weakened to a subset, a restored run's states expected nowhere, a KB run put
 //       on both legs; a platformer step call dropped, a step's movement weakened, its probed
-//       links changed, its outcome weakened to a subset, two runs' stars swapped, a course
+//       links changed, its outcome weakened to a subset, its host orders stated non-empty,
+//       two runs' stars swapped, a course
 //       case put on the C leg only, a restored platformer run put on both legs) and requires
 //       the guard to name each one.
 //
@@ -1228,6 +1229,9 @@ function genreTranscriptionNegative() {
     ['a step\'s outcome weakened to a subset', 'platformer/run', (d) => {
       const st = steps(d).find((x) => x.call === 'platformer.director.step');
       st.expect.outcome = { $subset: { ok: st.expect.outcome.ok } };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a step\'s host orders stated non-empty', 'platformer/run', (d) => {
+      steps(d).find((x) => x.call === 'platformer.director.step').expect.orders = [{ actor: 'player' }];
     }, 'answer(s) of the corpus expected nowhere'],
     ['two runs\' stars swapped', 'platformer/course', (d) => {
       const kase = d.cases.find((c) => c.name.startsWith('platformer/course stars'));
