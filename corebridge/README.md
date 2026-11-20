@@ -127,6 +127,27 @@ game; **meta** = about the bridge itself.
 | `save.encode` | `{ saveFile, insimulVersion, exportedAt? }` → `{ envelope }` | `save-envelope` `buildSaveFileEnvelope` | P1 |
 | `save.decode` | `{ envelope }` or `{ text }` → `{ ok: false, error: { code, message } }` or `{ ok: true, envelope, saveFile, outcome, significant }` | `validateSaveFileEnvelope` then `migrateSaveFileWithOutcome` | P1 |
 | `save.migrate` | `{ saveFile }` → `{ saveFile, outcome, significant }` | `save-file` `migrateSaveFileWithOutcome`, unchanged; `significant` = `isMigrationOutcomeSignificant` | P1 |
+| `save.village.contract` | `{}` → `{ saveFileVersion, gameStateVersion, extensionKey, playerAgentLocalId, runtimeSlot, positionFrameSlot, villagerSlots, weatherExtensionKey, weatherDirectorKeys, weatherBlockMembers, conversationRowKeys, conversationRecordKeys, conversationMsRange }` | `save-file-game-state` constants, `ai/blackboard` `BLACKBOARD_EXTENSION_KEY`, `save-file` `SAVE_FILE_VERSION` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.write` | `{ save, gameState, options: { worldId, runtime, positionFrame, tick } }` → `{ ok: true, currentState, conversations }` or `{ ok: false, refusal }` | `save-file-game-state` `writeVillageSave` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.read` | `{ save, options: { worldId, runtime? } }` → `{ ok: true, gameState }` or `{ ok: false, refusal }` | `save-file-game-state` `readVillageSave` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.check` | `{ save }` → `{ refusal }` (null: none) | `save-file-game-state` `checkVillageSave` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.ownership` | `{ save, worldId, runtime }` → `{ refusal }`: `wrong_world`, `wrong_runtime` or null | `save-file-game-state` `checkSaveOwnership` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.readRuntime` | `{ save, worldId, runtime }` → `{ ok: true, gameState }` or `{ ok: false, refusal }`: a game's Load | `save-file-game-state` `readRuntimeSave` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.runtimeOf` | `{ save, worldId }` → `{ runtime }` | `save-file-game-state` `saveRuntimeOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.positionFrameOf` | `{ save, worldId }` → `{ positionFrame }` | `save-file-game-state` `positionFrameOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.belongsTo` | `{ save, worldId, runtime }` → `{ belongsTo }` | `save-file-game-state` `saveBelongsTo` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.runtimeLabel` | `{ runtime }` → `{ label }` | `save-file-game-state` `runtimeLabel` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.agentCurie` | `{ localId, worldId }` → `{ curie }` | `save-file-game-state` `agentCurie` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.timeStateOf` | `{ totalHours, timeScale, isPaused }` → `{ timeState }` | `save-file-game-state` `timeStateOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.totalHoursOf` | `{ timeState }` → `{ totalHours }` | `save-file-game-state` `totalHoursOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.weather.read` | `{ block }` → `{ ok: true, value }` or `{ ok: false, keys }` | `save-file-game-state` `readWeatherBlock` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.weather.saveState` | `{ session, surfaceWetness? }` → `{ weather }`: a `weather.create` session's sky as the game state carries it | `save-file-game-state` `weatherSaveState` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.weather.restore` | `{ session, gameState }` → `{ surfaceWetness, state, view, issues }`: the saved sky into a `weather.create` session | `save-file-game-state` `restoreWeatherFromSave` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.conversations.read` | `{ records }` → `{ ok: true, value }` or `{ ok: false, keys }` | `save-file-game-state` `readConversationRecords` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.conversations.rows` | `{ stored, records }` → `{ rows }`: the records folded into one row per NPC (unreadable records: `[invalid-input]`) | `save-file-game-state` `readConversationRecords` then `conversationRowsOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.conversations.records` | `{ rows }` → `{ records }`: the rows split back, one record per conversation | `save-file-game-state` `conversationRecordsOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.conversations.timestamp` | `{ epochMs }` → `{ timestamp }` (null outside the range) | `save-file-game-state` `conversationTimestampOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.village.conversations.epochMs` | `{ timestamp }` → `{ epochMs }` (null unless it writes back to itself) | `save-file-game-state` `epochMsOfConversationTimestamp` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `ui.loadRefusal` | `{ refusal }` → `{ outcome, message }`: every string `invalid_format` with its message; any other value `{ outcome: null, message: '' }` | `ui/save-slot-model` `slotOutcomeOfLoadRefusal`, `loadRefusalMessage` | P1 refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1), U126(2)) |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
@@ -374,6 +395,7 @@ game; **meta** = about the bridge itself.
 | `skill.publishActors` | `{ session }` → `{ ok: true, value, events }`: clauses asserted (0 with no KB) | `game-engine/logic/SkillProgression` `publishActors` | P9i skill trees (PL.native-progression-rows) |
 | `skill.lastWriteRefusal` | `{ session }` → `{ ok: true, value, events }`: why the last write was refused, or null | `game-engine/logic/SkillProgression` `lastWriteRefusal` | P9i skill trees (PL.native-progression-rows) |
 | `skill.kb.liveFacts` | `{ prologFacts }` → `{ ok: true, value: { live: [{ fact, clause }], dropped: [{ at, code }] } }` | `progression/skill-kb` `skillKbLiveFactsOf` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.loadJson` | `{ currentState }` → `{ ok: true, facts, dropped, roster }` or `{ ok: false, refusal }`: what a load recomposes the skill KB from | `progression/skill-kb` `skillKbLoadJson` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
 | `skill.kb.compose` | `{ pack?, world?, facts? }` → `{ ok: true, value }`: the program a recomposing host consults | `progression/skill-kb` `composeSkillKbProgram` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
 | `skill.kb.open` | `{ program?, pack?, skills?, trees?, tuning? }` → `{ session, view: { facts } }`: a skill session with a native KB of its own | `progression/skill-kb` `SkillKbSession.open` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
 | `skill.kb.load` | `{ session, currentState }` → `{ ok: true, value: { ok: true, dropped } or { ok: false, refusal } }` | `progression/skill-kb` `SkillKbSession.load` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
@@ -576,8 +598,9 @@ tampered villager `state` (`integrity_mismatch`) and the walking/idle-swapped sa
 an older build's save with 19 extension keys, which decodes with `puzzle`, `platformer` and `strategy`
 added as `null` and its boards unchanged, so its first re-save moves the ENVELOPE integrity (to the
 22-key save's) and never the village state. Every expected digest is core's `computeSaveFileIntegrity`
-run in Node outside the bridge. Core's village mapping (`save-file-game-state.ts`, which this bundle
-leaves out) copies `state` and `runtimeState` verbatim both ways as well. So a village digest that moves
+run in Node outside the bridge. Core's village mapping (`save-file-game-state.ts`, which the
+`save.village.*` rows run since PL.native-village-save-rows) copies `state` and `runtimeState` verbatim
+both ways as well. So a village digest that moves
 when a binding re-saves a slot it has just loaded is the binding re-deriving villager state on capture,
 not the codec, and it is the binding's to fix (U49(3)).
 
@@ -1870,6 +1893,78 @@ unknown op, step or area is refused (a failed case, never a skip), that
 `[invalid-input]` errors, the no-KB session and, on the C leg, a KB-backed unlock),
 every expectation computed by core's own functions at the pin.
 
+### The village-state save rows: the checked write and read, ownership, the sky, the conversations (PL.native-village-save-rows)
+
+Core's village-state save (`src/save-file-game-state.ts`, `docs/village-state-save.md`:
+P1.core, and the conversations projection of PL.core-save-conversations-projection)
+is rows (U118, U128), so an engine binds them instead of keeping a copy (Unreal's
+interim `Portable/InsimulVillageSave` and the village-save and save-conversations
+copies in `InsimulUIStateBinding` and `InsimulSocialBinding`, which its retirement
+rows retire; `ENGINE_BINDINGS.md` maps them row by row). The mapping sits between a
+game's save interchange (`GameSaveState`) and the ONE persisted format, core's
+`SaveFile` (`currentState` and `conversations`); every rule is core's.
+
+- **`save.village.write` and `save.village.read` are core's CHECKED entry points**
+  (`writeVillageSave`, `readVillageSave`), answered in the corpus's shape: `{ ok: true,
+  currentState, conversations }` (the two bodies a save PUT takes: put them over the
+  save, `{ ...save, currentState, conversations }`) or `{ ok: true, gameState }`, and a
+  refusal is a VALUE, `{ ok: false, refusal: { code, field, found?, expected?, keys?,
+  message } }`, in core's order: the save's version, the game state's, unregistered
+  extensions, each stored block, each written block, the conversation records. The
+  codes are core's (`wrong_version`, `unregistered_extension`, `unreadable_<block>`,
+  `unreadable_conversations`); `message` is core's sentence for a log, which the corpus
+  does not pin. `save.village.check` is `checkVillageSave` alone.
+- **Whose save it is.** `save.village.ownership` (`checkSaveOwnership`) answers
+  `wrong_world` (field `worldId`) and then `wrong_runtime` (field `runtime`, C5-3),
+  each with `found` and `expected`, or null; `save.village.readRuntime`
+  (`readRuntimeSave`) is a game's Load: that check, then the checked read of the
+  runtime's villagers. `runtime` null (or absent) is the legacy runtime, which owns only
+  unstamped saves. The stamp readers are `save.village.runtimeOf`, `.positionFrameOf`,
+  `.belongsTo` and `.runtimeLabel`; `save.village.agentCurie` is a board key.
+- **The clock and the sky.** `save.village.timeStateOf` and `.totalHoursOf` are core's
+  clock mapping (an hour that rounds to 24 carries into the next day).
+  `save.village.weather.read` is `readWeatherBlock` (`{ ok, value }` or `{ ok: false,
+  keys }`); `save.village.weather.saveState` and `.restore` run `weatherSaveState` and
+  `restoreWeatherFromSave` over a `weather.create` session's director, so the sky a save
+  carries goes into and out of core's own `WeatherDirector`.
+- **The conversations.** `save.village.conversations.read` is `readConversationRecords`;
+  `.rows { stored, records }` is `conversationRowsOf`, the records folded into one row
+  per NPC (read with core's reader first, as the writer reads them; records it cannot
+  read are `[invalid-input]` naming core's keys); `.records { rows }` is
+  `conversationRecordsOf`, the rows split back; `.timestamp` and `.epochMs` are the wall
+  clock's instant and the round trip back (null outside `CONVERSATION_MS_MIN`..`MAX`).
+  The checked write and read fold and split them already; these rows are for a binding
+  that shows or edits conversations between saves.
+- **`save.village.contract`** states the constants a binding must not hard-code
+  (versions, the board extension key, the player's local id, the slot names, the
+  villager slots, the weather keys, the conversation keys and the ms range), keyed as
+  the corpus's `contract` keys them. **`skill.kb.loadJson`** is core's `skillKbLoadJson`,
+  what a load recomposes the skill KB from (the corpus's `skillKb` op).
+- **`[invalid-input]` only for what core dereferences unread**: the save document,
+  the write's and read's options, a world id, a runtime (a string or null), the
+  `totalHours` of `timeStateOf`, the restore's `gameState`. The game state, a stored
+  block, a timestamp and a clock are handed over as they came, and core answers them.
+
+Evidence: `village_save_corpus` (`tests/village_save_corpus.cpp`) drives core's
+`conformance/saves/village-state.json` (399 cases at 45409ed: write 177, read 129,
+roundTrip 44, stamp 4, agentCurie 4, timeStateOf 10, totalHoursOf 5,
+conversationTimestamp 8, conversationEpochMs 8, skillKb 10), copied byte for byte at
+the pin, each op composed from the rows as core's reference runner
+(`save-file-game-state-corpus.ts`) composes it, and holds `save.village.contract` to the
+corpus's contract key for key. Its refusal probes show that another version, an
+unregistered extension, another world and another runtime are core's values, that a
+save that is not an object and unreadable records are `[invalid-input]`, that an
+unknown op fails its case and that an unknown row is the method table's error.
+`village_save_corpus_negative` perturbs every case's expectation. The same 399 cases
+also run on both case legs (and `corebridge_cases_parity`) as
+`vendor/core/cases/core-saves-village.json`, which `emit-bridge-cases.mjs` transcribes
+and `core_vendor` holds to the vendored corpus case by case. Hand cases:
+`tests/cases/bridge-village-save.json` (every row; malformed saves and game states,
+foreign-world and foreign-runtime ownership through `ownership` and `readRuntime`, the
+`[invalid-input]` boundary, the projection's round trip through the rows and through
+the checked write and read, the conversation clock, the sky against a `weather.create`
+session), every expectation computed by core's own functions at the pin.
+
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 
 `save.rules`' `extensionKeys` is `Object.keys(extensionRegistry).sort()` over core's
@@ -1989,6 +2084,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `traversal_corpus`, `traversal_corpus_negative` | core's seven P9e corpora (the kernels' `affordances.json`, `vehicles.json`, `fast-travel.json`, `ground-seating.json`, and the layers' `session.json`, `mounts.json`, `save.json`; 136 cases at d88b6f0, 129 at 6cd4b4e) driven whole through the `traversal.*` rows by `tests/traversal_corpus.cpp` (0 undriven per file; each older case's record composed from one row per core function and driven again with its lists reversed, a settle one row per step, a session case one `traversal.session` with one apply per step, a mounts run one personal row per step; each systems file's catalog, ops and steps held to core's and every step driven), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `traversal_corpus_negative` does |
 | `build_corpus`, `build_corpus_negative` | core's P10 headless build corpus (`conformance/build/headless.json`, 233 cases at 6cd4b4e) driven whole through the `build.*` rows by `tests/build_corpus.cpp` (credential markers expanded as core's runner does; 0 undriven; `build.contract` held to the file's contract; no credential repeated in a detail or a line; every out-dir refusal asked of the fold rows, with at least one case only the macOS fold catches and one only the Windows fold catches), and EVERY case's expectation perturbed and seen as wrong, with purposeful perturbations (a credential not caught or shown, a path escaping the build folder under either fold, an artefact outside it, a path outside the project) each refused |
 | `progression_corpus`, `progression_corpus_negative` | core's P9i progression corpora (`conformance/progression/{gamification,modules,skills,save}.json`, 87 cases at 45409ed with skills.json's `compose` and `kb` through the `skill.kb.*` rows, 73 at 6cd4b4e), its skill-tree corpora (`conformance/skills/*.json`, 52) and the `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json` (3) driven whole through the `progression.*` and `skill.*` rows by `tests/progression_corpus.cpp` (0 undriven per file; a gamification `run` one `progression.gamification.step` per step, every step kind driven; each progression file's catalog, ops and steps held to core's; a KB-backed `skill.unlock` per `can_unlock` case, with a no-KB control; refusal probes for an unknown op, step, area and row); the negative pass perturbs every expectation and needs every one refused |
+| `village_save_corpus`, `village_save_corpus_negative` | core's village-state save corpus (`conformance/saves/village-state.json`, 399 cases at 45409ed) driven whole through the `save.village.*` rows and `skill.kb.loadJson` by `tests/village_save_corpus.cpp`, each op as core's reference runner composes it (0 undriven; `save.village.contract` held to the file's contract; refusal probes for another version, an unregistered extension, another world and runtime, `[invalid-input]` and an unknown op or row); the negative perturbs every case |
 | `tutorial_progress_corpus`, `tutorial_progress_corpus_negative` | core's tutorial progress corpus driven whole through `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows' `save` op (23 cases, 0 undriven; contract tables held to `ui.tutorial.contract`, the runner lists to the steps it maps), and a wrong contract table, a wrong runner list, four wrong answers and an undrivable step seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's

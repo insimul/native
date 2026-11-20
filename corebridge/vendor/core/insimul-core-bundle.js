@@ -15,12 +15,12 @@
     }
     /** @param {string} input @returns {Uint8Array} */
     encode(input = "") {
-      const str6 = String(input);
+      const str11 = String(input);
       const bytes = [];
-      for (let i = 0; i < str6.length; i++) {
-        let code = str6.charCodeAt(i);
+      for (let i = 0; i < str11.length; i++) {
+        let code = str11.charCodeAt(i);
         if (code >= 55296 && code <= 56319) {
-          const next = i + 1 < str6.length ? str6.charCodeAt(i + 1) : 0;
+          const next = i + 1 < str11.length ? str11.charCodeAt(i + 1) : 0;
           if (next >= 56320 && next <= 57343) {
             code = 65536 + (code - 55296 << 10) + (next - 56320);
             i++;
@@ -239,9 +239,9 @@
     return String(term4);
   }
   var NativePrologEngine = class {
-    constructor(id) {
+    constructor(id4) {
       this.kind = "wasm";
-      this._id = id;
+      this._id = id4;
       this._dynamic = /* @__PURE__ */ new Set();
       this._programs = [];
       this._facts = /* @__PURE__ */ new Map();
@@ -455,9 +455,9 @@
     }
     _freshKb() {
       if (this._id >= 0) globalThis.__insimul_prolog_destroy(this._id);
-      const id = globalThis.__insimul_prolog_create();
-      if (id < 0) throw new Error("insimulcore: could not create a Prolog KB");
-      this._id = id;
+      const id4 = globalThis.__insimul_prolog_create();
+      if (id4 < 0) throw new Error("insimulcore: could not create a Prolog KB");
+      this._id = id4;
       this._pristine = true;
     }
     /** wasm-engine.ts `rebuild()`: a fresh KB consulted with everything, in order. */
@@ -560,9 +560,9 @@
     );
   }
   async function createPrologEngine(_options = {}) {
-    const id = globalThis.__insimul_prolog_create();
-    if (id < 0) throw new Error("insimulcore: could not create a Prolog KB");
-    return new NativePrologEngine(id);
+    const id4 = globalThis.__insimul_prolog_create();
+    if (id4 < 0) throw new Error("insimulcore: could not create a Prolog KB");
+    return new NativePrologEngine(id4);
   }
 
   // @insimul/core/src/prolog/prolog-fact-parser.ts
@@ -845,11 +845,11 @@
   function parseTemplates(program) {
     const { facts } = parsePrologFile(program);
     const byId = /* @__PURE__ */ new Map();
-    const ensure = (id) => {
-      let t = byId.get(id);
+    const ensure = (id4) => {
+      let t = byId.get(id4);
       if (!t) {
         t = {
-          id,
+          id: id4,
           meta: { category: "radiant", title: "", questType: "radiant", difficulty: 1 },
           preconditions: [],
           objectives: [],
@@ -857,35 +857,35 @@
           cooldownSeconds: 0,
           exclusions: []
         };
-        byId.set(id, t);
+        byId.set(id4, t);
       }
       return t;
     };
     for (const f of facts) {
-      const id = firstAtom(f.args[0]);
-      if (!id) continue;
+      const id4 = firstAtom(f.args[0]);
+      if (!id4) continue;
       switch (`${f.predicate}/${f.arity}`) {
         case "radiant_template/2":
-          ensure(id).meta = parseMeta(f.args[1]);
+          ensure(id4).meta = parseMeta(f.args[1]);
           break;
         case "radiant_precondition/3": {
           const slot = firstAtom(f.args[1]);
-          if (slot) ensure(id).preconditions.push({ slot, goalText: goalText(f.args[2]) });
+          if (slot) ensure(id4).preconditions.push({ slot, goalText: goalText(f.args[2]) });
           break;
         }
         case "radiant_objective/2":
-          ensure(id).objectives.push(f.args[1]);
+          ensure(id4).objectives.push(f.args[1]);
           break;
         case "radiant_reward/3": {
           const kind = firstAtom(f.args[1]);
-          if (kind) ensure(id).rewards.push({ kind, amount: f.args[2] });
+          if (kind) ensure(id4).rewards.push({ kind, amount: f.args[2] });
           break;
         }
         case "radiant_cooldown/2":
-          ensure(id).cooldownSeconds = argNum(f.args[1]) ?? 0;
+          ensure(id4).cooldownSeconds = argNum(f.args[1]) ?? 0;
           break;
         case "radiant_exclusion/2":
-          ensure(id).exclusions.push(goalText(f.args[1]));
+          ensure(id4).exclusions.push(goalText(f.args[1]));
           break;
         default:
           break;
@@ -982,7 +982,7 @@
   function fillTitle(title, bindings) {
     return title.replace(
       /\{(\w+)\}/g,
-      (whole5, slot) => slot in bindings ? String(bindings[slot]) : whole5
+      (whole9, slot) => slot in bindings ? String(bindings[slot]) : whole9
     );
   }
   function evalAmount(arg, tpl, bindMap) {
@@ -1017,8 +1017,8 @@
       if (obj3.type !== "compound") continue;
       const hasSlot = obj3.args.some((a) => a.type === "variable" && a.value === v);
       if (!hasSlot) continue;
-      const num5 = obj3.args.find((a) => a.type === "number");
-      if (num5 && num5.type === "number") return num5.value;
+      const num6 = obj3.args.find((a) => a.type === "number");
+      if (num6 && num6.type === "number") return num6.value;
     }
     return 1;
   }
@@ -2673,9 +2673,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const candidates = quests.filter(
         (q) => Array.isArray(q.tags) && q.tags.includes("radiant") && q.status === "available" && !offered.has(q.id)
       ).map((q) => q.id).sort();
-      for (const id of candidates.slice(0, Math.max(0, maxOffering))) {
-        offered.add(id);
-        facts.push({ predicate: "quest_offered", args: [id, t] });
+      for (const id4 of candidates.slice(0, Math.max(0, maxOffering))) {
+        offered.add(id4);
+        facts.push({ predicate: "quest_offered", args: [id4, t] });
       }
     }
     return facts;
@@ -3002,55 +3002,93 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     return outcome.versionsBehind > 0 || outcome.droppedFacts.length > 0 || outcome.orphanExtensionKeys.length > 0 || outcome.predicateSchemaDrift;
   }
 
-  // @insimul/core/src/ui/notifications.ts
-  var KIND_COLOR = {
-    info: "accent",
-    success: "success",
-    warning: "warning",
-    danger: "danger"
-  };
-  var DEFAULT_NOTIFICATION_LIFETIME = 4;
-  var Notifications = class {
-    constructor() {
-      __publicField(this, "items", []);
-      __publicField(this, "nextId", 1);
+  // @insimul/core/src/identity/kinp.ts
+  var KINP_KINDS = ["ent", "claim", "asset", "world", "agent", "src"];
+  var INSIMUL_NAMESPACE = "insimul";
+  var LOCAL_ID_PASSTHROUGH = /[a-z0-9._-]/;
+  var LOCAL_ID_HEAD = /[a-z0-9]/;
+  var LOCAL_ID_GUARD = "x-";
+  var utf8Encoder = new TextEncoder();
+  var utf8Decoder = new TextDecoder();
+  function percentEncodeChar(ch) {
+    let out = "";
+    for (const byte of utf8Encoder.encode(ch)) {
+      out += `%${byte.toString(16).toUpperCase().padStart(2, "0")}`;
     }
-    /** Enqueue a notification. Returns its id (so a caller can `dismiss` it early). */
-    push(text4, kind = "info", lifetime2 = DEFAULT_NOTIFICATION_LIFETIME) {
-      const id = this.nextId++;
-      this.items.push({ id, text: text4, kind, remaining: lifetime2, color: KIND_COLOR[kind] });
-      return id;
+    return out;
+  }
+  function encodeLocalIdBody(raw) {
+    let out = "";
+    for (const ch of raw) {
+      out += LOCAL_ID_PASSTHROUGH.test(ch) ? ch : percentEncodeChar(ch);
     }
-    /**
-     * Age every notification by `delta` seconds, dropping expired ones. Returns
-     * true if the visible set changed (so a view knows to repaint).
-     */
-    tick(delta) {
-      if (this.items.length === 0) return false;
-      const before = this.items.length;
-      this.items = this.items.filter((item) => {
-        item.remaining -= delta;
-        return item.remaining > 0;
-      });
-      return this.items.length !== before;
+    return out;
+  }
+  function sanitizeLocalId(raw) {
+    if (!raw) throw new Error("sanitizeLocalId: empty id");
+    const body2 = encodeLocalIdBody(raw);
+    if (LOCAL_ID_HEAD.test(body2[0]) && !body2.startsWith(LOCAL_ID_GUARD)) return body2;
+    const [first, ...rest] = Array.from(raw);
+    return LOCAL_ID_GUARD + percentEncodeChar(first) + encodeLocalIdBody(rest.join(""));
+  }
+  function unsanitizeLocalId(local) {
+    const body2 = local.startsWith(LOCAL_ID_GUARD) ? local.slice(LOCAL_ID_GUARD.length) : local;
+    const bytes = [];
+    let out = "";
+    const flush = () => {
+      if (bytes.length === 0) return;
+      out += utf8Decoder.decode(new Uint8Array(bytes));
+      bytes.length = 0;
+    };
+    for (let i = 0; i < body2.length; i++) {
+      if (body2[i] === "%" && /^[0-9A-Fa-f]{2}$/.test(body2.slice(i + 1, i + 3))) {
+        bytes.push(parseInt(body2.slice(i + 1, i + 3), 16));
+        i += 2;
+        continue;
+      }
+      flush();
+      out += body2[i];
     }
-    /** Dismiss a notification by id early. Returns true if one was removed. */
-    dismiss(id) {
-      const before = this.items.length;
-      this.items = this.items.filter((item) => item.id !== id);
-      return this.items.length !== before;
-    }
-    /** Currently visible notifications (oldest first). */
-    visible() {
-      return this.items;
-    }
-    count() {
-      return this.items.length;
-    }
-    clear() {
-      this.items = [];
-    }
-  };
+    flush();
+    return out;
+  }
+  function formatCurie(id4) {
+    return `${id4.namespace}:${id4.kind}:${id4.localId}`;
+  }
+  function parseCurie(curie) {
+    const parts = curie.split(":");
+    if (parts.length < 3) throw new Error(`parseCurie: not a CURIE: "${curie}"`);
+    const localId = parts[parts.length - 1];
+    const kind = parts[parts.length - 2];
+    const namespace = parts.slice(0, -2).join(":");
+    if (!KINP_KINDS.includes(kind)) throw new Error(`parseCurie: unknown kind "${kind}" in "${curie}"`);
+    if (!namespace) throw new Error(`parseCurie: empty namespace in "${curie}"`);
+    if (!localId) throw new Error(`parseCurie: empty local id in "${curie}"`);
+    return { kind, namespace, localId };
+  }
+  function prologAtom(value) {
+    if (/^[a-z][a-zA-Z0-9_]*$/.test(value)) return value;
+    return `'${value.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
+  }
+  function formatIdTerm(id4) {
+    return `id(${id4.kind}, ${prologAtom(id4.namespace)}, ${prologAtom(id4.localId)})`;
+  }
+  function insimulWorldId(worldMongoId) {
+    return { kind: "world", namespace: INSIMUL_NAMESPACE, localId: sanitizeLocalId(worldMongoId) };
+  }
+  function worldNamespace(worldMongoId) {
+    return formatCurie(insimulWorldId(worldMongoId));
+  }
+  function insimulEntityId(mongoId, worldMongoId) {
+    return {
+      kind: "ent",
+      namespace: worldMongoId ? worldNamespace(worldMongoId) : INSIMUL_NAMESPACE,
+      localId: sanitizeLocalId(mongoId)
+    };
+  }
+  function provisionalEntityId(localId, ns = INSIMUL_NAMESPACE) {
+    return { kind: "ent", namespace: `${ns}:local`, localId: sanitizeLocalId(localId) };
+  }
 
   // @insimul/core/src/ai/deterministic-stream.ts
   function hashSeedString(text4) {
@@ -3093,6 +3131,3668 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function clamp01(value) {
     return value < 0 ? 0 : value > 1 ? 1 : value;
   }
+
+  // @insimul/core/src/ai/blackboard.ts
+  var BLACKBOARD_EXTENSION_KEY = "aiBlackboards";
+  function agentKey(agent) {
+    return typeof agent === "string" ? agent : formatCurie(agent);
+  }
+  function readBlackboards(extensions) {
+    const raw = extensions?.[BLACKBOARD_EXTENSION_KEY];
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+    const out = {};
+    for (const [key, value] of Object.entries(raw)) {
+      if (!isAgentBlackboard(value)) continue;
+      out[key] = { agent: value.agent, updatedTick: value.updatedTick, slots: { ...value.slots } };
+    }
+    return out;
+  }
+  function writeBlackboardSlots(extensions, agent, tick, slots) {
+    const key = agentKey(agent);
+    const store = readBlackboards(extensions);
+    const previous = store[key];
+    const next = {
+      agent: key,
+      updatedTick: tick,
+      slots: { ...previous?.slots ?? {}, ...slots }
+    };
+    store[key] = next;
+    writeExtension(extensions, BLACKBOARD_EXTENSION_KEY, store);
+    return next;
+  }
+  function isAgentBlackboard(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const candidate2 = value;
+    return typeof candidate2.agent === "string" && typeof candidate2.updatedTick === "number" && !!candidate2.slots && typeof candidate2.slots === "object" && !Array.isArray(candidate2.slots);
+  }
+
+  // @insimul/core/src/time/clock.ts
+  var BANDS = [
+    { band: "dawn", from: 5, to: 7 },
+    { band: "morning", from: 7, to: 10 },
+    { band: "midday", from: 10, to: 14 },
+    { band: "afternoon", from: 14, to: 17 },
+    { band: "evening", from: 17, to: 20 },
+    { band: "night", from: 20, to: 5 }
+  ];
+  var TIME_OF_DAY_BANDS = Object.freeze(BANDS.map((b) => Object.freeze(b)));
+  var DAYTIME = Object.freeze({ from: 6, to: 18 });
+  var CLOCK_DEFAULTS = Object.freeze({
+    /** Real milliseconds per game hour: 1 real minute is 1 game hour, 24 real minutes a day. */
+    msPerGameHour: 6e4,
+    /** `setMsPerGameHour` never goes below this. */
+    msPerGameHourMin: 1e3,
+    /** The multiplier on the base rate. */
+    timeScale: 1,
+    /** `setTimeScale` clamps to this range. */
+    timeScaleMin: 0.25,
+    timeScaleMax: 16,
+    startHour: 8,
+    startMinute: 0,
+    /** Days are 1-based. */
+    startDay: 1
+  });
+  function wrapHour(hour) {
+    if (!Number.isFinite(hour)) return hour;
+    const h = hour % 24;
+    return h < 0 ? h + 24 : h;
+  }
+  function inBand(h, from, to) {
+    return from <= to ? h >= from && h < to : h >= from || h < to;
+  }
+  function timeOfDayOf(hour) {
+    const h = wrapHour(hour);
+    if (Number.isFinite(h)) {
+      for (const b of TIME_OF_DAY_BANDS) if (inBand(h, b.from, b.to)) return b.band;
+    }
+    return "night";
+  }
+  function isDaytimeAt(hour) {
+    const h = wrapHour(hour);
+    return Number.isFinite(h) && inBand(h, DAYTIME.from, DAYTIME.to);
+  }
+  function realSecondsPerGameHour(msPerGameHour, timeScale) {
+    return msPerGameHour / (timeScale * 1e3);
+  }
+  function clampTimeScale(scale) {
+    return Math.max(CLOCK_DEFAULTS.timeScaleMin, Math.min(CLOCK_DEFAULTS.timeScaleMax, scale));
+  }
+  function clampMsPerGameHour(ms) {
+    return Math.max(CLOCK_DEFAULTS.msPerGameHourMin, ms);
+  }
+  function carryClockTime(hour, minute, day) {
+    let h = hour;
+    let m = minute;
+    let d = day;
+    if (Number.isFinite(m) && m >= 60) {
+      const carry = Math.floor(m / 60);
+      m -= carry * 60;
+      h += carry;
+    }
+    if (Number.isFinite(h) && h >= 24) {
+      const carry = Math.floor(h / 24);
+      h -= carry * 24;
+      d += carry;
+    }
+    return { hour: h, minute: m, day: d };
+  }
+
+  // @insimul/core/src/survival/needs.ts
+  var SURVIVAL_NEED_IDS = Object.freeze(["hunger", "thirst", "temperature", "sleep"]);
+  var DEFAULT_SURVIVAL_NEEDS = Object.freeze([
+    { id: "hunger", name: "Hunger", maxValue: 100, startValue: 80, decayRate: 0.15, warningThreshold: 30, criticalThreshold: 15, damageRate: 2 },
+    { id: "thirst", name: "Thirst", maxValue: 100, startValue: 90, decayRate: 0.25, warningThreshold: 30, criticalThreshold: 15, damageRate: 3 },
+    { id: "temperature", name: "Temperature", maxValue: 100, startValue: 50, decayRate: 0, warningThreshold: 20, criticalThreshold: 10, damageRate: 1.5 },
+    { id: "sleep", name: "Rest", maxValue: 100, startValue: 100, decayRate: 0.08, warningThreshold: 25, criticalThreshold: 10, damageRate: 0.5 }
+  ]);
+  var DEFAULT_RESTORE_ACTIONS = Object.freeze({
+    eat: { need: "hunger", amount: 30 },
+    drink: { need: "thirst", amount: 25 },
+    sleep: { need: "sleep", amount: 50 }
+  });
+  var DEFAULT_SURVIVAL_TUNING = Object.freeze({
+    needs: DEFAULT_SURVIVAL_NEEDS.map((n) => ({ ...n })),
+    tickMs: 1e3,
+    maxTicksPerAdvance: 86400,
+    damageEnabled: true,
+    globalDamageMultiplier: 1,
+    temperatureEnvironmentDriven: false,
+    comfortMin: 20,
+    comfortMax: 80,
+    criticalAtBothExtremes: true,
+    temperatureDriftPerSecond: 10,
+    satisfiedFraction: 0.9,
+    hudFlashMs: 1500,
+    restoreActions: { ...DEFAULT_RESTORE_ACTIONS },
+    modifierPresets: []
+  });
+  var NEUTRAL_ENVIRONMENT_TEMPERATURE = 50;
+  var isObj = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var fin = (v) => typeof v === "number" && Number.isFinite(v);
+  var numOr = (v, d) => fin(v) ? v : d;
+  var boolOr = (v, d) => typeof v === "boolean" ? v : d;
+  var r4 = (v) => roundDeterministic(v);
+  var clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  function isSurvivalNeedId(v) {
+    return typeof v === "string" && SURVIVAL_NEED_IDS.includes(v);
+  }
+  function needConfigFrom(row, id4) {
+    const d = DEFAULT_SURVIVAL_NEEDS.find((n) => n.id === id4);
+    const maxValue = fin(row.maxValue) && row.maxValue > 0 ? row.maxValue : d.maxValue;
+    return {
+      id: id4,
+      name: typeof row.name === "string" && row.name !== "" ? row.name : d.name,
+      maxValue,
+      startValue: clamp(numOr(row.startValue, Math.min(d.startValue, maxValue)), 0, maxValue),
+      decayRate: numOr(row.decayRate, d.decayRate),
+      warningThreshold: numOr(row.warningThreshold, d.warningThreshold),
+      criticalThreshold: numOr(row.criticalThreshold, d.criticalThreshold),
+      damageRate: numOr(row.damageRate, d.damageRate)
+    };
+  }
+  function survivalTuningFromIR(ir, overrides) {
+    const d = DEFAULT_SURVIVAL_TUNING;
+    const src = isObj(ir) ? ir : {};
+    let needs;
+    if (Array.isArray(src.needs)) {
+      needs = [];
+      for (const row of src.needs) {
+        if (!isObj(row) || !isSurvivalNeedId(row.id)) continue;
+        if (needs.some((n) => n.id === row.id)) continue;
+        needs.push(needConfigFrom(row, row.id));
+      }
+    } else {
+      needs = d.needs.map((n) => ({ ...n }));
+    }
+    const dmg = isObj(src.damageConfig) ? src.damageConfig : {};
+    const temp = isObj(src.temperatureConfig) ? src.temperatureConfig : {};
+    const comfort = isObj(temp.comfortZone) ? temp.comfortZone : {};
+    const presets = [];
+    for (const p of Array.isArray(src.modifierPresets) ? src.modifierPresets : []) {
+      if (!isObj(p) || typeof p.id !== "string" || p.id === "" || presets.some((x) => x.id === p.id)) continue;
+      presets.push({
+        id: p.id,
+        needType: typeof p.needType === "string" ? p.needType : "",
+        rateMultiplier: numOr(p.rateMultiplier, 1),
+        duration: numOr(p.duration, 0),
+        source: typeof p.source === "string" ? p.source : ""
+      });
+    }
+    const t = {
+      needs,
+      tickMs: d.tickMs,
+      maxTicksPerAdvance: d.maxTicksPerAdvance,
+      damageEnabled: boolOr(dmg.enabled, d.damageEnabled),
+      globalDamageMultiplier: numOr(dmg.globalDamageMultiplier, d.globalDamageMultiplier),
+      temperatureEnvironmentDriven: boolOr(temp.environmentDriven, d.temperatureEnvironmentDriven),
+      comfortMin: numOr(comfort.min, d.comfortMin),
+      comfortMax: numOr(comfort.max, d.comfortMax),
+      criticalAtBothExtremes: boolOr(temp.criticalAtBothExtremes, d.criticalAtBothExtremes),
+      temperatureDriftPerSecond: d.temperatureDriftPerSecond,
+      satisfiedFraction: d.satisfiedFraction,
+      hudFlashMs: d.hudFlashMs,
+      restoreActions: { ...d.restoreActions },
+      modifierPresets: presets
+    };
+    const o = isObj(overrides) ? overrides : {};
+    for (const key of ["tickMs", "maxTicksPerAdvance", "globalDamageMultiplier", "comfortMin", "comfortMax", "temperatureDriftPerSecond", "satisfiedFraction", "hudFlashMs"]) {
+      if (fin(o[key])) t[key] = o[key];
+    }
+    for (const key of ["damageEnabled", "temperatureEnvironmentDriven", "criticalAtBothExtremes"]) {
+      if (typeof o[key] === "boolean") t[key] = o[key];
+    }
+    t.tickMs = Math.max(1, Math.floor(t.tickMs));
+    t.maxTicksPerAdvance = Math.max(1, Math.floor(t.maxTicksPerAdvance));
+    return t;
+  }
+  var configOf = (t, id4) => t.needs.find((n) => n.id === id4);
+  function needBand(config, value, tuning) {
+    const both = config.id === "temperature" && tuning.criticalAtBothExtremes;
+    if (value <= config.criticalThreshold || both && value >= config.maxValue - config.criticalThreshold) return "critical";
+    if (value <= config.warningThreshold || both && value >= config.maxValue - config.warningThreshold) return "warning";
+    return "ok";
+  }
+  function initialSurvival(tuning, at) {
+    return {
+      needs: tuning.needs.map((c) => {
+        const value = r4(clamp(c.startValue, 0, c.maxValue));
+        return { id: c.id, value, max: c.maxValue, band: needBand(c, value, tuning) };
+      }),
+      modifiers: [],
+      environmentTemperature: NEUTRAL_ENVIRONMENT_TEMPERATURE,
+      lastTickAt: at,
+      enabled: true,
+      damageOwed: 0
+    };
+  }
+  function cloneState(s) {
+    return { ...s, needs: s.needs.map((n) => ({ ...n })), modifiers: s.modifiers.map((m) => ({ ...m })) };
+  }
+  function bandMessage(config, band, value) {
+    if (band === "ok") return `${config.name} restored`;
+    const high = config.id === "temperature" && value > config.maxValue / 2;
+    if (band === "critical") return `${config.name} critically ${high ? "high" : "low"}!`;
+    return `${config.name} is getting ${high ? "high" : "low"}`;
+  }
+  function rebanded(config, reading, tuning, at, events) {
+    const band = needBand(config, reading.value, tuning);
+    if (band === reading.band) return;
+    reading.band = band;
+    const type = band === "critical" ? "need_critical" : band === "warning" ? "need_warning" : "need_restored";
+    events.push({ type, needType: config.id, value: reading.value, message: bandMessage(config, band, reading.value), at });
+  }
+  function temperatureTarget(environment, config, tuning) {
+    const mid = config.maxValue / 2;
+    const env = clamp(environment, 0, 100);
+    if (env < tuning.comfortMin) return r4(tuning.comfortMin > 0 ? mid * (env / tuning.comfortMin) : 0);
+    if (env > tuning.comfortMax) {
+      const span = 100 - tuning.comfortMax;
+      return r4(span > 0 ? mid + (config.maxValue - mid) * ((env - tuning.comfortMax) / span) : config.maxValue);
+    }
+    return r4(mid);
+  }
+  function isDeprived(config, reading, tuning) {
+    if (config.id === "temperature" && (tuning.temperatureEnvironmentDriven || tuning.criticalAtBothExtremes)) return reading.band === "critical";
+    return reading.value <= 0;
+  }
+  function advanceSurvival(state, tuning, now) {
+    const s = cloneState(state);
+    const events = [];
+    const expired = [];
+    const due = fin(now) && now > s.lastTickAt ? Math.floor((now - s.lastTickAt) / tuning.tickMs) : 0;
+    const run = s.enabled ? Math.min(due, tuning.maxTicksPerAdvance) : 0;
+    const seconds = tuning.tickMs / 1e3;
+    const damageEvents = /* @__PURE__ */ new Map();
+    for (let i = 1; i <= run; i++) {
+      const at = s.lastTickAt + i * tuning.tickMs;
+      s.modifiers = s.modifiers.filter((m) => {
+        const gone = m.duration > 0 && at - m.startedAt >= m.duration;
+        if (gone) expired.push(m.id);
+        return !gone;
+      });
+      for (const reading of s.needs) {
+        const config = configOf(tuning, reading.id);
+        if (!config) continue;
+        if (config.id === "temperature" && tuning.temperatureEnvironmentDriven) {
+          const target = temperatureTarget(s.environmentTemperature, config, tuning);
+          const step = tuning.temperatureDriftPerSecond * seconds;
+          const gap = target - reading.value;
+          reading.value = r4(Math.abs(gap) <= step ? target : reading.value + Math.sign(gap) * step);
+        } else {
+          let rate = config.decayRate;
+          for (const m of s.modifiers) if (m.needType === config.id) rate *= m.rateMultiplier;
+          if (rate > 0) reading.value = r4(Math.max(0, reading.value - rate * seconds));
+        }
+        rebanded(config, reading, tuning, at, events);
+        if (tuning.damageEnabled && config.damageRate > 0 && isDeprived(config, reading, tuning)) {
+          const damage = r4(config.damageRate * tuning.globalDamageMultiplier * seconds);
+          if (damage > 0) {
+            s.damageOwed = r4(s.damageOwed + damage);
+            const seen = damageEvents.get(config.id);
+            if (seen) seen.value = r4(seen.value + damage);
+            else {
+              const e = {
+                type: "damage_from_need",
+                needType: config.id,
+                value: damage,
+                message: `Taking damage from ${config.name.toLowerCase()} deprivation!`,
+                at
+              };
+              damageEvents.set(config.id, e);
+              events.push(e);
+            }
+          }
+        }
+      }
+    }
+    s.lastTickAt += due * tuning.tickMs;
+    const hurt = Math.floor(s.damageOwed);
+    s.damageOwed = r4(s.damageOwed - hurt);
+    return { state: s, ticks: run, skipped: due - run, events, expired, hurt };
+  }
+  function setSurvivalEnabled(state, enabled) {
+    return { ...cloneState(state), enabled };
+  }
+  function restoreNeed(state, tuning, need, amount, at) {
+    const config = configOf(tuning, need);
+    const idx = state.needs.findIndex((n) => n.id === need);
+    if (!config || idx < 0) return { ok: false, reason: "need_not_tracked", state: cloneState(state) };
+    if (!fin(amount)) return { ok: false, reason: "bad_amount", state: cloneState(state) };
+    const s = cloneState(state);
+    const reading = s.needs[idx];
+    const events = [];
+    reading.value = r4(clamp(reading.value + amount, 0, reading.max));
+    rebanded(config, reading, tuning, at, events);
+    if (amount > 0 && reading.value >= reading.max * tuning.satisfiedFraction) {
+      events.push({ type: "need_satisfied", needType: config.id, value: reading.value, message: `${config.name} satisfied`, at });
+    }
+    return { ok: true, state: s, events };
+  }
+  function performSurvivalAction(state, tuning, action, at, amount) {
+    const row = Object.prototype.hasOwnProperty.call(tuning.restoreActions, action) ? tuning.restoreActions[action] : void 0;
+    if (!row) return { ok: false, reason: "unknown_action", state: cloneState(state) };
+    return restoreNeed(state, tuning, row.need, amount ?? row.amount, at);
+  }
+  function consumeForNeeds(state, tuning, effects, at) {
+    let s = cloneState(state);
+    const applied = [];
+    const events = [];
+    for (const reading of state.needs) {
+      const amount = effects[reading.id];
+      if (!fin(amount)) continue;
+      const r = restoreNeed(s, tuning, reading.id, amount, at);
+      if (!r.ok) continue;
+      s = r.state;
+      applied.push({ need: reading.id, amount });
+      events.push(...r.events);
+    }
+    return { state: s, applied, events };
+  }
+  var SURVIVAL_CONSUMED_ITEM_TYPES = Object.freeze(["consumable", "drink", "food"]);
+  var SURVIVAL_KEPT_ITEM_TYPES = Object.freeze(["collectible", "document", "key", "quest"]);
+  var SURVIVAL_ITEM_RESTORE_ACTIONS = Object.freeze({ food: "eat", drink: "drink" });
+  function useItemForNeeds(state, tuning, item, at) {
+    const held = fin(item.quantity) ? item.quantity : 1;
+    const type = typeof item.type === "string" ? item.type : "";
+    const consumedType = SURVIVAL_CONSUMED_ITEM_TYPES.includes(type);
+    if (!consumedType && !SURVIVAL_KEPT_ITEM_TYPES.includes(type)) {
+      return { ok: false, reason: "not_usable", state: cloneState(state) };
+    }
+    if (held < 1) return { ok: false, reason: "not_held", state: cloneState(state) };
+    if (!consumedType) {
+      return { ok: true, state: cloneState(state), consumed: 0, remaining: held, applied: [], action: null, events: [] };
+    }
+    const effects = isObj(item.effects) ? item.effects : {};
+    const fed = consumeForNeeds(state, tuning, effects, at);
+    let next = fed.state;
+    const events = [...fed.events];
+    let action = null;
+    const fallback = SURVIVAL_ITEM_RESTORE_ACTIONS[type];
+    if (fed.applied.length === 0 && fallback !== void 0) {
+      const r = performSurvivalAction(next, tuning, fallback, at);
+      if (r.ok) {
+        next = r.state;
+        events.push(...r.events);
+        action = fallback;
+      }
+    }
+    return { ok: true, state: next, consumed: 1, remaining: held - 1, applied: fed.applied, action, events };
+  }
+  function setEnvironmentTemperature(state, tuning, value, at) {
+    if (!fin(value)) return { ok: false, reason: "bad_amount", state: cloneState(state) };
+    const s = cloneState(state);
+    s.environmentTemperature = r4(clamp(value, 0, 100));
+    const events = [];
+    const reading = s.needs.find((n) => n.id === "temperature");
+    const config = configOf(tuning, "temperature");
+    if (!tuning.temperatureEnvironmentDriven && reading && config) {
+      reading.value = r4(clamp(value, 0, reading.max));
+      rebanded(config, reading, tuning, at, events);
+    }
+    return { ok: true, state: s, events };
+  }
+  function applyNeedModifier(state, tuning, modifier, at) {
+    const m = typeof modifier === "string" ? tuning.modifierPresets.find((p) => p.id === modifier) : isObj(modifier) && typeof modifier.id === "string" ? modifier : void 0;
+    if (!m) return { ok: false, reason: "unknown_modifier", state: cloneState(state) };
+    if (!state.needs.some((n) => n.id === m.needType)) return { ok: false, reason: "need_not_tracked", state: cloneState(state) };
+    if (!fin(m.rateMultiplier) || m.rateMultiplier < 0) return { ok: false, reason: "bad_amount", state: cloneState(state) };
+    const s = cloneState(state);
+    const active = {
+      id: m.id,
+      needType: m.needType,
+      rateMultiplier: m.rateMultiplier,
+      duration: numOr(m.duration, 0),
+      startedAt: at,
+      source: m.source ?? ""
+    };
+    const i = s.modifiers.findIndex((x) => x.id === m.id);
+    if (i >= 0) s.modifiers[i] = active;
+    else s.modifiers.push(active);
+    return { ok: true, state: s, events: [] };
+  }
+  function removeNeedModifier(state, id4) {
+    const s = cloneState(state);
+    s.modifiers = s.modifiers.filter((m) => m.id !== id4);
+    return s;
+  }
+  var SURVIVAL_EXTENSION_KEY = "survivalNeeds";
+  var SURVIVAL_BLOCK_MEMBERS = Object.freeze(["readings", "modifiers"]);
+  var SURVIVAL_MODIFIER_KEYS = Object.freeze(["id", "needType", "rateMultiplier", "remainingMs", "source"]);
+  function survivalSaveBlock(state, at) {
+    const readings = {};
+    for (const n of state.needs) readings[n.id] = n.value;
+    return {
+      readings,
+      modifiers: state.modifiers.map((m) => ({
+        id: m.id,
+        needType: m.needType,
+        rateMultiplier: m.rateMultiplier,
+        remainingMs: m.duration > 0 ? Math.max(0, m.duration - (at - m.startedAt)) : null,
+        source: m.source
+      }))
+    };
+  }
+  function readSurvivalBlock(v) {
+    if (v === void 0 || v === null) return { ok: true, value: null };
+    if (!isObj(v)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const readings = {};
+    if (!isObj(v.readings)) bad3.push("readings");
+    else {
+      for (const [k, x] of Object.entries(v.readings)) {
+        if (fin(x)) readings[k] = x;
+        else bad3.push(`readings.${k}`);
+      }
+    }
+    const modifiers = [];
+    if (v.modifiers !== void 0 && !Array.isArray(v.modifiers)) bad3.push("modifiers");
+    else {
+      (Array.isArray(v.modifiers) ? v.modifiers : []).forEach((m, i) => {
+        const okRow = isObj(m) && typeof m.id === "string" && typeof m.needType === "string" && fin(m.rateMultiplier) && m.rateMultiplier >= 0 && (m.remainingMs === null || fin(m.remainingMs)) && (m.source === void 0 || typeof m.source === "string");
+        if (!okRow) {
+          bad3.push(`modifiers[${i}]`);
+          return;
+        }
+        const row = m;
+        modifiers.push({
+          id: row.id,
+          needType: row.needType,
+          rateMultiplier: row.rateMultiplier,
+          remainingMs: row.remainingMs,
+          source: row.source ?? ""
+        });
+      });
+    }
+    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
+    return { ok: true, value: { readings, modifiers } };
+  }
+  function survivalFromSave(block, tuning, at) {
+    const s = initialSurvival(tuning, at);
+    if (!block) return s;
+    for (const reading of s.needs) {
+      const config = configOf(tuning, reading.id);
+      const saved = isObj(block.readings) ? block.readings[reading.id] : void 0;
+      if (!fin(saved)) continue;
+      reading.value = r4(clamp(saved, 0, reading.max));
+      reading.band = needBand(config, reading.value, tuning);
+    }
+    for (const m of Array.isArray(block.modifiers) ? block.modifiers : []) {
+      if (!s.needs.some((n) => n.id === m.needType)) continue;
+      if (m.remainingMs !== null && !(m.remainingMs > 0)) continue;
+      if (s.modifiers.some((x) => x.id === m.id)) continue;
+      s.modifiers.push({
+        id: m.id,
+        needType: m.needType,
+        rateMultiplier: m.rateMultiplier,
+        duration: m.remainingMs === null ? 0 : m.remainingMs,
+        startedAt: at,
+        source: m.source
+      });
+    }
+    return s;
+  }
+
+  // @insimul/core/src/gathering/physical-actions.ts
+  var PHYSICAL_ACTION_IDS = Object.freeze([
+    "chopping",
+    "cooking",
+    "crafting",
+    "farm_harvest",
+    "farm_plant",
+    "farm_water",
+    "fishing",
+    "harvesting",
+    "herbalism",
+    "mining",
+    "painting",
+    "praying",
+    "reading",
+    "sweeping"
+  ]);
+  var def = (id4, displayName, promptVerb, clip, clipFallback, seconds, energyCost, xp, rewards, places, extra = {}) => ({
+    id: id4,
+    displayName,
+    promptVerb,
+    clip,
+    clipFallback,
+    durationMs: seconds * 1e3,
+    energyCost,
+    xp,
+    rewards: extra.production ? [] : rewards.map(([item, chancePercent, min, max]) => ({ item, chancePercent, min, max })),
+    production: extra.production ?? null,
+    tool: extra.tool ?? null,
+    places
+  });
+  var FARM = ["farm", "field", "garden", "plantation", "greenhouse"];
+  var DEFAULT_PHYSICAL_ACTIONS = Object.freeze([
+    def("chopping", "Chop Wood", "Chop", "TreeChopping_Loop", "Interact", 6, 7, 12, [["firewood", 90, 1, 3], ["timber", 30, 1, 1]], ["wood_pile", "lumber_yard", "tree_stump", "forest"], { tool: "axe" }),
+    def("cooking", "Cook", "Cook", "Interact", "Idle_Talking_Loop", 6, 4, 12, [["prepared_food", 80, 1, 1], ["baked_goods", 30, 1, 2]], ["kitchen", "oven", "stove", "hearth", "campfire", "bakery", "restaurant"]),
+    def("crafting", "Craft", "Craft", "Fixing_Kneeling", "Interact", 8, 6, 18, [], ["workbench", "forge", "blacksmith", "workshop", "anvil"], { production: { craft: "crafting", verb: "craft" } }),
+    def("farm_harvest", "Harvest Crops", "Harvest", "Farm_Harvest", "Interact", 6, 10, 15, [], FARM, { production: { craft: "farming", verb: "harvest" } }),
+    def("farm_plant", "Plant Crops", "Plant", "Farm_Harvest", "Interact", 5, 8, 10, [], FARM, { production: { craft: "farming", verb: "plant" } }),
+    def("farm_water", "Water Crops", "Water", "Farm_Watering", "Interact", 4, 5, 8, [], FARM, { production: { craft: "farming", verb: "water" } }),
+    def("fishing", "Fish", "Fish", "Farm_Harvest", "Interact", 10, 15, 15, [], ["water", "river", "lake", "pond", "dock", "pier", "stream", "marsh", "canal"], { production: { craft: "fishing", verb: "fish" } }),
+    def("harvesting", "Harvest", "Harvest", "Farm_Harvest", "Interact", 5, 3, 10, [["herbs", 60, 1, 3], ["vegetables", 50, 1, 2], ["flowers", 30, 1, 2]], ["garden", "farm", "field", "greenhouse", "plantation"]),
+    def("herbalism", "Pick", "Pick", "Farm_Harvest", "Interact", 4, 5, 8, [["lavande", 20, 1, 1], ["romarin", 20, 1, 1], ["menthe", 15, 1, 1], ["rose", 10, 1, 1], ["thym", 10, 1, 1], ["sauge", 10, 1, 1], ["basilic", 5, 1, 1], ["fleur_sauvage", 5, 1, 1]], ["garden", "forest", "meadow", "farm", "herb_shop", "greenhouse", "grove"]),
+    def("mining", "Mine", "Mine", "TreeChopping_Loop", "Interact", 8, 20, 20, [], ["mine", "quarry", "rock", "cave", "mountain", "ore_deposit"], { production: { craft: "mining", verb: "mine" } }),
+    def("painting", "Paint", "Paint", "Interact", "Idle_Talking_Loop", 10, 4, 15, [["painting", 70, 1, 1]], ["easel", "studio", "art_room"]),
+    def("praying", "Pray", "Pray", "Fixing_Kneeling", "Idle", 5, 1, 5, [["blessing_token", 15, 1, 1]], ["altar", "church", "chapel", "shrine", "temple"]),
+    def("reading", "Read", "Study", "Sitting_Idle_Loop", "Idle", 5, 1, 8, [["knowledge_scroll", 20, 1, 1]], ["bookshelf", "library", "desk", "study"]),
+    def("sweeping", "Sweep", "Sweep", "Farm_Watering", "Interact", 4, 2, 5, [["dust_bundle", 30, 1, 1]], ["broom", "porch", "floor", "entrance"])
+  ]);
+  var DEFAULT_PHYSICAL_ACTION_TUNING = Object.freeze({
+    actions: DEFAULT_PHYSICAL_ACTIONS.map((a) => ({ ...a })),
+    seed: "insimul",
+    energyCostPercent: 100,
+    energyGate: true
+  });
+  var BUSINESS_ACTIONS = Object.freeze({
+    art_studio: [{ action: "painting", furniture: "workbench" }],
+    bakery: [{ action: "cooking", furniture: "counter" }],
+    blacksmith: [{ action: "crafting", furniture: "workbench" }],
+    blacksmith_yard: [{ action: "mining", furniture: "anvil" }],
+    bookstore: [{ action: "reading", furniture: "bookshelf" }],
+    carpentry: [{ action: "crafting", furniture: "workbench" }],
+    chapel: [{ action: "praying", furniture: "pew" }],
+    church: [{ action: "praying", furniture: "pew" }],
+    farm: ["farm_plant", "farm_water", "farm_harvest", "harvesting"].map((action) => ({ action, furniture: "counter" })),
+    garden: ["farm_plant", "farm_water", "farm_harvest", "harvesting", "herbalism"].map((action) => ({ action, furniture: "counter" })),
+    greenhouse: ["farm_plant", "farm_water", "farm_harvest", "harvesting", "herbalism"].map((action) => ({ action, furniture: "counter" })),
+    herb_shop: [{ action: "herbalism", furniture: "counter" }],
+    library: [{ action: "reading", furniture: "bookshelf" }],
+    mine: [{ action: "mining", furniture: "workbench" }],
+    pharmacy: [{ action: "herbalism", furniture: "counter" }],
+    restaurant: [{ action: "cooking", furniture: "counter" }],
+    school: [{ action: "reading", furniture: "bookshelf" }],
+    tavern: [{ action: "cooking", furniture: "counter" }],
+    temple: [{ action: "praying", furniture: "pew" }],
+    university: [{ action: "reading", furniture: "bookshelf" }],
+    workshop: [{ action: "crafting", furniture: "workbench" }]
+  });
+  function actionPrompt(tuning, action) {
+    const d = tuning.actions.find((a) => a.id === action);
+    return d ? `${d.promptVerb} here` : action;
+  }
+  var ACTION_REFUSALS = Object.freeze(["unknown_action", "busy", "wrong_place", "no_tool", "too_tired", "production_refused"]);
+
+  // @insimul/core/src/gathering/resource-nodes.ts
+  var DEFAULT_RESOURCE_KINDS = Object.freeze(
+    [
+      ["crystal", 5e3, 3e5, "pickaxe"],
+      ["fiber", 1200, 45e3, null],
+      ["food", 1e3, 3e4, null],
+      ["gold", 4e3, 18e4, "pickaxe"],
+      ["iron", 3e3, 12e4, "pickaxe"],
+      ["oil", 3e3, 15e4, null],
+      ["stone", 2e3, 9e4, "pickaxe"],
+      ["water", 800, 2e4, null],
+      ["wood", 1500, 6e4, "axe"]
+    ].map(([id4, gatherMs, respawnMs, tool]) => Object.freeze({ id: id4, item: id4, gatherMs, respawnMs, tool }))
+  );
+  var DEFAULT_RESOURCE_TUNING = Object.freeze({
+    kinds: DEFAULT_RESOURCE_KINDS.map((k) => ({ ...k })),
+    nodes: [],
+    defaultMaxAmount: 3,
+    defaultRespawnMs: 6e4,
+    defaultGatherMs: 2e3,
+    toolsRequired: true
+  });
+  var GATHER_REFUSALS = Object.freeze(["unknown_node", "actor_busy", "no_tool", "depleted", "node_busy"]);
+  var SAVED_NODE_KEYS = Object.freeze(["id", "remaining", "respawnInMs"]);
+
+  // @insimul/core/src/gathering/gathering-save.ts
+  var GATHERING_EXTENSION_KEY = "gathering";
+  var GATHERING_BLOCK_MEMBERS = Object.freeze(["nodes", "actions", "production", "business"]);
+  var GATHERING_PRODUCTION_KEYS = Object.freeze(["plots", "spots", "veins", "carried", "day"]);
+  var GATHERING_BUSINESS_KEYS = Object.freeze(["businesses", "purses", "day"]);
+  var GATHERING_BUSINESS_ROW_KEYS = Object.freeze(["id", "type", "owner", "settlement", "foundedDay", "closedDay", "capital", "arrears", "shut", "staff"]);
+  var isObj2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var fin2 = (v) => typeof v === "number" && Number.isFinite(v);
+  var str = (v) => typeof v === "string";
+  function copyProduction(p) {
+    return {
+      plots: p.plots.map(([a, b, c, d]) => [a, b, c, d]),
+      spots: p.spots.map(([a, b]) => [a, b]),
+      veins: p.veins.map(([a, b]) => [a, b]),
+      carried: p.carried.map(([actor, bag]) => [actor, bag.map(([i, q]) => [i, q])]),
+      day: p.day
+    };
+  }
+  function copyBusiness(b) {
+    return {
+      businesses: b.businesses.map((r) => ({
+        id: r.id,
+        type: r.type,
+        owner: r.owner,
+        ...r.settlement !== void 0 ? { settlement: r.settlement } : {},
+        foundedDay: r.foundedDay,
+        ...r.closedDay !== void 0 ? { closedDay: r.closedDay } : {},
+        capital: r.capital,
+        arrears: r.arrears,
+        shut: r.shut,
+        staff: r.staff.map(([who, role]) => [who, role])
+      })),
+      purses: b.purses.map(([who, coin]) => [who, coin]),
+      day: b.day
+    };
+  }
+  function readGatheringBlock(v) {
+    if (v === void 0 || v === null) return { ok: true, value: null };
+    if (!isObj2(v)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const nodes = [];
+    if (v.nodes !== void 0 && !Array.isArray(v.nodes)) bad3.push("nodes");
+    else {
+      (Array.isArray(v.nodes) ? v.nodes : []).forEach((r, i) => {
+        const okRow = isObj2(r) && str(r.id) && fin2(r.remaining) && r.remaining >= 0 && (r.respawnInMs === void 0 || r.respawnInMs === null || fin2(r.respawnInMs) && r.respawnInMs >= 0);
+        if (!okRow) bad3.push(`nodes[${i}]`);
+        else nodes.push({ id: r.id, remaining: r.remaining, respawnInMs: r.respawnInMs ?? null });
+      });
+    }
+    const actions = {};
+    if (v.actions !== void 0 && !isObj2(v.actions)) bad3.push("actions");
+    else {
+      for (const [actor, row] of Object.entries(v.actions ?? {})) {
+        if (!isObj2(row)) {
+          bad3.push(`actions.${actor}`);
+          continue;
+        }
+        const out = {};
+        for (const [action, n] of Object.entries(row)) {
+          if (fin2(n) && n >= 0) out[action] = n;
+          else bad3.push(`actions.${actor}.${action}`);
+        }
+        actions[actor] = out;
+      }
+    }
+    let production = null;
+    if (v.production !== void 0 && v.production !== null) {
+      if (!isObj2(v.production)) bad3.push("production");
+      else production = readProduction(v.production, bad3);
+    }
+    let business = null;
+    if (v.business !== void 0 && v.business !== null) {
+      if (!isObj2(v.business)) bad3.push("business");
+      else business = readBusiness(v.business, bad3);
+    }
+    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
+    return { ok: true, value: { nodes, actions, production, business } };
+  }
+  function readBusiness(b, bad3) {
+    const list2 = (key, row) => {
+      const out = [];
+      const v = b[key];
+      if (v === void 0) return out;
+      if (!Array.isArray(v)) {
+        bad3.push(`business.${key}`);
+        return out;
+      }
+      v.forEach((r, i) => {
+        const got = row(r);
+        if (got === null) bad3.push(`business.${key}[${i}]`);
+        else out.push(got);
+      });
+      return out;
+    };
+    const businesses = list2("businesses", (r) => {
+      if (!isObj2(r)) return null;
+      const staffOk = Array.isArray(r.staff) && r.staff.every((p) => Array.isArray(p) && p.length === 2 && str(p[0]) && str(p[1]));
+      const ok = str(r.id) && str(r.type) && str(r.owner) && (r.settlement === void 0 || str(r.settlement)) && fin2(r.foundedDay) && (r.closedDay === void 0 || fin2(r.closedDay)) && fin2(r.capital) && fin2(r.arrears) && r.arrears >= 0 && typeof r.shut === "boolean" && staffOk;
+      if (!ok) return null;
+      return {
+        id: r.id,
+        type: r.type,
+        owner: r.owner,
+        ...r.settlement !== void 0 ? { settlement: r.settlement } : {},
+        foundedDay: r.foundedDay,
+        ...r.closedDay !== void 0 ? { closedDay: r.closedDay } : {},
+        capital: r.capital,
+        arrears: r.arrears,
+        shut: r.shut,
+        staff: r.staff.map(([who, role]) => [who, role])
+      };
+    });
+    const purses = list2("purses", (r) => Array.isArray(r) && r.length === 2 && str(r[0]) && fin2(r[1]) ? [r[0], r[1]] : null);
+    let day = 0;
+    if (b.day !== void 0) {
+      if (fin2(b.day)) day = b.day;
+      else bad3.push("business.day");
+    }
+    return { businesses, purses, day };
+  }
+  function readProduction(p, bad3) {
+    const list2 = (key, row) => {
+      const out = [];
+      const v = p[key];
+      if (v === void 0) return out;
+      if (!Array.isArray(v)) {
+        bad3.push(`production.${key}`);
+        return out;
+      }
+      v.forEach((r, i) => {
+        const got = row(r);
+        if (got === null) bad3.push(`production.${key}[${i}]`);
+        else out.push(got);
+      });
+      return out;
+    };
+    const pair = (r) => Array.isArray(r) && r.length === 2 && str(r[0]) && fin2(r[1]) ? [r[0], r[1]] : null;
+    const plots = list2(
+      "plots",
+      (r) => Array.isArray(r) && r.length === 4 && str(r[0]) && str(r[1]) && fin2(r[2]) && fin2(r[3]) ? [r[0], r[1], r[2], r[3]] : null
+    );
+    const spots = list2("spots", pair);
+    const veins = list2("veins", pair);
+    const carried = list2("carried", (r) => {
+      if (!Array.isArray(r) || r.length !== 2 || !str(r[0]) || !Array.isArray(r[1])) return null;
+      const bag = r[1].map(pair);
+      return bag.every((x) => x !== null) ? [r[0], bag] : null;
+    });
+    let day = 0;
+    if (p.day !== void 0) {
+      if (fin2(p.day)) day = p.day;
+      else bad3.push("production.day");
+    }
+    return { plots, spots, veins, carried, day };
+  }
+  function gatheringBlockOf(b) {
+    return {
+      nodes: b.nodes.map((n) => ({ id: n.id, remaining: n.remaining, respawnInMs: n.respawnInMs })),
+      actions: Object.fromEntries(Object.entries(b.actions).map(([a, row]) => [a, { ...row }])),
+      production: b.production ? copyProduction(b.production) : null,
+      business: b.business ? copyBusiness(b.business) : null
+    };
+  }
+
+  // @insimul/core/src/traversal/mode-lending.ts
+  var vehicleLender = (vehicleId) => `vehicle:${vehicleId}`;
+  var personalLender = (kind) => `personal:${kind}`;
+  function canonicalLent(lent, modes) {
+    const out = {};
+    if (!lent) return out;
+    const held = new Set(modes);
+    for (const mode of Object.keys(lent).sort(compareIds)) {
+      if (!held.has(mode)) continue;
+      const lenders = [...new Set(lent[mode] ?? [])].sort(compareIds);
+      if (lenders.length > 0) out[mode] = lenders;
+    }
+    return out;
+  }
+  function lendMode(holding, mode, lender) {
+    const modes = [...holding.modes];
+    const lent = canonicalLent(holding.lent, modes);
+    const lenders = lent[mode];
+    if (lenders === void 0) {
+      if (modes.includes(mode)) return { modes, lent };
+      modes.push(mode);
+      return { modes, lent: canonicalLent({ ...lent, [mode]: [lender] }, modes) };
+    }
+    return { modes, lent: canonicalLent({ ...lent, [mode]: [...lenders, lender] }, modes) };
+  }
+  function returnMode(holding, mode, lender) {
+    const modes = [...holding.modes];
+    const lent = canonicalLent(holding.lent, modes);
+    const lenders = lent[mode];
+    if (lenders === void 0 || !lenders.includes(lender)) return { modes, lent };
+    const rest = lenders.filter((l) => l !== lender);
+    if (rest.length > 0) return { modes, lent: { ...lent, [mode]: rest } };
+    const next = { ...lent };
+    delete next[mode];
+    return { modes: modes.filter((m) => m !== mode), lent: next };
+  }
+
+  // @insimul/core/src/traversal/personal-vehicles.ts
+  var DEFAULT_PERSONAL_VEHICLE_TUNING = Object.freeze({
+    kinds: Object.freeze({
+      bicycle: Object.freeze({ id: "bicycle", label: "Bicycle", walk: 2e3, run: 1800, turn: 1200, mode: null }),
+      horse: Object.freeze({ id: "horse", label: "Horse", walk: 3e3, run: 2500, turn: 800, mode: "ride" })
+    }),
+    cycle: Object.freeze(["bicycle", "horse"]),
+    onFoot: Object.freeze({ walk: 1e3, run: 1e3, turn: 1e3, strafe: 800, back: 600 }),
+    mountedStrafePermille: 800,
+    mountedBackPermille: 500
+  });
+  var ON_FOOT_LABEL = "On Foot";
+  var whole = (v) => typeof v === "number" && Number.isFinite(v) && v >= 0 ? Math.floor(v) : void 0;
+  function personalVehicleTuning(params = {}) {
+    const base = DEFAULT_PERSONAL_VEHICLE_TUNING;
+    const kinds = {};
+    for (const [id4, k] of Object.entries(base.kinds)) kinds[id4] = { ...k };
+    for (const row of params.kinds ?? []) {
+      if (!row || typeof row.id !== "string" || row.id === "") continue;
+      const prior = kinds[row.id];
+      const walk = whole(row.walk) ?? prior?.walk;
+      const run = whole(row.run) ?? prior?.run;
+      const turn2 = whole(row.turn) ?? prior?.turn;
+      const label = typeof row.label === "string" && row.label !== "" ? row.label : prior?.label;
+      if (walk === void 0 || run === void 0 || turn2 === void 0 || label === void 0) continue;
+      const mode = row.mode === null ? null : typeof row.mode === "string" && row.mode !== "" ? row.mode : prior?.mode ?? null;
+      kinds[row.id] = { id: row.id, label, walk, run, turn: turn2, mode };
+    }
+    const sorted = {};
+    for (const id4 of Object.keys(kinds).sort(compareIds)) sorted[id4] = kinds[id4];
+    const cycle = [];
+    for (const id4 of params.cycle ?? base.cycle) {
+      if (typeof id4 === "string" && sorted[id4] && !cycle.includes(id4)) cycle.push(id4);
+    }
+    const foot = params.onFoot ?? {};
+    const onFoot = {
+      walk: whole(foot.walk) ?? base.onFoot.walk,
+      run: whole(foot.run) ?? base.onFoot.run,
+      turn: whole(foot.turn) ?? base.onFoot.turn,
+      strafe: whole(foot.strafe) ?? base.onFoot.strafe,
+      back: whole(foot.back) ?? base.onFoot.back
+    };
+    return {
+      kinds: sorted,
+      cycle,
+      onFoot,
+      mountedStrafePermille: whole(params.mountedStrafePermille) ?? base.mountedStrafePermille,
+      mountedBackPermille: whole(params.mountedBackPermille) ?? base.mountedBackPermille
+    };
+  }
+  function personalPace(kind, tuning) {
+    const k = kind === null ? void 0 : tuning.kinds[kind];
+    if (!k) return { ...tuning.onFoot };
+    return {
+      walk: k.walk,
+      run: k.run,
+      turn: k.turn,
+      strafe: Math.floor(k.walk * tuning.mountedStrafePermille / 1e3),
+      back: Math.floor(k.walk * tuning.mountedBackPermille / 1e3)
+    };
+  }
+  function personalVehicleLabel(kind, tuning) {
+    const k = kind === null ? void 0 : tuning.kinds[kind];
+    return k ? k.label : ON_FOOT_LABEL;
+  }
+  function personalVehicleModes(holding, from, to, tuning) {
+    let next = { modes: [...new Set(holding.modes)], lent: canonicalLent(holding.lent, holding.modes) };
+    if (from !== to) {
+      const lentBefore = from === null ? null : tuning.kinds[from]?.mode ?? null;
+      const lentAfter = to === null ? null : tuning.kinds[to]?.mode ?? null;
+      if (from !== null && lentBefore !== null) next = returnMode(next, lentBefore, personalLender(from));
+      if (to !== null && lentAfter !== null) next = lendMode(next, lentAfter, personalLender(to));
+    }
+    return { modes: [...next.modes].sort(compareIds), lent: next.lent };
+  }
+  function initialPersonalVehicles() {
+    return { riding: {} };
+  }
+  var PERSONAL_VEHICLE_REFUSALS = Object.freeze(["unknown_kind", "in_vehicle", "redundant", "not_riding"]);
+  function withRiding(state, actor, kind) {
+    const next = { ...state.riding };
+    if (kind === null) delete next[actor];
+    else next[actor] = kind;
+    const riding = {};
+    for (const id4 of Object.keys(next).sort(compareIds)) riding[id4] = next[id4];
+    return { riding };
+  }
+  function result(state, actor, tuning, events, refusal3, detail) {
+    const kind = state.riding[actor] ?? null;
+    return {
+      ok: refusal3 === void 0,
+      ...refusal3 !== void 0 ? { refusal: refusal3 } : {},
+      ...detail !== void 0 ? { detail } : {},
+      state,
+      kind,
+      pace: personalPace(kind, tuning),
+      label: personalVehicleLabel(kind, tuning),
+      events
+    };
+  }
+  function mountPersonalVehicle(state, request, tuning) {
+    const { actor, kind } = request;
+    if (!tuning.kinds[kind]) return result(state, actor, tuning, [], "unknown_kind");
+    if (typeof request.inVehicle === "string") return result(state, actor, tuning, [], "in_vehicle", request.inVehicle);
+    if (state.riding[actor] === kind) return result(state, actor, tuning, [], "redundant");
+    return result(withRiding(state, actor, kind), actor, tuning, [{ type: "vehicle_mounted", actorId: actor, vehicleType: kind }]);
+  }
+  function dismountPersonalVehicle(state, request, tuning) {
+    const prev = state.riding[request.actor];
+    if (prev === void 0) return result(state, request.actor, tuning, [], "not_riding");
+    return result(withRiding(state, request.actor, null), request.actor, tuning, [{ type: "vehicle_dismounted", actorId: request.actor, vehicleType: prev }]);
+  }
+  function cyclePersonalVehicle(state, request, tuning) {
+    const slots = [null, ...tuning.cycle];
+    const current = state.riding[request.actor] ?? null;
+    const next = slots[(slots.indexOf(current) + 1) % slots.length];
+    if (next === null) return dismountPersonalVehicle(state, request, tuning);
+    return mountPersonalVehicle(state, { ...request, kind: next }, tuning);
+  }
+  function personalVehicleSaveRows(state) {
+    const rows = {};
+    for (const id4 of Object.keys(state.riding).sort(compareIds)) rows[id4] = state.riding[id4];
+    return rows;
+  }
+  function personalVehiclesFromSave(rows, tuning) {
+    let state = initialPersonalVehicles();
+    const dropped2 = [];
+    for (const [actor, kind] of Object.entries(rows ?? {})) {
+      if (typeof kind === "string" && tuning.kinds[kind]) state = withRiding(state, actor, kind);
+      else dropped2.push(actor);
+    }
+    return { state, dropped: dropped2.sort(compareIds) };
+  }
+
+  // @insimul/core/src/traversal/traversal-save.ts
+  var TRAVERSAL_EXTENSION_KEY = "traversal";
+  var TRAVERSAL_BLOCK_MEMBERS = Object.freeze(["planner", "vehicles", "fastTravel", "riding"]);
+  var TRAVERSAL_ACTOR_KEYS = Object.freeze(["id", "location", "modes", "lent"]);
+  var EDGE_KEYS = ["from", "to"];
+  var TRAVERSAL_EDGE_KEYS = Object.freeze(EDGE_KEYS);
+  var TRAVERSAL_VEHICLE_KEYS = Object.freeze(["id", "location", "occupants", "owner", "driver"]);
+  var TRAVERSAL_FAST_TRAVEL_KEYS = Object.freeze(["discovered", "journeys"]);
+  function traversalSaveBlock(parts) {
+    return {
+      planner: parts.planner ? copyPlanner(parts.planner) : null,
+      vehicles: parts.vehicles ? copyVehicles(parts.vehicles) : null,
+      fastTravel: parts.fastTravel ? { discovered: [...parts.fastTravel.discovered], journeys: parts.fastTravel.journeys } : null,
+      riding: parts.riding ? personalVehicleSaveRows(parts.riding) : {}
+    };
+  }
+  var isObj3 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var str2 = (v) => typeof v === "string";
+  var strList = (v) => Array.isArray(v) && v.every(str2);
+  function copyActor(a) {
+    const lent = canonicalLent(a.lent, a.modes);
+    return { id: a.id, location: a.location, modes: [...a.modes], ...Object.keys(lent).length > 0 ? { lent } : {} };
+  }
+  function copyPlanner(p) {
+    return {
+      actors: p.actors.map(copyActor),
+      blocked: p.blocked.map((e) => ({ from: e.from, to: e.to }))
+    };
+  }
+  function copyVehicle(v) {
+    return {
+      id: v.id,
+      location: v.location,
+      occupants: [...v.occupants],
+      ...v.owner !== void 0 ? { owner: v.owner } : {},
+      ...v.driver !== void 0 ? { driver: v.driver } : {}
+    };
+  }
+  function copyVehicles(v) {
+    return { vehicles: v.vehicles.map(copyVehicle) };
+  }
+  function readTraversalBlock(v) {
+    if (v === void 0 || v === null) return { ok: true, value: null };
+    if (!isObj3(v)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const list2 = (owner, at, key, row) => {
+      const out = [];
+      const value = owner[key];
+      if (value === void 0) return out;
+      if (!Array.isArray(value)) {
+        bad3.push(`${at}.${key}`);
+        return out;
+      }
+      value.forEach((r, i) => {
+        const got = row(r);
+        if (got === null) bad3.push(`${at}.${key}[${i}]`);
+        else out.push(got);
+      });
+      return out;
+    };
+    const member = (key) => {
+      const value = v[key];
+      if (value === void 0 || value === null) return null;
+      if (!isObj3(value)) {
+        bad3.push(key);
+        return null;
+      }
+      return value;
+    };
+    let planner = null;
+    const p = member("planner");
+    if (p) {
+      const actors = list2(p, "planner", "actors", (r) => {
+        if (!isObj3(r) || !str2(r.id) || !str2(r.location)) return null;
+        if (r.modes !== void 0 && !strList(r.modes)) return null;
+        const modes = r.modes === void 0 ? ["walk"] : [...r.modes];
+        if (r.lent !== void 0) {
+          if (!isObj3(r.lent)) return null;
+          for (const [mode, lenders] of Object.entries(r.lent)) {
+            if (!strList(lenders) || lenders.length === 0 || !modes.includes(mode)) return null;
+          }
+        }
+        return copyActor({ id: r.id, location: r.location, modes, ...r.lent !== void 0 ? { lent: r.lent } : {} });
+      });
+      const blocked = list2(p, "planner", "blocked", (r) => isObj3(r) && str2(r.from) && str2(r.to) ? { from: r.from, to: r.to } : null);
+      planner = { actors, blocked };
+    }
+    let vehicles = null;
+    const vs = member("vehicles");
+    if (vs) {
+      const rows = list2(vs, "vehicles", "vehicles", (r) => {
+        if (!isObj3(r) || !str2(r.id) || !str2(r.location)) return null;
+        if (r.occupants !== void 0 && !strList(r.occupants)) return null;
+        if (r.owner !== void 0 && !str2(r.owner)) return null;
+        if (r.driver !== void 0 && !str2(r.driver)) return null;
+        const occupants = r.occupants === void 0 ? [] : [...r.occupants];
+        if (r.driver !== void 0 && !occupants.includes(r.driver)) return null;
+        return copyVehicle({ id: r.id, location: r.location, occupants, owner: r.owner, driver: r.driver });
+      });
+      vehicles = { vehicles: rows };
+    }
+    let fastTravel = null;
+    const f = member("fastTravel");
+    if (f) {
+      let discovered = [];
+      if (f.discovered !== void 0) {
+        if (strList(f.discovered)) discovered = [...f.discovered];
+        else bad3.push("fastTravel.discovered");
+      }
+      let journeys = 0;
+      if (f.journeys !== void 0) {
+        if (typeof f.journeys === "number" && Number.isInteger(f.journeys) && f.journeys >= 0) journeys = f.journeys;
+        else bad3.push("fastTravel.journeys");
+      }
+      fastTravel = { discovered, journeys };
+    }
+    const riding = {};
+    if (v.riding !== void 0 && !isObj3(v.riding)) bad3.push("riding");
+    else {
+      for (const [actor, kind] of Object.entries(v.riding ?? {})) {
+        if (str2(kind)) riding[actor] = kind;
+        else bad3.push(`riding.${actor}`);
+      }
+    }
+    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
+    return { ok: true, value: { planner, vehicles, fastTravel, riding } };
+  }
+  function traversalBlockOf(b) {
+    return {
+      planner: b.planner ? copyPlanner(b.planner) : null,
+      vehicles: b.vehicles ? copyVehicles(b.vehicles) : null,
+      fastTravel: b.fastTravel ? { discovered: [...b.fastTravel.discovered], journeys: b.fastTravel.journeys } : null,
+      riding: Object.fromEntries(Object.keys(b.riding).sort(compareIds).map((actor) => [actor, b.riding[actor]]))
+    };
+  }
+
+  // @insimul/core/src/conversation/context-memory.ts
+  var ACCESSORY_PHRASES = Object.freeze({
+    chef_hat: "a tall white chef's hat",
+    guard_helmet: "a grey metallic helmet",
+    sword: "a sword on your hip",
+    merchant_satchel: "a leather satchel at your waist",
+    apron: "a cloth apron tied at the waist",
+    hammer: "a wooden-handled hammer in your hand",
+    hammer_head: "a hammer in your hand",
+    book: "a book in your hand",
+    backpack: "a leather backpack",
+    medical_bag: "a small white medical bag",
+    scroll: "a rolled parchment scroll",
+    pickaxe_handle: "a pickaxe slung across your back",
+    holy_symbol: "a gold holy symbol on your belt",
+    farming_hoe: "a farming hoe slung across your back"
+  });
+  var ROLE_CLOTHING = Object.freeze({
+    guard: "dark, reddish-brown clothing with a uniformed, rugged look",
+    soldier: "dark iron-brown clothing with a military cut",
+    merchant: "colorful, well-kept clothes with warm yellow-brown tones",
+    questgiver: "clothes that set you apart \u2014 slightly finer or more deliberate than the crowd",
+    civilian: "plain, muted everyday clothes",
+    farmer: "earthy green and brown workwear, weathered from outdoor labor",
+    blacksmith: "heavy, soot-stained clothes built for hot, physical work",
+    innkeeper: "homey, warm-toned clothes suited to a busy tavern",
+    priest: "modest robes in muted, ceremonial colors",
+    teacher: "neat, scholarly clothes in quiet blue and grey tones",
+    doctor: "clean, practical clothes with a reserved palette",
+    child: "simple, slightly oversized clothes",
+    elder: "modest, well-worn clothes in muted colors",
+    noble: "refined, stately clothes in rich, darker tones",
+    beggar: "ragged, patched clothes",
+    sailor: "sturdy, weather-beaten clothes in blue and grey tones"
+  });
+  var BODY = Object.freeze({
+    athletic: "an athletic, broad-shouldered build",
+    stocky: "a stocky, powerful build",
+    heavyset: "a heavyset build",
+    lean: "a lean, slim build"
+  });
+  var HAIR = Object.freeze({
+    bald: "a shaved head",
+    short: "short hair",
+    medium: "medium-length hair",
+    long: "long hair",
+    ponytail: "hair pulled back in a ponytail",
+    mohawk: "a mohawk"
+  });
+  var FACIAL = Object.freeze({
+    stubble: "stubble",
+    beard: "a full beard",
+    longBeard: "a long beard",
+    mustache: "a mustache",
+    goatee: "a goatee"
+  });
+  var QUEST_OUTCOMES = Object.freeze(["assigned", "completed", "failed", "abandoned"]);
+  var CHAT_PROVIDER_REFUSALS = Object.freeze(["unknown_variant", "no_on_device_model", "no_server"]);
+
+  // @insimul/core/src/social/reputation.ts
+  var STANDINGS = Object.freeze(["hostile", "unfriendly", "neutral", "friendly", "revered"]);
+  var THRESHOLDS = Object.freeze([
+    { min: 51, standing: "revered" },
+    { min: 1, standing: "friendly" },
+    { min: -49, standing: "neutral" },
+    { min: -99, standing: "unfriendly" }
+  ]);
+  var REPUTATION_MIN = -100;
+  var REPUTATION_MAX = 100;
+  var STANDING_PRICE_PERMILLE = Object.freeze({
+    hostile: 2e3,
+    unfriendly: 1300,
+    neutral: 1e3,
+    friendly: 900,
+    revered: 750
+  });
+  var REPUTATION_DELTAS = Object.freeze({
+    quest_completed: 10,
+    quest_failed: -5,
+    conversation: 2,
+    item_purchased: 2,
+    gift_given: 3,
+    theft: -15,
+    polite: 1,
+    rude: -3
+  });
+  var CONVERSATION_COOLDOWN_MS = 5 * 60 * 1e3;
+  var PAY_FINES_REFUSALS = Object.freeze(["no_record", "no_fines", "insufficient_gold"]);
+  var REPUTATION_ENTRY_KEYS = Object.freeze([
+    "entityType",
+    "entityId",
+    "entityName",
+    "score",
+    "isBanned",
+    "banExpiryMs",
+    "violationCount",
+    "outstandingFines"
+  ]);
+
+  // @insimul/core/src/social/romance.ts
+  var DEFAULT_ROMANCE_LADDER = Object.freeze([
+    { stage: "none", threshold: 0 },
+    { stage: "attracted", threshold: 100 },
+    { stage: "flirting", threshold: 250 },
+    { stage: "dating", threshold: 400 },
+    { stage: "committed", threshold: 600 },
+    { stage: "engaged", threshold: 750 },
+    { stage: "married", threshold: 900 }
+  ]);
+  var ROMANCE_ACTIONS = Object.freeze([
+    { id: "compliment", name: "Compliment", requiredStage: "none", gain: 50, loss: 20 },
+    { id: "flirt", name: "Flirt", requiredStage: "attracted", gain: 80, loss: 50 },
+    { id: "give_gift", name: "Give Gift", requiredStage: "none", gain: 100, loss: 10 },
+    { id: "ask_on_date", name: "Ask on Date", requiredStage: "flirting", gain: 150, loss: 100 },
+    { id: "confess_feelings", name: "Confess Feelings", requiredStage: "dating", gain: 200, loss: 150 },
+    { id: "propose", name: "Propose", requiredStage: "committed", gain: 250, loss: 200 }
+  ]);
+  var DEFAULT_ROMANCE_TUNING = Object.freeze({
+    ladder: DEFAULT_ROMANCE_LADDER,
+    decayPerStep: 5,
+    decayAfter: 3,
+    rejectionCooldown: 5,
+    demoteMargin: 100,
+    jealousyFloor: 300
+  });
+  var ROMANCE_REFUSALS = Object.freeze(["unknown_action", "locked", "cooldown"]);
+  var ROMANCE_TRACK_KEYS = Object.freeze([
+    "npcId",
+    "npcName",
+    "stage",
+    "spark",
+    "lastInteraction",
+    "totalInteractions",
+    "giftsGiven",
+    "datesCompleted",
+    "rejected",
+    "rejectionCooldown"
+  ]);
+
+  // @insimul/core/src/relationship-tiers.ts
+  var RELATIONSHIP_TIERS = [
+    {
+      id: "enemy",
+      label: "Enemy",
+      minStrength: -1,
+      maxStrength: -0.6,
+      priceMultiplier: 1.5,
+      canOfferQuests: false,
+      canShareSecrets: false,
+      greetingStyle: "hostile",
+      conversationContext: "You deeply dislike this person. Be curt, distrustful, and reluctant to help them."
+    },
+    {
+      id: "disliked",
+      label: "Disliked",
+      minStrength: -0.6,
+      maxStrength: -0.3,
+      priceMultiplier: 1.25,
+      canOfferQuests: false,
+      canShareSecrets: false,
+      greetingStyle: "cold",
+      conversationContext: "You do not like this person. Be distant and uncooperative."
+    },
+    {
+      id: "unfriendly",
+      label: "Unfriendly",
+      minStrength: -0.3,
+      maxStrength: -0.1,
+      priceMultiplier: 1.1,
+      canOfferQuests: false,
+      canShareSecrets: false,
+      greetingStyle: "cold",
+      conversationContext: "You are wary of this person. Be polite but guarded."
+    },
+    {
+      id: "stranger",
+      label: "Stranger",
+      minStrength: -0.1,
+      maxStrength: 0.1,
+      priceMultiplier: 1,
+      canOfferQuests: true,
+      canShareSecrets: false,
+      greetingStyle: "neutral",
+      conversationContext: "You barely know this person. Be polite and professional."
+    },
+    {
+      id: "acquaintance",
+      label: "Acquaintance",
+      minStrength: 0.1,
+      maxStrength: 0.35,
+      priceMultiplier: 1,
+      canOfferQuests: true,
+      canShareSecrets: false,
+      greetingStyle: "neutral",
+      conversationContext: "You recognize this person and have had a few interactions. Be friendly."
+    },
+    {
+      id: "friend",
+      label: "Friend",
+      minStrength: 0.35,
+      maxStrength: 0.65,
+      priceMultiplier: 0.9,
+      canOfferQuests: true,
+      canShareSecrets: true,
+      greetingStyle: "warm",
+      conversationContext: "This person is your friend. Be warm, helpful, and willing to share information."
+    },
+    {
+      id: "close_friend",
+      label: "Close Friend",
+      minStrength: 0.65,
+      maxStrength: 0.85,
+      priceMultiplier: 0.8,
+      canOfferQuests: true,
+      canShareSecrets: true,
+      greetingStyle: "enthusiastic",
+      conversationContext: "This person is a close friend. Be enthusiastic, offer help freely, and share personal stories."
+    },
+    {
+      id: "best_friend",
+      label: "Best Friend",
+      minStrength: 0.85,
+      maxStrength: 1,
+      priceMultiplier: 0.75,
+      canOfferQuests: true,
+      canShareSecrets: true,
+      greetingStyle: "enthusiastic",
+      conversationContext: "This person is your best friend. Treat them like family \u2014 be open, generous, and deeply loyal."
+    }
+  ];
+  var RELATIONSHIP_DELTAS = {
+    /** Completing a quest assigned by the NPC */
+    quest_completed: 0.1,
+    /** Failing a quest assigned by the NPC */
+    quest_failed: -0.05,
+    /** Having a normal conversation */
+    conversation: 0.02,
+    /** Giving a gift */
+    gift_given: 0.08,
+    /** Delivering an item to the NPC */
+    item_delivered: 0.06,
+    /** NPC-initiated conversation accepted */
+    npc_conversation_accepted: 0.03,
+    /** NPC-initiated conversation rejected */
+    npc_conversation_rejected: -0.01
+  };
+
+  // @insimul/core/src/social/relationships.ts
+  var permille = (v) => Math.round(v * 1e3);
+  var RELATIONSHIP_TIERS_PERMILLE = Object.freeze(
+    RELATIONSHIP_TIERS.map(
+      (t) => Object.freeze({
+        id: t.id,
+        label: t.label,
+        min: permille(t.minStrength),
+        max: permille(t.maxStrength),
+        pricePermille: permille(t.priceMultiplier),
+        canOfferQuests: t.canOfferQuests,
+        canShareSecrets: t.canShareSecrets,
+        greeting: t.greetingStyle,
+        context: t.conversationContext
+      })
+    )
+  );
+  var RELATIONSHIP_DELTAS_PERMILLE = Object.freeze(
+    Object.fromEntries(Object.entries(RELATIONSHIP_DELTAS).map(([k, v]) => [k, permille(v)]))
+  );
+  var RELATIONSHIP_MIN = -1e3;
+  var RELATIONSHIP_MAX = 1e3;
+
+  // @insimul/core/src/social/social-save.ts
+  var SOCIAL_EXTENSION_KEY = "social";
+  var SOCIAL_BLOCK_MEMBERS = Object.freeze(["relationships", "romance", "reputation", "memory", "volition"]);
+  var SOCIAL_ROMANCE_KEYS = Object.freeze(["timestep", "tracks"]);
+  var SOCIAL_MEMORY_KEYS = Object.freeze(["quests", "conversations"]);
+  var SOCIAL_VOLITION_AGENT_KEYS = Object.freeze(["agent", "motives", "appeals", "spent"]);
+  var SOCIAL_VOLITION_PAIR_KEYS = Object.freeze(["agent", "other", "spark", "status"]);
+  var isObj4 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var str3 = (v) => typeof v === "string";
+  var int = (v) => typeof v === "number" && Number.isInteger(v);
+  var whole2 = (v) => int(v) && v >= 0;
+  var intIn = (v, lo, hi) => int(v) && v >= lo && v <= hi;
+  var numObj = (v) => isObj4(v) && Object.values(v).every((x) => typeof x === "number" && Number.isFinite(x));
+  function readTrack(r) {
+    if (!isObj4(r)) return null;
+    if (!str3(r.npcId) || !str3(r.npcName) || !str3(r.stage)) return null;
+    if (!intIn(r.spark, 0, 1e3) || !whole2(r.lastInteraction) || !whole2(r.totalInteractions)) return null;
+    if (!whole2(r.giftsGiven) || !whole2(r.datesCompleted) || typeof r.rejected !== "boolean" || !whole2(r.rejectionCooldown)) return null;
+    return {
+      npcId: r.npcId,
+      npcName: r.npcName,
+      stage: r.stage,
+      spark: r.spark,
+      lastInteraction: r.lastInteraction,
+      totalInteractions: r.totalInteractions,
+      giftsGiven: r.giftsGiven,
+      datesCompleted: r.datesCompleted,
+      rejected: r.rejected,
+      rejectionCooldown: r.rejectionCooldown
+    };
+  }
+  function readEntry(r) {
+    if (!isObj4(r)) return null;
+    if (!str3(r.entityType) || !str3(r.entityId) || !str3(r.entityName)) return null;
+    if (!intIn(r.score, REPUTATION_MIN, REPUTATION_MAX) || typeof r.isBanned !== "boolean") return null;
+    if (!(r.banExpiryMs === null || int(r.banExpiryMs)) || !whole2(r.violationCount) || !whole2(r.outstandingFines)) return null;
+    return {
+      entityType: r.entityType,
+      entityId: r.entityId,
+      entityName: r.entityName,
+      score: r.score,
+      isBanned: r.isBanned,
+      banExpiryMs: r.banExpiryMs,
+      violationCount: r.violationCount,
+      outstandingFines: r.outstandingFines
+    };
+  }
+  function readMemory(r) {
+    if (!isObj4(r)) return null;
+    if (!isObj4(r.quests) || !whole2(r.conversations)) return null;
+    const quests = {};
+    for (const [q, o] of Object.entries(r.quests)) {
+      if (!str3(o) || !QUEST_OUTCOMES.includes(o)) return null;
+      quests[q] = o;
+    }
+    return { quests, conversations: r.conversations };
+  }
+  function readSocialBlock(v) {
+    if (v === void 0 || v === null) return { ok: true, value: null };
+    if (!isObj4(v)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const list2 = (owner, at, key, row) => {
+      const out = [];
+      const value = owner[key];
+      if (value === void 0) return out;
+      if (!Array.isArray(value)) {
+        bad3.push(`${at}.${key}`);
+        return out;
+      }
+      const seen = /* @__PURE__ */ new Set();
+      value.forEach((r, i) => {
+        const got = row(r, seen);
+        if (got === null) bad3.push(`${at}.${key}[${i}]`);
+        else out.push(got);
+      });
+      return out;
+    };
+    const member = (key) => {
+      const value = v[key];
+      if (value === void 0 || value === null) return null;
+      if (!isObj4(value)) {
+        bad3.push(key);
+        return null;
+      }
+      return value;
+    };
+    const map = (key, row) => {
+      const out = {};
+      const value = v[key];
+      if (value === void 0) return out;
+      if (!isObj4(value)) {
+        bad3.push(key);
+        return out;
+      }
+      for (const [k, r] of Object.entries(value)) {
+        const got = row(r);
+        if (got === null) bad3.push(`${key}.${k}`);
+        else out[k] = got;
+      }
+      return out;
+    };
+    const relationships = map("relationships", (r) => intIn(r, RELATIONSHIP_MIN, RELATIONSHIP_MAX) ? r : null);
+    let romance = null;
+    const ro = member("romance");
+    if (ro) {
+      let timestep = 0;
+      if (ro.timestep !== void 0) {
+        if (whole2(ro.timestep)) timestep = ro.timestep;
+        else bad3.push("romance.timestep");
+      }
+      const tracks = list2(ro, "romance", "tracks", (r, seen) => {
+        const t = readTrack(r);
+        if (!t || seen.has(t.npcId)) return null;
+        seen.add(t.npcId);
+        return t;
+      });
+      romance = { timestep, tracks };
+    }
+    let reputation = null;
+    const re = member("reputation");
+    if (re) {
+      const entries = list2(re, "reputation", "entries", (r, seen) => {
+        const e = readEntry(r);
+        if (!e) return null;
+        const k = `${e.entityType}:${e.entityId}`;
+        if (seen.has(k)) return null;
+        seen.add(k);
+        return e;
+      });
+      reputation = { entries };
+    }
+    const memory = map("memory", readMemory);
+    let volition = null;
+    const vo = member("volition");
+    if (vo) {
+      const agents = list2(vo, "volition", "agents", (r) => {
+        if (!isObj4(r) || !str3(r.agent) || !numObj(r.motives) || !numObj(r.appeals)) return null;
+        if (!Array.isArray(r.spent) || !r.spent.every(str3)) return null;
+        return { agent: r.agent, motives: { ...r.motives }, appeals: { ...r.appeals }, spent: [...r.spent] };
+      });
+      const pairs = list2(vo, "volition", "pairs", (r) => {
+        if (!isObj4(r) || !str3(r.agent) || !str3(r.other) || !intIn(r.spark, 0, 100)) return null;
+        if (!(r.status === null || str3(r.status))) return null;
+        return { agent: r.agent, other: r.other, spark: r.spark, status: r.status };
+      });
+      volition = { agents, pairs };
+    }
+    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
+    return { ok: true, value: { relationships, romance, reputation, memory, volition } };
+  }
+  function socialBlockOf(b) {
+    const sortedMap = (m, f) => Object.fromEntries(Object.keys(m).sort(compareIds).map((k) => [k, f(m[k])]));
+    return {
+      relationships: sortedMap(b.relationships, (x) => x),
+      romance: b.romance ? {
+        timestep: b.romance.timestep,
+        tracks: b.romance.tracks.map((r) => ({
+          npcId: r.npcId,
+          npcName: r.npcName,
+          stage: r.stage,
+          spark: r.spark,
+          lastInteraction: r.lastInteraction,
+          totalInteractions: r.totalInteractions,
+          giftsGiven: r.giftsGiven,
+          datesCompleted: r.datesCompleted,
+          rejected: r.rejected,
+          rejectionCooldown: r.rejectionCooldown
+        }))
+      } : null,
+      reputation: b.reputation ? {
+        entries: b.reputation.entries.map((e) => ({
+          entityType: e.entityType,
+          entityId: e.entityId,
+          entityName: e.entityName,
+          score: e.score,
+          isBanned: e.isBanned,
+          banExpiryMs: e.banExpiryMs,
+          violationCount: e.violationCount,
+          outstandingFines: e.outstandingFines
+        }))
+      } : null,
+      memory: sortedMap(b.memory, (m) => ({ quests: sortedMap(m.quests, (o) => o), conversations: m.conversations })),
+      volition: b.volition ? {
+        agents: b.volition.agents.map((a) => ({ agent: a.agent, motives: { ...a.motives }, appeals: { ...a.appeals }, spent: [...a.spent] })),
+        pairs: b.volition.pairs.map((p) => ({ agent: p.agent, other: p.other, spark: p.spark, status: p.status }))
+      } : null
+    };
+  }
+
+  // @insimul/core/src/language-learning/progress.ts
+  var CEFR_ORDER = Object.freeze(["A1", "A2", "B1", "B2", "C1", "C2"]);
+  var ENCOUNTER_TYPES = Object.freeze(["active_use", "passive_hover", "passive_read", "quiz_correct", "quiz_incorrect"]);
+  var ENCOUNTER_HALVES = Object.freeze({
+    active_use: 2,
+    passive_hover: 1,
+    passive_read: 1,
+    quiz_correct: 2,
+    quiz_incorrect: 0
+  });
+  var GRAMMAR_WEAKNESS_RATE = Object.freeze({ num: 2, den: 5 });
+  var FLUENCY_MAX = 1e5;
+  var BOOK_REFUSALS = Object.freeze(["empty_word", "unknown_encounter"]);
+
+  // @insimul/core/src/language-learning/language-save.ts
+  var LANGUAGE_EXTENSION_KEY = "languageLearning";
+  var LANGUAGE_BLOCK_MEMBERS = Object.freeze(["book", "collected", "naming", "identification"]);
+  var LANGUAGE_BOOK_KEYS = Object.freeze(["language", "clockMs", "fluency", "cefr", "conversations", "correctUsages", "words", "grammar"]);
+  var LANGUAGE_WORD_KEYS = Object.freeze(["word", "language", "meaning", "category", "context", "encountered", "correct", "incorrect", "halves", "last", "types"]);
+  var LANGUAGE_GRAMMAR_KEYS = Object.freeze(["pattern", "correct", "incorrect", "mastered", "examples", "explanations"]);
+  var LANGUAGE_NAMING_KEYS = Object.freeze(["attempts", "named"]);
+  var LANGUAGE_IDENTIFICATION_KEYS = Object.freeze(["attempts", "identified", "bestScore"]);
+  var isObj5 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var str4 = (v) => typeof v === "string";
+  var whole3 = (v) => typeof v === "number" && Number.isInteger(v) && v >= 0;
+  var strList2 = (v) => Array.isArray(v) && v.every(str4);
+  var strOrNull = (v) => v === null || str4(v);
+  function readWord(r) {
+    if (!isObj5(r)) return null;
+    if (!str4(r.word) || r.word.trim().length === 0 || r.word !== r.word.trim() || !str4(r.language) || !str4(r.meaning) || !strOrNull(r.category) || !strOrNull(r.context)) return null;
+    if (!whole3(r.encountered) || !whole3(r.correct) || !whole3(r.incorrect) || !whole3(r.halves) || !whole3(r.last) || !isObj5(r.types)) return null;
+    const types = {};
+    let n = 0;
+    let halves = 0;
+    for (const [k, c] of Object.entries(r.types)) {
+      if (!ENCOUNTER_TYPES.includes(k) || !whole3(c) || c === 0) return null;
+      types[k] = c;
+      n += c;
+      halves += c * ENCOUNTER_HALVES[k];
+    }
+    if (n !== r.encountered || halves !== r.halves) return null;
+    if (r.correct !== (types.active_use ?? 0) + (types.quiz_correct ?? 0) || r.incorrect !== (types.quiz_incorrect ?? 0)) return null;
+    return { word: r.word, language: r.language, meaning: r.meaning, category: r.category, context: r.context, encountered: r.encountered, correct: r.correct, incorrect: r.incorrect, halves: r.halves, last: r.last, types };
+  }
+  function readGrammar(r) {
+    if (!isObj5(r)) return null;
+    if (!str4(r.pattern) || !whole3(r.correct) || !whole3(r.incorrect) || typeof r.mastered !== "boolean" || !strList2(r.examples) || !strList2(r.explanations)) return null;
+    return { pattern: r.pattern, correct: r.correct, incorrect: r.incorrect, mastered: r.mastered, examples: [...r.examples], explanations: [...r.explanations] };
+  }
+  function readLanguageBlock(v) {
+    if (v === void 0 || v === null) return { ok: true, value: null };
+    if (!isObj5(v)) return { ok: false, keys: [] };
+    const bad3 = [];
+    let book = null;
+    const b = v.book;
+    if (b !== void 0 && b !== null) {
+      if (!isObj5(b)) bad3.push("book");
+      else {
+        const field = (key, ok, dflt) => {
+          if (b[key] === void 0) return dflt;
+          if (!ok(b[key])) {
+            bad3.push(`book.${key}`);
+            return dflt;
+          }
+          return b[key];
+        };
+        const language = field("language", str4, "target");
+        const clockMs = field("clockMs", whole3, 0);
+        const fluency = field("fluency", (x) => whole3(x) && x <= FLUENCY_MAX, 0);
+        const cefr = field("cefr", (x) => x === null || CEFR_ORDER.includes(x), null);
+        const conversations = field("conversations", whole3, 0);
+        const correctUsages = field("correctUsages", whole3, 0);
+        const rows = (key, read, id4) => {
+          const out = [];
+          if (b[key] === void 0) return out;
+          if (!Array.isArray(b[key])) {
+            bad3.push(`book.${key}`);
+            return out;
+          }
+          const seen = /* @__PURE__ */ new Set();
+          b[key].forEach((r, i) => {
+            const got = read(r);
+            if (!got || seen.has(id4(got))) bad3.push(`book.${key}[${i}]`);
+            else {
+              seen.add(id4(got));
+              out.push(got);
+            }
+          });
+          return out;
+        };
+        const words = rows("words", readWord, (w) => `${w.language}\0${w.word.toLowerCase()}`);
+        const grammar = rows("grammar", readGrammar, (g) => g.pattern);
+        book = { language, clockMs, fluency, cefr, conversations, correctUsages, words, grammar };
+      }
+    }
+    const collected = [];
+    if (v.collected !== void 0) {
+      if (!Array.isArray(v.collected)) bad3.push("collected");
+      else
+        v.collected.forEach((id4, i) => {
+          if (!str4(id4) || collected.includes(id4)) bad3.push(`collected[${i}]`);
+          else collected.push(id4);
+        });
+    }
+    const map = (key, read) => {
+      const out = {};
+      if (v[key] === void 0) return out;
+      if (!isObj5(v[key])) {
+        bad3.push(key);
+        return out;
+      }
+      for (const [k, r] of Object.entries(v[key])) {
+        const got = read(r);
+        if (got === null) bad3.push(`${key}.${k}`);
+        else out[k] = got;
+      }
+      return out;
+    };
+    const naming = map("naming", (r) => isObj5(r) && whole3(r.attempts) && typeof r.named === "boolean" ? { attempts: r.attempts, named: r.named } : null);
+    const identification = map(
+      "identification",
+      (r) => isObj5(r) && whole3(r.attempts) && typeof r.identified === "boolean" && whole3(r.bestScore) && r.bestScore <= 100 ? { attempts: r.attempts, identified: r.identified, bestScore: r.bestScore } : null
+    );
+    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
+    return { ok: true, value: { book, collected, naming, identification } };
+  }
+  function languageBlockOf(b) {
+    const sortedMap = (m, f) => Object.fromEntries(Object.keys(m).sort(compareIds).map((k) => [k, f(m[k])]));
+    return {
+      book: b.book ? {
+        language: b.book.language,
+        clockMs: b.book.clockMs,
+        fluency: b.book.fluency,
+        cefr: b.book.cefr,
+        conversations: b.book.conversations,
+        correctUsages: b.book.correctUsages,
+        words: b.book.words.map((w) => ({
+          word: w.word,
+          language: w.language,
+          meaning: w.meaning,
+          category: w.category,
+          context: w.context,
+          encountered: w.encountered,
+          correct: w.correct,
+          incorrect: w.incorrect,
+          halves: w.halves,
+          last: w.last,
+          types: Object.fromEntries(ENCOUNTER_TYPES.filter((t) => w.types[t]).map((t) => [t, w.types[t]]))
+        })),
+        grammar: b.book.grammar.map((g) => ({ pattern: g.pattern, correct: g.correct, incorrect: g.incorrect, mastered: g.mastered, examples: [...g.examples], explanations: [...g.explanations] }))
+      } : null,
+      collected: [...b.collected],
+      naming: sortedMap(b.naming, (n) => ({ attempts: n.attempts, named: n.named })),
+      identification: sortedMap(b.identification, (p) => ({ attempts: p.attempts, identified: p.identified, bestScore: p.bestScore }))
+    };
+  }
+
+  // @insimul/core/src/npc-life/escort.ts
+  var DEFAULT_ESCORT_TUNING = Object.freeze({
+    followDistanceMm: 4e3,
+    maxFollowRangeMm: 3e4,
+    arriveRadiusMm: 8e3
+  });
+  var NO_ESCORTS = Object.freeze({});
+
+  // @insimul/core/src/npc-life/navigation.ts
+  var MOVEMENT_SPEEDS = Object.freeze(["stroll", "walk", "hurry"]);
+  var DEFAULT_NAVIGATION_TUNING = Object.freeze({
+    speedMmPerS: Object.freeze({ stroll: 1500, walk: 3e3, hurry: 5e3 }),
+    arriveMm: 500,
+    stuckCheckMs: 4e3,
+    stuckProgressMm: 400,
+    stuckRetries: 2,
+    doorReachMm: 3e3,
+    patrolRadiusMm: 2e4,
+    patrolIntervalMs: 5e3
+  });
+  var IDLE_MOVER = Object.freeze({ current: null, queue: Object.freeze([]), conversation: null, anchor: null, anchorMs: 0, retries: 0, snags: 0, draws: 0 });
+
+  // @insimul/core/src/npc-life/staging.ts
+  var STATION_KINDS = Object.freeze(["anvil", "hearth", "stall", "shopper", "talker"]);
+  var STALL_TRADES = Object.freeze(["grocer", "merchant", "baker", "farmer", "shopkeeper", "fishmonger", "butcher", "cook", "cashier", "farmhand", "waiter"]);
+  var NO_POSTS = Object.freeze({});
+
+  // @insimul/core/src/npc-life/npc-life-save.ts
+  var NPC_LIFE_EXTENSION_KEY = "npcLife";
+  var NPC_LIFE_BLOCK_MEMBERS = Object.freeze(["routines", "locomotion", "planner", "escorts", "posts", "movers"]);
+  var NPC_LIFE_ROUTINE_KEYS = Object.freeze(["agent", "routine", "adopted", "suspension", "resuming"]);
+  var NPC_LIFE_LOCOMOTION_KEYS = Object.freeze(["actor", "destination", "failures"]);
+  var NPC_LIFE_CURSOR_KEYS = Object.freeze(["plan", "stepIndex", "interrupted"]);
+  var NPC_LIFE_ESCORT_KEYS = Object.freeze(["npcId", "questId", "objectiveId", "destination", "radiusMm"]);
+  var NPC_LIFE_POST_KEYS = Object.freeze(["npcId", "questId", "hold"]);
+  var NPC_LIFE_MOVER_KEYS = Object.freeze(["current", "queue", "conversation", "snags", "draws"]);
+  var HOLD_POSES = ["idle", "interact", "talk", "sit"];
+  var STOP_REASONS = ["satisfied", "step-ceiling", "expansion-ceiling", "no-step"];
+  var INTERRUPTIONS = ["goal-satisfied", "goal-abandoned", "step-forbidden", "step-blocked", "external"];
+  var isObj6 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var str5 = (v) => typeof v === "string";
+  var strList3 = (v) => Array.isArray(v) && v.every(str5);
+  var int2 = (v) => typeof v === "number" && Number.isInteger(v);
+  var whole4 = (v) => int2(v) && v >= 0;
+  var finite = (v) => typeof v === "number" && Number.isFinite(v);
+  var strOrNull2 = (v) => v === null || str5(v);
+  var point = (p) => ({ x: p.x, z: p.z });
+  function copyRoutineRow(r) {
+    return {
+      agent: r.agent,
+      routine: r.routine,
+      adopted: r.adopted ? { goal: r.adopted.goal, priority: r.adopted.priority } : null,
+      suspension: r.suspension ? { reason: r.suspension.reason, block: r.suspension.block, goal: r.suspension.goal } : null,
+      ...r.resuming ? { resuming: true } : {}
+    };
+  }
+  var copyRoutines = (s) => ({ agents: s.agents.map(copyRoutineRow) });
+  var copyActor2 = (a) => ({ actor: a.actor, destination: a.destination, failures: a.failures });
+  var copyLocomotion = (s) => ({ actors: s.actors.map(copyActor2) });
+  function copyStep(s) {
+    return { index: s.index, action: s.action, target: s.target, achieves: s.achieves, utility: s.utility, takeableNow: s.takeableNow };
+  }
+  function copyCursor(c) {
+    const p = c.plan;
+    return {
+      plan: {
+        agent: p.agent,
+        goal: p.goal,
+        tick: p.tick,
+        steps: p.steps.map(copyStep),
+        complete: p.complete,
+        stoppedBy: p.stoppedBy,
+        unmet: [...p.unmet],
+        expansions: p.expansions
+      },
+      stepIndex: c.stepIndex,
+      interrupted: c.interrupted
+    };
+  }
+  function copyPlanner2(s) {
+    const cursors = {};
+    for (const agent of Object.keys(s.cursors).sort(compareIds)) cursors[agent] = copyCursor(s.cursors[agent]);
+    return { cursors };
+  }
+  function copyEscort(e) {
+    return { npcId: e.npcId, questId: e.questId, objectiveId: e.objectiveId, destination: point(e.destination), radiusMm: e.radiusMm };
+  }
+  function copyHold(h) {
+    return { npcId: h.npcId, at: point(h.at), face: point(h.face), pose: h.pose, why: h.why, untilMs: h.untilMs };
+  }
+  var copyPost = (p) => ({ npcId: p.npcId, questId: p.questId, hold: copyHold(p.hold) });
+  function copyCommand(c) {
+    return { target: point(c.target), speed: c.speed, ...c.enter ? { enter: true } : {} };
+  }
+  function copyMover(m) {
+    return {
+      current: m.current ? copyCommand(m.current) : null,
+      queue: m.queue.map(copyCommand),
+      conversation: m.conversation ? { face: point(m.conversation.face), saved: m.conversation.saved ? copyCommand(m.conversation.saved) : null, savedQueue: m.conversation.savedQueue.map(copyCommand) } : null,
+      snags: m.snags,
+      draws: m.draws
+    };
+  }
+  function readPoint(v) {
+    return isObj6(v) && int2(v.x) && int2(v.z) ? { x: v.x, z: v.z } : null;
+  }
+  function readRoutineRow(r) {
+    if (!isObj6(r) || !str5(r.agent)) return null;
+    if (r.routine !== void 0 && !strOrNull2(r.routine)) return null;
+    let adopted = null;
+    if (r.adopted !== void 0 && r.adopted !== null) {
+      if (!isObj6(r.adopted) || !str5(r.adopted.goal) || !finite(r.adopted.priority)) return null;
+      adopted = { goal: r.adopted.goal, priority: r.adopted.priority };
+    }
+    let suspension = null;
+    if (r.suspension !== void 0 && r.suspension !== null) {
+      const s = r.suspension;
+      if (!isObj6(s) || !str5(s.reason)) return null;
+      if (s.block !== void 0 && !strOrNull2(s.block)) return null;
+      if (s.goal !== void 0 && !strOrNull2(s.goal)) return null;
+      suspension = { reason: s.reason, block: s.block ?? null, goal: s.goal ?? null };
+    }
+    if (r.resuming !== void 0 && typeof r.resuming !== "boolean") return null;
+    return copyRoutineRow({ agent: r.agent, routine: r.routine ?? null, adopted, suspension, resuming: r.resuming === true });
+  }
+  function readActorRow(r) {
+    if (!isObj6(r) || !str5(r.actor)) return null;
+    if (r.destination !== void 0 && !strOrNull2(r.destination)) return null;
+    if (r.failures !== void 0 && !whole4(r.failures)) return null;
+    return { actor: r.actor, destination: r.destination ?? null, failures: r.failures ?? 0 };
+  }
+  function readStep(s) {
+    if (!isObj6(s) || !whole4(s.index) || !str5(s.action) || !str5(s.target) || !str5(s.achieves) || !finite(s.utility) || typeof s.takeableNow !== "boolean") return null;
+    return { index: s.index, action: s.action, target: s.target, achieves: s.achieves, utility: s.utility, takeableNow: s.takeableNow };
+  }
+  function readCursor(c) {
+    if (!isObj6(c) || !isObj6(c.plan)) return null;
+    const p = c.plan;
+    if (!str5(p.agent) || !str5(p.goal) || !int2(p.tick) || !Array.isArray(p.steps) || typeof p.complete !== "boolean") return null;
+    if (!STOP_REASONS.includes(p.stoppedBy)) return null;
+    if (p.unmet !== void 0 && !strList3(p.unmet)) return null;
+    if (p.expansions !== void 0 && !whole4(p.expansions)) return null;
+    const steps = [];
+    for (const s of p.steps) {
+      const step = readStep(s);
+      if (step === null) return null;
+      steps.push(step);
+    }
+    const stepIndex = c.stepIndex === void 0 ? 0 : c.stepIndex;
+    if (!whole4(stepIndex) || stepIndex > steps.length) return null;
+    const interrupted = c.interrupted === void 0 ? null : c.interrupted;
+    if (interrupted !== null && !INTERRUPTIONS.includes(interrupted)) return null;
+    return copyCursor({
+      plan: {
+        agent: p.agent,
+        goal: p.goal,
+        tick: p.tick,
+        steps,
+        complete: p.complete,
+        stoppedBy: p.stoppedBy,
+        unmet: p.unmet ?? [],
+        expansions: p.expansions ?? 0
+      },
+      stepIndex,
+      interrupted
+    });
+  }
+  function readEscort(r) {
+    if (!isObj6(r) || !str5(r.npcId) || !str5(r.questId) || !str5(r.objectiveId)) return null;
+    const destination = readPoint(r.destination);
+    if (destination === null) return null;
+    if (r.radiusMm !== void 0 && r.radiusMm !== null && !whole4(r.radiusMm)) return null;
+    return { npcId: r.npcId, questId: r.questId, objectiveId: r.objectiveId, destination, radiusMm: r.radiusMm ?? null };
+  }
+  function readPost(r) {
+    if (!isObj6(r) || !str5(r.npcId) || !str5(r.questId) || !isObj6(r.hold)) return null;
+    const h = r.hold;
+    if (h.npcId !== r.npcId) return null;
+    const at = readPoint(h.at);
+    const face = readPoint(h.face);
+    if (at === null || face === null || !HOLD_POSES.includes(h.pose) || !str5(h.why)) return null;
+    if (h.untilMs !== void 0 && h.untilMs !== null && !whole4(h.untilMs)) return null;
+    return { npcId: r.npcId, questId: r.questId, hold: { npcId: r.npcId, at, face, pose: h.pose, why: h.why, untilMs: h.untilMs ?? null } };
+  }
+  function readCommand(c) {
+    if (!isObj6(c)) return null;
+    const target = readPoint(c.target);
+    if (target === null || !MOVEMENT_SPEEDS.includes(c.speed)) return null;
+    if (c.enter !== void 0 && typeof c.enter !== "boolean") return null;
+    return copyCommand({ target, speed: c.speed, enter: c.enter === true });
+  }
+  function readCommands(v) {
+    if (v === void 0) return [];
+    if (!Array.isArray(v)) return null;
+    const out = [];
+    for (const c of v) {
+      const cmd = readCommand(c);
+      if (cmd === null) return null;
+      out.push(cmd);
+    }
+    return out;
+  }
+  function readMover(m) {
+    if (!isObj6(m)) return null;
+    let current = null;
+    if (m.current !== void 0 && m.current !== null) {
+      current = readCommand(m.current);
+      if (current === null) return null;
+    }
+    const queue = readCommands(m.queue);
+    if (queue === null) return null;
+    let conversation = null;
+    if (m.conversation !== void 0 && m.conversation !== null) {
+      const c = m.conversation;
+      if (!isObj6(c)) return null;
+      const face = readPoint(c.face);
+      if (face === null) return null;
+      let saved = null;
+      if (c.saved !== void 0 && c.saved !== null) {
+        saved = readCommand(c.saved);
+        if (saved === null) return null;
+      }
+      const savedQueue = readCommands(c.savedQueue);
+      if (savedQueue === null) return null;
+      conversation = { face, saved, savedQueue };
+    }
+    if (m.snags !== void 0 && !whole4(m.snags)) return null;
+    if (m.draws !== void 0 && !whole4(m.draws)) return null;
+    return { current, queue, conversation, snags: m.snags ?? 0, draws: m.draws ?? 0 };
+  }
+  function readNpcLifeBlock(v) {
+    if (v === void 0 || v === null) return { ok: true, value: null };
+    if (!isObj6(v)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const list2 = (owner, at, key, row) => {
+      const out = [];
+      const value = owner[key];
+      if (value === void 0) return out;
+      if (!Array.isArray(value)) {
+        bad3.push(at === "" ? key : `${at}.${key}`);
+        return out;
+      }
+      value.forEach((r2, i) => {
+        const got = row(r2);
+        if (got === null) bad3.push(`${at === "" ? key : `${at}.${key}`}[${i}]`);
+        else out.push(got);
+      });
+      return out;
+    };
+    const map = (owner, at, key, row) => {
+      const out = {};
+      const value = owner[key];
+      const where = at === "" ? key : `${at}.${key}`;
+      if (value === void 0) return out;
+      if (!isObj6(value)) {
+        bad3.push(where);
+        return out;
+      }
+      for (const id4 of Object.keys(value).sort(compareIds)) {
+        const got = row(value[id4]);
+        if (got === null) bad3.push(`${where}.${id4}`);
+        else out[id4] = got;
+      }
+      return out;
+    };
+    const member = (key) => {
+      const value = v[key];
+      if (value === void 0 || value === null) return null;
+      if (!isObj6(value)) {
+        bad3.push(key);
+        return null;
+      }
+      return value;
+    };
+    const r = member("routines");
+    const routines = r ? { agents: list2(r, "routines", "agents", readRoutineRow) } : null;
+    const l = member("locomotion");
+    const locomotion = l ? { actors: list2(l, "locomotion", "actors", readActorRow) } : null;
+    const p = member("planner");
+    const planner = p ? { cursors: map(p, "planner", "cursors", readCursor) } : null;
+    const escorts = list2(v, "", "escorts", readEscort);
+    const posts = list2(v, "", "posts", readPost);
+    const movers = map(v, "", "movers", readMover);
+    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
+    return { ok: true, value: { routines, locomotion, planner, escorts, posts, movers } };
+  }
+  function npcLifeBlockOf(b) {
+    const movers = {};
+    for (const id4 of Object.keys(b.movers).sort(compareIds)) movers[id4] = copyMover(b.movers[id4]);
+    return {
+      routines: b.routines ? copyRoutines(b.routines) : null,
+      locomotion: b.locomotion ? copyLocomotion(b.locomotion) : null,
+      planner: b.planner ? copyPlanner2(b.planner) : null,
+      escorts: b.escorts.map(copyEscort),
+      posts: b.posts.map(copyPost),
+      movers
+    };
+  }
+
+  // @insimul/core/src/progression/gamification.ts
+  var LEVEL_THRESHOLDS = Object.freeze([
+    0,
+    50,
+    120,
+    220,
+    350,
+    520,
+    730,
+    990,
+    1300,
+    1670,
+    2100,
+    2600,
+    3200,
+    3900,
+    4700,
+    5600,
+    6700,
+    8e3,
+    9500,
+    11200
+  ]);
+  var DEFAULT_TIER_LABELS = Object.freeze(["Beginner", "Elementary", "Intermediate", "Advanced", "Near-native"]);
+  var LEVELS_PER_TIER = 5;
+  function levelForXp(totalXp, thresholds = LEVEL_THRESHOLDS) {
+    for (let i = thresholds.length - 1; i >= 0; i--) if (totalXp >= thresholds[i]) return i + 1;
+    return 1;
+  }
+  function nextLevelXp(level, thresholds = LEVEL_THRESHOLDS) {
+    if (level >= thresholds.length) return 0;
+    return thresholds[level];
+  }
+  function levelTier(level, labels = DEFAULT_TIER_LABELS) {
+    if (labels.length === 0) return "";
+    const index = level <= LEVELS_PER_TIER ? 0 : Math.floor((level - 1) / LEVELS_PER_TIER);
+    return labels[Math.min(index, labels.length - 1)];
+  }
+  function levelProgressPermille(totalXp, thresholds = LEVEL_THRESHOLDS) {
+    const level = levelForXp(totalXp, thresholds);
+    if (level >= thresholds.length) return 1e3;
+    const from = thresholds[level - 1] ?? 0;
+    const to = thresholds[level] ?? from + 100;
+    return Math.floor((totalXp - from) * 1e3 / (to - from));
+  }
+  var GAMIFICATION_TUNING = Object.freeze({
+    conversationBase: 10,
+    conversationLong: 5,
+    longConversationTurns: 5,
+    questComplete: 25,
+    vocabularyNewWord: 3,
+    vocabularyMastered: 15,
+    grammarPatternCorrect: 2,
+    grammarPatternMastered: 20,
+    achievementUnlocked: 50,
+    assessmentPhaseComplete: 15,
+    assessmentComplete: 40,
+    onboardingStepComplete: 10,
+    onboardingComplete: 30,
+    puzzleSolved: 20,
+    locationDiscovered: 5,
+    listeningComprehensionComplete: 20,
+    skillRewardXpPerPoint: 2,
+    streakStepTenths: 1,
+    streakCapTenths: 20
+  });
+  var GAMIFICATION_AWARDS = Object.freeze({
+    assessment_phase_complete: { tuning: "assessmentPhaseComplete", reason: "Assessment phase complete" },
+    assessment_complete: { tuning: "assessmentComplete", reason: "Assessment complete" },
+    onboarding_step_complete: { tuning: "onboardingStepComplete", reason: "Onboarding step complete" },
+    onboarding_complete: { tuning: "onboardingComplete", reason: "Onboarding complete" }
+  });
+  var DEFAULT_XP_REWARDS = Object.freeze({
+    quest_complete: 25,
+    location_discovered: 5,
+    onboarding_step_complete: 10,
+    onboarding_complete: 30,
+    achievement_unlocked: 50,
+    daily_challenge_complete: 30
+  });
+  function xpEventTable(bundleId, tuning = GAMIFICATION_TUNING, overrides = {}) {
+    const base = bundleId === "language-learning" ? {
+      conversation_base: tuning.conversationBase,
+      conversation_long: tuning.conversationLong,
+      quest_complete: tuning.questComplete,
+      knowledge_new_entry: tuning.vocabularyNewWord,
+      knowledge_mastered: tuning.vocabularyMastered,
+      pattern_correct: tuning.grammarPatternCorrect,
+      pattern_mastered: tuning.grammarPatternMastered,
+      daily_challenge_complete: 30,
+      achievement_unlocked: tuning.achievementUnlocked,
+      assessment_phase_complete: tuning.assessmentPhaseComplete,
+      assessment_complete: tuning.assessmentComplete,
+      onboarding_step_complete: tuning.onboardingStepComplete,
+      onboarding_complete: tuning.onboardingComplete,
+      performance_graded: tuning.puzzleSolved,
+      location_discovered: tuning.locationDiscovered
+    } : { ...DEFAULT_XP_REWARDS };
+    const out = { ...base, ...overrides };
+    return Object.fromEntries(Object.keys(out).sort(compareIds).map((k) => [k, out[k]]));
+  }
+  var ACHIEVEMENT_CONDITIONS = Object.freeze([
+    "words_learned",
+    "conversations",
+    "grammar_mastered",
+    "quests_completed",
+    "fluency_reached",
+    "streak_days",
+    "navigation_quests",
+    "level_reached",
+    "cultural_quests",
+    "articles_read",
+    "npcs_talked",
+    "items_collected",
+    "locations_discovered",
+    "objects_examined",
+    "puzzles_solved"
+  ]);
+  var ACHIEVEMENTS = Object.freeze([
+    { id: "first_words", name: "First Words", description: "Learn your first 10 words", icon: "\u{1F4D6}", condition: { type: "words_learned", threshold: 10 } },
+    { id: "chatterbox", name: "Chatterbox", description: "Complete 25 conversations", icon: "\u{1F4AC}", condition: { type: "conversations", threshold: 25 } },
+    { id: "grammar_guru", name: "Grammar Guru", description: "Master 5 grammar patterns", icon: "\u{1F4DD}", condition: { type: "grammar_mastered", threshold: 5 } },
+    { id: "polyglot", name: "Polyglot", description: "Reach intermediate fluency (level 11)", icon: "\u{1F30D}", condition: { type: "level_reached", threshold: 11 } },
+    { id: "navigator", name: "Navigator", description: "Complete 5 navigation quests", icon: "\u{1F9ED}", condition: { type: "navigation_quests", threshold: 5 } },
+    { id: "streak_master", name: "Streak Master", description: "Maintain a 7-day learning streak", icon: "\u{1F525}", condition: { type: "streak_days", threshold: 7 } },
+    { id: "word_collector", name: "Word Collector", description: "Learn 50 words", icon: "\u{1F4DA}", condition: { type: "words_learned", threshold: 50 } },
+    { id: "quest_hero", name: "Quest Hero", description: "Complete 10 language quests", icon: "\u{1F3C6}", condition: { type: "quests_completed", threshold: 10 } },
+    { id: "cultural_explorer", name: "Cultural Explorer", description: "Complete 5 cultural quests", icon: "\u{1F3AD}", condition: { type: "cultural_quests", threshold: 5 } },
+    { id: "bookworm", name: "Bookworm", description: "Read 10 notice board articles", icon: "\u{1F4F0}", condition: { type: "articles_read", threshold: 10 } },
+    { id: "social_butterfly", name: "Social Butterfly", description: "Talk to 10 different NPCs", icon: "\u{1F98B}", condition: { type: "npcs_talked", threshold: 10 } },
+    { id: "treasure_hunter", name: "Treasure Hunter", description: "Collect 20 items", icon: "\u{1F48E}", condition: { type: "items_collected", threshold: 20 } },
+    { id: "cartographer", name: "Cartographer", description: "Discover 10 locations", icon: "\u{1F5FA}\uFE0F", condition: { type: "locations_discovered", threshold: 10 } },
+    { id: "curious_mind", name: "Curious Mind", description: "Examine 15 objects", icon: "\u{1F50D}", condition: { type: "objects_examined", threshold: 15 } },
+    { id: "puzzle_master", name: "Puzzle Master", description: "Solve 10 puzzles", icon: "\u{1F9E9}", condition: { type: "puzzles_solved", threshold: 10 } }
+  ]);
+  var GAMIFICATION_COUNTERS = Object.freeze([
+    "questsCompleted",
+    "navigationQuestsCompleted",
+    "culturalQuestsCompleted",
+    "articlesRead",
+    "npcsTalked",
+    "itemsCollected",
+    "locationsDiscovered",
+    "objectsExamined",
+    "puzzlesSolved"
+  ]);
+  var CONDITION_COUNTER = {
+    quests_completed: "questsCompleted",
+    navigation_quests: "navigationQuestsCompleted",
+    cultural_quests: "culturalQuestsCompleted",
+    articles_read: "articlesRead",
+    npcs_talked: "npcsTalked",
+    items_collected: "itemsCollected",
+    locations_discovered: "locationsDiscovered",
+    objects_examined: "objectsExamined",
+    puzzles_solved: "puzzlesSolved"
+  };
+  var STATS_CONDITIONS = Object.freeze(["words_learned", "conversations", "grammar_mastered", "fluency_reached", "streak_days"]);
+  var DAILY_CHALLENGE_TYPES = Object.freeze(["vocabulary_category", "conversation_count", "target_language_only", "grammar_accuracy", "new_words", "quest_count"]);
+  var DAILY_CHALLENGE_TEMPLATES = Object.freeze([
+    { description: "Use 5 food-related words", type: "vocabulary_category", target: 5, xpReward: 30 },
+    { description: "Have 3 conversations", type: "conversation_count", target: 3, xpReward: 30 },
+    { description: "Have a full conversation in the target language", type: "target_language_only", target: 1, xpReward: 40 },
+    { description: "Get 80%+ grammar accuracy in a conversation", type: "grammar_accuracy", target: 80, xpReward: 35 },
+    { description: "Learn 5 new words", type: "new_words", target: 5, xpReward: 30 },
+    { description: "Complete 2 quests", type: "quest_count", target: 2, xpReward: 35 },
+    { description: "Use 3 greeting words", type: "vocabulary_category", target: 3, xpReward: 25 },
+    { description: "Have 5 conversations", type: "conversation_count", target: 5, xpReward: 40 },
+    { description: "Learn 10 new words", type: "new_words", target: 10, xpReward: 45 },
+    { description: "Complete 3 quests", type: "quest_count", target: 3, xpReward: 40 }
+  ]);
+  var DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+  function isDateKey(key) {
+    if (typeof key !== "string") return false;
+    const m = DATE_RE.exec(key);
+    if (!m) return false;
+    const y = Number(m[1]);
+    const mo = Number(m[2]);
+    const d = Number(m[3]);
+    if (mo < 1 || mo > 12 || d < 1) return false;
+    return d <= daysInMonth(y, mo);
+  }
+  function daysInMonth(y, m) {
+    if (m === 2) return y % 4 === 0 && y % 100 !== 0 || y % 400 === 0 ? 29 : 28;
+    return [4, 6, 9, 11].includes(m) ? 30 : 31;
+  }
+  var pad = (n, w) => String(n).padStart(w, "0");
+  function previousDateKey(key) {
+    const m = DATE_RE.exec(key);
+    if (!m || !isDateKey(key)) throw new Error(`gamification: not a date ${key}`);
+    let y = Number(m[1]);
+    let mo = Number(m[2]);
+    let d = Number(m[3]) - 1;
+    if (d === 0) {
+      mo -= 1;
+      if (mo === 0) {
+        mo = 12;
+        y -= 1;
+      }
+      d = daysInMonth(y, mo);
+    }
+    return `${pad(y, 4)}-${pad(mo, 2)}-${pad(d, 2)}`;
+  }
+  function dailyTemplateIndex(dateKey) {
+    let hash = 0;
+    for (let i = 0; i < dateKey.length; i++) {
+      hash = (hash << 5) - hash + dateKey.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash) % DAILY_CHALLENGE_TEMPLATES.length;
+  }
+  function dailyChallengeView(daily) {
+    const t = DAILY_CHALLENGE_TEMPLATES[dailyTemplateIndex(daily.dateKey)];
+    return { id: `daily_${daily.dateKey}`, dateKey: daily.dateKey, description: t.description, type: t.type, target: t.target, xpReward: t.xpReward, progress: daily.progress, completed: daily.completed };
+  }
+  function streakMultiplierTenths(streak, tuning = GAMIFICATION_TUNING) {
+    return Math.min(tuning.streakCapTenths, 10 + (streak - 1) * tuning.streakStepTenths);
+  }
+  function streakXp(xpReward, streak, tuning = GAMIFICATION_TUNING) {
+    return Math.floor((xpReward * streakMultiplierTenths(streak, tuning) + 5) / 10);
+  }
+  function emptyGamification() {
+    return {
+      xp: 0,
+      unlocked: {},
+      daily: null,
+      consecutiveDays: 0,
+      dailyStreak: 0,
+      lastDailyDate: null,
+      counters: Object.fromEntries(GAMIFICATION_COUNTERS.map((c) => [c, 0]))
+    };
+  }
+  function cloneGamification(s) {
+    return { ...s, unlocked: { ...s.unlocked }, daily: s.daily ? { ...s.daily } : null, counters: { ...s.counters } };
+  }
+  var GAMIFICATION_BUS_EVENTS = Object.freeze([
+    "quest_completed",
+    "utterance_quest_completed",
+    "puzzle_solved",
+    "item_collected",
+    "location_discovered",
+    "npc_talked",
+    "object_examined",
+    "enemy_defeated"
+  ]);
+  var GAMIFICATION_REFUSALS = Object.freeze(["bad_date", "unknown_award", "unknown_event"]);
+  function applyGamification(run, step, ctx = {}) {
+    const t = new Tracker(run, ctx);
+    const refusal3 = t.step(step);
+    return { run: { state: t.s, date: t.date }, events: t.events, signals: t.signals, ...refusal3 ? { refusal: refusal3 } : {} };
+  }
+  var Tracker = class {
+    constructor(run, ctx) {
+      __publicField(this, "s");
+      __publicField(this, "date");
+      __publicField(this, "events", []);
+      __publicField(this, "signals", []);
+      __publicField(this, "tuning");
+      __publicField(this, "thresholds");
+      __publicField(this, "labels");
+      __publicField(this, "at");
+      this.s = cloneGamification(run.state);
+      this.date = run.date;
+      this.tuning = ctx.tuning ?? GAMIFICATION_TUNING;
+      this.thresholds = ctx.config?.levelThresholds ?? LEVEL_THRESHOLDS;
+      this.labels = ctx.config?.tierLabels ?? DEFAULT_TIER_LABELS;
+      this.at = ctx.at ?? 0;
+    }
+    step(st) {
+      const t = this.tuning;
+      switch (st.do) {
+        case "day":
+          if (!isDateKey(st.date)) return "bad_date";
+          this.date = st.date;
+          this.ensureDaily();
+          return null;
+        case "conversation": {
+          const turns = Math.floor((st.gain + 125) / 250);
+          let xp = t.conversationBase;
+          if (turns > t.longConversationTurns) xp += (turns - t.longConversationTurns) * t.conversationLong;
+          this.addXp(xp, "Conversation");
+          this.trackDaily("conversation_count", 1);
+          const grammar = st.grammarPercent ?? 0;
+          if (grammar >= 80) this.trackDaily("grammar_accuracy", grammar);
+          if ((st.targetPercent ?? 0) >= 90) this.trackDaily("target_language_only", 1);
+          this.checkAchievements();
+          return null;
+        }
+        case "word":
+          this.addXp(t.vocabularyNewWord, "New word");
+          this.trackDaily("new_words", 1);
+          this.checkAchievements();
+          return null;
+        case "mastered":
+          this.addXp(t.vocabularyMastered, "Word mastered");
+          return null;
+        case "grammar":
+          if (st.status === "correct") this.addXp(t.grammarPatternCorrect, "Grammar correct");
+          return null;
+        case "pattern":
+          this.addXp(t.grammarPatternMastered, "Grammar pattern mastered");
+          this.checkAchievements();
+          return null;
+        case "quest":
+          this.quest(st.category, st.experienceReward);
+          return null;
+        case "skillRewards": {
+          const total = st.rewards.reduce((sum, r) => sum + r.level, 0);
+          if (total > 0) this.addXp(total * t.skillRewardXpPerPoint, "Skill reward");
+          this.signals.push({ kind: "skill_rewards_applied", totalPoints: total });
+          return null;
+        }
+        case "category":
+          this.trackDaily("vocabulary_category", 1);
+          return null;
+        case "article":
+          this.s.counters.articlesRead += 1;
+          this.checkAchievements();
+          return null;
+        case "award": {
+          const a = GAMIFICATION_AWARDS[st.event];
+          if (!a) return "unknown_award";
+          this.addXp(t[a.tuning], a.reason);
+          return null;
+        }
+        case "listening":
+          if (st.passed) this.addXp(t.listeningComprehensionComplete, "Listening comprehension passed");
+          else this.addXp(Math.floor((t.listeningComprehensionComplete * 5 + 5) / 10), "Listening comprehension attempted");
+          return null;
+        case "event":
+          return this.busEvent(st.event);
+        case "stats":
+          this.stats(st.stats);
+          return null;
+      }
+      return "unknown_event";
+    }
+    busEvent(e) {
+      const c = this.s.counters;
+      switch (e.type) {
+        case "quest_completed":
+        case "utterance_quest_completed":
+          this.quest(void 0, void 0);
+          return null;
+        case "puzzle_solved":
+          c.puzzlesSolved += 1;
+          this.addXp(this.tuning.puzzleSolved, "Puzzle solved");
+          this.checkAchievements();
+          return null;
+        case "location_discovered":
+          c.locationsDiscovered += 1;
+          this.addXp(this.tuning.locationDiscovered, "Location discovered");
+          this.checkAchievements();
+          return null;
+        case "item_collected":
+          c.itemsCollected += 1;
+          this.checkAchievements();
+          return null;
+        case "npc_talked":
+          c.npcsTalked += 1;
+          this.checkAchievements();
+          return null;
+        case "object_examined":
+          c.objectsExamined += 1;
+          this.checkAchievements();
+          return null;
+        case "enemy_defeated":
+          this.checkAchievements();
+          return null;
+      }
+      return "unknown_event";
+    }
+    quest(category, experienceReward) {
+      const xp = experienceReward && experienceReward > 0 ? experienceReward : this.tuning.questComplete;
+      this.addXp(xp, "Quest complete");
+      this.s.counters.questsCompleted += 1;
+      if (category === "navigation" || category === "follow_instructions") this.s.counters.navigationQuestsCompleted += 1;
+      if (category === "cultural") this.s.counters.culturalQuestsCompleted += 1;
+      this.trackDaily("quest_count", 1);
+      this.checkAchievements();
+    }
+    addXp(amount, reason) {
+      const oldLevel = levelForXp(this.s.xp, this.thresholds);
+      this.s.xp += amount;
+      const level = levelForXp(this.s.xp, this.thresholds);
+      this.events.push({ type: "xp_gained", amount, reason, newTotal: this.s.xp, level });
+      if (level > oldLevel) {
+        this.events.push({ type: "level_up", oldLevel, newLevel: level, tier: levelTier(level, this.labels), rewards: [] });
+        this.checkAchievements();
+      }
+    }
+    unlock(a) {
+      this.s.unlocked[a.id] = this.at;
+      this.addXp(this.tuning.achievementUnlocked, `Achievement: ${a.name}`);
+      this.events.push({ type: "achievement_unlocked", achievementId: a.id, achievementName: a.name, description: a.description, icon: a.icon });
+    }
+    conditionMet(a) {
+      const { type, threshold } = a.condition;
+      if (type === "level_reached") return levelForXp(this.s.xp, this.thresholds) >= threshold;
+      if (type === "streak_days") return this.s.consecutiveDays >= threshold;
+      const counter = CONDITION_COUNTER[type];
+      return counter !== void 0 && this.s.counters[counter] >= threshold;
+    }
+    checkAchievements() {
+      for (const a of ACHIEVEMENTS) {
+        if (a.id in this.s.unlocked) continue;
+        if (this.conditionMet(a)) this.unlock(a);
+      }
+    }
+    stats(st) {
+      this.s.consecutiveDays = st.streakDays;
+      for (const a of ACHIEVEMENTS) {
+        if (a.id in this.s.unlocked) continue;
+        const { type, threshold } = a.condition;
+        let met = false;
+        if (type === "words_learned") met = st.wordsLearned >= threshold;
+        else if (type === "conversations") met = st.conversations >= threshold;
+        else if (type === "grammar_mastered") met = st.grammarMastered >= threshold;
+        else if (type === "fluency_reached") met = st.fluency >= threshold * 1e3;
+        else if (type === "streak_days") met = st.streakDays >= threshold;
+        if (met) this.unlock(a);
+      }
+    }
+    ensureDaily() {
+      if (this.date === null) return;
+      if (!this.s.daily || this.s.daily.dateKey !== this.date) this.s.daily = { dateKey: this.date, progress: 0, completed: false };
+    }
+    trackDaily(type, amount) {
+      this.ensureDaily();
+      const d = this.s.daily;
+      if (!d || d.completed || this.date === null) return;
+      const view2 = dailyChallengeView(d);
+      if (view2.type !== type) return;
+      d.progress += amount;
+      if (d.progress < view2.target) return;
+      d.completed = true;
+      const last = this.s.lastDailyDate;
+      if (last) {
+        if (last === previousDateKey(this.date)) this.s.dailyStreak += 1;
+        else if (last !== this.date) this.s.dailyStreak = 1;
+      } else {
+        this.s.dailyStreak = 1;
+      }
+      this.s.lastDailyDate = this.date;
+      const xp = streakXp(view2.xpReward, this.s.dailyStreak, this.tuning);
+      this.addXp(xp, `Daily challenge (${this.s.dailyStreak}-day streak)`);
+      this.signals.push({ kind: "daily_challenge_completed", challengeId: view2.id, description: view2.description, xpReward: view2.xpReward, streak: this.s.dailyStreak, xpAwarded: xp });
+    }
+  };
+  function gamificationView(s, config = {}) {
+    const thresholds = config.levelThresholds ?? LEVEL_THRESHOLDS;
+    const level = levelForXp(s.xp, thresholds);
+    return {
+      totalXp: s.xp,
+      level,
+      nextLevelXp: nextLevelXp(level, thresholds),
+      levelXp: s.xp - (thresholds[level - 1] ?? 0),
+      progressPermille: levelProgressPermille(s.xp, thresholds),
+      tier: levelTier(level, config.tierLabels ?? DEFAULT_TIER_LABELS),
+      achievements: ACHIEVEMENTS.map((a) => ({ id: a.id, name: a.name, description: a.description, icon: a.icon, unlocked: a.id in s.unlocked, unlockedAt: a.id in s.unlocked ? s.unlocked[a.id] : null })),
+      daily: s.daily ? dailyChallengeView(s.daily) : null,
+      consecutiveDays: s.consecutiveDays,
+      dailyStreak: s.dailyStreak,
+      counters: { ...s.counters }
+    };
+  }
+
+  // @insimul/core/src/progression/progression-save.ts
+  var PROGRESSION_EXTENSION_KEY = "progression";
+  var PROGRESSION_BLOCK_MEMBERS = Object.freeze(["gamification", "skills"]);
+  var PROGRESSION_GAMIFICATION_KEYS = Object.freeze(["xp", "unlocked", "daily", "consecutiveDays", "dailyStreak", "lastDailyDate", "counters"]);
+  var PROGRESSION_DAILY_KEYS = Object.freeze(["dateKey", "progress", "completed"]);
+  var PROGRESSION_SKILL_ACTOR_KEYS = Object.freeze(["id", "levels", "xp", "points", "unlocked"]);
+  var isObj7 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var whole5 = (v) => typeof v === "number" && Number.isInteger(v) && v >= 0;
+  var ACHIEVEMENT_IDS = new Set(ACHIEVEMENTS.map((a) => a.id));
+  function readGamification(g, bad3) {
+    if (g === void 0 || g === null) return null;
+    if (!isObj7(g)) {
+      bad3.push("gamification");
+      return null;
+    }
+    const at = (k) => bad3.push(`gamification.${k}`);
+    const out = {
+      xp: 0,
+      unlocked: {},
+      daily: null,
+      consecutiveDays: 0,
+      dailyStreak: 0,
+      lastDailyDate: null,
+      counters: Object.fromEntries(GAMIFICATION_COUNTERS.map((c) => [c, 0]))
+    };
+    if (g.xp !== void 0) {
+      if (whole5(g.xp)) out.xp = g.xp;
+      else at("xp");
+    }
+    if (g.unlocked !== void 0) {
+      if (!isObj7(g.unlocked)) at("unlocked");
+      else
+        for (const [id4, when] of Object.entries(g.unlocked)) {
+          if (ACHIEVEMENT_IDS.has(id4) && typeof when === "number" && Number.isInteger(when)) out.unlocked[id4] = when;
+          else at(`unlocked.${id4}`);
+        }
+    }
+    if (g.daily !== void 0 && g.daily !== null) {
+      const d = g.daily;
+      if (isObj7(d) && isDateKey(d.dateKey) && whole5(d.progress) && typeof d.completed === "boolean" && d.completed === d.progress >= dailyChallengeView({ dateKey: d.dateKey, progress: 0, completed: false }).target) {
+        out.daily = { dateKey: d.dateKey, progress: d.progress, completed: d.completed };
+      } else at("daily");
+    }
+    if (g.consecutiveDays !== void 0) {
+      if (whole5(g.consecutiveDays)) out.consecutiveDays = g.consecutiveDays;
+      else at("consecutiveDays");
+    }
+    if (g.dailyStreak !== void 0) {
+      if (whole5(g.dailyStreak)) out.dailyStreak = g.dailyStreak;
+      else at("dailyStreak");
+    }
+    if (g.lastDailyDate !== void 0 && g.lastDailyDate !== null) {
+      if (isDateKey(g.lastDailyDate)) out.lastDailyDate = g.lastDailyDate;
+      else at("lastDailyDate");
+    }
+    if (g.counters !== void 0) {
+      if (!isObj7(g.counters)) at("counters");
+      else
+        for (const [k, n] of Object.entries(g.counters)) {
+          if (GAMIFICATION_COUNTERS.includes(k) && whole5(n)) out.counters[k] = n;
+          else at(`counters.${k}`);
+        }
+    }
+    if (out.dailyStreak > 0 !== (out.lastDailyDate !== null) && !bad3.includes("gamification.dailyStreak") && !bad3.includes("gamification.lastDailyDate")) at("dailyStreak");
+    return out;
+  }
+  function wholeMap(v) {
+    if (!isObj7(v)) return null;
+    for (const n of Object.values(v)) if (!whole5(n)) return null;
+    return { ...v };
+  }
+  function readSkills(s, bad3) {
+    if (s === void 0 || s === null) return null;
+    if (!isObj7(s) || !Array.isArray(s.actors)) {
+      bad3.push(isObj7(s) ? "skills.actors" : "skills");
+      return null;
+    }
+    const actors = [];
+    const seen = /* @__PURE__ */ new Set();
+    s.actors.forEach((a, i) => {
+      const levels = isObj7(a) ? wholeMap(a.levels ?? {}) : null;
+      const xp = isObj7(a) ? wholeMap(a.xp ?? {}) : null;
+      const points3 = isObj7(a) ? wholeMap(a.points ?? {}) : null;
+      const unlocked = isObj7(a) ? a.unlocked ?? [] : null;
+      const okUnlocked = Array.isArray(unlocked) && unlocked.every((n) => typeof n === "string" && n.length > 0) && new Set(unlocked).size === unlocked.length;
+      if (!isObj7(a) || typeof a.id !== "string" || a.id.length === 0 || seen.has(a.id) || !levels || !xp || !points3 || !okUnlocked) {
+        bad3.push(`skills.actors[${i}]`);
+        return;
+      }
+      seen.add(a.id);
+      actors.push({ id: a.id, levels, xp, points: points3, unlocked: [...unlocked] });
+    });
+    return { actors };
+  }
+  function readProgressionBlock(b) {
+    if (b === void 0 || b === null) return { ok: true, value: null };
+    if (!isObj7(b)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const gamification = readGamification(b.gamification, bad3);
+    const skills = readSkills(b.skills, bad3);
+    if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
+    return { ok: true, value: { gamification, skills } };
+  }
+  function progressionSaveBlock(parts) {
+    return { gamification: parts.gamification ?? null, skills: parts.skills ?? null };
+  }
+  function progressionBlockOf(b) {
+    const sorted = (m) => Object.fromEntries(Object.keys(m).sort(compareIds).map((k) => [k, m[k]]));
+    const g = b.gamification;
+    return {
+      gamification: g ? {
+        xp: g.xp,
+        unlocked: Object.fromEntries(ACHIEVEMENTS.filter((a) => a.id in g.unlocked).map((a) => [a.id, g.unlocked[a.id]])),
+        daily: g.daily ? { dateKey: g.daily.dateKey, progress: g.daily.progress, completed: g.daily.completed } : null,
+        consecutiveDays: g.consecutiveDays,
+        dailyStreak: g.dailyStreak,
+        lastDailyDate: g.lastDailyDate,
+        counters: Object.fromEntries(GAMIFICATION_COUNTERS.map((c) => [c, g.counters[c] ?? 0]))
+      } : null,
+      skills: b.skills ? {
+        actors: [...b.skills.actors].sort((x, y) => compareIds(x.id, y.id)).map((a) => ({ id: a.id, levels: sorted(a.levels), xp: sorted(a.xp), points: sorted(a.points), unlocked: [...a.unlocked].sort(compareIds) }))
+      } : null
+    };
+  }
+
+  // @insimul/core/src/quests/tutorial-save.ts
+  var TUTORIAL_EXTENSION_KEY = "tutorial";
+  var TUTORIAL_BLOCK_MEMBERS = Object.freeze(["completed", "skipped", "current", "endedBySkip"]);
+  var isObj8 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var isId = (v) => typeof v === "string" && v.length > 0;
+  function readIds(v, name, bad3, taken = /* @__PURE__ */ new Set()) {
+    if (v === void 0) return [];
+    if (!Array.isArray(v)) {
+      bad3.push(name);
+      return null;
+    }
+    const out = [];
+    const seen = /* @__PURE__ */ new Set();
+    v.forEach((id4, i) => {
+      if (!isId(id4) || seen.has(id4) || taken.has(id4)) {
+        bad3.push(`${name}[${i}]`);
+        return;
+      }
+      seen.add(id4);
+      out.push(id4);
+    });
+    return out;
+  }
+  function readTutorialBlock(b) {
+    if (b === void 0 || b === null) return { ok: true, value: null };
+    if (!isObj8(b)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const completed = readIds(b.completed, "completed", bad3);
+    const skipped = readIds(b.skipped, "skipped", bad3, new Set(completed ?? []));
+    let current = null;
+    let currentOk = false;
+    if (!("current" in b) || b.current !== null && !isId(b.current)) bad3.push("current");
+    else if (b.current !== null && ((completed ?? []).includes(b.current) || (skipped ?? []).includes(b.current))) bad3.push("current");
+    else {
+      current = b.current;
+      currentOk = true;
+    }
+    let endedBySkip = false;
+    if (b.endedBySkip !== void 0) {
+      if (typeof b.endedBySkip !== "boolean") bad3.push("endedBySkip");
+      else if (b.endedBySkip && currentOk && skipped !== null && (current !== null || skipped.length === 0)) bad3.push("endedBySkip");
+      else endedBySkip = b.endedBySkip;
+    }
+    if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
+    return { ok: true, value: { completed, skipped, current, endedBySkip } };
+  }
+  function tutorialBlockOf(b) {
+    return { completed: [...b.completed], skipped: [...b.skipped], current: b.current, endedBySkip: b.endedBySkip };
+  }
+
+  // @insimul/core/src/genre-mechanics/world-facts.ts
+  function canonical(a, b) {
+    return a === b ? 0 : a < b ? -1 : 1;
+  }
+
+  // @insimul/core/src/puzzle/puzzle-save.ts
+  var PUZZLE_EXTENSION_KEY = "puzzle";
+  var PUZZLE_BLOCK_MEMBERS = Object.freeze(["actors"]);
+  var PUZZLE_ACTOR_KEYS = Object.freeze(["actor", "clues", "solved", "attempts", "opened", "taken"]);
+  var isObj9 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var id = (v) => typeof v === "string" && v.length > 0;
+  function idList(v) {
+    if (v === void 0) return [];
+    if (!Array.isArray(v) || !v.every(id) || new Set(v).size !== v.length) return null;
+    return [...v];
+  }
+  function readPuzzleBlock(b) {
+    if (b === void 0 || b === null) return { ok: true, value: null };
+    if (!isObj9(b)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const actors = [];
+    if (b.actors !== void 0 && !Array.isArray(b.actors)) bad3.push("actors");
+    const seen = /* @__PURE__ */ new Set();
+    (Array.isArray(b.actors) ? b.actors : []).forEach((a, i) => {
+      const at = `actors[${i}]`;
+      if (!isObj9(a) || !id(a.actor) || seen.has(a.actor)) {
+        bad3.push(at);
+        return;
+      }
+      seen.add(a.actor);
+      const lists = { clues: [], solved: [], opened: [], taken: [] };
+      let ok = true;
+      for (const k of ["clues", "solved", "opened", "taken"]) {
+        const l = idList(a[k]);
+        if (l === null) {
+          bad3.push(`${at}.${k}`);
+          ok = false;
+        } else lists[k] = l;
+      }
+      const attempts = [];
+      const raw = a.attempts ?? [];
+      const riddles = /* @__PURE__ */ new Set();
+      const attemptsOk = Array.isArray(raw) && raw.every((row) => {
+        if (!Array.isArray(row) || row.length !== 2 || !id(row[0]) || !Number.isInteger(row[1]) || row[1] < 1) return false;
+        if (riddles.has(row[0]) || lists.solved.includes(row[0])) return false;
+        riddles.add(row[0]);
+        attempts.push([row[0], row[1]]);
+        return true;
+      });
+      if (!attemptsOk) {
+        bad3.push(`${at}.attempts`);
+        ok = false;
+      }
+      if (ok) actors.push({ actor: a.actor, clues: lists.clues, solved: lists.solved, attempts, opened: lists.opened, taken: lists.taken });
+    });
+    if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
+    return { ok: true, value: { actors } };
+  }
+  function puzzleBlockOf(b) {
+    const sorted = (l) => [...l].sort(canonical);
+    return {
+      actors: [...b.actors].sort((x, y) => canonical(x.actor, y.actor)).map((a) => ({
+        actor: a.actor,
+        clues: sorted(a.clues),
+        solved: sorted(a.solved),
+        attempts: [...a.attempts].sort(([x], [y]) => canonical(x, y)).map(([r, n]) => [r, n]),
+        opened: sorted(a.opened),
+        taken: sorted(a.taken)
+      }))
+    };
+  }
+
+  // @insimul/core/src/platformer/platformer-save.ts
+  var PLATFORMER_EXTENSION_KEY = "platformer";
+  var PLATFORMER_BLOCK_MEMBERS = Object.freeze(["runners"]);
+  var PLATFORMER_RUNNER_KEYS = Object.freeze(["runner", "level", "location", "runCost", "checkpoints", "cleared"]);
+  var isObj10 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var id2 = (v) => typeof v === "string" && v.length > 0;
+  var whole6 = (v) => typeof v === "number" && Number.isInteger(v) && v >= 0;
+  function readPlatformerBlock(b) {
+    if (b === void 0 || b === null) return { ok: true, value: null };
+    if (!isObj10(b)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const runners = [];
+    if (b.runners !== void 0 && !Array.isArray(b.runners)) bad3.push("runners");
+    const seen = /* @__PURE__ */ new Set();
+    (Array.isArray(b.runners) ? b.runners : []).forEach((r, i) => {
+      const at = `runners[${i}]`;
+      if (!isObj10(r) || !id2(r.runner) || seen.has(r.runner)) {
+        bad3.push(at);
+        return;
+      }
+      seen.add(r.runner);
+      const before = bad3.length;
+      const level = r.level === void 0 ? null : r.level;
+      if (level !== null && !id2(level)) bad3.push(`${at}.level`);
+      const location = r.location === void 0 ? "" : r.location;
+      if (typeof location !== "string" || location === "" && id2(level)) bad3.push(`${at}.location`);
+      const runCost = r.runCost === void 0 ? 0 : r.runCost;
+      if (!whole6(runCost)) bad3.push(`${at}.runCost`);
+      const checkpoints = r.checkpoints === void 0 ? [] : r.checkpoints;
+      const numbers = Array.isArray(checkpoints) && checkpoints.every((n) => Number.isInteger(n) && n >= 1) && new Set(checkpoints).size === checkpoints.length;
+      if (!numbers || level === null && checkpoints.length > 0) bad3.push(`${at}.checkpoints`);
+      const cleared = r.cleared === void 0 ? [] : r.cleared;
+      const levels = /* @__PURE__ */ new Set();
+      const clearedOk = Array.isArray(cleared) && cleared.every((row) => {
+        if (!Array.isArray(row) || row.length !== 2 || !id2(row[0]) || ![1, 2, 3].includes(row[1]) || levels.has(row[0])) return false;
+        levels.add(row[0]);
+        return true;
+      });
+      if (!clearedOk) bad3.push(`${at}.cleared`);
+      if (bad3.length > before) return;
+      runners.push({
+        runner: r.runner,
+        level,
+        location,
+        runCost,
+        checkpoints: [...checkpoints],
+        cleared: cleared.map(([l, s]) => [l, s])
+      });
+    });
+    if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
+    return { ok: true, value: { runners } };
+  }
+  function platformerBlockOf(b) {
+    return {
+      runners: [...b.runners].sort((x, y) => canonical(x.runner, y.runner)).map((r) => ({
+        runner: r.runner,
+        level: r.level,
+        location: r.location,
+        runCost: r.runCost,
+        checkpoints: [...r.checkpoints].sort((x, y) => x - y),
+        cleared: [...r.cleared].sort(([x], [y]) => canonical(x, y)).map(([l, s]) => [l, s])
+      }))
+    };
+  }
+
+  // @insimul/core/src/strategy/strategy-save.ts
+  var STRATEGY_EXTENSION_KEY = "strategy";
+  var STRATEGY_BLOCK_MEMBERS = Object.freeze(["turn", "holders", "stock", "workers"]);
+  var isObj11 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var id3 = (v) => typeof v === "string" && v.length > 0;
+  function readStrategyBlock(b) {
+    if (b === void 0 || b === null) return { ok: true, value: null };
+    if (!isObj11(b)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const turn2 = b.turn === void 0 ? 0 : b.turn;
+    if (typeof turn2 !== "number" || !Number.isInteger(turn2) || turn2 < 0) bad3.push("turn");
+    const list2 = (k) => {
+      const v = b[k];
+      if (v === void 0) return [];
+      if (!Array.isArray(v)) {
+        bad3.push(k);
+        return [];
+      }
+      return v;
+    };
+    const holders = [];
+    const held = /* @__PURE__ */ new Set();
+    list2("holders").forEach((row, i) => {
+      if (!Array.isArray(row) || row.length !== 2 || !id3(row[0]) || !id3(row[1]) || held.has(row[0])) {
+        bad3.push(`holders[${i}]`);
+        return;
+      }
+      held.add(row[0]);
+      holders.push([row[0], row[1]]);
+    });
+    const stock = [];
+    const stocked = /* @__PURE__ */ new Set();
+    list2("stock").forEach((row, i) => {
+      const key = Array.isArray(row) ? `${String(row[0])}\0${String(row[1])}` : "";
+      if (!Array.isArray(row) || row.length !== 3 || !id3(row[0]) || !id3(row[1]) || !Number.isInteger(row[2]) || row[2] < 1 || stocked.has(key)) {
+        bad3.push(`stock[${i}]`);
+        return;
+      }
+      stocked.add(key);
+      stock.push([row[0], row[1], row[2]]);
+    });
+    const workers = [];
+    const working = /* @__PURE__ */ new Set();
+    list2("workers").forEach((row, i) => {
+      if (!Array.isArray(row) || row.length !== 2 || !id3(row[0]) || !id3(row[1]) || working.has(row[0]) || !held.has(row[1])) {
+        bad3.push(`workers[${i}]`);
+        return;
+      }
+      working.add(row[0]);
+      workers.push([row[0], row[1]]);
+    });
+    if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
+    return { ok: true, value: { turn: turn2, holders, stock, workers } };
+  }
+  function strategyBlockOf(b) {
+    return {
+      turn: b.turn,
+      holders: [...b.holders].sort(([x], [y]) => canonical(x, y)).map(([x, f]) => [x, f]),
+      stock: [...b.stock].sort((x, y) => canonical(x[0], y[0]) || canonical(x[1], y[1])).map(([f, r, n]) => [f, r, n]),
+      workers: [...b.workers].sort(([x], [y]) => canonical(x, y)).map(([w, x]) => [w, x])
+    };
+  }
+
+  // @insimul/core/src/props/doors.ts
+  var DOOR_PROMPT_RADIUS_M = 2;
+  var DOOR_STANDOFF_M = 0.5;
+  var DOOR_STATES = ["closed", "locked", "no_interior"];
+  var DOOR_ACTIONS = ["enter", "exit"];
+  var DOOR_REFUSALS = ["unknown_action", "missing_field", "unknown_building", "already_inside", "not_inside", "no_interior", "locked"];
+  var round = (n) => Math.round(n * 1e9) / 1e9;
+  var vec = (x, y, z) => ({ x: round(x), y: round(y), z: round(z) });
+  function frontDoorPoint(b) {
+    const r = Number(b.rotation) || 0;
+    const half = (Number(b.spec?.depth) || 0) / 2;
+    return vec(b.position.x + Math.sin(r) * half, b.position.y, b.position.z + Math.cos(r) * half);
+  }
+  function doorFaceYaw(b, door2) {
+    const r = Number(b.rotation) || 0;
+    const dx = door2.x - b.position.x;
+    const dz = door2.z - b.position.z;
+    const along = dx * Math.sin(r) + dz * Math.cos(r);
+    const across = dx * Math.cos(r) - dz * Math.sin(r);
+    const w = Number(b.spec?.width) > 0 ? Number(b.spec.width) / 2 : 0;
+    const d = Number(b.spec?.depth) > 0 ? Number(b.spec.depth) / 2 : 0;
+    const halfAcross = w || d || 1;
+    const halfAlong = d || w || 1;
+    const sa = Math.abs(along) / halfAlong;
+    const sx = Math.abs(across) / halfAcross;
+    if (sx > sa) return across > 0 ? r + Math.PI / 2 : r - Math.PI / 2;
+    return along < 0 ? r + Math.PI : r;
+  }
+  function doorFacing(b) {
+    if (typeof b.doorYaw === "number" && Number.isFinite(b.doorYaw)) return b.doorYaw;
+    if (b.door) return doorFaceYaw(b, b.door);
+    return Number(b.rotation) || 0;
+  }
+  function doorView(b) {
+    const doorAt = b.door ? vec(b.door.x, b.door.y, b.door.z) : frontDoorPoint(b);
+    const r = doorFacing(b);
+    const state = !b.interior ? "no_interior" : b.locked ? "locked" : "closed";
+    const label = [b.name, b.businessType, b.spec?.buildingRole].find((s) => typeof s === "string" && s !== "") ?? "Building";
+    return {
+      id: b.id,
+      state,
+      doorAt,
+      outside: { position: vec(doorAt.x + Math.sin(r) * DOOR_STANDOFF_M, doorAt.y, doorAt.z + Math.cos(r) * DOOR_STANDOFF_M), yaw: round(r) },
+      label,
+      interiorFunction: b.interior && typeof b.interior.function === "string" ? b.interior.function : null
+    };
+  }
+  function doorPrompt(buildings, player) {
+    if (player.inside) {
+      const b = buildings.find((x) => x.id === player.inside);
+      if (!b) return null;
+      const v = doorView(b);
+      return { building: b.id, action: "exit", label: v.label, state: v.state, distance: null };
+    }
+    let best = null;
+    for (const b of buildings) {
+      const v = doorView(b);
+      if (v.state === "no_interior") continue;
+      const d = Math.hypot(player.position.x - v.doorAt.x, player.position.z - v.doorAt.z);
+      if (d < DOOR_PROMPT_RADIUS_M && (best === null || d < best.d)) best = { b, v, d };
+    }
+    return best ? { building: best.b.id, action: "enter", label: best.v.label, state: best.v.state, distance: round(best.d) } : null;
+  }
+  function doorStep(buildings, state, action) {
+    const op = action?.op;
+    if (op !== "enter" && op !== "exit") return { ok: false, refusal: { code: "unknown_action", field: "op" } };
+    if (op === "exit") {
+      if (!state.inside) return { ok: false, refusal: { code: "not_inside", field: "op" } };
+      const b2 = buildings.find((x) => x.id === state.inside);
+      if (!b2) return { ok: false, refusal: { code: "unknown_building", field: "inside" } };
+      const v2 = doorView(b2);
+      return { ok: true, handoff: { op: "exit_to_exterior", building: b2.id, arrive: v2.outside.position, yaw: v2.outside.yaw }, inside: null };
+    }
+    if (typeof action.building !== "string" || action.building === "") return { ok: false, refusal: { code: "missing_field", field: "building" } };
+    if (state.inside) return { ok: false, refusal: { code: "already_inside", field: "op" } };
+    const b = buildings.find((x) => x.id === action.building);
+    if (!b) return { ok: false, refusal: { code: "unknown_building", field: "building" } };
+    const v = doorView(b);
+    if (v.state === "no_interior") return { ok: false, refusal: { code: "no_interior", field: "building" } };
+    let unlocked = false;
+    if (v.state === "locked") {
+      const key = b.keyItemId;
+      if (typeof key !== "string" || key === "" || !(state.playerItemIds ?? []).includes(key)) {
+        return { ok: false, refusal: { code: "locked", field: "building" } };
+      }
+      unlocked = true;
+    }
+    const entrance = (b.interior.doors ?? []).find((d) => d.kind === "entrance") ?? null;
+    return {
+      ok: true,
+      handoff: {
+        op: "enter_interior",
+        building: b.id,
+        interior: `interior:${b.id}`,
+        interiorFunction: v.interiorFunction,
+        arrive: entrance ? vec(entrance.position.x, entrance.position.y, entrance.position.z) : null,
+        entrance: entrance ? entrance.id : null,
+        unlocked
+      },
+      inside: b.id
+    };
+  }
+
+  // @insimul/core/src/props/interior-save.ts
+  var STATED_LAYOUT_SEED = null;
+  var DEFAULT_INTERIOR_FLOOR_HEIGHT_M = 3;
+  var isRec = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  function layoutSeedOf(v) {
+    return Number.isInteger(v) ? v : STATED_LAYOUT_SEED;
+  }
+  function readInteriorState(v) {
+    if (!isRec(v)) return null;
+    if (typeof v.buildingId !== "string" || v.buildingId === "") return null;
+    return {
+      buildingId: v.buildingId,
+      buildingName: typeof v.buildingName === "string" ? v.buildingName : "",
+      buildingType: typeof v.buildingType === "string" ? v.buildingType : "",
+      layoutSeed: layoutSeedOf(v.layoutSeed)
+    };
+  }
+
+  // @insimul/core/src/save-file-game-state.ts
+  var GENRE_RUN_BLOCKS = [
+    { gs: "puzzle", key: PUZZLE_EXTENSION_KEY, read: readPuzzleBlock, write: puzzleBlockOf, code: "unreadable_puzzle", shape: "{actors}" },
+    { gs: "platformer", key: PLATFORMER_EXTENSION_KEY, read: readPlatformerBlock, write: platformerBlockOf, code: "unreadable_platformer", shape: "{runners}" },
+    { gs: "strategy", key: STRATEGY_EXTENSION_KEY, read: readStrategyBlock, write: strategyBlockOf, code: "unreadable_strategy", shape: "{turn, holders, stock, workers}" }
+  ];
+  var GAME_STATE_VERSION = 3;
+  var PLAYER_AGENT_LOCAL_ID = "player";
+  var RUNTIME_SLOT = "runtime";
+  var POSITION_FRAME_SLOT = "positionFrame";
+  var VILLAGER_SLOTS = [
+    RUNTIME_SLOT,
+    "x",
+    "y",
+    "z",
+    "state",
+    "block",
+    "activity",
+    "destination",
+    "runtimeState",
+    "inside",
+    "indoors",
+    "disposition"
+  ];
+  var isRec2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var clone = (v) => v === void 0 ? v : JSON.parse(JSON.stringify(v));
+  function agentCurie(localId, worldId) {
+    return formatCurie(insimulEntityId(localId, worldId));
+  }
+  var vec3 = (v) => {
+    const r = isRec2(v) ? v : {};
+    return { x: num(r.x) ?? 0, y: num(r.y) ?? 0, z: num(r.z) ?? 0 };
+  };
+  var num = (v) => typeof v === "number" && Number.isFinite(v) ? v : null;
+  var str6 = (v) => typeof v === "string" ? v : null;
+  var WEATHER_EXTENSION_KEY = "weather";
+  var WEATHER_DIRECTOR_KEYS = ["day", "season", "condition"];
+  var WEATHER_BLOCK_MEMBERS = ["director", "director.condition", "director.day", "director.season", "surfaceWetness"];
+  function readWeatherBlock(v) {
+    if (v === void 0 || v === null) return { ok: true, value: null };
+    if (!isRec2(v)) return { ok: false, keys: [] };
+    const bad3 = [];
+    let director = null;
+    const d = v.director;
+    if (d === void 0 || d !== null && !isRec2(d)) {
+      bad3.push("director");
+    } else if (d !== null) {
+      const day = d.day;
+      if (typeof day !== "number" || !Number.isInteger(day) || day < 0) bad3.push("director.day");
+      const text4 = (k) => {
+        const t = d[k];
+        if (t === null || typeof t === "string") return t;
+        bad3.push(`director.${k}`);
+        return null;
+      };
+      director = { day, season: text4("season"), condition: text4("condition") };
+    }
+    const w = v.surfaceWetness;
+    if (w !== void 0 && w !== null && (typeof w !== "number" || !Number.isFinite(w) || w < 0 || w > 1)) bad3.push("surfaceWetness");
+    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
+    return { ok: true, value: { director, surfaceWetness: typeof w === "number" ? w : null } };
+  }
+  function weatherBlockOf(w) {
+    const d = isRec2(w.director) ? w.director : null;
+    return {
+      director: d ? { day: d.day ?? null, season: d.season ?? null, condition: d.condition ?? null } : null,
+      surfaceWetness: typeof w.surfaceWetness === "number" ? w.surfaceWetness : null
+    };
+  }
+  function weatherSaveState(director, surfaceWetness = null) {
+    const s = director.serialize();
+    return { director: s ? { day: s.day, season: s.season, condition: s.condition } : null, surfaceWetness };
+  }
+  function restoreWeatherFromSave(director, gs) {
+    const w = gs.weather ?? null;
+    director.restore(w?.director ?? null);
+    return w?.surfaceWetness ?? null;
+  }
+  function totalHoursOf(ts) {
+    if (!ts) return null;
+    const h = num(ts.gameHour);
+    const day = num(ts.dayNumber);
+    if (h === null || day === null) return null;
+    return (day - 1) * 24 + h + (num(ts.gameMinute) ?? 0) / 60;
+  }
+  function timeStateOf(totalHours, timeScale, isPaused) {
+    const t = Math.max(0, totalHours);
+    const day = Math.floor(t / 24);
+    const hourF = t - day * 24;
+    const hour = Math.floor(hourF);
+    const minute = Math.round((hourF - hour) * 60);
+    const c = carryClockTime(hour, minute, day + 1);
+    return { gameHour: c.hour, gameMinute: c.minute, dayNumber: c.day, timeScale, isPaused };
+  }
+  var CONVERSATION_MS_MIN = -621672192e5;
+  var CONVERSATION_MS_MAX = 253402300799999;
+  function conversationTimestampOf(epochMs) {
+    if (typeof epochMs !== "number" || !Number.isFinite(epochMs)) return null;
+    const ms = Math.floor(epochMs);
+    if (ms < CONVERSATION_MS_MIN || ms > CONVERSATION_MS_MAX) return null;
+    return new Date(ms).toISOString();
+  }
+  function epochMsOfConversationTimestamp(timestamp) {
+    if (typeof timestamp !== "string") return null;
+    const ms = Date.parse(timestamp);
+    if (!Number.isFinite(ms)) return null;
+    return conversationTimestampOf(ms) === timestamp ? ms : null;
+  }
+  var CONVERSATION_ROW_KEYS = [
+    "npcCharacterId",
+    "npcCharacterName",
+    "compressedHistory",
+    "recentTurns",
+    "totalTurnCount",
+    "lastLocationId",
+    "lastLocationName",
+    "wordsUsed",
+    "newWordsLearned",
+    "topics"
+  ];
+  var CONVERSATION_RECORD_KEYS = ["npcId", "npcName", "timestamp", "turnCount", "wordsUsed", "targetLanguagePercent", "fluencyGained", "lines"];
+  var isLine = (t) => isRec2(t) && (t.role === "player" || t.role === "npc") && typeof t.content === "string";
+  var isRowTurn = (t) => isLine(t) && typeof t.timestamp === "string";
+  var stringsOf = (v) => Array.isArray(v) ? v.filter((x) => typeof x === "string") : [];
+  function readConversationRecords(v) {
+    if (v === void 0 || v === null) return { ok: true, value: [] };
+    if (!Array.isArray(v)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const value = [];
+    v.forEach((r, i) => {
+      if (!isRec2(r)) {
+        bad3.push(`[${i}]`);
+        return;
+      }
+      if (typeof r.npcId !== "string" || r.npcId === "") bad3.push(`[${i}].npcId`);
+      if (typeof r.npcName !== "string") bad3.push(`[${i}].npcName`);
+      if (typeof r.timestamp !== "string") bad3.push(`[${i}].timestamp`);
+      if (r.wordsUsed !== void 0 && !(Array.isArray(r.wordsUsed) && r.wordsUsed.every((w) => typeof w === "string"))) bad3.push(`[${i}].wordsUsed`);
+      if (r.lines !== void 0) {
+        if (!Array.isArray(r.lines)) bad3.push(`[${i}].lines`);
+        else r.lines.forEach((l, j) => {
+          if (!isLine(l)) bad3.push(`[${i}].lines[${j}]`);
+        });
+      }
+      value.push({ ...r, wordsUsed: stringsOf(r.wordsUsed), lines: Array.isArray(r.lines) ? r.lines : [] });
+    });
+    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
+    return { ok: true, value };
+  }
+  function turnOverlap(stored, fresh) {
+    for (let k = Math.min(stored.length, fresh.length); k > 0; k--) {
+      let same = true;
+      for (let i = 0; i < k && same; i++) {
+        const a = stored[stored.length - k + i];
+        const b = fresh[i];
+        same = a.role === b.role && a.content === b.content && a.timestamp === b.timestamp;
+      }
+      if (same) return k;
+    }
+    return 0;
+  }
+  function conversationRowsOf(stored, records) {
+    const rows = Array.isArray(stored) ? clone(stored) : [];
+    const byNpc = /* @__PURE__ */ new Map();
+    for (const r of records) {
+      const lines2 = r.lines ?? [];
+      if (lines2.length === 0) continue;
+      let e = byNpc.get(r.npcId);
+      if (!e) {
+        e = { name: "", words: [], fresh: [] };
+        byNpc.set(r.npcId, e);
+      }
+      if (r.npcName) e.name = r.npcName;
+      for (const w of r.wordsUsed ?? []) if (!e.words.includes(w)) e.words.push(w);
+      for (const l of lines2) e.fresh.push({ role: l.role, content: l.content, timestamp: r.timestamp });
+    }
+    for (const [npcId, e] of byNpc) {
+      const at = rows.findIndex((x) => isRec2(x) && x.npcCharacterId === npcId);
+      const prev = at >= 0 ? rows[at] : { npcCharacterId: npcId, npcCharacterName: "", compressedHistory: null, recentTurns: [], totalTurnCount: 0, lastLocationId: null, lastLocationName: null, wordsUsed: [], newWordsLearned: [], topics: [] };
+      const turns = Array.isArray(prev.recentTurns) ? prev.recentTurns : [];
+      const added = e.fresh.slice(turnOverlap(turns.filter(isRowTurn), e.fresh));
+      const count = prev.totalTurnCount;
+      const total = (typeof count === "number" && Number.isInteger(count) && count >= 0 ? count : 0) + added.length;
+      const words = stringsOf(prev.wordsUsed);
+      for (const w of e.words) if (!words.includes(w)) words.push(w);
+      const row = {
+        ...prev,
+        npcCharacterName: e.name || (typeof prev.npcCharacterName === "string" ? prev.npcCharacterName : ""),
+        recentTurns: [...turns, ...added],
+        totalTurnCount: total,
+        wordsUsed: words
+      };
+      if (at >= 0) rows[at] = row;
+      else rows.push(row);
+    }
+    return rows;
+  }
+  function conversationRecordsOf(rows) {
+    const out = [];
+    if (!Array.isArray(rows)) return out;
+    const seen = /* @__PURE__ */ new Set();
+    for (const row of rows) {
+      if (!isRec2(row) || typeof row.npcCharacterId !== "string" || row.npcCharacterId === "") continue;
+      const npcId = row.npcCharacterId;
+      if (seen.has(npcId)) continue;
+      seen.add(npcId);
+      const turns = (Array.isArray(row.recentTurns) ? row.recentTurns : []).filter(isRowTurn);
+      const npcName = typeof row.npcCharacterName === "string" ? row.npcCharacterName : "";
+      const mine = [];
+      for (const t of turns) {
+        let cur = mine[mine.length - 1];
+        if (!cur || cur.timestamp !== t.timestamp) {
+          cur = { npcId, npcName, timestamp: t.timestamp, turnCount: 0, wordsUsed: [], targetLanguagePercent: 0, fluencyGained: 0, lines: [] };
+          mine.push(cur);
+        }
+        cur.lines.push({ role: t.role, content: t.content });
+        if (t.role === "player") cur.turnCount += 1;
+      }
+      if (mine.length > 0) mine[mine.length - 1].wordsUsed = stringsOf(row.wordsUsed);
+      out.push(...mine);
+    }
+    return out;
+  }
+  function writeGameStateIntoSave(save, gs, opts) {
+    const cs = isRec2(save.currentState) ? clone(save.currentState) : {};
+    const prevPlayer = isRec2(cs.player) ? cs.player : {};
+    if (gs.player) {
+      cs.player = {
+        ...prevPlayer,
+        position: gs.player.position ? clone(gs.player.position) : prevPlayer.position ?? { x: 0, y: 0, z: 0 },
+        rotation: gs.player.rotation ? clone(gs.player.rotation) : prevPlayer.rotation ?? { x: 0, y: 0, z: 0 },
+        gold: gs.player.gold ?? prevPlayer.gold,
+        health: gs.player.health ?? prevPlayer.health,
+        energy: gs.player.energy ?? prevPlayer.energy,
+        inventory: gs.player.inventory ? clone(gs.player.inventory) : prevPlayer.inventory ?? [],
+        cefrLevel: gs.player.cefrLevel ?? prevPlayer.cefrLevel ?? null
+      };
+    }
+    const npcs = isRec2(cs.npcs) ? cs.npcs : { relationships: {}, romance: {}, merchantStates: {} };
+    npcs.relationships = { ...isRec2(npcs.relationships) ? npcs.relationships : {}, ...gs.relationships ? clone(gs.relationships) : {} };
+    cs.npcs = npcs;
+    const ts = gs.timeState ?? (Number.isFinite(gs.gameTime) && gs.gameTime > 0 ? timeStateOf(gs.gameTime, 1, false) : null);
+    if (ts) cs.timeState = { ...isRec2(cs.timeState) ? cs.timeState : {}, ...ts };
+    const ext = isRec2(cs.extensions) ? cs.extensions : {};
+    cs.extensions = ext;
+    writeBlackboardSlots(ext, agentCurie(PLAYER_AGENT_LOCAL_ID, opts.worldId), opts.tick, {
+      [RUNTIME_SLOT]: opts.runtime,
+      [POSITION_FRAME_SLOT]: opts.positionFrame
+    });
+    for (const n of gs.npcs ?? []) {
+      if (!n?.id) continue;
+      const v = n;
+      const slots = {
+        [RUNTIME_SLOT]: opts.runtime,
+        x: num(v.position?.x),
+        y: num(v.position?.y),
+        z: num(v.position?.z),
+        state: str6(v.state),
+        block: str6(v.currentSchedulePhase),
+        activity: str6(v.activity),
+        destination: str6(v.destinationId),
+        runtimeState: str6(v.runtimeState),
+        inside: str6(v.insideBuildingId),
+        indoors: typeof v.isInsideBuilding === "boolean" ? v.isInsideBuilding : null,
+        disposition: num(v.disposition)
+      };
+      writeBlackboardSlots(ext, agentCurie(v.id, opts.worldId), opts.tick, slots);
+    }
+    if (isRec2(gs.weather)) ext[WEATHER_EXTENSION_KEY] = weatherBlockOf(gs.weather);
+    if (isRec2(gs.survival)) {
+      const sb = readSurvivalBlock(gs.survival);
+      if (sb.ok && sb.value) ext[SURVIVAL_EXTENSION_KEY] = survivalBlockOf(sb.value);
+    }
+    if (isRec2(gs.gathering)) {
+      const gb = readGatheringBlock(gs.gathering);
+      if (gb.ok && gb.value) ext[GATHERING_EXTENSION_KEY] = gatheringBlockOf(gb.value);
+    }
+    if (isRec2(gs.traversal)) {
+      const tb = readTraversalBlock(gs.traversal);
+      if (tb.ok && tb.value) ext[TRAVERSAL_EXTENSION_KEY] = traversalBlockOf(tb.value);
+    }
+    if (isRec2(gs.social)) {
+      const so = readSocialBlock(gs.social);
+      if (so.ok && so.value) ext[SOCIAL_EXTENSION_KEY] = socialBlockOf(so.value);
+    }
+    if (isRec2(gs.languageLearning)) {
+      const lb = readLanguageBlock(gs.languageLearning);
+      if (lb.ok && lb.value) ext[LANGUAGE_EXTENSION_KEY] = languageBlockOf(lb.value);
+    }
+    if (isRec2(gs.npcLife)) {
+      const nb = readNpcLifeBlock(gs.npcLife);
+      if (nb.ok && nb.value) ext[NPC_LIFE_EXTENSION_KEY] = npcLifeBlockOf(nb.value);
+    }
+    if (isRec2(gs.progression)) {
+      const pb = readProgressionBlock(gs.progression);
+      if (pb.ok && pb.value) ext[PROGRESSION_EXTENSION_KEY] = progressionBlockOf(pb.value);
+    }
+    if (isRec2(gs.tutorial)) {
+      const tu = readTutorialBlock(gs.tutorial);
+      if (tu.ok && tu.value) ext[TUTORIAL_EXTENSION_KEY] = tutorialBlockOf(tu.value);
+    }
+    for (const b of GENRE_RUN_BLOCKS) {
+      const value = gs[b.gs];
+      if (!isRec2(value)) continue;
+      const r = b.read(value);
+      if (r.ok && r.value) ext[b.key] = b.write(r.value);
+    }
+    if (gs.interiorState !== void 0) cs.interiorState = readInteriorState(gs.interiorState);
+    const records = readConversationRecords(gs.conversations);
+    const stored = Array.isArray(save.conversations) ? clone(save.conversations) : [];
+    return { currentState: cs, conversations: records.ok ? conversationRowsOf(stored, records.value) : stored };
+  }
+  function saveRuntimeOf(save, worldId) {
+    const ext = isRec2(save.currentState) ? save.currentState.extensions : void 0;
+    const board = readBlackboards(ext)[agentCurie(PLAYER_AGENT_LOCAL_ID, worldId)];
+    const r = board?.slots[RUNTIME_SLOT];
+    return typeof r === "string" ? r : null;
+  }
+  function saveBelongsTo(save, worldId, runtime) {
+    return saveRuntimeOf(save, worldId) === runtime;
+  }
+  function runtimeLabel(runtime) {
+    return runtime ?? "legacy";
+  }
+  function positionFrameOf(save, worldId) {
+    const ext = isRec2(save.currentState) ? save.currentState.extensions : void 0;
+    const v = readBlackboards(ext)[agentCurie(PLAYER_AGENT_LOCAL_ID, worldId)]?.slots[POSITION_FRAME_SLOT];
+    return typeof v === "string" ? v : null;
+  }
+  function readGameStateFromSave(save, opts) {
+    const cs = isRec2(save.currentState) ? save.currentState : {};
+    const player = isRec2(cs.player) ? cs.player : {};
+    const quests = isRec2(cs.quests) ? cs.quests : {};
+    const npcs = isRec2(cs.npcs) ? cs.npcs : {};
+    const tsRec = isRec2(cs.timeState) ? cs.timeState : null;
+    const total = totalHoursOf(tsRec);
+    const timeState = tsRec && total !== null ? {
+      gameHour: num(tsRec.gameHour),
+      gameMinute: num(tsRec.gameMinute) ?? 0,
+      dayNumber: num(tsRec.dayNumber),
+      timeScale: num(tsRec.timeScale) ?? 1,
+      isPaused: tsRec.isPaused === true
+    } : void 0;
+    const playerCurie = agentCurie(PLAYER_AGENT_LOCAL_ID, opts.worldId);
+    const ns = worldNamespace(opts.worldId);
+    const villagers = [];
+    const boards = readBlackboards(isRec2(cs.extensions) ? cs.extensions : void 0);
+    for (const key of Object.keys(boards).sort()) {
+      if (key === playerCurie) continue;
+      let id4;
+      try {
+        const k = parseCurie(key);
+        if (k.kind !== "ent" || k.namespace !== ns) continue;
+        id4 = unsanitizeLocalId(k.localId);
+      } catch {
+        continue;
+      }
+      const s = boards[key].slots;
+      if (opts.runtime && s[RUNTIME_SLOT] !== opts.runtime) continue;
+      const x = num(s.x);
+      const z = num(s.z);
+      villagers.push({
+        id: id4,
+        position: { x: x ?? 0, y: num(s.y) ?? 0, z: z ?? 0 },
+        state: str6(s.state) ?? "idle",
+        disposition: num(s.disposition) ?? 0,
+        currentSchedulePhase: str6(s.block) ?? void 0,
+        insideBuildingId: str6(s.inside) ?? void 0,
+        isInsideBuilding: typeof s.indoors === "boolean" ? s.indoors : void 0,
+        activity: str6(s.activity),
+        destinationId: str6(s.destination),
+        runtimeState: str6(s.runtimeState)
+      });
+    }
+    const wb = readWeatherBlock(isRec2(cs.extensions) ? cs.extensions[WEATHER_EXTENSION_KEY] : void 0);
+    const weather = wb.ok ? wb.value : null;
+    const sb = readSurvivalBlock(isRec2(cs.extensions) ? cs.extensions[SURVIVAL_EXTENSION_KEY] : void 0);
+    const survival = sb.ok ? sb.value : null;
+    const gb = readGatheringBlock(isRec2(cs.extensions) ? cs.extensions[GATHERING_EXTENSION_KEY] : void 0);
+    const gathering = gb.ok ? gb.value : null;
+    const tb = readTraversalBlock(isRec2(cs.extensions) ? cs.extensions[TRAVERSAL_EXTENSION_KEY] : void 0);
+    const traversal = tb.ok ? tb.value : null;
+    const sob = readSocialBlock(isRec2(cs.extensions) ? cs.extensions[SOCIAL_EXTENSION_KEY] : void 0);
+    const social = sob.ok ? sob.value : null;
+    const lab = readLanguageBlock(isRec2(cs.extensions) ? cs.extensions[LANGUAGE_EXTENSION_KEY] : void 0);
+    const languageLearning = lab.ok ? lab.value : null;
+    const nb = readNpcLifeBlock(isRec2(cs.extensions) ? cs.extensions[NPC_LIFE_EXTENSION_KEY] : void 0);
+    const npcLife = nb.ok ? nb.value : null;
+    const pgb = readProgressionBlock(isRec2(cs.extensions) ? cs.extensions[PROGRESSION_EXTENSION_KEY] : void 0);
+    const progression = pgb.ok ? pgb.value : null;
+    const tub = readTutorialBlock(isRec2(cs.extensions) ? cs.extensions[TUTORIAL_EXTENSION_KEY] : void 0);
+    const tutorial = tub.ok ? tub.value : null;
+    const genreRuns = {};
+    for (const b of GENRE_RUN_BLOCKS) {
+      const r = b.read(isRec2(cs.extensions) ? cs.extensions[b.key] : void 0);
+      if (r.ok && r.value) genreRuns[b.gs] = r.value;
+    }
+    const conversations = conversationRecordsOf(save.conversations);
+    const interiorState = readInteriorState(cs.interiorState);
+    return {
+      version: GAME_STATE_VERSION,
+      slotIndex: typeof save.slotIndex === "number" ? save.slotIndex : 0,
+      savedAt: save.lastSavedAt ?? "",
+      gameTime: total ?? 0,
+      player: {
+        position: vec3(player.position),
+        rotation: vec3(player.rotation),
+        gold: num(player.gold) ?? 0,
+        health: num(player.health) ?? 0,
+        energy: num(player.energy) ?? 0,
+        inventory: Array.isArray(player.inventory) ? clone(player.inventory) : [],
+        cefrLevel: str6(player.cefrLevel) ?? void 0
+      },
+      npcs: villagers,
+      relationships: isRec2(npcs.relationships) ? clone(npcs.relationships) : {},
+      romance: isRec2(npcs.romance) ? clone(npcs.romance) : {},
+      merchants: [],
+      currentZone: null,
+      questProgress: isRec2(quests.progress) ? clone(quests.progress) : {},
+      ...timeState ? { timeState } : {},
+      ...interiorState ? { interiorState } : {},
+      ...weather ? { weather } : {},
+      ...survival ? { survival } : {},
+      ...gathering ? { gathering } : {},
+      ...traversal ? { traversal } : {},
+      ...social ? { social } : {},
+      ...languageLearning ? { languageLearning } : {},
+      ...npcLife ? { npcLife } : {},
+      ...progression ? { progression } : {},
+      ...tutorial ? { tutorial } : {},
+      ...genreRuns,
+      ...conversations.length > 0 ? { conversations } : {}
+    };
+  }
+  function checkVillageSave(save) {
+    const version = typeof save.version === "number" ? save.version : null;
+    if (version !== SAVE_FILE_VERSION) {
+      return {
+        code: "wrong_version",
+        field: "version",
+        found: version,
+        expected: SAVE_FILE_VERSION,
+        message: version === null ? `the save has no version; a village save is SaveFile version ${SAVE_FILE_VERSION}` : `the save is SaveFile version ${version}; a village save is version ${SAVE_FILE_VERSION} (migrate it first)`
+      };
+    }
+    const cs = isRec2(save.currentState) ? save.currentState : {};
+    const ext = isRec2(cs.extensions) ? cs.extensions : {};
+    const unregistered = Object.keys(ext).filter((k) => !isRegisteredExtension(k)).sort();
+    if (unregistered.length > 0) {
+      return {
+        code: "unregistered_extension",
+        field: "currentState.extensions",
+        keys: unregistered,
+        message: `currentState.extensions carries unregistered key(s) ${unregistered.join(", ")}; register them in extensionRegistry or leave them out`
+      };
+    }
+    const weather = readWeatherBlock(ext[WEATHER_EXTENSION_KEY]);
+    if (!weather.ok) return weatherRefusal("currentState.extensions.weather", weather.keys);
+    const survival = readSurvivalBlock(ext[SURVIVAL_EXTENSION_KEY]);
+    if (!survival.ok) return survivalRefusal("currentState.extensions.survivalNeeds", survival.keys);
+    const gathering = readGatheringBlock(ext[GATHERING_EXTENSION_KEY]);
+    if (!gathering.ok) return gatheringRefusal("currentState.extensions.gathering", gathering.keys);
+    const traversal = readTraversalBlock(ext[TRAVERSAL_EXTENSION_KEY]);
+    if (!traversal.ok) return traversalRefusal("currentState.extensions.traversal", traversal.keys);
+    const social = readSocialBlock(ext[SOCIAL_EXTENSION_KEY]);
+    if (!social.ok) return socialRefusal("currentState.extensions.social", social.keys);
+    const language = readLanguageBlock(ext[LANGUAGE_EXTENSION_KEY]);
+    if (!language.ok) return languageRefusal("currentState.extensions.languageLearning", language.keys);
+    const npcLife = readNpcLifeBlock(ext[NPC_LIFE_EXTENSION_KEY]);
+    if (!npcLife.ok) return npcLifeRefusal("currentState.extensions.npcLife", npcLife.keys);
+    const progression = readProgressionBlock(ext[PROGRESSION_EXTENSION_KEY]);
+    if (!progression.ok) return progressionRefusal("currentState.extensions.progression", progression.keys);
+    const tutorial = readTutorialBlock(ext[TUTORIAL_EXTENSION_KEY]);
+    if (!tutorial.ok) return tutorialRefusal("currentState.extensions.tutorial", tutorial.keys);
+    for (const b of GENRE_RUN_BLOCKS) {
+      const r = b.read(ext[b.key]);
+      if (!r.ok) return genreRunRefusal(b, "stored", r.keys);
+    }
+    return null;
+  }
+  function genreRunRefusal(b, where, keys) {
+    const field = where === "stored" ? `currentState.extensions.${b.key}` : `gameState.${b.gs}`;
+    return {
+      code: b.code,
+      field,
+      keys,
+      message: keys.length === 0 ? `${field} is not an object; the ${b.gs} block is ${b.shape}` : `${field} cannot be read: ${keys.join(", ")}`
+    };
+  }
+  function tutorialRefusal(field, keys) {
+    return {
+      code: "unreadable_tutorial",
+      field,
+      keys,
+      message: keys.length === 0 ? `${field} is not an object; the tutorial block is {completed, skipped, current, endedBySkip}` : `${field} cannot be read: ${keys.join(", ")}`
+    };
+  }
+  function progressionRefusal(field, keys) {
+    return {
+      code: "unreadable_progression",
+      field,
+      keys,
+      message: keys.length === 0 ? `${field} is not an object; the progression block is {gamification, skills}` : `${field} cannot be read: ${keys.join(", ")}`
+    };
+  }
+  function npcLifeRefusal(field, keys) {
+    return {
+      code: "unreadable_npc_life",
+      field,
+      keys,
+      message: keys.length === 0 ? `${field} is not an object; the NPC life block is {routines, locomotion, planner, escorts, posts, movers}` : `${field} cannot be read: ${keys.join(", ")}`
+    };
+  }
+  function languageRefusal(field, keys) {
+    return {
+      code: "unreadable_language",
+      field,
+      keys,
+      message: keys.length === 0 ? `${field} is not an object; the language block is {book, collected, naming, identification}` : `${field} cannot be read: ${keys.join(", ")}`
+    };
+  }
+  function socialRefusal(field, keys) {
+    return {
+      code: "unreadable_social",
+      field,
+      keys,
+      message: keys.length === 0 ? `${field} is not an object; the social block is {relationships, romance, reputation, memory, volition}` : `${field} cannot be read: ${keys.join(", ")}`
+    };
+  }
+  function traversalRefusal(field, keys) {
+    return {
+      code: "unreadable_traversal",
+      field,
+      keys,
+      message: keys.length === 0 ? `${field} is not an object; the traversal block is {planner, vehicles, fastTravel, riding}` : `${field} cannot be read: ${keys.join(", ")}`
+    };
+  }
+  function gatheringRefusal(field, keys) {
+    return {
+      code: "unreadable_gathering",
+      field,
+      keys,
+      message: keys.length === 0 ? `${field} is not an object; the gathering block is {nodes, actions, production, business}` : `${field} cannot be read: ${keys.join(", ")}`
+    };
+  }
+  function survivalRefusal(field, keys) {
+    return {
+      code: "unreadable_survival",
+      field,
+      keys,
+      message: keys.length === 0 ? `${field} is not an object; the survival block is {readings, modifiers}` : `${field} cannot be read: ${keys.join(", ")}`
+    };
+  }
+  function survivalBlockOf(b) {
+    return {
+      readings: { ...b.readings },
+      modifiers: b.modifiers.map((m) => ({ id: m.id, needType: m.needType, rateMultiplier: m.rateMultiplier, remainingMs: m.remainingMs, source: m.source }))
+    };
+  }
+  function weatherRefusal(field, keys) {
+    return {
+      code: "unreadable_weather",
+      field,
+      keys,
+      message: keys.length === 0 ? `${field} is not an object; the weather block is {director, surfaceWetness}` : `${field} cannot be read: ${keys.join(", ")}`
+    };
+  }
+  function writeVillageSave(save, gs, opts) {
+    const saveRefusal = checkVillageSave(save);
+    if (saveRefusal?.field === "version") return { ok: false, refusal: saveRefusal };
+    const gsVersion = typeof gs?.version === "number" ? gs.version : null;
+    if (gsVersion !== GAME_STATE_VERSION) {
+      return {
+        ok: false,
+        refusal: {
+          code: "wrong_version",
+          field: "gameState.version",
+          found: gsVersion,
+          expected: GAME_STATE_VERSION,
+          message: `the game state is version ${gsVersion ?? "none"}; the village mapping writes version ${GAME_STATE_VERSION}`
+        }
+      };
+    }
+    if (saveRefusal) return { ok: false, refusal: saveRefusal };
+    const weather = readWeatherBlock(gs.weather);
+    if (!weather.ok) return { ok: false, refusal: weatherRefusal("gameState.weather", weather.keys) };
+    const survival = readSurvivalBlock(gs.survival);
+    if (!survival.ok) return { ok: false, refusal: survivalRefusal("gameState.survival", survival.keys) };
+    const gathering = readGatheringBlock(gs.gathering);
+    if (!gathering.ok) return { ok: false, refusal: gatheringRefusal("gameState.gathering", gathering.keys) };
+    const traversal = readTraversalBlock(gs.traversal);
+    if (!traversal.ok) return { ok: false, refusal: traversalRefusal("gameState.traversal", traversal.keys) };
+    const social = readSocialBlock(gs.social);
+    if (!social.ok) return { ok: false, refusal: socialRefusal("gameState.social", social.keys) };
+    const language = readLanguageBlock(gs.languageLearning);
+    if (!language.ok) return { ok: false, refusal: languageRefusal("gameState.languageLearning", language.keys) };
+    const npcLife = readNpcLifeBlock(gs.npcLife);
+    if (!npcLife.ok) return { ok: false, refusal: npcLifeRefusal("gameState.npcLife", npcLife.keys) };
+    const progression = readProgressionBlock(gs.progression);
+    if (!progression.ok) return { ok: false, refusal: progressionRefusal("gameState.progression", progression.keys) };
+    const tutorial = readTutorialBlock(gs.tutorial);
+    if (!tutorial.ok) return { ok: false, refusal: tutorialRefusal("gameState.tutorial", tutorial.keys) };
+    for (const b of GENRE_RUN_BLOCKS) {
+      const r = b.read(gs[b.gs]);
+      if (!r.ok) return { ok: false, refusal: genreRunRefusal(b, "game", r.keys) };
+    }
+    const conversations = readConversationRecords(gs.conversations);
+    if (!conversations.ok) {
+      const keys = conversations.keys;
+      return {
+        ok: false,
+        refusal: {
+          code: "unreadable_conversations",
+          field: "gameState.conversations",
+          keys,
+          message: keys.length === 0 ? "gameState.conversations is not a list; it is the conversation records, [{npcId, npcName, timestamp, wordsUsed, lines}]" : `gameState.conversations cannot be read: ${keys.join(", ")}`
+        }
+      };
+    }
+    return { ok: true, value: writeGameStateIntoSave(save, gs, opts) };
+  }
+  function readVillageSave(save, opts) {
+    const refusal3 = checkVillageSave(save);
+    if (refusal3) return { ok: false, refusal: refusal3 };
+    return { ok: true, value: readGameStateFromSave(save, opts) };
+  }
+  function checkSaveOwnership(save, worldId, runtime) {
+    const world2 = typeof save.worldId === "string" ? save.worldId : null;
+    if (world2 !== worldId) {
+      return {
+        code: "wrong_world",
+        field: "worldId",
+        found: world2,
+        expected: worldId,
+        message: world2 === null ? `the save names no world, and this game is world ${worldId}'s: a game does not load another world's save` : `the save is world ${world2}'s, and this game is world ${worldId}'s: a game does not load another world's save`
+      };
+    }
+    if (!saveBelongsTo(save, worldId, runtime)) {
+      const writer = saveRuntimeOf(save, worldId);
+      return {
+        code: "wrong_runtime",
+        field: "runtime",
+        found: writer,
+        expected: runtime,
+        message: `the save is ${runtimeLabel(writer)}'s, not ${runtimeLabel(runtime)}'s, and a runtime does not load another runtime's save (C5-3)`
+      };
+    }
+    return null;
+  }
+  function readRuntimeSave(save, worldId, runtime) {
+    const owner = checkSaveOwnership(save, worldId, runtime);
+    if (owner) return { ok: false, refusal: owner };
+    return readVillageSave(save, runtime === null ? { worldId } : { worldId, runtime });
+  }
+
+  // @insimul/core/src/ui/notifications.ts
+  var KIND_COLOR = {
+    info: "accent",
+    success: "success",
+    warning: "warning",
+    danger: "danger"
+  };
+  var DEFAULT_NOTIFICATION_LIFETIME = 4;
+  var Notifications = class {
+    constructor() {
+      __publicField(this, "items", []);
+      __publicField(this, "nextId", 1);
+    }
+    /** Enqueue a notification. Returns its id (so a caller can `dismiss` it early). */
+    push(text4, kind = "info", lifetime2 = DEFAULT_NOTIFICATION_LIFETIME) {
+      const id4 = this.nextId++;
+      this.items.push({ id: id4, text: text4, kind, remaining: lifetime2, color: KIND_COLOR[kind] });
+      return id4;
+    }
+    /**
+     * Age every notification by `delta` seconds, dropping expired ones. Returns
+     * true if the visible set changed (so a view knows to repaint).
+     */
+    tick(delta) {
+      if (this.items.length === 0) return false;
+      const before = this.items.length;
+      this.items = this.items.filter((item) => {
+        item.remaining -= delta;
+        return item.remaining > 0;
+      });
+      return this.items.length !== before;
+    }
+    /** Dismiss a notification by id early. Returns true if one was removed. */
+    dismiss(id4) {
+      const before = this.items.length;
+      this.items = this.items.filter((item) => item.id !== id4);
+      return this.items.length !== before;
+    }
+    /** Currently visible notifications (oldest first). */
+    visible() {
+      return this.items;
+    }
+    count() {
+      return this.items.length;
+    }
+    clear() {
+      this.items = [];
+    }
+  };
 
   // @insimul/core/src/feature-modules/genre-bundles.ts
   var ALL_MODULES = [
@@ -3387,8 +7087,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       }
     }
   };
-  function gameBundle(id, name, description, defaultModules, moduleConfigs = {}) {
-    return { id, name, description, defaultModules, compatibleModules: compatibleExcluding(defaultModules), moduleConfigs };
+  function gameBundle(id4, name, description, defaultModules, moduleConfigs = {}) {
+    return { id: id4, name, description, defaultModules, compatibleModules: compatibleExcluding(defaultModules), moduleConfigs };
   }
   var ACTION_BUNDLE = gameBundle(
     "action",
@@ -3575,11 +7275,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     { id: "conversation-analytics", verdict: "defined", servedBy: "src/language-learning/adaptation.ts (the conversation difficulty monitor)", catalog: "progression-feature-modules" },
     { id: "onboarding", verdict: "served", servedBy: "src/ui/title-flow.ts and the onboarding flow (P8)", catalog: "onboarding-flow" }
   ]);
-  function featureModuleVerdict(id) {
-    return FEATURE_MODULE_VERDICTS.find((v) => v.id === id);
+  function featureModuleVerdict(id4) {
+    return FEATURE_MODULE_VERDICTS.find((v) => v.id === id4);
   }
-  function featureModuleDefinition(id) {
-    return FEATURE_MODULE_DEFINITIONS.find((d) => d.id === id);
+  function featureModuleDefinition(id4) {
+    return FEATURE_MODULE_DEFINITIONS.find((d) => d.id === id4);
   }
   var FEATURE_MODULE_REFUSALS = Object.freeze(["unimplemented", "port_later", "unknown_module", "duplicate"]);
   function resolveFeatureModules(ids, bundleId = null) {
@@ -3587,28 +7287,28 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     const refused = [];
     const seen = /* @__PURE__ */ new Set();
     for (const raw of ids) {
-      const id = String(raw);
+      const id4 = String(raw);
       if (typeof raw !== "string") {
-        refused.push({ id, code: "unknown_module", reason: `${JSON.stringify(raw)} is not a feature module id` });
+        refused.push({ id: id4, code: "unknown_module", reason: `${JSON.stringify(raw)} is not a feature module id` });
         continue;
       }
-      if (seen.has(id)) {
-        refused.push({ id, code: "duplicate", reason: `'${id}' is listed more than once` });
+      if (seen.has(id4)) {
+        refused.push({ id: id4, code: "duplicate", reason: `'${id4}' is listed more than once` });
         continue;
       }
-      seen.add(id);
+      seen.add(id4);
       const v = featureModuleVerdict(raw);
       if (!v) {
-        refused.push({ id, code: "unknown_module", reason: `'${id}' is not a feature module id` });
+        refused.push({ id: id4, code: "unknown_module", reason: `'${id4}' is not a feature module id` });
       } else if (v.verdict === "port-later") {
-        refused.push({ id, code: "port_later", reason: `'${id}' is approved for after parity (${v.servedBy}); nothing runs it yet` });
+        refused.push({ id: id4, code: "port_later", reason: `'${id4}' is approved for after parity (${v.servedBy}); nothing runs it yet` });
       } else if (v.verdict === "unimplemented") {
-        refused.push({ id, code: "unimplemented", reason: `no repository implements '${id}'; core defines it before any engine shows it (${v.catalog}, core-only)` });
+        refused.push({ id: id4, code: "unimplemented", reason: `no repository implements '${id4}'; core defines it before any engine shows it (${v.catalog}, core-only)` });
       } else {
         enabled.push(v.id);
       }
     }
-    const defs = enabled.map((id) => featureModuleDefinition(id)).filter((d) => d !== void 0);
+    const defs = enabled.map((id4) => featureModuleDefinition(id4)).filter((d) => d !== void 0);
     const bundle = bundleId ? getGenreBundle(bundleId) : void 0;
     const dims = enabled.includes("proficiency") ? bundle?.moduleConfigs.proficiency?.dimensions ?? [] : [];
     return {
@@ -3664,7 +7364,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
   var QUEST_DIFFICULTIES = Object.freeze(["beginner", "intermediate", "advanced"]);
   var ADJUSTMENT_TUNING = Object.freeze({ minWindow: 3, window: 10, highScore: 850, lowScore: 400, lowObjective: 500, highAttemptsTenths: 25 });
-  var roundDiv = (num5, den) => Math.floor((num5 * 2 + den) / (den * 2));
+  var roundDiv = (num6, den) => Math.floor((num6 * 2 + den) / (den * 2));
   function performanceScore(records) {
     const n = records.length;
     if (n === 0) return { score: 500, success: 0, objectives: 0, attempts: 0, time: 500 };
@@ -3682,7 +7382,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     const score = roundDiv(success * 4 + objectives * 3 + attempts * 2 + time, 10);
     return { score, success, objectives, attempts, time };
   }
-  var pct = (permille) => Math.floor((permille + 5) / 10);
+  var pct = (permille2) => Math.floor((permille2 + 5) / 10);
   function adjustDifficulty(records, current, tuning = ADJUSTMENT_TUNING) {
     const win = records.slice(-tuning.window);
     const idx = QUEST_DIFFICULTIES.indexOf(current);
@@ -3856,14 +7556,14 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "conversation-analytics": { file: "src/ui/pause-menu-model.ts", token: "requires: 'conversation-analytics'", how: "gates the Analytics tab; its definition contributes conversation quests" },
     onboarding: { file: "src/ui/title-flow.ts", token: "onboarding", how: "served: the title flow starts the onboarding (P8)" }
   });
-  function featureModuleRefusal(id) {
-    const v = featureModuleVerdict(id);
+  function featureModuleRefusal(id4) {
+    const v = featureModuleVerdict(id4);
     if (!v) return null;
     if (v.verdict === "port-later") {
-      return { code: "port_later", reason: `'${id}' is approved for after parity (${v.servedBy}); nothing runs it yet` };
+      return { code: "port_later", reason: `'${id4}' is approved for after parity (${v.servedBy}); nothing runs it yet` };
     }
     if (v.verdict === "unimplemented") {
-      return { code: "unimplemented", reason: `no repository implements '${id}' (${v.catalog}, core-only); nothing runs it` };
+      return { code: "unimplemented", reason: `no repository implements '${id4}' (${v.catalog}, core-only); nothing runs it` };
     }
     return null;
   }
@@ -3973,40 +7673,40 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       if (!this.byId.has(entry.id)) this.order.push(entry.id);
       this.byId.set(entry.id, { ...entry });
     }
-    get(id) {
-      const e = this.byId.get(id);
+    get(id4) {
+      const e = this.byId.get(id4);
       return e ? { ...e } : void 0;
     }
     /**
      * Accept an AVAILABLE quest (available -> active). No-op otherwise. With `autoTrackNew` the
      * quest is then tracked by {@link track}'s rule (not when the tracker is full).
      */
-    accept(id) {
-      const e = this.byId.get(id);
+    accept(id4) {
+      const e = this.byId.get(id4);
       if (!e || e.status !== "available") return false;
       e.status = "active";
-      if (this.autoTrackNew) this.track(id);
+      if (this.autoTrackNew) this.track(id4);
       return true;
     }
     /** Decline an AVAILABLE quest (offer dismissed) — removes it entirely. */
-    decline(id) {
-      const e = this.byId.get(id);
+    decline(id4) {
+      const e = this.byId.get(id4);
       if (!e || e.status !== "available") return false;
-      this.remove(id);
+      this.remove(id4);
       return true;
     }
     /** Complete an ACTIVE quest (active -> completed) and auto-untrack it. */
-    complete(id) {
-      const e = this.byId.get(id);
+    complete(id4) {
+      const e = this.byId.get(id4);
       if (!e || e.status !== "active") return false;
       e.status = "completed";
-      this.untrack(id);
+      this.untrack(id4);
       return true;
     }
-    remove(id) {
-      this.byId.delete(id);
-      this.order = this.order.filter((x) => x !== id);
-      this.untrack(id);
+    remove(id4) {
+      this.byId.delete(id4);
+      this.order = this.order.filter((x) => x !== id4);
+      this.untrack(id4);
     }
     // ── Filtering / counts ──────────────────────────────────────────────────
     setFilter(filter) {
@@ -4017,12 +7717,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     /** Quests matching the current filter, in stable insertion order. */
     filtered() {
-      return this.order.map((id) => this.byId.get(id)).filter((e) => !!e && (this.filter === "all" || e.status === this.filter)).map((e) => ({ ...e }));
+      return this.order.map((id4) => this.byId.get(id4)).filter((e) => !!e && (this.filter === "all" || e.status === this.filter)).map((e) => ({ ...e }));
     }
     counts() {
       const c = { all: 0, active: 0, completed: 0, available: 0 };
-      for (const id of this.order) {
-        const e = this.byId.get(id);
+      for (const id4 of this.order) {
+        const e = this.byId.get(id4);
         if (!e) continue;
         c.all++;
         c[e.status]++;
@@ -4034,25 +7734,25 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
      * Track an ACTIVE quest for the HUD. Fails if the quest is not active, already
      * tracked, or the tracked set is full (maxTracked). Returns true on a change.
      */
-    track(id) {
-      const e = this.byId.get(id);
+    track(id4) {
+      const e = this.byId.get(id4);
       if (!e || e.status !== "active") return false;
-      if (this.tracked.includes(id)) return false;
+      if (this.tracked.includes(id4)) return false;
       if (this.tracked.length >= this.maxTracked) return false;
-      this.tracked.push(id);
+      this.tracked.push(id4);
       return true;
     }
-    untrack(id) {
+    untrack(id4) {
       const before = this.tracked.length;
-      this.tracked = this.tracked.filter((x) => x !== id);
+      this.tracked = this.tracked.filter((x) => x !== id4);
       return this.tracked.length !== before;
     }
-    isTracked(id) {
-      return this.tracked.includes(id);
+    isTracked(id4) {
+      return this.tracked.includes(id4);
     }
     /** The tracker HUD view: tracked quests that are still active, in track order. */
     trackedQuests() {
-      return this.tracked.map((id) => this.byId.get(id)).filter((e) => !!e && e.status === "active").map((e) => ({ ...e }));
+      return this.tracked.map((id4) => this.byId.get(id4)).filter((e) => !!e && e.status === "active").map((e) => ({ ...e }));
     }
   };
 
@@ -6799,77 +10499,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
   };
 
-  // @insimul/core/src/time/clock.ts
-  var BANDS = [
-    { band: "dawn", from: 5, to: 7 },
-    { band: "morning", from: 7, to: 10 },
-    { band: "midday", from: 10, to: 14 },
-    { band: "afternoon", from: 14, to: 17 },
-    { band: "evening", from: 17, to: 20 },
-    { band: "night", from: 20, to: 5 }
-  ];
-  var TIME_OF_DAY_BANDS = Object.freeze(BANDS.map((b) => Object.freeze(b)));
-  var DAYTIME = Object.freeze({ from: 6, to: 18 });
-  var CLOCK_DEFAULTS = Object.freeze({
-    /** Real milliseconds per game hour: 1 real minute is 1 game hour, 24 real minutes a day. */
-    msPerGameHour: 6e4,
-    /** `setMsPerGameHour` never goes below this. */
-    msPerGameHourMin: 1e3,
-    /** The multiplier on the base rate. */
-    timeScale: 1,
-    /** `setTimeScale` clamps to this range. */
-    timeScaleMin: 0.25,
-    timeScaleMax: 16,
-    startHour: 8,
-    startMinute: 0,
-    /** Days are 1-based. */
-    startDay: 1
-  });
-  function wrapHour(hour) {
-    if (!Number.isFinite(hour)) return hour;
-    const h = hour % 24;
-    return h < 0 ? h + 24 : h;
-  }
-  function inBand(h, from, to) {
-    return from <= to ? h >= from && h < to : h >= from || h < to;
-  }
-  function timeOfDayOf(hour) {
-    const h = wrapHour(hour);
-    if (Number.isFinite(h)) {
-      for (const b of TIME_OF_DAY_BANDS) if (inBand(h, b.from, b.to)) return b.band;
-    }
-    return "night";
-  }
-  function isDaytimeAt(hour) {
-    const h = wrapHour(hour);
-    return Number.isFinite(h) && inBand(h, DAYTIME.from, DAYTIME.to);
-  }
-  function realSecondsPerGameHour(msPerGameHour, timeScale) {
-    return msPerGameHour / (timeScale * 1e3);
-  }
-  function clampTimeScale(scale) {
-    return Math.max(CLOCK_DEFAULTS.timeScaleMin, Math.min(CLOCK_DEFAULTS.timeScaleMax, scale));
-  }
-  function clampMsPerGameHour(ms) {
-    return Math.max(CLOCK_DEFAULTS.msPerGameHourMin, ms);
-  }
-  function carryClockTime(hour, minute, day) {
-    let h = hour;
-    let m = minute;
-    let d = day;
-    if (Number.isFinite(m) && m >= 60) {
-      const carry = Math.floor(m / 60);
-      m -= carry * 60;
-      h += carry;
-    }
-    if (Number.isFinite(h) && h >= 24) {
-      const carry = Math.floor(h / 24);
-      h -= carry * 24;
-      d += carry;
-    }
-    return { hour: h, minute: m, day: d };
-  }
-
   // @insimul/core/src/game-engine/logic/GameTimeManager.ts
   var getTimeOfDay = timeOfDayOf;
   var GameTimeManager = class {
@@ -7046,60 +10675,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
   };
 
-  // @insimul/core/src/identity/kinp.ts
-  var KINP_KINDS = ["ent", "claim", "asset", "world", "agent", "src"];
-  var INSIMUL_NAMESPACE = "insimul";
-  var LOCAL_ID_PASSTHROUGH = /[a-z0-9._-]/;
-  var LOCAL_ID_HEAD = /[a-z0-9]/;
-  var LOCAL_ID_GUARD = "x-";
-  var utf8Encoder = new TextEncoder();
-  var utf8Decoder = new TextDecoder();
-  function percentEncodeChar(ch) {
-    let out = "";
-    for (const byte of utf8Encoder.encode(ch)) {
-      out += `%${byte.toString(16).toUpperCase().padStart(2, "0")}`;
-    }
-    return out;
-  }
-  function encodeLocalIdBody(raw) {
-    let out = "";
-    for (const ch of raw) {
-      out += LOCAL_ID_PASSTHROUGH.test(ch) ? ch : percentEncodeChar(ch);
-    }
-    return out;
-  }
-  function sanitizeLocalId(raw) {
-    if (!raw) throw new Error("sanitizeLocalId: empty id");
-    const body2 = encodeLocalIdBody(raw);
-    if (LOCAL_ID_HEAD.test(body2[0]) && !body2.startsWith(LOCAL_ID_GUARD)) return body2;
-    const [first, ...rest] = Array.from(raw);
-    return LOCAL_ID_GUARD + percentEncodeChar(first) + encodeLocalIdBody(rest.join(""));
-  }
-  function formatCurie(id) {
-    return `${id.namespace}:${id.kind}:${id.localId}`;
-  }
-  function parseCurie(curie) {
-    const parts = curie.split(":");
-    if (parts.length < 3) throw new Error(`parseCurie: not a CURIE: "${curie}"`);
-    const localId = parts[parts.length - 1];
-    const kind = parts[parts.length - 2];
-    const namespace = parts.slice(0, -2).join(":");
-    if (!KINP_KINDS.includes(kind)) throw new Error(`parseCurie: unknown kind "${kind}" in "${curie}"`);
-    if (!namespace) throw new Error(`parseCurie: empty namespace in "${curie}"`);
-    if (!localId) throw new Error(`parseCurie: empty local id in "${curie}"`);
-    return { kind, namespace, localId };
-  }
-  function prologAtom(value) {
-    if (/^[a-z][a-zA-Z0-9_]*$/.test(value)) return value;
-    return `'${value.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
-  }
-  function formatIdTerm(id) {
-    return `id(${id.kind}, ${prologAtom(id.namespace)}, ${prologAtom(id.localId)})`;
-  }
-  function provisionalEntityId(localId, ns = INSIMUL_NAMESPACE) {
-    return { kind: "ent", namespace: `${ns}:local`, localId: sanitizeLocalId(localId) };
-  }
-
   // @insimul/core/src/weather/weather-facts.ts
   function emptyWeatherDelta() {
     return { retract: [], assert: [] };
@@ -7126,17 +10701,17 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       `weather_harsh_above(${Math.trunc(climate.tuning.harshAbove)}).`
     ];
     for (const season of climate.seasons) {
-      const id = prologAtom(season.id);
-      facts.push(`season_order(${id}, ${Math.trunc(season.index)}).`);
-      facts.push(`season_length(${id}, ${Math.trunc(season.length)}).`);
-      facts.push(`season_start(${id}, ${Math.trunc(season.start)}).`);
+      const id4 = prologAtom(season.id);
+      facts.push(`season_order(${id4}, ${Math.trunc(season.index)}).`);
+      facts.push(`season_length(${id4}, ${Math.trunc(season.length)}).`);
+      facts.push(`season_start(${id4}, ${Math.trunc(season.start)}).`);
     }
     for (const condition of climate.conditions) {
-      const id = prologAtom(condition.id);
-      facts.push(`weather_kind(${id}).`);
-      facts.push(`weather_severity(${id}, ${Math.trunc(condition.severity)}).`);
+      const id4 = prologAtom(condition.id);
+      facts.push(`weather_kind(${id4}).`);
+      facts.push(`weather_severity(${id4}, ${Math.trunc(condition.severity)}).`);
       for (const action of condition.bars) {
-        facts.push(`weather_bars(${id}, ${prologAtom(action)}).`);
+        facts.push(`weather_bars(${id4}, ${prologAtom(action)}).`);
       }
     }
     for (const season of climate.seasons) {
@@ -7284,12 +10859,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (season === null) return -1;
     return dayOfYear(climate, day) - season.start;
   }
-  function conditionOf(climate, id) {
-    if (id === null) return void 0;
-    return climate.conditions.find((c) => c.id === id);
+  function conditionOf(climate, id4) {
+    if (id4 === null) return void 0;
+    return climate.conditions.find((c) => c.id === id4);
   }
-  function isHarsh(climate, id) {
-    const condition = conditionOf(climate, id);
+  function isHarsh(climate, id4) {
+    const condition = conditionOf(climate, id4);
     return condition !== void 0 && condition.severity > climate.tuning.harshAbove;
   }
   function possibleConditions(climate, seasonId) {
@@ -7589,7 +11164,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const day = await one(engine, "weather_day(D)", "D");
       if (day === null) return null;
       return {
-        day: int(day) ?? 0,
+        day: int3(day) ?? 0,
         season: text(await one(engine, "season(S)", "S")),
         condition: text(await one(engine, "weather(C)", "C"))
       };
@@ -7655,7 +11230,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         this.started = false;
         return;
       }
-      const day = int(state.day) ?? 0;
+      const day = int3(state.day) ?? 0;
       this.current = {
         day,
         // A season the calendar no longer has — the creator renamed it, or a save
@@ -7684,7 +11259,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (typeof value === "number") return String(value);
     return null;
   }
-  function int(value) {
+  function int3(value) {
     if (typeof value === "number") return Number.isFinite(value) ? Math.trunc(value) : null;
     if (typeof value === "string") {
       const parsed = Number(value);
@@ -8310,10 +11885,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   var MOVEMENT_SOLID_KINDS = Object.freeze(["building", "prop"]);
   var BUILDING_STOREY_M = 4;
   var isNum = (v) => typeof v === "number" && Number.isFinite(v);
-  var isObj = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
-  var isVec = (v) => isObj(v) && isNum(v.x) && isNum(v.y) && isNum(v.z);
+  var isObj12 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var isVec = (v) => isObj12(v) && isNum(v.x) && isNum(v.y) && isNum(v.z);
   function buildingSolidOf(b) {
-    if (!isObj(b) || typeof b.id !== "string" || !isVec(b.position) || !isNum(b.rotation)) return null;
+    if (!isObj12(b) || typeof b.id !== "string" || !isVec(b.position) || !isNum(b.rotation)) return null;
     const w = b.spec?.width;
     const d = b.spec?.depth;
     if (!isNum(w) || !isNum(d) || w <= 0 || d <= 0) return null;
@@ -8329,7 +11904,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     });
   }
   function isMovementSolid(s) {
-    return isObj(s) && typeof s.id === "string" && isVec(s.at) && isNum(s.rotation) && isNum(s.halfWidthM) && s.halfWidthM > 0 && isNum(s.halfDepthM) && s.halfDepthM > 0 && isNum(s.heightM) && s.heightM > 0 && (s.kind === void 0 || MOVEMENT_SOLID_KINDS.includes(s.kind));
+    return isObj12(s) && typeof s.id === "string" && isVec(s.at) && isNum(s.rotation) && isNum(s.halfWidthM) && s.halfWidthM > 0 && isNum(s.halfDepthM) && s.halfDepthM > 0 && isNum(s.heightM) && s.heightM > 0 && (s.kind === void 0 || MOVEMENT_SOLID_KINDS.includes(s.kind));
   }
   function lensHides(s) {
     return s.kind !== "prop";
@@ -8472,7 +12047,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function playerMove(input) {
     const p = CAMERA_MODE_PARAMETERS[input.mode];
     const m = input.move;
-    if (!isObj(m) || !isNum(m.forward) || !isNum(m.right)) return { error: "invalid-move" };
+    if (!isObj12(m) || !isNum(m.forward) || !isNum(m.right)) return { error: "invalid-move" };
     if (!isNum(input.walkMps) || input.walkMps <= 0) return { error: "invalid-walk" };
     const yaw = viewYawOf(input.mode, input.viewYawDeg);
     if (p.movement.frame === "view" && yaw === null) return { error: "missing-view-yaw" };
@@ -8779,15 +12354,15 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   });
   var GROUND_SURFACE_KIND_FALLBACK = "terrain.texture.path";
   var GROUND_TIERS = Object.freeze(["road", "closed", "open"]);
-  var isObj2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
-  var finite = (v) => typeof v === "number" && Number.isFinite(v);
-  var str = (v) => typeof v === "string" && v.length > 0 ? v : null;
+  var isObj13 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var finite2 = (v) => typeof v === "number" && Number.isFinite(v);
+  var str7 = (v) => typeof v === "string" && v.length > 0 ? v : null;
   var list = (o, key) => {
-    const v = isObj2(o) ? o[key] : void 0;
+    const v = isObj13(o) ? o[key] : void 0;
     return Array.isArray(v) ? v : [];
   };
   function pointOf(at) {
-    if (!isObj2(at) || !finite(at.x) || !finite(at.z)) return null;
+    if (!isObj13(at) || !finite2(at.x) || !finite2(at.z)) return null;
     return { x: at.x, z: at.z };
   }
   function pointsOf(v) {
@@ -8813,24 +12388,24 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
   function shapesOf(world2) {
     const out = [];
-    const entities = isObj2(world2) ? world2.entities : void 0;
-    const geography = isObj2(world2) ? world2.geography : void 0;
+    const entities = isObj13(world2) ? world2.entities : void 0;
+    const geography = isObj13(world2) ? world2.geography : void 0;
     for (const r of list(entities, "roads")) {
-      if (!isObj2(r)) continue;
+      if (!isObj13(r)) continue;
       const points3 = pointsOf(r.waypoints);
-      if (points3 === null || points3.length < 2 || !finite(r.width) || !(r.width > 0)) continue;
-      const id = str(r.id) ?? `road.${str(r.fromId) ?? "?"}.${str(r.toId) ?? "?"}`;
-      out.push({ tier: "road", id, surface: str(r.archetype) ?? ROAD_SURFACE_DEFAULT, points: points3, width: r.width });
+      if (points3 === null || points3.length < 2 || !finite2(r.width) || !(r.width > 0)) continue;
+      const id4 = str7(r.id) ?? `road.${str7(r.fromId) ?? "?"}.${str7(r.toId) ?? "?"}`;
+      out.push({ tier: "road", id: id4, surface: str7(r.archetype) ?? ROAD_SURFACE_DEFAULT, points: points3, width: r.width });
     }
     for (const s of list(geography, "groundSurfaces")) {
-      if (!isObj2(s)) continue;
+      if (!isObj13(s)) continue;
       const points3 = pointsOf(s.points);
       const closed = s.closed === true;
       if (points3 === null || points3.length < 2) continue;
-      if (!closed && (!finite(s.width) || !(s.width > 0))) continue;
-      const kind = str(s.kind) ?? "";
-      const surface = str(s.archetype) ?? (Object.prototype.hasOwnProperty.call(GROUND_SURFACE_KIND_DEFAULTS, kind) ? GROUND_SURFACE_KIND_DEFAULTS[kind] : GROUND_SURFACE_KIND_FALLBACK);
-      out.push({ tier: closed ? "closed" : "open", id: str(s.id) ?? "", surface, points: points3, width: closed ? 0 : s.width });
+      if (!closed && (!finite2(s.width) || !(s.width > 0))) continue;
+      const kind = str7(s.kind) ?? "";
+      const surface = str7(s.archetype) ?? (Object.prototype.hasOwnProperty.call(GROUND_SURFACE_KIND_DEFAULTS, kind) ? GROUND_SURFACE_KIND_DEFAULTS[kind] : GROUND_SURFACE_KIND_FALLBACK);
+      out.push({ tier: closed ? "closed" : "open", id: str7(s.id) ?? "", surface, points: points3, width: closed ? 0 : s.width });
     }
     return out;
   }
@@ -8861,16 +12436,16 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function placeAt(world2, at) {
     const p = pointOf(at);
     if (p === null) return null;
-    const geography = isObj2(world2) ? world2.geography : void 0;
+    const geography = isObj13(world2) ? world2.geography : void 0;
     let best = null;
     for (const s of list(geography, "settlements")) {
-      if (!isObj2(s)) continue;
+      if (!isObj13(s)) continue;
       const c = pointOf(s.position);
-      if (c === null || !finite(s.radius) || !(s.radius > 0)) continue;
+      if (c === null || !finite2(s.radius) || !(s.radius > 0)) continue;
       const d = Math.hypot(p.x - c.x, p.z - c.z);
       if (!(d <= s.radius)) continue;
-      const id = str(s.id) ?? "";
-      const cand = { d, id, name: str(s.name) ?? id };
+      const id4 = str7(s.id) ?? "";
+      const cand = { d, id: id4, name: str7(s.name) ?? id4 };
       if (best === null || nearer(cand, best)) best = cand;
     }
     return best === null ? Object.freeze({ place: "wilderness", settlementId: null, settlementName: null }) : Object.freeze({ place: "settlement", settlementId: best.id, settlementName: best.name });
@@ -8878,400 +12453,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function footstepAt(world2, at, gait) {
     const ground = groundSurfaceAt(world2, at);
     return footstepCue({ surface: ground === null ? null : ground.surface, gait });
-  }
-
-  // @insimul/core/src/survival/needs.ts
-  var SURVIVAL_NEED_IDS = Object.freeze(["hunger", "thirst", "temperature", "sleep"]);
-  var DEFAULT_SURVIVAL_NEEDS = Object.freeze([
-    { id: "hunger", name: "Hunger", maxValue: 100, startValue: 80, decayRate: 0.15, warningThreshold: 30, criticalThreshold: 15, damageRate: 2 },
-    { id: "thirst", name: "Thirst", maxValue: 100, startValue: 90, decayRate: 0.25, warningThreshold: 30, criticalThreshold: 15, damageRate: 3 },
-    { id: "temperature", name: "Temperature", maxValue: 100, startValue: 50, decayRate: 0, warningThreshold: 20, criticalThreshold: 10, damageRate: 1.5 },
-    { id: "sleep", name: "Rest", maxValue: 100, startValue: 100, decayRate: 0.08, warningThreshold: 25, criticalThreshold: 10, damageRate: 0.5 }
-  ]);
-  var DEFAULT_RESTORE_ACTIONS = Object.freeze({
-    eat: { need: "hunger", amount: 30 },
-    drink: { need: "thirst", amount: 25 },
-    sleep: { need: "sleep", amount: 50 }
-  });
-  var DEFAULT_SURVIVAL_TUNING = Object.freeze({
-    needs: DEFAULT_SURVIVAL_NEEDS.map((n) => ({ ...n })),
-    tickMs: 1e3,
-    maxTicksPerAdvance: 86400,
-    damageEnabled: true,
-    globalDamageMultiplier: 1,
-    temperatureEnvironmentDriven: false,
-    comfortMin: 20,
-    comfortMax: 80,
-    criticalAtBothExtremes: true,
-    temperatureDriftPerSecond: 10,
-    satisfiedFraction: 0.9,
-    hudFlashMs: 1500,
-    restoreActions: { ...DEFAULT_RESTORE_ACTIONS },
-    modifierPresets: []
-  });
-  var NEUTRAL_ENVIRONMENT_TEMPERATURE = 50;
-  var isObj3 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
-  var fin = (v) => typeof v === "number" && Number.isFinite(v);
-  var numOr = (v, d) => fin(v) ? v : d;
-  var boolOr = (v, d) => typeof v === "boolean" ? v : d;
-  var r4 = (v) => roundDeterministic(v);
-  var clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-  function isSurvivalNeedId(v) {
-    return typeof v === "string" && SURVIVAL_NEED_IDS.includes(v);
-  }
-  function needConfigFrom(row, id) {
-    const d = DEFAULT_SURVIVAL_NEEDS.find((n) => n.id === id);
-    const maxValue = fin(row.maxValue) && row.maxValue > 0 ? row.maxValue : d.maxValue;
-    return {
-      id,
-      name: typeof row.name === "string" && row.name !== "" ? row.name : d.name,
-      maxValue,
-      startValue: clamp(numOr(row.startValue, Math.min(d.startValue, maxValue)), 0, maxValue),
-      decayRate: numOr(row.decayRate, d.decayRate),
-      warningThreshold: numOr(row.warningThreshold, d.warningThreshold),
-      criticalThreshold: numOr(row.criticalThreshold, d.criticalThreshold),
-      damageRate: numOr(row.damageRate, d.damageRate)
-    };
-  }
-  function survivalTuningFromIR(ir, overrides) {
-    const d = DEFAULT_SURVIVAL_TUNING;
-    const src = isObj3(ir) ? ir : {};
-    let needs;
-    if (Array.isArray(src.needs)) {
-      needs = [];
-      for (const row of src.needs) {
-        if (!isObj3(row) || !isSurvivalNeedId(row.id)) continue;
-        if (needs.some((n) => n.id === row.id)) continue;
-        needs.push(needConfigFrom(row, row.id));
-      }
-    } else {
-      needs = d.needs.map((n) => ({ ...n }));
-    }
-    const dmg = isObj3(src.damageConfig) ? src.damageConfig : {};
-    const temp = isObj3(src.temperatureConfig) ? src.temperatureConfig : {};
-    const comfort = isObj3(temp.comfortZone) ? temp.comfortZone : {};
-    const presets = [];
-    for (const p of Array.isArray(src.modifierPresets) ? src.modifierPresets : []) {
-      if (!isObj3(p) || typeof p.id !== "string" || p.id === "" || presets.some((x) => x.id === p.id)) continue;
-      presets.push({
-        id: p.id,
-        needType: typeof p.needType === "string" ? p.needType : "",
-        rateMultiplier: numOr(p.rateMultiplier, 1),
-        duration: numOr(p.duration, 0),
-        source: typeof p.source === "string" ? p.source : ""
-      });
-    }
-    const t = {
-      needs,
-      tickMs: d.tickMs,
-      maxTicksPerAdvance: d.maxTicksPerAdvance,
-      damageEnabled: boolOr(dmg.enabled, d.damageEnabled),
-      globalDamageMultiplier: numOr(dmg.globalDamageMultiplier, d.globalDamageMultiplier),
-      temperatureEnvironmentDriven: boolOr(temp.environmentDriven, d.temperatureEnvironmentDriven),
-      comfortMin: numOr(comfort.min, d.comfortMin),
-      comfortMax: numOr(comfort.max, d.comfortMax),
-      criticalAtBothExtremes: boolOr(temp.criticalAtBothExtremes, d.criticalAtBothExtremes),
-      temperatureDriftPerSecond: d.temperatureDriftPerSecond,
-      satisfiedFraction: d.satisfiedFraction,
-      hudFlashMs: d.hudFlashMs,
-      restoreActions: { ...d.restoreActions },
-      modifierPresets: presets
-    };
-    const o = isObj3(overrides) ? overrides : {};
-    for (const key of ["tickMs", "maxTicksPerAdvance", "globalDamageMultiplier", "comfortMin", "comfortMax", "temperatureDriftPerSecond", "satisfiedFraction", "hudFlashMs"]) {
-      if (fin(o[key])) t[key] = o[key];
-    }
-    for (const key of ["damageEnabled", "temperatureEnvironmentDriven", "criticalAtBothExtremes"]) {
-      if (typeof o[key] === "boolean") t[key] = o[key];
-    }
-    t.tickMs = Math.max(1, Math.floor(t.tickMs));
-    t.maxTicksPerAdvance = Math.max(1, Math.floor(t.maxTicksPerAdvance));
-    return t;
-  }
-  var configOf = (t, id) => t.needs.find((n) => n.id === id);
-  function needBand(config, value, tuning) {
-    const both = config.id === "temperature" && tuning.criticalAtBothExtremes;
-    if (value <= config.criticalThreshold || both && value >= config.maxValue - config.criticalThreshold) return "critical";
-    if (value <= config.warningThreshold || both && value >= config.maxValue - config.warningThreshold) return "warning";
-    return "ok";
-  }
-  function initialSurvival(tuning, at) {
-    return {
-      needs: tuning.needs.map((c) => {
-        const value = r4(clamp(c.startValue, 0, c.maxValue));
-        return { id: c.id, value, max: c.maxValue, band: needBand(c, value, tuning) };
-      }),
-      modifiers: [],
-      environmentTemperature: NEUTRAL_ENVIRONMENT_TEMPERATURE,
-      lastTickAt: at,
-      enabled: true,
-      damageOwed: 0
-    };
-  }
-  function cloneState(s) {
-    return { ...s, needs: s.needs.map((n) => ({ ...n })), modifiers: s.modifiers.map((m) => ({ ...m })) };
-  }
-  function bandMessage(config, band, value) {
-    if (band === "ok") return `${config.name} restored`;
-    const high = config.id === "temperature" && value > config.maxValue / 2;
-    if (band === "critical") return `${config.name} critically ${high ? "high" : "low"}!`;
-    return `${config.name} is getting ${high ? "high" : "low"}`;
-  }
-  function rebanded(config, reading, tuning, at, events) {
-    const band = needBand(config, reading.value, tuning);
-    if (band === reading.band) return;
-    reading.band = band;
-    const type = band === "critical" ? "need_critical" : band === "warning" ? "need_warning" : "need_restored";
-    events.push({ type, needType: config.id, value: reading.value, message: bandMessage(config, band, reading.value), at });
-  }
-  function temperatureTarget(environment, config, tuning) {
-    const mid = config.maxValue / 2;
-    const env = clamp(environment, 0, 100);
-    if (env < tuning.comfortMin) return r4(tuning.comfortMin > 0 ? mid * (env / tuning.comfortMin) : 0);
-    if (env > tuning.comfortMax) {
-      const span = 100 - tuning.comfortMax;
-      return r4(span > 0 ? mid + (config.maxValue - mid) * ((env - tuning.comfortMax) / span) : config.maxValue);
-    }
-    return r4(mid);
-  }
-  function isDeprived(config, reading, tuning) {
-    if (config.id === "temperature" && (tuning.temperatureEnvironmentDriven || tuning.criticalAtBothExtremes)) return reading.band === "critical";
-    return reading.value <= 0;
-  }
-  function advanceSurvival(state, tuning, now) {
-    const s = cloneState(state);
-    const events = [];
-    const expired = [];
-    const due = fin(now) && now > s.lastTickAt ? Math.floor((now - s.lastTickAt) / tuning.tickMs) : 0;
-    const run = s.enabled ? Math.min(due, tuning.maxTicksPerAdvance) : 0;
-    const seconds = tuning.tickMs / 1e3;
-    const damageEvents = /* @__PURE__ */ new Map();
-    for (let i = 1; i <= run; i++) {
-      const at = s.lastTickAt + i * tuning.tickMs;
-      s.modifiers = s.modifiers.filter((m) => {
-        const gone = m.duration > 0 && at - m.startedAt >= m.duration;
-        if (gone) expired.push(m.id);
-        return !gone;
-      });
-      for (const reading of s.needs) {
-        const config = configOf(tuning, reading.id);
-        if (!config) continue;
-        if (config.id === "temperature" && tuning.temperatureEnvironmentDriven) {
-          const target = temperatureTarget(s.environmentTemperature, config, tuning);
-          const step = tuning.temperatureDriftPerSecond * seconds;
-          const gap = target - reading.value;
-          reading.value = r4(Math.abs(gap) <= step ? target : reading.value + Math.sign(gap) * step);
-        } else {
-          let rate = config.decayRate;
-          for (const m of s.modifiers) if (m.needType === config.id) rate *= m.rateMultiplier;
-          if (rate > 0) reading.value = r4(Math.max(0, reading.value - rate * seconds));
-        }
-        rebanded(config, reading, tuning, at, events);
-        if (tuning.damageEnabled && config.damageRate > 0 && isDeprived(config, reading, tuning)) {
-          const damage = r4(config.damageRate * tuning.globalDamageMultiplier * seconds);
-          if (damage > 0) {
-            s.damageOwed = r4(s.damageOwed + damage);
-            const seen = damageEvents.get(config.id);
-            if (seen) seen.value = r4(seen.value + damage);
-            else {
-              const e = {
-                type: "damage_from_need",
-                needType: config.id,
-                value: damage,
-                message: `Taking damage from ${config.name.toLowerCase()} deprivation!`,
-                at
-              };
-              damageEvents.set(config.id, e);
-              events.push(e);
-            }
-          }
-        }
-      }
-    }
-    s.lastTickAt += due * tuning.tickMs;
-    const hurt = Math.floor(s.damageOwed);
-    s.damageOwed = r4(s.damageOwed - hurt);
-    return { state: s, ticks: run, skipped: due - run, events, expired, hurt };
-  }
-  function setSurvivalEnabled(state, enabled) {
-    return { ...cloneState(state), enabled };
-  }
-  function restoreNeed(state, tuning, need, amount, at) {
-    const config = configOf(tuning, need);
-    const idx = state.needs.findIndex((n) => n.id === need);
-    if (!config || idx < 0) return { ok: false, reason: "need_not_tracked", state: cloneState(state) };
-    if (!fin(amount)) return { ok: false, reason: "bad_amount", state: cloneState(state) };
-    const s = cloneState(state);
-    const reading = s.needs[idx];
-    const events = [];
-    reading.value = r4(clamp(reading.value + amount, 0, reading.max));
-    rebanded(config, reading, tuning, at, events);
-    if (amount > 0 && reading.value >= reading.max * tuning.satisfiedFraction) {
-      events.push({ type: "need_satisfied", needType: config.id, value: reading.value, message: `${config.name} satisfied`, at });
-    }
-    return { ok: true, state: s, events };
-  }
-  function performSurvivalAction(state, tuning, action, at, amount) {
-    const row = Object.prototype.hasOwnProperty.call(tuning.restoreActions, action) ? tuning.restoreActions[action] : void 0;
-    if (!row) return { ok: false, reason: "unknown_action", state: cloneState(state) };
-    return restoreNeed(state, tuning, row.need, amount ?? row.amount, at);
-  }
-  function consumeForNeeds(state, tuning, effects, at) {
-    let s = cloneState(state);
-    const applied = [];
-    const events = [];
-    for (const reading of state.needs) {
-      const amount = effects[reading.id];
-      if (!fin(amount)) continue;
-      const r = restoreNeed(s, tuning, reading.id, amount, at);
-      if (!r.ok) continue;
-      s = r.state;
-      applied.push({ need: reading.id, amount });
-      events.push(...r.events);
-    }
-    return { state: s, applied, events };
-  }
-  var SURVIVAL_CONSUMED_ITEM_TYPES = Object.freeze(["consumable", "drink", "food"]);
-  var SURVIVAL_KEPT_ITEM_TYPES = Object.freeze(["collectible", "document", "key", "quest"]);
-  var SURVIVAL_ITEM_RESTORE_ACTIONS = Object.freeze({ food: "eat", drink: "drink" });
-  function useItemForNeeds(state, tuning, item, at) {
-    const held = fin(item.quantity) ? item.quantity : 1;
-    const type = typeof item.type === "string" ? item.type : "";
-    const consumedType = SURVIVAL_CONSUMED_ITEM_TYPES.includes(type);
-    if (!consumedType && !SURVIVAL_KEPT_ITEM_TYPES.includes(type)) {
-      return { ok: false, reason: "not_usable", state: cloneState(state) };
-    }
-    if (held < 1) return { ok: false, reason: "not_held", state: cloneState(state) };
-    if (!consumedType) {
-      return { ok: true, state: cloneState(state), consumed: 0, remaining: held, applied: [], action: null, events: [] };
-    }
-    const effects = isObj3(item.effects) ? item.effects : {};
-    const fed = consumeForNeeds(state, tuning, effects, at);
-    let next = fed.state;
-    const events = [...fed.events];
-    let action = null;
-    const fallback = SURVIVAL_ITEM_RESTORE_ACTIONS[type];
-    if (fed.applied.length === 0 && fallback !== void 0) {
-      const r = performSurvivalAction(next, tuning, fallback, at);
-      if (r.ok) {
-        next = r.state;
-        events.push(...r.events);
-        action = fallback;
-      }
-    }
-    return { ok: true, state: next, consumed: 1, remaining: held - 1, applied: fed.applied, action, events };
-  }
-  function setEnvironmentTemperature(state, tuning, value, at) {
-    if (!fin(value)) return { ok: false, reason: "bad_amount", state: cloneState(state) };
-    const s = cloneState(state);
-    s.environmentTemperature = r4(clamp(value, 0, 100));
-    const events = [];
-    const reading = s.needs.find((n) => n.id === "temperature");
-    const config = configOf(tuning, "temperature");
-    if (!tuning.temperatureEnvironmentDriven && reading && config) {
-      reading.value = r4(clamp(value, 0, reading.max));
-      rebanded(config, reading, tuning, at, events);
-    }
-    return { ok: true, state: s, events };
-  }
-  function applyNeedModifier(state, tuning, modifier, at) {
-    const m = typeof modifier === "string" ? tuning.modifierPresets.find((p) => p.id === modifier) : isObj3(modifier) && typeof modifier.id === "string" ? modifier : void 0;
-    if (!m) return { ok: false, reason: "unknown_modifier", state: cloneState(state) };
-    if (!state.needs.some((n) => n.id === m.needType)) return { ok: false, reason: "need_not_tracked", state: cloneState(state) };
-    if (!fin(m.rateMultiplier) || m.rateMultiplier < 0) return { ok: false, reason: "bad_amount", state: cloneState(state) };
-    const s = cloneState(state);
-    const active = {
-      id: m.id,
-      needType: m.needType,
-      rateMultiplier: m.rateMultiplier,
-      duration: numOr(m.duration, 0),
-      startedAt: at,
-      source: m.source ?? ""
-    };
-    const i = s.modifiers.findIndex((x) => x.id === m.id);
-    if (i >= 0) s.modifiers[i] = active;
-    else s.modifiers.push(active);
-    return { ok: true, state: s, events: [] };
-  }
-  function removeNeedModifier(state, id) {
-    const s = cloneState(state);
-    s.modifiers = s.modifiers.filter((m) => m.id !== id);
-    return s;
-  }
-  var SURVIVAL_BLOCK_MEMBERS = Object.freeze(["readings", "modifiers"]);
-  var SURVIVAL_MODIFIER_KEYS = Object.freeze(["id", "needType", "rateMultiplier", "remainingMs", "source"]);
-  function survivalSaveBlock(state, at) {
-    const readings = {};
-    for (const n of state.needs) readings[n.id] = n.value;
-    return {
-      readings,
-      modifiers: state.modifiers.map((m) => ({
-        id: m.id,
-        needType: m.needType,
-        rateMultiplier: m.rateMultiplier,
-        remainingMs: m.duration > 0 ? Math.max(0, m.duration - (at - m.startedAt)) : null,
-        source: m.source
-      }))
-    };
-  }
-  function readSurvivalBlock(v) {
-    if (v === void 0 || v === null) return { ok: true, value: null };
-    if (!isObj3(v)) return { ok: false, keys: [] };
-    const bad3 = [];
-    const readings = {};
-    if (!isObj3(v.readings)) bad3.push("readings");
-    else {
-      for (const [k, x] of Object.entries(v.readings)) {
-        if (fin(x)) readings[k] = x;
-        else bad3.push(`readings.${k}`);
-      }
-    }
-    const modifiers = [];
-    if (v.modifiers !== void 0 && !Array.isArray(v.modifiers)) bad3.push("modifiers");
-    else {
-      (Array.isArray(v.modifiers) ? v.modifiers : []).forEach((m, i) => {
-        const okRow = isObj3(m) && typeof m.id === "string" && typeof m.needType === "string" && fin(m.rateMultiplier) && m.rateMultiplier >= 0 && (m.remainingMs === null || fin(m.remainingMs)) && (m.source === void 0 || typeof m.source === "string");
-        if (!okRow) {
-          bad3.push(`modifiers[${i}]`);
-          return;
-        }
-        const row = m;
-        modifiers.push({
-          id: row.id,
-          needType: row.needType,
-          rateMultiplier: row.rateMultiplier,
-          remainingMs: row.remainingMs,
-          source: row.source ?? ""
-        });
-      });
-    }
-    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
-    return { ok: true, value: { readings, modifiers } };
-  }
-  function survivalFromSave(block, tuning, at) {
-    const s = initialSurvival(tuning, at);
-    if (!block) return s;
-    for (const reading of s.needs) {
-      const config = configOf(tuning, reading.id);
-      const saved = isObj3(block.readings) ? block.readings[reading.id] : void 0;
-      if (!fin(saved)) continue;
-      reading.value = r4(clamp(saved, 0, reading.max));
-      reading.band = needBand(config, reading.value, tuning);
-    }
-    for (const m of Array.isArray(block.modifiers) ? block.modifiers : []) {
-      if (!s.needs.some((n) => n.id === m.needType)) continue;
-      if (m.remainingMs !== null && !(m.remainingMs > 0)) continue;
-      if (s.modifiers.some((x) => x.id === m.id)) continue;
-      s.modifiers.push({
-        id: m.id,
-        needType: m.needType,
-        rateMultiplier: m.rateMultiplier,
-        duration: m.remainingMs === null ? 0 : m.remainingMs,
-        startedAt: at,
-        source: m.source
-      });
-    }
-    return s;
   }
 
   // @insimul/core/src/stamina/stamina.ts
@@ -9287,17 +12468,17 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function staminaTuningFromIR(ir) {
     const config = ir?.staminaConfig;
     if (!config) return { ...DEFAULT_STAMINA_TUNING };
-    const num5 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    const num6 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
     return {
-      maxStamina: num5(config.maxStamina, DEFAULT_STAMINA_TUNING.maxStamina),
-      recoveryRate: num5(config.recoveryRate, DEFAULT_STAMINA_TUNING.recoveryRate),
-      combatRecoveryRate: num5(config.combatRecoveryRate, DEFAULT_STAMINA_TUNING.combatRecoveryRate),
-      encumberedRecoveryMultiplier: num5(
+      maxStamina: num6(config.maxStamina, DEFAULT_STAMINA_TUNING.maxStamina),
+      recoveryRate: num6(config.recoveryRate, DEFAULT_STAMINA_TUNING.recoveryRate),
+      combatRecoveryRate: num6(config.combatRecoveryRate, DEFAULT_STAMINA_TUNING.combatRecoveryRate),
+      encumberedRecoveryMultiplier: num6(
         config.encumberedRecoveryMultiplier,
         DEFAULT_STAMINA_TUNING.encumberedRecoveryMultiplier
       ),
-      windedPercent: num5(config.windedPercent, DEFAULT_STAMINA_TUNING.windedPercent),
-      exhaustedPercent: num5(config.exhaustedPercent, DEFAULT_STAMINA_TUNING.exhaustedPercent)
+      windedPercent: num6(config.windedPercent, DEFAULT_STAMINA_TUNING.windedPercent),
+      exhaustedPercent: num6(config.exhaustedPercent, DEFAULT_STAMINA_TUNING.exhaustedPercent)
     };
   }
   function staminaStateOf(current, max, tuning) {
@@ -9423,19 +12604,19 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
   function survivalHudView(state, tuning, hud, input) {
     if (!input.visible) return { visible: false, bars: [] };
-    const flashOf = (id) => {
-      const f = hud.flashes[id];
+    const flashOf = (id4) => {
+      const f = hud.flashes[id4];
       return f && input.now >= f.at && input.now < f.at + tuning.hudFlashMs ? f.kind : null;
     };
-    const bar = (id, label, value, max, band) => ({
-      id,
+    const bar = (id4, label, value, max, band) => ({
+      id: id4,
       label,
       value,
       max,
       fraction: max > 0 ? roundDeterministic(Math.min(1, Math.max(0, value / max))) : 0,
       band,
       tone: bandTone(band),
-      flash: flashOf(id)
+      flash: flashOf(id4)
     });
     const bars = state.needs.map(
       (n) => bar(n.id, SURVIVAL_BAR_LABELS[n.id] ?? tuning.needs.find((c) => c.id === n.id)?.name ?? n.id, n.value, n.max, n.band)
@@ -9565,10 +12746,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       if (!result2.success) return 0;
       let loaded = 0;
       for (const binding2 of result2.bindings) {
-        const id = typeof binding2["Id"] === "string" ? binding2["Id"] : null;
+        const id4 = typeof binding2["Id"] === "string" ? binding2["Id"] : null;
         const cost = typeof binding2["Cost"] === "number" ? binding2["Cost"] : Number(binding2["Cost"]);
-        if (id === null || !Number.isFinite(cost)) continue;
-        if (cost > (this.costs.get(id) ?? -Infinity)) this.setCost(id, cost);
+        if (id4 === null || !Number.isFinite(cost)) continue;
+        if (cost > (this.costs.get(id4) ?? -Infinity)) this.setCost(id4, cost);
         loaded += 1;
       }
       return loaded;
@@ -9795,9 +12976,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function traversalTuningFromIR(ir) {
     const d = DEFAULT_TRAVERSAL_TUNING;
     if (!ir) return { ...d };
-    const num5 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    const num6 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
     return {
-      defaultCost: num5(ir.defaultCost, d.defaultCost),
+      defaultCost: num6(ir.defaultCost, d.defaultCost),
       modeCost: { ...d.modeCost, ...ir.modeCost ?? {} },
       modeAction: { ...d.modeAction, ...ir.modeAction ?? {} },
       defaultAction: ir.defaultAction ?? d.defaultAction
@@ -9848,12 +13029,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     const modes = new Set(input.modes);
     const blocked = new Set((input.blocked ?? []).map((edge) => edgeKey(edge.from, edge.to)));
     const affordances = input.links.filter((link) => link.from === input.from).map((link) => {
-      const id = traversalLinkId(link);
+      const id4 = traversalLinkId(link);
       const cost = traversalCost(link, tuning);
       const requires = edgeRequirements(input.links, link.from, link.to);
-      const refusal3 = refuse(link, id, cost, { modes, blocked, input });
+      const refusal3 = refuse(link, id4, cost, { modes, blocked, input });
       return {
-        id,
+        id: id4,
         from: link.from,
         to: link.to,
         mode: link.mode,
@@ -9870,10 +13051,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     );
     return affordances;
   }
-  function refuse(link, id, cost, ctx) {
+  function refuse(link, id4, cost, ctx) {
     if (ctx.blocked.has(edgeKey(link.from, link.to))) return "blocked";
     if (!ctx.modes.has(link.mode)) return "mode";
-    if (link.geometric && ctx.input.geometry?.[id] === false) return "impassable";
+    if (link.geometric && ctx.input.geometry?.[id4] === false) return "impassable";
     const stamina = ctx.input.stamina;
     if (stamina !== void 0 && stamina.current < cost) return "stamina";
     return void 0;
@@ -10194,29 +13375,29 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function fastTravelTuningFromIR(ir) {
     const d = DEFAULT_FAST_TRAVEL_TUNING;
     if (!ir) return { ...d };
-    const num5 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    const num6 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
     return {
-      hoursPerCost: num5(ir.hoursPerCost, d.hoursPerCost),
-      minimumHours: num5(ir.minimumHours, d.minimumHours),
-      maxHours: num5(ir.maxHours, d.maxHours),
-      stepHours: num5(ir.stepHours, d.stepHours),
-      maxSteps: num5(ir.maxSteps, d.maxSteps),
+      hoursPerCost: num6(ir.hoursPerCost, d.hoursPerCost),
+      minimumHours: num6(ir.minimumHours, d.minimumHours),
+      maxHours: num6(ir.maxHours, d.maxHours),
+      stepHours: num6(ir.stepHours, d.stepHours),
+      maxSteps: num6(ir.maxSteps, d.maxSteps),
       action: ir.action ?? d.action,
       mode: ir.mode ?? d.mode
     };
   }
-  function whole(value, fallback) {
+  function whole7(value, fallback) {
     const n = Math.floor(Number.isFinite(value) ? value : fallback);
     return n > 0 ? n : 0;
   }
   function fastTravelCeiling(tuning) {
-    const byHours = whole(tuning.maxHours, DEFAULT_FAST_TRAVEL_TUNING.maxHours);
-    const bySteps = whole(tuning.stepHours, DEFAULT_FAST_TRAVEL_TUNING.stepHours) * whole(tuning.maxSteps, DEFAULT_FAST_TRAVEL_TUNING.maxSteps);
+    const byHours = whole7(tuning.maxHours, DEFAULT_FAST_TRAVEL_TUNING.maxHours);
+    const bySteps = whole7(tuning.stepHours, DEFAULT_FAST_TRAVEL_TUNING.stepHours) * whole7(tuning.maxSteps, DEFAULT_FAST_TRAVEL_TUNING.maxSteps);
     return Math.min(byHours, bySteps);
   }
   function fastTravelHours(routeCost, tuning) {
     const ceiling = fastTravelCeiling(tuning);
-    const minimum = Math.min(whole(tuning.minimumHours, DEFAULT_FAST_TRAVEL_TUNING.minimumHours), ceiling);
+    const minimum = Math.min(whole7(tuning.minimumHours, DEFAULT_FAST_TRAVEL_TUNING.minimumHours), ceiling);
     const cost = Number.isFinite(routeCost) && routeCost > 0 ? routeCost : 0;
     const rate = Number.isFinite(tuning.hoursPerCost) ? tuning.hoursPerCost : 1;
     const raw = Math.floor(cost * rate);
@@ -10228,8 +13409,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     );
   }
   function fastTravelSteps(hours, tuning, identity) {
-    const chunk = whole(tuning.stepHours, DEFAULT_FAST_TRAVEL_TUNING.stepHours) || 1;
-    const limit = whole(tuning.maxSteps, DEFAULT_FAST_TRAVEL_TUNING.maxSteps);
+    const chunk = whole7(tuning.stepHours, DEFAULT_FAST_TRAVEL_TUNING.stepHours) || 1;
+    const limit = whole7(tuning.maxSteps, DEFAULT_FAST_TRAVEL_TUNING.maxSteps);
     const steps = [];
     let elapsed = 0;
     while (elapsed < hours && steps.length < limit) {
@@ -10311,17 +13492,17 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     reachMm: 12e3,
     levelMm: 2
   });
-  var whole2 = (v) => typeof v === "number" && Number.isFinite(v) && v >= 0 ? Math.floor(v) : void 0;
+  var whole8 = (v) => typeof v === "number" && Number.isFinite(v) && v >= 0 ? Math.floor(v) : void 0;
   function groundSeatTuning(params = {}) {
     const d = DEFAULT_GROUND_SEAT_TUNING;
     return {
-      lookFromMm: whole2(params.lookFromMm) ?? d.lookFromMm,
-      footprintMm: whole2(params.footprintMm) ?? d.footprintMm,
-      settleMmPerS: whole2(params.settleMmPerS) ?? d.settleMmPerS,
-      upFactor: Math.max(1, whole2(params.upFactor) ?? d.upFactor),
-      maxOffsetMm: whole2(params.maxOffsetMm) ?? d.maxOffsetMm,
-      reachMm: whole2(params.reachMm) ?? d.reachMm,
-      levelMm: whole2(params.levelMm) ?? d.levelMm
+      lookFromMm: whole8(params.lookFromMm) ?? d.lookFromMm,
+      footprintMm: whole8(params.footprintMm) ?? d.footprintMm,
+      settleMmPerS: whole8(params.settleMmPerS) ?? d.settleMmPerS,
+      upFactor: Math.max(1, whole8(params.upFactor) ?? d.upFactor),
+      maxOffsetMm: whole8(params.maxOffsetMm) ?? d.maxOffsetMm,
+      reachMm: whole8(params.reachMm) ?? d.reachMm,
+      levelMm: whole8(params.levelMm) ?? d.levelMm
     };
   }
   function footprintPoints(xMm, zMm, tuning) {
@@ -12396,7 +15577,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       `enforced_reputation(${eventAtom}, ${ruleAtom}, _, F, D)`
     )) {
       const faction = text2(binding2["F"]);
-      const delta = num(binding2["D"]);
+      const delta = num2(binding2["D"]);
       if (faction === null || delta === null) continue;
       rows.set(streamKey([faction, String(delta)]), { faction, delta });
     }
@@ -12411,50 +15592,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (typeof value === "number") return String(value);
     return null;
   }
-  function num(value) {
+  function num2(value) {
     if (typeof value === "number") return Number.isFinite(value) ? value : null;
     if (typeof value === "string") {
       const parsed = Number(value);
       return Number.isFinite(parsed) ? parsed : null;
     }
     return null;
-  }
-
-  // @insimul/core/src/traversal/mode-lending.ts
-  var vehicleLender = (vehicleId) => `vehicle:${vehicleId}`;
-  var personalLender = (kind) => `personal:${kind}`;
-  function canonicalLent(lent, modes) {
-    const out = {};
-    if (!lent) return out;
-    const held = new Set(modes);
-    for (const mode of Object.keys(lent).sort(compareIds)) {
-      if (!held.has(mode)) continue;
-      const lenders = [...new Set(lent[mode] ?? [])].sort(compareIds);
-      if (lenders.length > 0) out[mode] = lenders;
-    }
-    return out;
-  }
-  function lendMode(holding, mode, lender) {
-    const modes = [...holding.modes];
-    const lent = canonicalLent(holding.lent, modes);
-    const lenders = lent[mode];
-    if (lenders === void 0) {
-      if (modes.includes(mode)) return { modes, lent };
-      modes.push(mode);
-      return { modes, lent: canonicalLent({ ...lent, [mode]: [lender] }, modes) };
-    }
-    return { modes, lent: canonicalLent({ ...lent, [mode]: [...lenders, lender] }, modes) };
-  }
-  function returnMode(holding, mode, lender) {
-    const modes = [...holding.modes];
-    const lent = canonicalLent(holding.lent, modes);
-    const lenders = lent[mode];
-    if (lenders === void 0 || !lenders.includes(lender)) return { modes, lent };
-    const rest = lenders.filter((l) => l !== lender);
-    if (rest.length > 0) return { modes, lent: { ...lent, [mode]: rest } };
-    const next = { ...lent };
-    delete next[mode];
-    return { modes: modes.filter((m) => m !== mode), lent: next };
   }
 
   // @insimul/core/src/game-engine/logic/TraversalPlanner.ts
@@ -12874,7 +16018,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       if (!this.probe) return geometry;
       for (const link of this.links) {
         if (!link.geometric || link.from !== actor.location) continue;
-        const id = traversalLinkId(link);
+        const id4 = traversalLinkId(link);
         let reading = null;
         try {
           reading = await this.probe.query({
@@ -12882,12 +16026,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
             from: link.from,
             to: link.to,
             mode: link.mode,
-            link: id
+            link: id4
           });
         } catch {
           reading = null;
         }
-        geometry[id] = reading === null ? true : reading.passable;
+        geometry[id4] = reading === null ? true : reading.passable;
       }
       return geometry;
     }
@@ -13828,276 +16972,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   };
   function stripPeriod4(clause) {
     return clause.replace(/\.$/, "");
-  }
-
-  // @insimul/core/src/traversal/personal-vehicles.ts
-  var DEFAULT_PERSONAL_VEHICLE_TUNING = Object.freeze({
-    kinds: Object.freeze({
-      bicycle: Object.freeze({ id: "bicycle", label: "Bicycle", walk: 2e3, run: 1800, turn: 1200, mode: null }),
-      horse: Object.freeze({ id: "horse", label: "Horse", walk: 3e3, run: 2500, turn: 800, mode: "ride" })
-    }),
-    cycle: Object.freeze(["bicycle", "horse"]),
-    onFoot: Object.freeze({ walk: 1e3, run: 1e3, turn: 1e3, strafe: 800, back: 600 }),
-    mountedStrafePermille: 800,
-    mountedBackPermille: 500
-  });
-  var ON_FOOT_LABEL = "On Foot";
-  var whole3 = (v) => typeof v === "number" && Number.isFinite(v) && v >= 0 ? Math.floor(v) : void 0;
-  function personalVehicleTuning(params = {}) {
-    const base = DEFAULT_PERSONAL_VEHICLE_TUNING;
-    const kinds = {};
-    for (const [id, k] of Object.entries(base.kinds)) kinds[id] = { ...k };
-    for (const row of params.kinds ?? []) {
-      if (!row || typeof row.id !== "string" || row.id === "") continue;
-      const prior = kinds[row.id];
-      const walk = whole3(row.walk) ?? prior?.walk;
-      const run = whole3(row.run) ?? prior?.run;
-      const turn2 = whole3(row.turn) ?? prior?.turn;
-      const label = typeof row.label === "string" && row.label !== "" ? row.label : prior?.label;
-      if (walk === void 0 || run === void 0 || turn2 === void 0 || label === void 0) continue;
-      const mode = row.mode === null ? null : typeof row.mode === "string" && row.mode !== "" ? row.mode : prior?.mode ?? null;
-      kinds[row.id] = { id: row.id, label, walk, run, turn: turn2, mode };
-    }
-    const sorted = {};
-    for (const id of Object.keys(kinds).sort(compareIds)) sorted[id] = kinds[id];
-    const cycle = [];
-    for (const id of params.cycle ?? base.cycle) {
-      if (typeof id === "string" && sorted[id] && !cycle.includes(id)) cycle.push(id);
-    }
-    const foot = params.onFoot ?? {};
-    const onFoot = {
-      walk: whole3(foot.walk) ?? base.onFoot.walk,
-      run: whole3(foot.run) ?? base.onFoot.run,
-      turn: whole3(foot.turn) ?? base.onFoot.turn,
-      strafe: whole3(foot.strafe) ?? base.onFoot.strafe,
-      back: whole3(foot.back) ?? base.onFoot.back
-    };
-    return {
-      kinds: sorted,
-      cycle,
-      onFoot,
-      mountedStrafePermille: whole3(params.mountedStrafePermille) ?? base.mountedStrafePermille,
-      mountedBackPermille: whole3(params.mountedBackPermille) ?? base.mountedBackPermille
-    };
-  }
-  function personalPace(kind, tuning) {
-    const k = kind === null ? void 0 : tuning.kinds[kind];
-    if (!k) return { ...tuning.onFoot };
-    return {
-      walk: k.walk,
-      run: k.run,
-      turn: k.turn,
-      strafe: Math.floor(k.walk * tuning.mountedStrafePermille / 1e3),
-      back: Math.floor(k.walk * tuning.mountedBackPermille / 1e3)
-    };
-  }
-  function personalVehicleLabel(kind, tuning) {
-    const k = kind === null ? void 0 : tuning.kinds[kind];
-    return k ? k.label : ON_FOOT_LABEL;
-  }
-  function personalVehicleModes(holding, from, to, tuning) {
-    let next = { modes: [...new Set(holding.modes)], lent: canonicalLent(holding.lent, holding.modes) };
-    if (from !== to) {
-      const lentBefore = from === null ? null : tuning.kinds[from]?.mode ?? null;
-      const lentAfter = to === null ? null : tuning.kinds[to]?.mode ?? null;
-      if (from !== null && lentBefore !== null) next = returnMode(next, lentBefore, personalLender(from));
-      if (to !== null && lentAfter !== null) next = lendMode(next, lentAfter, personalLender(to));
-    }
-    return { modes: [...next.modes].sort(compareIds), lent: next.lent };
-  }
-  function initialPersonalVehicles() {
-    return { riding: {} };
-  }
-  var PERSONAL_VEHICLE_REFUSALS = Object.freeze(["unknown_kind", "in_vehicle", "redundant", "not_riding"]);
-  function withRiding(state, actor, kind) {
-    const next = { ...state.riding };
-    if (kind === null) delete next[actor];
-    else next[actor] = kind;
-    const riding = {};
-    for (const id of Object.keys(next).sort(compareIds)) riding[id] = next[id];
-    return { riding };
-  }
-  function result(state, actor, tuning, events, refusal3, detail) {
-    const kind = state.riding[actor] ?? null;
-    return {
-      ok: refusal3 === void 0,
-      ...refusal3 !== void 0 ? { refusal: refusal3 } : {},
-      ...detail !== void 0 ? { detail } : {},
-      state,
-      kind,
-      pace: personalPace(kind, tuning),
-      label: personalVehicleLabel(kind, tuning),
-      events
-    };
-  }
-  function mountPersonalVehicle(state, request, tuning) {
-    const { actor, kind } = request;
-    if (!tuning.kinds[kind]) return result(state, actor, tuning, [], "unknown_kind");
-    if (typeof request.inVehicle === "string") return result(state, actor, tuning, [], "in_vehicle", request.inVehicle);
-    if (state.riding[actor] === kind) return result(state, actor, tuning, [], "redundant");
-    return result(withRiding(state, actor, kind), actor, tuning, [{ type: "vehicle_mounted", actorId: actor, vehicleType: kind }]);
-  }
-  function dismountPersonalVehicle(state, request, tuning) {
-    const prev = state.riding[request.actor];
-    if (prev === void 0) return result(state, request.actor, tuning, [], "not_riding");
-    return result(withRiding(state, request.actor, null), request.actor, tuning, [{ type: "vehicle_dismounted", actorId: request.actor, vehicleType: prev }]);
-  }
-  function cyclePersonalVehicle(state, request, tuning) {
-    const slots = [null, ...tuning.cycle];
-    const current = state.riding[request.actor] ?? null;
-    const next = slots[(slots.indexOf(current) + 1) % slots.length];
-    if (next === null) return dismountPersonalVehicle(state, request, tuning);
-    return mountPersonalVehicle(state, { ...request, kind: next }, tuning);
-  }
-  function personalVehicleSaveRows(state) {
-    const rows = {};
-    for (const id of Object.keys(state.riding).sort(compareIds)) rows[id] = state.riding[id];
-    return rows;
-  }
-  function personalVehiclesFromSave(rows, tuning) {
-    let state = initialPersonalVehicles();
-    const dropped2 = [];
-    for (const [actor, kind] of Object.entries(rows ?? {})) {
-      if (typeof kind === "string" && tuning.kinds[kind]) state = withRiding(state, actor, kind);
-      else dropped2.push(actor);
-    }
-    return { state, dropped: dropped2.sort(compareIds) };
-  }
-
-  // @insimul/core/src/traversal/traversal-save.ts
-  var TRAVERSAL_EXTENSION_KEY = "traversal";
-  var TRAVERSAL_BLOCK_MEMBERS = Object.freeze(["planner", "vehicles", "fastTravel", "riding"]);
-  var TRAVERSAL_ACTOR_KEYS = Object.freeze(["id", "location", "modes", "lent"]);
-  var EDGE_KEYS = ["from", "to"];
-  var TRAVERSAL_EDGE_KEYS = Object.freeze(EDGE_KEYS);
-  var TRAVERSAL_VEHICLE_KEYS = Object.freeze(["id", "location", "occupants", "owner", "driver"]);
-  var TRAVERSAL_FAST_TRAVEL_KEYS = Object.freeze(["discovered", "journeys"]);
-  function traversalSaveBlock(parts) {
-    return {
-      planner: parts.planner ? copyPlanner(parts.planner) : null,
-      vehicles: parts.vehicles ? copyVehicles(parts.vehicles) : null,
-      fastTravel: parts.fastTravel ? { discovered: [...parts.fastTravel.discovered], journeys: parts.fastTravel.journeys } : null,
-      riding: parts.riding ? personalVehicleSaveRows(parts.riding) : {}
-    };
-  }
-  var isObj4 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
-  var str2 = (v) => typeof v === "string";
-  var strList = (v) => Array.isArray(v) && v.every(str2);
-  function copyActor(a) {
-    const lent = canonicalLent(a.lent, a.modes);
-    return { id: a.id, location: a.location, modes: [...a.modes], ...Object.keys(lent).length > 0 ? { lent } : {} };
-  }
-  function copyPlanner(p) {
-    return {
-      actors: p.actors.map(copyActor),
-      blocked: p.blocked.map((e) => ({ from: e.from, to: e.to }))
-    };
-  }
-  function copyVehicle(v) {
-    return {
-      id: v.id,
-      location: v.location,
-      occupants: [...v.occupants],
-      ...v.owner !== void 0 ? { owner: v.owner } : {},
-      ...v.driver !== void 0 ? { driver: v.driver } : {}
-    };
-  }
-  function copyVehicles(v) {
-    return { vehicles: v.vehicles.map(copyVehicle) };
-  }
-  function readTraversalBlock(v) {
-    if (v === void 0 || v === null) return { ok: true, value: null };
-    if (!isObj4(v)) return { ok: false, keys: [] };
-    const bad3 = [];
-    const list2 = (owner, at, key, row) => {
-      const out = [];
-      const value = owner[key];
-      if (value === void 0) return out;
-      if (!Array.isArray(value)) {
-        bad3.push(`${at}.${key}`);
-        return out;
-      }
-      value.forEach((r, i) => {
-        const got = row(r);
-        if (got === null) bad3.push(`${at}.${key}[${i}]`);
-        else out.push(got);
-      });
-      return out;
-    };
-    const member = (key) => {
-      const value = v[key];
-      if (value === void 0 || value === null) return null;
-      if (!isObj4(value)) {
-        bad3.push(key);
-        return null;
-      }
-      return value;
-    };
-    let planner = null;
-    const p = member("planner");
-    if (p) {
-      const actors = list2(p, "planner", "actors", (r) => {
-        if (!isObj4(r) || !str2(r.id) || !str2(r.location)) return null;
-        if (r.modes !== void 0 && !strList(r.modes)) return null;
-        const modes = r.modes === void 0 ? ["walk"] : [...r.modes];
-        if (r.lent !== void 0) {
-          if (!isObj4(r.lent)) return null;
-          for (const [mode, lenders] of Object.entries(r.lent)) {
-            if (!strList(lenders) || lenders.length === 0 || !modes.includes(mode)) return null;
-          }
-        }
-        return copyActor({ id: r.id, location: r.location, modes, ...r.lent !== void 0 ? { lent: r.lent } : {} });
-      });
-      const blocked = list2(p, "planner", "blocked", (r) => isObj4(r) && str2(r.from) && str2(r.to) ? { from: r.from, to: r.to } : null);
-      planner = { actors, blocked };
-    }
-    let vehicles = null;
-    const vs = member("vehicles");
-    if (vs) {
-      const rows = list2(vs, "vehicles", "vehicles", (r) => {
-        if (!isObj4(r) || !str2(r.id) || !str2(r.location)) return null;
-        if (r.occupants !== void 0 && !strList(r.occupants)) return null;
-        if (r.owner !== void 0 && !str2(r.owner)) return null;
-        if (r.driver !== void 0 && !str2(r.driver)) return null;
-        const occupants = r.occupants === void 0 ? [] : [...r.occupants];
-        if (r.driver !== void 0 && !occupants.includes(r.driver)) return null;
-        return copyVehicle({ id: r.id, location: r.location, occupants, owner: r.owner, driver: r.driver });
-      });
-      vehicles = { vehicles: rows };
-    }
-    let fastTravel = null;
-    const f = member("fastTravel");
-    if (f) {
-      let discovered = [];
-      if (f.discovered !== void 0) {
-        if (strList(f.discovered)) discovered = [...f.discovered];
-        else bad3.push("fastTravel.discovered");
-      }
-      let journeys = 0;
-      if (f.journeys !== void 0) {
-        if (typeof f.journeys === "number" && Number.isInteger(f.journeys) && f.journeys >= 0) journeys = f.journeys;
-        else bad3.push("fastTravel.journeys");
-      }
-      fastTravel = { discovered, journeys };
-    }
-    const riding = {};
-    if (v.riding !== void 0 && !isObj4(v.riding)) bad3.push("riding");
-    else {
-      for (const [actor, kind] of Object.entries(v.riding ?? {})) {
-        if (str2(kind)) riding[actor] = kind;
-        else bad3.push(`riding.${actor}`);
-      }
-    }
-    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
-    return { ok: true, value: { planner, vehicles, fastTravel, riding } };
-  }
-  function traversalBlockOf(b) {
-    return {
-      planner: b.planner ? copyPlanner(b.planner) : null,
-      vehicles: b.vehicles ? copyVehicles(b.vehicles) : null,
-      fastTravel: b.fastTravel ? { discovered: [...b.fastTravel.discovered], journeys: b.fastTravel.journeys } : null,
-      riding: Object.fromEntries(Object.keys(b.riding).sort(compareIds).map((actor) => [actor, b.riding[actor]]))
-    };
   }
 
   // @insimul/core/src/traversal/rider-intent.ts
@@ -18838,9 +21712,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       refuse3("unknown-recipe", "recipe.id", "That recipe is not one Insimul knows. Choose a recipe, or give its recipe file.");
     }
     const seenPacks = /* @__PURE__ */ new Set();
-    r.packs.enabled.forEach((id, i) => {
-      if (seenPacks.has(id)) refuse3("duplicate-pack", `packs.enabled.${i}`, "A system is listed twice. List each system once.");
-      seenPacks.add(id);
+    r.packs.enabled.forEach((id4, i) => {
+      if (seenPacks.has(id4)) refuse3("duplicate-pack", `packs.enabled.${i}`, "A system is listed twice. List each system once.");
+      seenPacks.add(id4);
     });
     if (context.lock === void 0) {
       note("lock-unverified", "packs.lock", "The systems file was not read, so the systems were not checked against it.");
@@ -18852,19 +21726,19 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         if (lock.data.plugin.engine !== r.engine) {
           refuse3("lock-engine-mismatch", "packs.lock.file", `The project's systems file was written for another engine, not ${ENGINE_NAMES[r.engine]}.`);
         }
-        r.packs.enabled.forEach((id, i) => {
-          if (!Object.prototype.hasOwnProperty.call(lock.data.packs, id)) {
+        r.packs.enabled.forEach((id4, i) => {
+          if (!Object.prototype.hasOwnProperty.call(lock.data.packs, id4)) {
             refuse3("pack-not-locked", `packs.enabled.${i}`, "A system the build runs is not installed in this project. Install it, or leave it out.");
           }
         });
-        for (const id of [...new Set(r.packs.enabled)].sort()) {
-          const entry = Object.prototype.hasOwnProperty.call(lock.data.packs, id) ? lock.data.packs[id] : void 0;
+        for (const id4 of [...new Set(r.packs.enabled)].sort()) {
+          const entry = Object.prototype.hasOwnProperty.call(lock.data.packs, id4) ? lock.data.packs[id4] : void 0;
           if (!entry) continue;
           if (entry.files.some((f) => f.pending !== void 0)) {
-            note("lock-pending-merge", `packs.enabled.${r.packs.enabled.indexOf(id)}`, "A system has an update waiting for your review; the build uses your files as they are.");
+            note("lock-pending-merge", `packs.enabled.${r.packs.enabled.indexOf(id4)}`, "A system has an update waiting for your review; the build uses your files as they are.");
           }
           if (entry.core.state === "forked") {
-            note("core-forked", `packs.enabled.${r.packs.enabled.indexOf(id)}`, "A system runs your own copy of Insimul's rules, not the shared ones.");
+            note("core-forked", `packs.enabled.${r.packs.enabled.indexOf(id4)}`, "A system runs your own copy of Insimul's rules, not the shared ones.");
           }
         }
       }
@@ -19090,598 +21964,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     });
   }
 
-  // @insimul/core/src/progression/gamification.ts
-  var LEVEL_THRESHOLDS = Object.freeze([
-    0,
-    50,
-    120,
-    220,
-    350,
-    520,
-    730,
-    990,
-    1300,
-    1670,
-    2100,
-    2600,
-    3200,
-    3900,
-    4700,
-    5600,
-    6700,
-    8e3,
-    9500,
-    11200
-  ]);
-  var DEFAULT_TIER_LABELS = Object.freeze(["Beginner", "Elementary", "Intermediate", "Advanced", "Near-native"]);
-  var LEVELS_PER_TIER = 5;
-  function levelForXp(totalXp, thresholds = LEVEL_THRESHOLDS) {
-    for (let i = thresholds.length - 1; i >= 0; i--) if (totalXp >= thresholds[i]) return i + 1;
-    return 1;
-  }
-  function nextLevelXp(level, thresholds = LEVEL_THRESHOLDS) {
-    if (level >= thresholds.length) return 0;
-    return thresholds[level];
-  }
-  function levelTier(level, labels = DEFAULT_TIER_LABELS) {
-    if (labels.length === 0) return "";
-    const index = level <= LEVELS_PER_TIER ? 0 : Math.floor((level - 1) / LEVELS_PER_TIER);
-    return labels[Math.min(index, labels.length - 1)];
-  }
-  function levelProgressPermille(totalXp, thresholds = LEVEL_THRESHOLDS) {
-    const level = levelForXp(totalXp, thresholds);
-    if (level >= thresholds.length) return 1e3;
-    const from = thresholds[level - 1] ?? 0;
-    const to = thresholds[level] ?? from + 100;
-    return Math.floor((totalXp - from) * 1e3 / (to - from));
-  }
-  var GAMIFICATION_TUNING = Object.freeze({
-    conversationBase: 10,
-    conversationLong: 5,
-    longConversationTurns: 5,
-    questComplete: 25,
-    vocabularyNewWord: 3,
-    vocabularyMastered: 15,
-    grammarPatternCorrect: 2,
-    grammarPatternMastered: 20,
-    achievementUnlocked: 50,
-    assessmentPhaseComplete: 15,
-    assessmentComplete: 40,
-    onboardingStepComplete: 10,
-    onboardingComplete: 30,
-    puzzleSolved: 20,
-    locationDiscovered: 5,
-    listeningComprehensionComplete: 20,
-    skillRewardXpPerPoint: 2,
-    streakStepTenths: 1,
-    streakCapTenths: 20
-  });
-  var GAMIFICATION_AWARDS = Object.freeze({
-    assessment_phase_complete: { tuning: "assessmentPhaseComplete", reason: "Assessment phase complete" },
-    assessment_complete: { tuning: "assessmentComplete", reason: "Assessment complete" },
-    onboarding_step_complete: { tuning: "onboardingStepComplete", reason: "Onboarding step complete" },
-    onboarding_complete: { tuning: "onboardingComplete", reason: "Onboarding complete" }
-  });
-  var DEFAULT_XP_REWARDS = Object.freeze({
-    quest_complete: 25,
-    location_discovered: 5,
-    onboarding_step_complete: 10,
-    onboarding_complete: 30,
-    achievement_unlocked: 50,
-    daily_challenge_complete: 30
-  });
-  function xpEventTable(bundleId, tuning = GAMIFICATION_TUNING, overrides = {}) {
-    const base = bundleId === "language-learning" ? {
-      conversation_base: tuning.conversationBase,
-      conversation_long: tuning.conversationLong,
-      quest_complete: tuning.questComplete,
-      knowledge_new_entry: tuning.vocabularyNewWord,
-      knowledge_mastered: tuning.vocabularyMastered,
-      pattern_correct: tuning.grammarPatternCorrect,
-      pattern_mastered: tuning.grammarPatternMastered,
-      daily_challenge_complete: 30,
-      achievement_unlocked: tuning.achievementUnlocked,
-      assessment_phase_complete: tuning.assessmentPhaseComplete,
-      assessment_complete: tuning.assessmentComplete,
-      onboarding_step_complete: tuning.onboardingStepComplete,
-      onboarding_complete: tuning.onboardingComplete,
-      performance_graded: tuning.puzzleSolved,
-      location_discovered: tuning.locationDiscovered
-    } : { ...DEFAULT_XP_REWARDS };
-    const out = { ...base, ...overrides };
-    return Object.fromEntries(Object.keys(out).sort(compareIds).map((k) => [k, out[k]]));
-  }
-  var ACHIEVEMENT_CONDITIONS = Object.freeze([
-    "words_learned",
-    "conversations",
-    "grammar_mastered",
-    "quests_completed",
-    "fluency_reached",
-    "streak_days",
-    "navigation_quests",
-    "level_reached",
-    "cultural_quests",
-    "articles_read",
-    "npcs_talked",
-    "items_collected",
-    "locations_discovered",
-    "objects_examined",
-    "puzzles_solved"
-  ]);
-  var ACHIEVEMENTS = Object.freeze([
-    { id: "first_words", name: "First Words", description: "Learn your first 10 words", icon: "\u{1F4D6}", condition: { type: "words_learned", threshold: 10 } },
-    { id: "chatterbox", name: "Chatterbox", description: "Complete 25 conversations", icon: "\u{1F4AC}", condition: { type: "conversations", threshold: 25 } },
-    { id: "grammar_guru", name: "Grammar Guru", description: "Master 5 grammar patterns", icon: "\u{1F4DD}", condition: { type: "grammar_mastered", threshold: 5 } },
-    { id: "polyglot", name: "Polyglot", description: "Reach intermediate fluency (level 11)", icon: "\u{1F30D}", condition: { type: "level_reached", threshold: 11 } },
-    { id: "navigator", name: "Navigator", description: "Complete 5 navigation quests", icon: "\u{1F9ED}", condition: { type: "navigation_quests", threshold: 5 } },
-    { id: "streak_master", name: "Streak Master", description: "Maintain a 7-day learning streak", icon: "\u{1F525}", condition: { type: "streak_days", threshold: 7 } },
-    { id: "word_collector", name: "Word Collector", description: "Learn 50 words", icon: "\u{1F4DA}", condition: { type: "words_learned", threshold: 50 } },
-    { id: "quest_hero", name: "Quest Hero", description: "Complete 10 language quests", icon: "\u{1F3C6}", condition: { type: "quests_completed", threshold: 10 } },
-    { id: "cultural_explorer", name: "Cultural Explorer", description: "Complete 5 cultural quests", icon: "\u{1F3AD}", condition: { type: "cultural_quests", threshold: 5 } },
-    { id: "bookworm", name: "Bookworm", description: "Read 10 notice board articles", icon: "\u{1F4F0}", condition: { type: "articles_read", threshold: 10 } },
-    { id: "social_butterfly", name: "Social Butterfly", description: "Talk to 10 different NPCs", icon: "\u{1F98B}", condition: { type: "npcs_talked", threshold: 10 } },
-    { id: "treasure_hunter", name: "Treasure Hunter", description: "Collect 20 items", icon: "\u{1F48E}", condition: { type: "items_collected", threshold: 20 } },
-    { id: "cartographer", name: "Cartographer", description: "Discover 10 locations", icon: "\u{1F5FA}\uFE0F", condition: { type: "locations_discovered", threshold: 10 } },
-    { id: "curious_mind", name: "Curious Mind", description: "Examine 15 objects", icon: "\u{1F50D}", condition: { type: "objects_examined", threshold: 15 } },
-    { id: "puzzle_master", name: "Puzzle Master", description: "Solve 10 puzzles", icon: "\u{1F9E9}", condition: { type: "puzzles_solved", threshold: 10 } }
-  ]);
-  var GAMIFICATION_COUNTERS = Object.freeze([
-    "questsCompleted",
-    "navigationQuestsCompleted",
-    "culturalQuestsCompleted",
-    "articlesRead",
-    "npcsTalked",
-    "itemsCollected",
-    "locationsDiscovered",
-    "objectsExamined",
-    "puzzlesSolved"
-  ]);
-  var CONDITION_COUNTER = {
-    quests_completed: "questsCompleted",
-    navigation_quests: "navigationQuestsCompleted",
-    cultural_quests: "culturalQuestsCompleted",
-    articles_read: "articlesRead",
-    npcs_talked: "npcsTalked",
-    items_collected: "itemsCollected",
-    locations_discovered: "locationsDiscovered",
-    objects_examined: "objectsExamined",
-    puzzles_solved: "puzzlesSolved"
-  };
-  var STATS_CONDITIONS = Object.freeze(["words_learned", "conversations", "grammar_mastered", "fluency_reached", "streak_days"]);
-  var DAILY_CHALLENGE_TYPES = Object.freeze(["vocabulary_category", "conversation_count", "target_language_only", "grammar_accuracy", "new_words", "quest_count"]);
-  var DAILY_CHALLENGE_TEMPLATES = Object.freeze([
-    { description: "Use 5 food-related words", type: "vocabulary_category", target: 5, xpReward: 30 },
-    { description: "Have 3 conversations", type: "conversation_count", target: 3, xpReward: 30 },
-    { description: "Have a full conversation in the target language", type: "target_language_only", target: 1, xpReward: 40 },
-    { description: "Get 80%+ grammar accuracy in a conversation", type: "grammar_accuracy", target: 80, xpReward: 35 },
-    { description: "Learn 5 new words", type: "new_words", target: 5, xpReward: 30 },
-    { description: "Complete 2 quests", type: "quest_count", target: 2, xpReward: 35 },
-    { description: "Use 3 greeting words", type: "vocabulary_category", target: 3, xpReward: 25 },
-    { description: "Have 5 conversations", type: "conversation_count", target: 5, xpReward: 40 },
-    { description: "Learn 10 new words", type: "new_words", target: 10, xpReward: 45 },
-    { description: "Complete 3 quests", type: "quest_count", target: 3, xpReward: 40 }
-  ]);
-  var DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
-  function isDateKey(key) {
-    if (typeof key !== "string") return false;
-    const m = DATE_RE.exec(key);
-    if (!m) return false;
-    const y = Number(m[1]);
-    const mo = Number(m[2]);
-    const d = Number(m[3]);
-    if (mo < 1 || mo > 12 || d < 1) return false;
-    return d <= daysInMonth(y, mo);
-  }
-  function daysInMonth(y, m) {
-    if (m === 2) return y % 4 === 0 && y % 100 !== 0 || y % 400 === 0 ? 29 : 28;
-    return [4, 6, 9, 11].includes(m) ? 30 : 31;
-  }
-  var pad = (n, w) => String(n).padStart(w, "0");
-  function previousDateKey(key) {
-    const m = DATE_RE.exec(key);
-    if (!m || !isDateKey(key)) throw new Error(`gamification: not a date ${key}`);
-    let y = Number(m[1]);
-    let mo = Number(m[2]);
-    let d = Number(m[3]) - 1;
-    if (d === 0) {
-      mo -= 1;
-      if (mo === 0) {
-        mo = 12;
-        y -= 1;
-      }
-      d = daysInMonth(y, mo);
-    }
-    return `${pad(y, 4)}-${pad(mo, 2)}-${pad(d, 2)}`;
-  }
-  function dailyTemplateIndex(dateKey) {
-    let hash = 0;
-    for (let i = 0; i < dateKey.length; i++) {
-      hash = (hash << 5) - hash + dateKey.charCodeAt(i);
-      hash |= 0;
-    }
-    return Math.abs(hash) % DAILY_CHALLENGE_TEMPLATES.length;
-  }
-  function dailyChallengeView(daily) {
-    const t = DAILY_CHALLENGE_TEMPLATES[dailyTemplateIndex(daily.dateKey)];
-    return { id: `daily_${daily.dateKey}`, dateKey: daily.dateKey, description: t.description, type: t.type, target: t.target, xpReward: t.xpReward, progress: daily.progress, completed: daily.completed };
-  }
-  function streakMultiplierTenths(streak, tuning = GAMIFICATION_TUNING) {
-    return Math.min(tuning.streakCapTenths, 10 + (streak - 1) * tuning.streakStepTenths);
-  }
-  function streakXp(xpReward, streak, tuning = GAMIFICATION_TUNING) {
-    return Math.floor((xpReward * streakMultiplierTenths(streak, tuning) + 5) / 10);
-  }
-  function emptyGamification() {
-    return {
-      xp: 0,
-      unlocked: {},
-      daily: null,
-      consecutiveDays: 0,
-      dailyStreak: 0,
-      lastDailyDate: null,
-      counters: Object.fromEntries(GAMIFICATION_COUNTERS.map((c) => [c, 0]))
-    };
-  }
-  function cloneGamification(s) {
-    return { ...s, unlocked: { ...s.unlocked }, daily: s.daily ? { ...s.daily } : null, counters: { ...s.counters } };
-  }
-  var GAMIFICATION_BUS_EVENTS = Object.freeze([
-    "quest_completed",
-    "utterance_quest_completed",
-    "puzzle_solved",
-    "item_collected",
-    "location_discovered",
-    "npc_talked",
-    "object_examined",
-    "enemy_defeated"
-  ]);
-  var GAMIFICATION_REFUSALS = Object.freeze(["bad_date", "unknown_award", "unknown_event"]);
-  function applyGamification(run, step, ctx = {}) {
-    const t = new Tracker(run, ctx);
-    const refusal3 = t.step(step);
-    return { run: { state: t.s, date: t.date }, events: t.events, signals: t.signals, ...refusal3 ? { refusal: refusal3 } : {} };
-  }
-  var Tracker = class {
-    constructor(run, ctx) {
-      __publicField(this, "s");
-      __publicField(this, "date");
-      __publicField(this, "events", []);
-      __publicField(this, "signals", []);
-      __publicField(this, "tuning");
-      __publicField(this, "thresholds");
-      __publicField(this, "labels");
-      __publicField(this, "at");
-      this.s = cloneGamification(run.state);
-      this.date = run.date;
-      this.tuning = ctx.tuning ?? GAMIFICATION_TUNING;
-      this.thresholds = ctx.config?.levelThresholds ?? LEVEL_THRESHOLDS;
-      this.labels = ctx.config?.tierLabels ?? DEFAULT_TIER_LABELS;
-      this.at = ctx.at ?? 0;
-    }
-    step(st) {
-      const t = this.tuning;
-      switch (st.do) {
-        case "day":
-          if (!isDateKey(st.date)) return "bad_date";
-          this.date = st.date;
-          this.ensureDaily();
-          return null;
-        case "conversation": {
-          const turns = Math.floor((st.gain + 125) / 250);
-          let xp = t.conversationBase;
-          if (turns > t.longConversationTurns) xp += (turns - t.longConversationTurns) * t.conversationLong;
-          this.addXp(xp, "Conversation");
-          this.trackDaily("conversation_count", 1);
-          const grammar = st.grammarPercent ?? 0;
-          if (grammar >= 80) this.trackDaily("grammar_accuracy", grammar);
-          if ((st.targetPercent ?? 0) >= 90) this.trackDaily("target_language_only", 1);
-          this.checkAchievements();
-          return null;
-        }
-        case "word":
-          this.addXp(t.vocabularyNewWord, "New word");
-          this.trackDaily("new_words", 1);
-          this.checkAchievements();
-          return null;
-        case "mastered":
-          this.addXp(t.vocabularyMastered, "Word mastered");
-          return null;
-        case "grammar":
-          if (st.status === "correct") this.addXp(t.grammarPatternCorrect, "Grammar correct");
-          return null;
-        case "pattern":
-          this.addXp(t.grammarPatternMastered, "Grammar pattern mastered");
-          this.checkAchievements();
-          return null;
-        case "quest":
-          this.quest(st.category, st.experienceReward);
-          return null;
-        case "skillRewards": {
-          const total = st.rewards.reduce((sum, r) => sum + r.level, 0);
-          if (total > 0) this.addXp(total * t.skillRewardXpPerPoint, "Skill reward");
-          this.signals.push({ kind: "skill_rewards_applied", totalPoints: total });
-          return null;
-        }
-        case "category":
-          this.trackDaily("vocabulary_category", 1);
-          return null;
-        case "article":
-          this.s.counters.articlesRead += 1;
-          this.checkAchievements();
-          return null;
-        case "award": {
-          const a = GAMIFICATION_AWARDS[st.event];
-          if (!a) return "unknown_award";
-          this.addXp(t[a.tuning], a.reason);
-          return null;
-        }
-        case "listening":
-          if (st.passed) this.addXp(t.listeningComprehensionComplete, "Listening comprehension passed");
-          else this.addXp(Math.floor((t.listeningComprehensionComplete * 5 + 5) / 10), "Listening comprehension attempted");
-          return null;
-        case "event":
-          return this.busEvent(st.event);
-        case "stats":
-          this.stats(st.stats);
-          return null;
-      }
-      return "unknown_event";
-    }
-    busEvent(e) {
-      const c = this.s.counters;
-      switch (e.type) {
-        case "quest_completed":
-        case "utterance_quest_completed":
-          this.quest(void 0, void 0);
-          return null;
-        case "puzzle_solved":
-          c.puzzlesSolved += 1;
-          this.addXp(this.tuning.puzzleSolved, "Puzzle solved");
-          this.checkAchievements();
-          return null;
-        case "location_discovered":
-          c.locationsDiscovered += 1;
-          this.addXp(this.tuning.locationDiscovered, "Location discovered");
-          this.checkAchievements();
-          return null;
-        case "item_collected":
-          c.itemsCollected += 1;
-          this.checkAchievements();
-          return null;
-        case "npc_talked":
-          c.npcsTalked += 1;
-          this.checkAchievements();
-          return null;
-        case "object_examined":
-          c.objectsExamined += 1;
-          this.checkAchievements();
-          return null;
-        case "enemy_defeated":
-          this.checkAchievements();
-          return null;
-      }
-      return "unknown_event";
-    }
-    quest(category, experienceReward) {
-      const xp = experienceReward && experienceReward > 0 ? experienceReward : this.tuning.questComplete;
-      this.addXp(xp, "Quest complete");
-      this.s.counters.questsCompleted += 1;
-      if (category === "navigation" || category === "follow_instructions") this.s.counters.navigationQuestsCompleted += 1;
-      if (category === "cultural") this.s.counters.culturalQuestsCompleted += 1;
-      this.trackDaily("quest_count", 1);
-      this.checkAchievements();
-    }
-    addXp(amount, reason) {
-      const oldLevel = levelForXp(this.s.xp, this.thresholds);
-      this.s.xp += amount;
-      const level = levelForXp(this.s.xp, this.thresholds);
-      this.events.push({ type: "xp_gained", amount, reason, newTotal: this.s.xp, level });
-      if (level > oldLevel) {
-        this.events.push({ type: "level_up", oldLevel, newLevel: level, tier: levelTier(level, this.labels), rewards: [] });
-        this.checkAchievements();
-      }
-    }
-    unlock(a) {
-      this.s.unlocked[a.id] = this.at;
-      this.addXp(this.tuning.achievementUnlocked, `Achievement: ${a.name}`);
-      this.events.push({ type: "achievement_unlocked", achievementId: a.id, achievementName: a.name, description: a.description, icon: a.icon });
-    }
-    conditionMet(a) {
-      const { type, threshold } = a.condition;
-      if (type === "level_reached") return levelForXp(this.s.xp, this.thresholds) >= threshold;
-      if (type === "streak_days") return this.s.consecutiveDays >= threshold;
-      const counter = CONDITION_COUNTER[type];
-      return counter !== void 0 && this.s.counters[counter] >= threshold;
-    }
-    checkAchievements() {
-      for (const a of ACHIEVEMENTS) {
-        if (a.id in this.s.unlocked) continue;
-        if (this.conditionMet(a)) this.unlock(a);
-      }
-    }
-    stats(st) {
-      this.s.consecutiveDays = st.streakDays;
-      for (const a of ACHIEVEMENTS) {
-        if (a.id in this.s.unlocked) continue;
-        const { type, threshold } = a.condition;
-        let met = false;
-        if (type === "words_learned") met = st.wordsLearned >= threshold;
-        else if (type === "conversations") met = st.conversations >= threshold;
-        else if (type === "grammar_mastered") met = st.grammarMastered >= threshold;
-        else if (type === "fluency_reached") met = st.fluency >= threshold * 1e3;
-        else if (type === "streak_days") met = st.streakDays >= threshold;
-        if (met) this.unlock(a);
-      }
-    }
-    ensureDaily() {
-      if (this.date === null) return;
-      if (!this.s.daily || this.s.daily.dateKey !== this.date) this.s.daily = { dateKey: this.date, progress: 0, completed: false };
-    }
-    trackDaily(type, amount) {
-      this.ensureDaily();
-      const d = this.s.daily;
-      if (!d || d.completed || this.date === null) return;
-      const view2 = dailyChallengeView(d);
-      if (view2.type !== type) return;
-      d.progress += amount;
-      if (d.progress < view2.target) return;
-      d.completed = true;
-      const last = this.s.lastDailyDate;
-      if (last) {
-        if (last === previousDateKey(this.date)) this.s.dailyStreak += 1;
-        else if (last !== this.date) this.s.dailyStreak = 1;
-      } else {
-        this.s.dailyStreak = 1;
-      }
-      this.s.lastDailyDate = this.date;
-      const xp = streakXp(view2.xpReward, this.s.dailyStreak, this.tuning);
-      this.addXp(xp, `Daily challenge (${this.s.dailyStreak}-day streak)`);
-      this.signals.push({ kind: "daily_challenge_completed", challengeId: view2.id, description: view2.description, xpReward: view2.xpReward, streak: this.s.dailyStreak, xpAwarded: xp });
-    }
-  };
-  function gamificationView(s, config = {}) {
-    const thresholds = config.levelThresholds ?? LEVEL_THRESHOLDS;
-    const level = levelForXp(s.xp, thresholds);
-    return {
-      totalXp: s.xp,
-      level,
-      nextLevelXp: nextLevelXp(level, thresholds),
-      levelXp: s.xp - (thresholds[level - 1] ?? 0),
-      progressPermille: levelProgressPermille(s.xp, thresholds),
-      tier: levelTier(level, config.tierLabels ?? DEFAULT_TIER_LABELS),
-      achievements: ACHIEVEMENTS.map((a) => ({ id: a.id, name: a.name, description: a.description, icon: a.icon, unlocked: a.id in s.unlocked, unlockedAt: a.id in s.unlocked ? s.unlocked[a.id] : null })),
-      daily: s.daily ? dailyChallengeView(s.daily) : null,
-      consecutiveDays: s.consecutiveDays,
-      dailyStreak: s.dailyStreak,
-      counters: { ...s.counters }
-    };
-  }
-
-  // @insimul/core/src/progression/progression-save.ts
-  var PROGRESSION_EXTENSION_KEY = "progression";
-  var PROGRESSION_BLOCK_MEMBERS = Object.freeze(["gamification", "skills"]);
-  var PROGRESSION_GAMIFICATION_KEYS = Object.freeze(["xp", "unlocked", "daily", "consecutiveDays", "dailyStreak", "lastDailyDate", "counters"]);
-  var PROGRESSION_DAILY_KEYS = Object.freeze(["dateKey", "progress", "completed"]);
-  var PROGRESSION_SKILL_ACTOR_KEYS = Object.freeze(["id", "levels", "xp", "points", "unlocked"]);
-  var isObj5 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
-  var whole4 = (v) => typeof v === "number" && Number.isInteger(v) && v >= 0;
-  var ACHIEVEMENT_IDS = new Set(ACHIEVEMENTS.map((a) => a.id));
-  function readGamification(g, bad3) {
-    if (g === void 0 || g === null) return null;
-    if (!isObj5(g)) {
-      bad3.push("gamification");
-      return null;
-    }
-    const at = (k) => bad3.push(`gamification.${k}`);
-    const out = {
-      xp: 0,
-      unlocked: {},
-      daily: null,
-      consecutiveDays: 0,
-      dailyStreak: 0,
-      lastDailyDate: null,
-      counters: Object.fromEntries(GAMIFICATION_COUNTERS.map((c) => [c, 0]))
-    };
-    if (g.xp !== void 0) {
-      if (whole4(g.xp)) out.xp = g.xp;
-      else at("xp");
-    }
-    if (g.unlocked !== void 0) {
-      if (!isObj5(g.unlocked)) at("unlocked");
-      else
-        for (const [id, when] of Object.entries(g.unlocked)) {
-          if (ACHIEVEMENT_IDS.has(id) && typeof when === "number" && Number.isInteger(when)) out.unlocked[id] = when;
-          else at(`unlocked.${id}`);
-        }
-    }
-    if (g.daily !== void 0 && g.daily !== null) {
-      const d = g.daily;
-      if (isObj5(d) && isDateKey(d.dateKey) && whole4(d.progress) && typeof d.completed === "boolean" && d.completed === d.progress >= dailyChallengeView({ dateKey: d.dateKey, progress: 0, completed: false }).target) {
-        out.daily = { dateKey: d.dateKey, progress: d.progress, completed: d.completed };
-      } else at("daily");
-    }
-    if (g.consecutiveDays !== void 0) {
-      if (whole4(g.consecutiveDays)) out.consecutiveDays = g.consecutiveDays;
-      else at("consecutiveDays");
-    }
-    if (g.dailyStreak !== void 0) {
-      if (whole4(g.dailyStreak)) out.dailyStreak = g.dailyStreak;
-      else at("dailyStreak");
-    }
-    if (g.lastDailyDate !== void 0 && g.lastDailyDate !== null) {
-      if (isDateKey(g.lastDailyDate)) out.lastDailyDate = g.lastDailyDate;
-      else at("lastDailyDate");
-    }
-    if (g.counters !== void 0) {
-      if (!isObj5(g.counters)) at("counters");
-      else
-        for (const [k, n] of Object.entries(g.counters)) {
-          if (GAMIFICATION_COUNTERS.includes(k) && whole4(n)) out.counters[k] = n;
-          else at(`counters.${k}`);
-        }
-    }
-    if (out.dailyStreak > 0 !== (out.lastDailyDate !== null) && !bad3.includes("gamification.dailyStreak") && !bad3.includes("gamification.lastDailyDate")) at("dailyStreak");
-    return out;
-  }
-  function wholeMap(v) {
-    if (!isObj5(v)) return null;
-    for (const n of Object.values(v)) if (!whole4(n)) return null;
-    return { ...v };
-  }
-  function readSkills(s, bad3) {
-    if (s === void 0 || s === null) return null;
-    if (!isObj5(s) || !Array.isArray(s.actors)) {
-      bad3.push(isObj5(s) ? "skills.actors" : "skills");
-      return null;
-    }
-    const actors = [];
-    const seen = /* @__PURE__ */ new Set();
-    s.actors.forEach((a, i) => {
-      const levels = isObj5(a) ? wholeMap(a.levels ?? {}) : null;
-      const xp = isObj5(a) ? wholeMap(a.xp ?? {}) : null;
-      const points3 = isObj5(a) ? wholeMap(a.points ?? {}) : null;
-      const unlocked = isObj5(a) ? a.unlocked ?? [] : null;
-      const okUnlocked = Array.isArray(unlocked) && unlocked.every((n) => typeof n === "string" && n.length > 0) && new Set(unlocked).size === unlocked.length;
-      if (!isObj5(a) || typeof a.id !== "string" || a.id.length === 0 || seen.has(a.id) || !levels || !xp || !points3 || !okUnlocked) {
-        bad3.push(`skills.actors[${i}]`);
-        return;
-      }
-      seen.add(a.id);
-      actors.push({ id: a.id, levels, xp, points: points3, unlocked: [...unlocked] });
-    });
-    return { actors };
-  }
-  function readProgressionBlock(b) {
-    if (b === void 0 || b === null) return { ok: true, value: null };
-    if (!isObj5(b)) return { ok: false, keys: [] };
-    const bad3 = [];
-    const gamification = readGamification(b.gamification, bad3);
-    const skills = readSkills(b.skills, bad3);
-    if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
-    return { ok: true, value: { gamification, skills } };
-  }
-  function progressionSaveBlock(parts) {
-    return { gamification: parts.gamification ?? null, skills: parts.skills ?? null };
-  }
-  function progressionBlockOf(b) {
-    const sorted = (m) => Object.fromEntries(Object.keys(m).sort(compareIds).map((k) => [k, m[k]]));
-    const g = b.gamification;
-    return {
-      gamification: g ? {
-        xp: g.xp,
-        unlocked: Object.fromEntries(ACHIEVEMENTS.filter((a) => a.id in g.unlocked).map((a) => [a.id, g.unlocked[a.id]])),
-        daily: g.daily ? { dateKey: g.daily.dateKey, progress: g.daily.progress, completed: g.daily.completed } : null,
-        consecutiveDays: g.consecutiveDays,
-        dailyStreak: g.dailyStreak,
-        lastDailyDate: g.lastDailyDate,
-        counters: Object.fromEntries(GAMIFICATION_COUNTERS.map((c) => [c, g.counters[c] ?? 0]))
-      } : null,
-      skills: b.skills ? {
-        actors: [...b.skills.actors].sort((x, y) => compareIds(x.id, y.id)).map((a) => ({ id: a.id, levels: sorted(a.levels), xp: sorted(a.xp), points: sorted(a.points), unlocked: [...a.unlocked].sort(compareIds) }))
-      } : null
-    };
-  }
-
   // @insimul/core/src/skills/skills.ts
   var SKILL_EFFECT_KINDS = Object.freeze(["unlocks", "modifies", "permits"]);
   var DEFAULT_SKILL_TUNING = Object.freeze({
@@ -19697,11 +21979,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function skillTuningFromIR(ir) {
     const d = DEFAULT_SKILL_TUNING;
     if (!ir) return { ...d };
-    const num5 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    const num6 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
     return {
-      pointsPerLevel: num5(ir.pointsPerLevel, d.pointsPerLevel),
-      defaultNodeCost: num5(ir.defaultNodeCost, d.defaultNodeCost),
-      defaultMaxLevel: num5(ir.defaultMaxLevel, d.defaultMaxLevel),
+      pointsPerLevel: num6(ir.pointsPerLevel, d.pointsPerLevel),
+      defaultNodeCost: num6(ir.defaultNodeCost, d.defaultNodeCost),
+      defaultMaxLevel: num6(ir.defaultMaxLevel, d.defaultMaxLevel),
       levelXp: ir.levelXp && ir.levelXp.length > 0 ? [...ir.levelXp] : d.levelXp,
       advanceAction: ir.advanceAction ?? d.advanceAction,
       unlockAction: ir.unlockAction ?? d.unlockAction
@@ -19783,12 +22065,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function resolveAdvance(input) {
     const tuning = input.tuning ?? DEFAULT_SKILL_TUNING;
     const skill = input.skill;
-    const id = skill?.id ?? input.skillId ?? "";
+    const id4 = skill?.id ?? input.skillId ?? "";
     const next = input.level + 1;
     const price = xpForLevel(skill, next, tuning);
     const base = {
       actor: input.actor,
-      skill: id,
+      skill: id4,
       level: input.level,
       next,
       price,
@@ -22775,14 +25057,14 @@ goal_step(A, G, Act, T, C) :-
   function skillDefinitionFacts(skills, tuning) {
     const facts = [];
     for (const skill of skills) {
-      const id = prologAtom(skill.id);
-      facts.push(`skill_defined(${id}, ${prologAtom(skill.category)}).`);
-      facts.push(`skill_max_level(${id}, ${skill.maxLevel}).`);
+      const id4 = prologAtom(skill.id);
+      facts.push(`skill_defined(${id4}, ${prologAtom(skill.category)}).`);
+      facts.push(`skill_max_level(${id4}, ${skill.maxLevel}).`);
       for (const prereq of skill.requires) {
-        facts.push(`skill_requires(${id}, ${prologAtom(prereq.skill)}, ${prereq.level}).`);
+        facts.push(`skill_requires(${id4}, ${prologAtom(prereq.skill)}, ${prereq.level}).`);
       }
       for (let level = 2; level <= skill.maxLevel; level += 1) {
-        facts.push(`skill_level_xp(${id}, ${level}, ${xpForLevel(skill, level, tuning)}).`);
+        facts.push(`skill_level_xp(${id4}, ${level}, ${xpForLevel(skill, level, tuning)}).`);
       }
     }
     return facts;
@@ -22792,14 +25074,14 @@ goal_step(A, G, Act, T, C) :-
     for (const tree of trees) {
       facts.push(`skill_tree(${prologAtom(tree.id)}, ${prologAtom(tree.skill)}).`);
       for (const node of tree.nodes) {
-        const id = prologAtom(node.id);
-        facts.push(`skill_node(${id}, ${prologAtom(tree.id)}).`);
-        facts.push(`skill_node_cost(${id}, ${nodeCost(node, tuning)}).`);
+        const id4 = prologAtom(node.id);
+        facts.push(`skill_node(${id4}, ${prologAtom(tree.id)}).`);
+        facts.push(`skill_node_cost(${id4}, ${nodeCost(node, tuning)}).`);
         for (const goal of nodeRequirements(node)) {
-          facts.push(`skill_node_requires(${id}, ${goal}).`);
+          facts.push(`skill_node_requires(${id4}, ${goal}).`);
         }
         for (const effect of node.effects) {
-          facts.push(`skill_node_effect(${id}, ${effectTerm(effect)}).`);
+          facts.push(`skill_node_effect(${id4}, ${effectTerm(effect)}).`);
         }
       }
     }
@@ -23233,10 +25515,10 @@ words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C),
       if (!sink) return 0;
       const actors = actorId === void 0 ? this.roster().map((a) => a.id) : [actorId];
       let published = 0;
-      for (const id of actors) {
-        if (actorId !== void 0 && !this.actors.has(id)) continue;
+      for (const id4 of actors) {
+        if (actorId !== void 0 && !this.actors.has(id4)) continue;
         try {
-          sink.applyModifiers(id, skillModifierTotals(this.effectsOf(id)));
+          sink.applyModifiers(id4, skillModifierTotals(this.effectsOf(id4)));
         } catch {
         }
         published += 1;
@@ -24305,7 +26587,7 @@ words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C),
   var ATOM = /^[a-z][A-Za-z0-9_]*$/;
   var CONTROL = /[\u0000-\u001f\u007f]/;
   var RESERVED = new Set(SKILL_KB_RESERVED_PREDICATES);
-  var isObj6 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var isObj14 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
   function skillKbClause(fact) {
     const arg = (a) => typeof a === "number" ? skillKbNumber(a) : serializeArg(a);
     return fact.args.length === 0 ? `${fact.predicate}.` : `${fact.predicate}(${fact.args.map(arg).join(", ")}).`;
@@ -24314,7 +26596,7 @@ words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C),
     return String(n).replace(/^(-?\d+)e/, "$1.0e");
   }
   function skillKbLiveFactOf(fact) {
-    if (!isObj6(fact) || typeof fact.predicate !== "string" || !ATOM.test(fact.predicate) || !Array.isArray(fact.args)) return { ok: false, code: "unreadable" };
+    if (!isObj14(fact) || typeof fact.predicate !== "string" || !ATOM.test(fact.predicate) || !Array.isArray(fact.args)) return { ok: false, code: "unreadable" };
     const args = [];
     for (const a of fact.args) {
       if (typeof a === "string" && !CONTROL.test(a) || typeof a === "number" && Number.isFinite(a)) args.push(a);
@@ -24340,13 +26622,22 @@ words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C),
     });
     return { live: [...held.values()].sort((a, b) => compareIds(a.clause, b.clause)), dropped: dropped2 };
   }
+  function skillKbRosterFacts(state) {
+    const sp = new SkillProgression({ state: state ?? { actors: [] } });
+    return sp.roster().flatMap((actor) => actorPublishDelta(actor).assert);
+  }
   function skillKbLoadOf(currentState) {
-    const cs = isObj6(currentState) ? currentState : {};
-    const extensions = isObj6(cs.extensions) ? cs.extensions : {};
+    const cs = isObj14(currentState) ? currentState : {};
+    const extensions = isObj14(cs.extensions) ? cs.extensions : {};
     const block = readProgressionBlock(extensions[PROGRESSION_EXTENSION_KEY]);
     if (!block.ok) return { ok: false, refusal: { code: "unreadable_progression", field: `currentState.extensions.${PROGRESSION_EXTENSION_KEY}`, keys: block.keys } };
     const { live, dropped: dropped2 } = skillKbLiveFactsOf(cs.prologFacts);
     return { ok: true, live, dropped: dropped2, skills: block.value?.skills ?? null };
+  }
+  function skillKbLoadJson(currentState) {
+    const r = skillKbLoadOf(currentState);
+    if (!r.ok) return { ok: false, refusal: r.refusal };
+    return { ok: true, facts: r.live.map((f) => f.clause), dropped: r.dropped, roster: skillKbRosterFacts(r.skills) };
   }
   function composeSkillKbProgram(input) {
     const pack = input.pack ?? SKILL_PREDICATES_PROLOG;
@@ -28505,13 +30796,13 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
   }
   var MECHANIC_IDS = new Set(INSIMUL_MODULES.map((m) => m.id));
   var NO_MECHANIC_MODULES = "none";
-  function isMechanicModuleId(id) {
-    return typeof id === "string" && MECHANIC_IDS.has(id);
+  function isMechanicModuleId(id4) {
+    return typeof id4 === "string" && MECHANIC_IDS.has(id4);
   }
   function resolveWorldActivation(genreId, enabledModules) {
     const list2 = Array.isArray(enabledModules) ? enabledModules : [];
     const unknownModules = [
-      ...new Set(list2.filter((id) => !isMechanicModuleId(id) && id !== NO_MECHANIC_MODULES).map((id) => String(id)))
+      ...new Set(list2.filter((id4) => !isMechanicModuleId(id4) && id4 !== NO_MECHANIC_MODULES).map((id4) => String(id4)))
     ];
     const selected = list2.filter(isMechanicModuleId);
     if (selected.length > 0 || list2.includes(NO_MECHANIC_MODULES)) {
@@ -28523,14 +30814,14 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     return resolveWorldActivation(ir.meta.genreConfig.id, ir.meta.enabledModules);
   }
   var MODULE_ACTIVATION_TABLE = Object.freeze(
-    Object.fromEntries(Object.keys(GENRE_BUNDLES).map((id) => [id, resolveActiveModules(id)]))
+    Object.fromEntries(Object.keys(GENRE_BUNDLES).map((id4) => [id4, resolveActiveModules(id4)]))
   );
   function moduleActivationTable() {
     return {
       description: "Genre bundle \u2192 active Insimul modules. Emitted from INSIMUL_MODULES by npm run module-activation; see packages/core/docs/module-contract.md \xA77.",
       alwaysActivePacks: ALWAYS_ACTIVE_PACKS,
       genres: Object.fromEntries(
-        Object.entries(MODULE_ACTIVATION_TABLE).map(([id, set]) => [id, set])
+        Object.entries(MODULE_ACTIVATION_TABLE).map(([id4, set]) => [id4, set])
       )
     };
   }
@@ -28542,8 +30833,8 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     token: Object.freeze([NO_MECHANIC_MODULES])
   });
   var FEATURE_IDS = new Set(ENABLED_MODULES_VOCABULARY.feature);
-  function isFeatureModuleId(id) {
-    return typeof id === "string" && FEATURE_IDS.has(id);
+  function isFeatureModuleId(id4) {
+    return typeof id4 === "string" && FEATURE_IDS.has(id4);
   }
   var fold = (s) => s.toLowerCase().replace(/[-_\s]/g, "");
   var ACCEPTED = [
@@ -28551,8 +30842,8 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     ...ENABLED_MODULES_VOCABULARY.feature,
     ...ENABLED_MODULES_VOCABULARY.token
   ];
-  function nearestEnabledModuleId(id) {
-    const f = fold(id);
+  function nearestEnabledModuleId(id4) {
+    const f = fold(id4);
     return ACCEPTED.find((a) => fold(a) === f) ?? null;
   }
   var ENABLED_MODULE_REFUSAL_CODES = Object.freeze([
@@ -28562,8 +30853,8 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
   ]);
   var FEATURE_MODULES_SERVED_REGARDLESS = Object.freeze(["voice", "onboarding"]);
   var SERVED_REGARDLESS = new Set(FEATURE_MODULES_SERVED_REGARDLESS);
-  function featureReadBy(id) {
-    return SERVED_REGARDLESS.has(id) ? null : FEATURE_MODULE_READERS[id]?.how ?? null;
+  function featureReadBy(id4) {
+    return SERVED_REGARDLESS.has(id4) ? null : FEATURE_MODULE_READERS[id4]?.how ?? null;
   }
   function readEnabledModules(enabledModules) {
     if (!Array.isArray(enabledModules)) {
@@ -28586,21 +30877,21 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
         token = true;
         continue;
       }
-      const id = String(raw);
+      const id4 = String(raw);
       const seen = typeof raw === "string" ? seenStrings : seenOthers;
-      if (seen.has(id)) continue;
-      seen.add(id);
+      if (seen.has(id4)) continue;
+      seen.add(id4);
       if (typeof raw !== "string") {
         refused.push({
-          id,
+          id: id4,
           code: "refused-not-an-id",
-          reason: `${JSON.stringify(raw) ?? id} is not a module id (meta.enabledModules holds strings)`,
+          reason: `${JSON.stringify(raw) ?? id4} is not a module id (meta.enabledModules holds strings)`,
           nearest: null
         });
       } else if (isFeatureModuleId(raw)) {
         const r = featureModuleRefusal(raw);
         if (r) {
-          refused.push({ id, code: "refused-feature-module", reason: `feature module '${raw}': ${r.reason} (${r.code})`, nearest: null });
+          refused.push({ id: id4, code: "refused-feature-module", reason: `feature module '${raw}': ${r.reason} (${r.code})`, nearest: null });
         } else {
           feature.push(raw);
           aliases.push({ id: raw, family: "feature", mechanic: [], readBy: featureReadBy(raw) });
@@ -28608,7 +30899,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
       } else {
         const nearest = nearestEnabledModuleId(raw);
         refused.push({
-          id,
+          id: id4,
           code: "refused-unknown-module",
           reason: `'${raw}' is neither a mechanic module id nor a feature-module id nor '${NO_MECHANIC_MODULES}'` + (nearest ? `; ids are exact (did you mean '${nearest}'?)` : ""),
           nearest
@@ -28631,7 +30922,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     }
   };
   var hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
-  function clone(value) {
+  function clone2(value) {
     return JSON.parse(JSON.stringify(value));
   }
   var ENUM_FIELDS = {
@@ -28734,10 +31025,10 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     const bundle = genreId === null ? void 0 : getGenreBundle(genreId);
     if (!bundle) return { id: null, featureModules: [] };
     const featureModules = [];
-    for (const id of bundle.defaultModules) {
-      const r = featureModuleRefusal(id);
-      if (r) refused.push({ kind: "module", id, from: "bundle", ...r });
-      else featureModules.push(id);
+    for (const id4 of bundle.defaultModules) {
+      const r = featureModuleRefusal(id4);
+      if (r) refused.push({ kind: "module", id: id4, from: "bundle", ...r });
+      else featureModules.push(id4);
     }
     return { id: bundle.id, featureModules };
   }
@@ -28771,13 +31062,13 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
       hostInterfaces: [...set.hostInterfaces]
     };
   }
-  function isGenreId(id) {
-    return typeof id === "string" && id.length > 0;
+  function isGenreId(id4) {
+    return typeof id4 === "string" && id4.length > 0;
   }
   function resolveGenre(requested) {
     const refused = [];
     if (isGenreId(requested) && hasOwn(GENRE_REGISTRY, requested)) {
-      const config2 = clone(GENRE_REGISTRY[requested]);
+      const config2 = clone2(GENRE_REGISTRY[requested]);
       refuseFeatures(config2, refused);
       const bundle = bundleFor(requested, refused);
       return {
@@ -28792,7 +31083,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
       };
     }
     const asked = isGenreId(requested) ? requested : null;
-    const config = clone(GENRE_REGISTRY[DEFAULT_GENRE_ID]);
+    const config = clone2(GENRE_REGISTRY[DEFAULT_GENRE_ID]);
     refuseFeatures(config, refused);
     return {
       requested: asked,
@@ -28856,26 +31147,26 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
         `${where}: '${String(value)}' is not one of ${ENUM_FIELDS[head].join(", ")}`
       );
     }
-    target[head] = clone(value);
+    target[head] = clone2(value);
   }
   function applyGenreOverrides(config, overrides, label = "composition") {
-    const out = clone(config);
+    const out = clone2(config);
     for (const o of overrides) applyOverride(out, o, label);
     return out;
   }
   function recipeConfig(b) {
-    const config = clone(GENRE_REGISTRY[b.genreId]);
+    const config = clone2(GENRE_REGISTRY[b.genreId]);
     for (const o of b.overrides) applyOverride(config, o, b.recipeId);
     return config;
   }
   function sameJson(a, b) {
-    return JSON.stringify(canonical(a)) === JSON.stringify(canonical(b));
+    return JSON.stringify(canonical2(a)) === JSON.stringify(canonical2(b));
   }
-  function canonical(value) {
-    if (Array.isArray(value)) return value.map(canonical);
+  function canonical2(value) {
+    if (Array.isArray(value)) return value.map(canonical2);
     if (value !== null && typeof value === "object") {
       return Object.fromEntries(
-        Object.keys(value).sort().map((k) => [k, canonical(value[k])])
+        Object.keys(value).sort().map((k) => [k, canonical2(value[k])])
       );
     }
     return value;
@@ -28950,7 +31241,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
   }
   function worldConfig(world2) {
     const g = world2?.meta?.genreConfig;
-    return g !== null && typeof g === "object" && isGenreId(g.id) ? clone(g) : null;
+    return g !== null && typeof g === "object" && isGenreId(g.id) ? clone2(g) : null;
   }
   function resolveGameGenre(request = {}) {
     const notes = [];
@@ -29022,7 +31313,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     if (worldsGame) refuseWorldModules(listed, refused);
     if (listed.length > 0) {
       const mechanic = listed.filter(isMechanicModuleId);
-      const shown = listed.map((id) => String(id)).join(", ");
+      const shown = listed.map((id4) => String(id4)).join(", ");
       if (!worldsGame) {
         notes.push({
           code: "world-modules-unused",
@@ -29089,8 +31380,8 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     "minimal",
     "fighting"
   ]);
-  var num2 = (n, fallback) => typeof n === "number" && Number.isFinite(n) ? n : fallback;
-  var clamp012 = (n, fallback) => Math.max(0, Math.min(1, num2(n, fallback)));
+  var num3 = (n, fallback) => typeof n === "number" && Number.isFinite(n) ? n : fallback;
+  var clamp012 = (n, fallback) => Math.max(0, Math.min(1, num3(n, fallback)));
   function formatClock(seconds) {
     const safe = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
     const minutes = Math.floor(safe / 60);
@@ -29131,12 +31422,12 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
         return rts(s);
       case "platformer":
         return [
-          { id: "lives", kind: "text", label: "Lives", text: `\u2764\uFE0F x ${num2(s.lives, 0)}`, tone: "danger" },
+          { id: "lives", kind: "text", label: "Lives", text: `\u2764\uFE0F x ${num3(s.lives, 0)}`, tone: "danger" },
           {
             id: "collectibles",
             kind: "text",
             label: "Collected",
-            text: `\u2B50 ${num2(s.collectibles?.current, 0)} / ${num2(s.collectibles?.total, 0)}`,
+            text: `\u2B50 ${num3(s.collectibles?.current, 0)} / ${num3(s.collectibles?.total, 0)}`,
             tone: "quest"
           },
           timer(s)
@@ -29144,7 +31435,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
       case "puzzle":
         return [
           timer(s),
-          { id: "moves", kind: "text", label: "Moves", text: `Moves: ${num2(s.moves, 0)}`, tone: "text_secondary" },
+          { id: "moves", kind: "text", label: "Moves", text: `Moves: ${num3(s.moves, 0)}`, tone: "text_secondary" },
           { id: "hint", kind: "action", label: "Hint", text: "\u{1F4A1} Hint", tone: "accent" }
         ];
       case "action_rpg":
@@ -29157,26 +31448,26 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     }
   }
   function timer(s) {
-    return { id: "timer", kind: "text", label: "Time", text: `\u23F1\uFE0F ${formatClock(num2(s.timerSeconds, 0))}`, tone: "text_primary" };
+    return { id: "timer", kind: "text", label: "Time", text: `\u23F1\uFE0F ${formatClock(num3(s.timerSeconds, 0))}`, tone: "text_primary" };
   }
   function fps(config, s) {
     const out = [{ id: "crosshair", kind: "reticle", text: "+", tone: "text_primary" }];
     if (config.showAmmoCounter !== false) {
-      const current = num2(s.ammo?.current, 0);
-      const magazine = num2(s.ammo?.magazine, 0);
+      const current = num3(s.ammo?.current, 0);
+      const magazine = num3(s.ammo?.magazine, 0);
       const reloading = s.ammo?.reloading === true;
       out.push({
         id: "ammo",
         kind: "text",
         label: "Ammo",
-        text: reloading ? "RELOADING..." : `${current} / ${num2(s.ammo?.total, 0)}`,
+        text: reloading ? "RELOADING..." : `${current} / ${num3(s.ammo?.total, 0)}`,
         // Amber while reloading, red on the last quarter magazine.
         tone: reloading ? "warning" : current <= Math.floor(magazine * 0.25) ? "danger" : "text_primary"
       });
       out.push({ id: "weapon", kind: "text", label: "Weapon", text: s.weaponName ?? "", tone: "text_secondary" });
     }
     if (config.showCompass !== false) {
-      const heading = (num2(s.heading, 0) % 360 + 360) % 360;
+      const heading = (num3(s.heading, 0) % 360 + 360) % 360;
       const shown = Math.round(heading) % 360;
       out.push({ id: "compass", kind: "text", label: "Compass", text: `Heading: ${shown}\xB0 ${compassCardinal(heading)}`, tone: "text_primary" });
     }
@@ -29224,10 +31515,10 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
         tone: fighterHealthTone(health)
       };
     });
-    const special = Math.max(0, Math.min(100, num2(s.specialMeter, 0)));
-    const clock = num2(s.fightTimer, 99);
+    const special = Math.max(0, Math.min(100, num3(s.specialMeter, 0)));
+    const clock = num3(s.fightTimer, 99);
     out.push(
-      { id: "round", kind: "text", label: "Round", text: `Round ${num2(s.round, 1)}`, tone: "text_primary" },
+      { id: "round", kind: "text", label: "Round", text: `Round ${num3(s.round, 1)}`, tone: "text_primary" },
       {
         id: "fight_timer",
         kind: "text",
@@ -29238,9 +31529,9 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
       { id: "special", kind: "meter", label: "Special", text: "", fraction: special / 100, tone: special >= 100 ? "accent_hover" : "accent" }
     );
     const combo = s.combo;
-    if (combo && num2(combo.hits, 0) > 1) {
+    if (combo && num3(combo.hits, 0) > 1) {
       out.push({ id: "combo", kind: "text", label: "Combo", text: `${combo.hits} HIT COMBO!
-${num2(combo.damage, 0)} DMG`, tone: "accent" });
+${num3(combo.damage, 0)} DMG`, tone: "accent" });
     }
     return out;
   }
@@ -29501,9 +31792,9 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         throw new Error(`rules-panel corpus: unknown op '${op}'`);
     }
   }
-  var rule = (id, extra = {}) => ({
-    id,
-    name: id.replace(/_/g, " "),
+  var rule = (id4, extra = {}) => ({
+    id: id4,
+    name: id4.replace(/_/g, " "),
     description: null,
     ruleType: "trigger",
     category: null,
@@ -29803,11 +32094,11 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   // @insimul/core/src/combat/action-table.ts
   var COMBAT_ACTION_CATEGORY = "combat";
   function combatActionFrom(row, columns) {
-    const id = columns?.id ?? row?.id;
-    if (!id) throw new Error("combatActionFrom: an action row must have an id");
+    const id4 = columns?.id ?? row?.id;
+    if (!id4) throw new Error("combatActionFrom: an action row must have an id");
     const range = firstNumber(columns?.range, positive(row?.range));
     const staminaCost = firstNumber(columns?.staminaCost, positive(row?.energyCost));
-    const action = { id };
+    const action = { id: id4 };
     if (columns?.damage !== void 0) action.damage = columns.damage;
     if (columns?.damageType !== void 0) action.damageType = columns.damageType;
     if (range !== void 0) action.range = range;
@@ -29879,8 +32170,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         this.define(combatActionFrom(row, columnsById.get(row.id)));
         loaded += 1;
       }
-      for (const [id, columns] of columnsById) {
-        if (rowsById.has(id)) continue;
+      for (const [id4, columns] of columnsById) {
+        if (rowsById.has(id4)) continue;
         this.define(combatActionFrom(void 0, columns));
         loaded += 1;
       }
@@ -30359,8 +32650,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function term2(fact) {
     return serializedFactToProlog(fact).replace(/\.$/, "");
   }
-  function atom2(id) {
-    return serializeArg(id);
+  function atom2(id4) {
+    return serializeArg(id4);
   }
 
   // @insimul/core/src/identity/equivalence.ts
@@ -30413,29 +32704,29 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     for (const percept of input.percepts) perceptsById.set(percept.id, percept);
     const pairs = /* @__PURE__ */ new Map();
     for (const exposure of input.exposures) {
-      const agentCurie = formatCurie(exposure.agent);
-      if (!agentsByCurie.has(agentCurie) || !perceptsById.has(exposure.percept)) continue;
-      const key = streamKey([agentCurie, exposure.percept]);
+      const agentCurie2 = formatCurie(exposure.agent);
+      if (!agentsByCurie.has(agentCurie2) || !perceptsById.has(exposure.percept)) continue;
+      const key = streamKey([agentCurie2, exposure.percept]);
       const clarity = clamp01(exposure.clarity);
       const prev = pairs.get(key);
       if (prev === void 0 || clarity > prev.clarity) {
-        pairs.set(key, { agentCurie, perceptId: exposure.percept, clarity });
+        pairs.set(key, { agentCurie: agentCurie2, perceptId: exposure.percept, clarity });
       }
     }
     const perceptions = [];
-    for (const { agentCurie, perceptId, clarity } of pairs.values()) {
-      const agent = agentsByCurie.get(agentCurie);
+    for (const { agentCurie: agentCurie2, perceptId, clarity } of pairs.values()) {
+      const agent = agentsByCurie.get(agentCurie2);
       const percept = perceptsById.get(perceptId);
       const acuity = acuityFor(agent, percept.channel);
       if (acuity === null) continue;
       const base = clarity * clamp01(acuity) * clamp01(percept.strength / 100);
-      const noise = thresholds.jitter === 0 ? 0 : (derivedValue(input.seed, input.tick, agentCurie, perceptId) * 2 - 1) * thresholds.jitter;
+      const noise = thresholds.jitter === 0 ? 0 : (derivedValue(input.seed, input.tick, agentCurie2, perceptId) * 2 - 1) * thresholds.jitter;
       const confidence = roundDeterministic(clamp01(base + noise));
       const fidelity = fidelityOf(confidence, thresholds);
       if (fidelity === null) continue;
       const learned = learnedTriple(percept, fidelity);
       perceptions.push({
-        agent: agentCurie,
+        agent: agentCurie2,
         percept: perceptId,
         channel: percept.channel,
         fidelity,
@@ -30505,12 +32796,12 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   }
   function perceptFactsFor(perceptions, perceptsById) {
     const perceived = new Set(perceptions.map((p) => p.percept));
-    const ids = [...perceptsById.keys()].filter((id) => perceived.has(id) || perceptsById.get(id).actor !== void 0).sort(compareIds);
+    const ids = [...perceptsById.keys()].filter((id4) => perceived.has(id4) || perceptsById.get(id4).actor !== void 0).sort(compareIds);
     const facts = [];
-    for (const id of ids) {
-      const percept = perceptsById.get(id);
-      const atom3 = prologAtom(id);
-      if (perceived.has(id)) {
+    for (const id4 of ids) {
+      const percept = perceptsById.get(id4);
+      const atom3 = prologAtom(id4);
+      if (perceived.has(id4)) {
         facts.push(
           `percept(${atom3}, ${formatIdTerm(percept.subject)}, ${prologAtom(percept.predicate)}, ${formatIdTerm(percept.object)}).`
         );
@@ -30777,14 +33068,14 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function toPerceivingAgent(observer) {
     return { agent: observer.agent, senses: observer.senses };
   }
-  function detectionEntityId(id, namespace) {
-    if (id.split(":").length >= 3) {
+  function detectionEntityId(id4, namespace) {
+    if (id4.split(":").length >= 3) {
       try {
-        return parseCurie(id);
+        return parseCurie(id4);
       } catch {
       }
     }
-    return provisionalEntityId(sanitizeLocalId(id), namespace);
+    return provisionalEntityId(sanitizeLocalId(id4), namespace);
   }
 
   // @insimul/core/src/perception/detection-facts.ts
@@ -30918,9 +33209,9 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     })
   ]);
   function stealthActionFrom(row, columns) {
-    const id = columns?.id ?? row?.id;
-    if (!id) throw new Error("stealthActionFrom: an action row must have an id");
-    const action = { id };
+    const id4 = columns?.id ?? row?.id;
+    if (!id4) throw new Error("stealthActionFrom: an action row must have an id");
+    const action = { id: id4 };
     const name = columns?.name ?? row?.name;
     if (name) action.name = name;
     const requiresTarget = columns?.requiresTarget ?? row?.requiresTarget;
@@ -30993,8 +33284,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         this.define(stealthActionFrom(row, columnsById.get(row.id)));
         loaded += 1;
       }
-      for (const [id, columns] of columnsById) {
-        if (rowsById.has(id)) continue;
+      for (const [id4, columns] of columnsById) {
+        if (rowsById.has(id4)) continue;
         this.define(stealthActionFrom(void 0, columns));
         loaded += 1;
       }
@@ -31126,24 +33417,24 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      * Called when the world changes, not on a frame: a host that has a new position
      * every frame reports the LOCATION it resolves to, and only when it changes.
      */
-    setTargetState(id, patch) {
-      const target = this.targets.get(id);
+    setTargetState(id4, patch) {
+      const target = this.targets.get(id4);
       if (!target) return;
       Object.assign(target, patch);
     }
     /** How distracted an observer is right now, 0–100. */
-    setDistraction(id, distraction) {
-      const observer = this.observers.get(id);
+    setDistraction(id4, distraction) {
+      const observer = this.observers.get(id4);
       if (!observer) return;
       observer.distraction = distraction;
     }
-    unregisterObserver(id) {
-      this.observers.delete(id);
-      this.forgetPairs((memory) => this.hostIdOf(memory.observer) === id);
+    unregisterObserver(id4) {
+      this.observers.delete(id4);
+      this.forgetPairs((memory) => this.hostIdOf(memory.observer) === id4);
     }
-    unregisterTarget(id) {
-      this.targets.delete(id);
-      this.forgetPairs((memory) => this.hostIdOf(memory.target) === id);
+    unregisterTarget(id4) {
+      this.targets.delete(id4);
+      this.forgetPairs((memory) => this.hostIdOf(memory.target) === id4);
     }
     // ── The decision ───────────────────────────────────────────────────────
     /**
@@ -31387,10 +33678,10 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      * world's own content and minting a KINP id for it would name something that
      * does not exist.
      */
-    curieOf(id) {
-      const registration = this.observers.get(id) ?? this.targets.get(id);
-      if (!registration) return id;
-      return formatCurie(this.kinpOf(id, registration.kinp));
+    curieOf(id4) {
+      const registration = this.observers.get(id4) ?? this.targets.get(id4);
+      if (!registration) return id4;
+      return formatCurie(this.kinpOf(id4, registration.kinp));
     }
     /**
      * Ask the host what every observer's senses can reach of every target.
@@ -31592,8 +33883,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      * mechanic vocabulary is spoken in `id/3` terms, while a host is entitled to
      * keep calling its guard `guard_02`.
      */
-    kinpOf(id, explicit) {
-      return explicit ?? detectionEntityId(id, this.namespace);
+    kinpOf(id4, explicit) {
+      return explicit ?? detectionEntityId(id4, this.namespace);
     }
     /** The host id behind a CURIE, falling back to the CURIE for an id never registered. */
     hostIdOf(curie) {
@@ -32086,15 +34377,15 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     for (const routine of routines) {
       facts.push(`routine(${prologAtom(routine.id)}, ${prologAtom(routine.name)}).`);
       for (const block of routine.blocks) {
-        const id = prologAtom(block.id);
-        facts.push(`routine_block(${prologAtom(routine.id)}, ${id}).`);
-        facts.push(`routine_block_window(${id}, ${block.startHour}, ${block.endHour}).`);
-        facts.push(`routine_block_goal(${id}, ${prologAtom(block.goal)}).`);
-        facts.push(`routine_block_priority(${id}, ${block.priority}).`);
+        const id4 = prologAtom(block.id);
+        facts.push(`routine_block(${prologAtom(routine.id)}, ${id4}).`);
+        facts.push(`routine_block_window(${id4}, ${block.startHour}, ${block.endHour}).`);
+        facts.push(`routine_block_goal(${id4}, ${prologAtom(block.goal)}).`);
+        facts.push(`routine_block_priority(${id4}, ${block.priority}).`);
         if (block.place !== void 0) {
-          facts.push(`routine_block_place(${id}, ${prologAtom(block.place)}).`);
+          facts.push(`routine_block_place(${id4}, ${prologAtom(block.place)}).`);
         }
-        for (const day of block.days) facts.push(`routine_block_day(${id}, ${day}).`);
+        for (const day of block.days) facts.push(`routine_block_day(${id4}, ${day}).`);
       }
     }
     return facts;
@@ -32280,8 +34571,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     }
     // ── The authored world ────────────────────────────────────────────────────
     /** The routine with this id, or `undefined`. Read-only. */
-    routine(id) {
-      return this.routines.get(id);
+    routine(id4) {
+      return this.routines.get(id4);
     }
     /** Everything wrong with the routines this world authored. Empty = sound. */
     issues() {
@@ -32584,7 +34875,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         staminaSpenders: layers.stamina ? STAMINA_SPENDERS.filter((layer) => layers[layer]) : [],
         locomotionGraph: layers.locomotion ? layers.traversal ? "traversal" : "none" : null
       },
-      notAssembled: activation.modules.map((m) => m.id).filter((id) => !owners.has(id))
+      notAssembled: activation.modules.map((m) => m.id).filter((id4) => !owners.has(id4))
     };
   }
   var MechanicRuntime = class {
@@ -32847,8 +35138,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       }
     ]
   };
-  var world = (id, enabledModules) => ({
-    meta: enabledModules === void 0 ? { genreConfig: { id } } : { genreConfig: { id }, enabledModules },
+  var world = (id4, enabledModules) => ({
+    meta: enabledModules === void 0 ? { genreConfig: { id: id4 } } : { genreConfig: { id: id4 }, enabledModules },
     routines: ROUTINES
   });
   var CLIMBING = { id: "climbing", category: "dexterity", maxLevel: 5, levelXp: [0, 100, 200, 300, 400, 500] };
@@ -33568,9 +35859,9 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const corrupted = rows.find((r) => r.status === "corrupted");
     const newGameSlot = rows.find((r) => r.status === "empty" && r.isManual !== false)?.index ?? null;
     const shown = { continue: true, new_game: true, load_game: true, settings: i.settings !== false, quit: i.quit !== false };
-    const entry = (id, blocked, reason = "") => {
-      const refusal3 = !shown[id] ? "not_shown" : busy ? "busy" : blocked;
-      return { id, label: TITLE_ENTRY_LABELS[id], shown: shown[id], enabled: refusal3 === null, refusal: refusal3, reason: refusal3 === blocked && refusal3 !== null ? reason : "" };
+    const entry = (id4, blocked, reason = "") => {
+      const refusal3 = !shown[id4] ? "not_shown" : busy ? "busy" : blocked;
+      return { id: id4, label: TITLE_ENTRY_LABELS[id4], shown: shown[id4], enabled: refusal3 === null, refusal: refusal3, reason: refusal3 === blocked && refusal3 !== null ? reason : "" };
     };
     const entries = [
       entry("continue", cont === null ? "nothing_to_continue" : null, corrupted ? corrupted.message : TITLE_MESSAGES.nothing_to_continue),
@@ -33805,8 +36096,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       }
       const run = new Set(objectives.map((o) => o.id));
       this.carried = {
-        completed: (saved?.completed ?? []).filter((id) => !run.has(id)),
-        skipped: (saved?.skipped ?? []).filter((id) => !run.has(id))
+        completed: (saved?.completed ?? []).filter((id4) => !run.has(id4)),
+        skipped: (saved?.skipped ?? []).filter((id4) => !run.has(id4))
       };
       this.startedAtMs = this.now();
       this.stepStartedAtMs = this.startedAtMs;
@@ -34155,53 +36446,6 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     });
   }
 
-  // @insimul/core/src/quests/tutorial-save.ts
-  var TUTORIAL_EXTENSION_KEY = "tutorial";
-  var TUTORIAL_BLOCK_MEMBERS = Object.freeze(["completed", "skipped", "current", "endedBySkip"]);
-  var isObj7 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
-  var isId = (v) => typeof v === "string" && v.length > 0;
-  function readIds(v, name, bad3, taken = /* @__PURE__ */ new Set()) {
-    if (v === void 0) return [];
-    if (!Array.isArray(v)) {
-      bad3.push(name);
-      return null;
-    }
-    const out = [];
-    const seen = /* @__PURE__ */ new Set();
-    v.forEach((id, i) => {
-      if (!isId(id) || seen.has(id) || taken.has(id)) {
-        bad3.push(`${name}[${i}]`);
-        return;
-      }
-      seen.add(id);
-      out.push(id);
-    });
-    return out;
-  }
-  function readTutorialBlock(b) {
-    if (b === void 0 || b === null) return { ok: true, value: null };
-    if (!isObj7(b)) return { ok: false, keys: [] };
-    const bad3 = [];
-    const completed = readIds(b.completed, "completed", bad3);
-    const skipped = readIds(b.skipped, "skipped", bad3, new Set(completed ?? []));
-    let current = null;
-    let currentOk = false;
-    if (!("current" in b) || b.current !== null && !isId(b.current)) bad3.push("current");
-    else if (b.current !== null && ((completed ?? []).includes(b.current) || (skipped ?? []).includes(b.current))) bad3.push("current");
-    else {
-      current = b.current;
-      currentOk = true;
-    }
-    let endedBySkip = false;
-    if (b.endedBySkip !== void 0) {
-      if (typeof b.endedBySkip !== "boolean") bad3.push("endedBySkip");
-      else if (b.endedBySkip && currentOk && skipped !== null && (current !== null || skipped.length === 0)) bad3.push("endedBySkip");
-      else endedBySkip = b.endedBySkip;
-    }
-    if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
-    return { ok: true, value: { completed, skipped, current, endedBySkip } };
-  }
-
   // @insimul/core/src/props/containers.ts
   var DEFAULT_CONTAINER_CAPACITY = 10;
   var CONTAINER_ACCESS_STATES = ["open", "locked", "unreachable"];
@@ -34304,7 +36548,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   var DEFAULT_CHARS_PER_PAGE = 800;
   var DOCUMENT_REFUSALS = ["missing_field", "unknown_kind", "bad_pages", "bad_chars_per_page"];
   var isText = (v) => typeof v === "string";
-  var str3 = (v) => isText(v) ? v : "";
+  var str8 = (v) => isText(v) ? v : "";
   function paginateText(text4, charsPerPage = DEFAULT_CHARS_PER_PAGE) {
     if (!Number.isInteger(charsPerPage) || charsPerPage < 1) charsPerPage = DEFAULT_CHARS_PER_PAGE;
     const pages = [];
@@ -34342,7 +36586,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       const options = Array.isArray(r.options) ? r.options.filter(isText) : [];
       const correctIndex = typeof r.correctIndex === "number" ? r.correctIndex : -1;
       if (!isText(r.question) || !Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex >= options.length) continue;
-      out.push({ question: r.question, questionTranslation: str3(r.questionTranslation), options, correctIndex });
+      out.push({ question: r.question, questionTranslation: str8(r.questionTranslation), options, correctIndex });
     }
     return out;
   }
@@ -34353,7 +36597,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       if (!v || typeof v !== "object") continue;
       const r = v;
       if (!isText(r.word) || r.word === "") continue;
-      out.push({ word: r.word, translation: isText(r.translation) ? r.translation : str3(r.meaning) });
+      out.push({ word: r.word, translation: isText(r.translation) ? r.translation : str8(r.meaning) });
     }
     return out;
   }
@@ -34379,7 +36623,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const authored = Array.isArray(input.pages) ? input.pages : [];
     const sign = kind === "sign";
     const body2 = isText(input.body) ? input.body : isText(input.text) ? input.text : "";
-    const pages = authored.length > 0 ? authored.map((p) => ({ content: p.content, contentTranslation: str3(p.contentTranslation) })) : paginateText(body2, chars).map((content) => ({ content, contentTranslation: "" }));
+    const pages = authored.length > 0 ? authored.map((p) => ({ content: p.content, contentTranslation: str8(p.contentTranslation) })) : paginateText(body2, chars).map((content) => ({ content, contentTranslation: "" }));
     const translation = authored.length > 0 ? "" : isText(input.bodyTranslation) ? input.bodyTranslation : "";
     if (authored.length === 0 && pages.length === 1) pages[0] = { content: pages[0].content, contentTranslation: translation };
     const cefr = cefrOf(input);
@@ -34391,7 +36635,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         id: input.id,
         kind,
         title: input.title,
-        titleTranslation: str3(input.titleTranslation),
+        titleTranslation: str8(input.titleTranslation),
         pages,
         pagesFrom: authored.length > 0 ? "authored" : "paginated",
         translation: authored.length === 0 && pages.length > 1 ? translation : "",
@@ -34440,7 +36684,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       const op = action?.op;
       if (!DOCUMENT_READER_ACTIONS.includes(op)) return { ok: false, refusal: { code: "unknown_action", field: "op" } };
       if (this.phase === "closed") return { ok: false, refusal: { code: "closed", field: "op" } };
-      const id = this.doc.id;
+      const id4 = this.doc.id;
       switch (action.op) {
         case "prev":
           if (this.phase !== "reading") return { ok: false, refusal: { code: "not_reading", field: "op" } };
@@ -34452,18 +36696,18 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
             this.page += 1;
             return { ok: true, events: [] };
           }
-          const events = [{ type: "document_read", id }];
+          const events = [{ type: "document_read", id: id4 }];
           if (!this.opts.alreadyRead) {
-            if (this.doc.collectible) events.push({ type: "document_collected", id, kind: this.doc.kind });
-            if (this.doc.readingXp > 0) events.push({ type: "reading_xp", id, amount: this.doc.readingXp });
+            if (this.doc.collectible) events.push({ type: "document_collected", id: id4, kind: this.doc.kind });
+            if (this.doc.readingXp > 0) events.push({ type: "reading_xp", id: id4, amount: this.doc.readingXp });
           }
-          if (this.doc.vocabulary.length > 0) events.push({ type: "vocabulary_added", id, words: this.doc.vocabulary.map((v) => ({ ...v })) });
-          if (this.doc.clue !== null) events.push({ type: "clue_discovered", id, clue: this.doc.clue });
+          if (this.doc.vocabulary.length > 0) events.push({ type: "vocabulary_added", id: id4, words: this.doc.vocabulary.map((v) => ({ ...v })) });
+          if (this.doc.clue !== null) events.push({ type: "clue_discovered", id: id4, clue: this.doc.clue });
           if (this.quizQuestion() !== null) {
             this.phase = "quiz";
           } else {
             this.phase = "closed";
-            events.push({ type: "document_closed", id });
+            events.push({ type: "document_closed", id: id4 });
           }
           return { ok: true, events };
         }
@@ -34477,117 +36721,14 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
           const correct = index === q.correctIndex;
           this.answered = { index, correct };
           this.phase = "answered";
-          return { ok: true, events: [{ type: "question_answered", id, index, correct, xp: correct ? this.doc.quizXp : 0 }] };
+          return { ok: true, events: [{ type: "question_answered", id: id4, index, correct, xp: correct ? this.doc.quizXp : 0 }] };
         }
         case "close":
           this.phase = "closed";
-          return { ok: true, events: [{ type: "document_closed", id }] };
+          return { ok: true, events: [{ type: "document_closed", id: id4 }] };
       }
     }
   };
-
-  // @insimul/core/src/props/doors.ts
-  var DOOR_PROMPT_RADIUS_M = 2;
-  var DOOR_STANDOFF_M = 0.5;
-  var DOOR_STATES = ["closed", "locked", "no_interior"];
-  var DOOR_ACTIONS = ["enter", "exit"];
-  var DOOR_REFUSALS = ["unknown_action", "missing_field", "unknown_building", "already_inside", "not_inside", "no_interior", "locked"];
-  var round = (n) => Math.round(n * 1e9) / 1e9;
-  var vec = (x, y, z) => ({ x: round(x), y: round(y), z: round(z) });
-  function frontDoorPoint(b) {
-    const r = Number(b.rotation) || 0;
-    const half = (Number(b.spec?.depth) || 0) / 2;
-    return vec(b.position.x + Math.sin(r) * half, b.position.y, b.position.z + Math.cos(r) * half);
-  }
-  function doorFaceYaw(b, door2) {
-    const r = Number(b.rotation) || 0;
-    const dx = door2.x - b.position.x;
-    const dz = door2.z - b.position.z;
-    const along = dx * Math.sin(r) + dz * Math.cos(r);
-    const across = dx * Math.cos(r) - dz * Math.sin(r);
-    const w = Number(b.spec?.width) > 0 ? Number(b.spec.width) / 2 : 0;
-    const d = Number(b.spec?.depth) > 0 ? Number(b.spec.depth) / 2 : 0;
-    const halfAcross = w || d || 1;
-    const halfAlong = d || w || 1;
-    const sa = Math.abs(along) / halfAlong;
-    const sx = Math.abs(across) / halfAcross;
-    if (sx > sa) return across > 0 ? r + Math.PI / 2 : r - Math.PI / 2;
-    return along < 0 ? r + Math.PI : r;
-  }
-  function doorFacing(b) {
-    if (typeof b.doorYaw === "number" && Number.isFinite(b.doorYaw)) return b.doorYaw;
-    if (b.door) return doorFaceYaw(b, b.door);
-    return Number(b.rotation) || 0;
-  }
-  function doorView(b) {
-    const doorAt = b.door ? vec(b.door.x, b.door.y, b.door.z) : frontDoorPoint(b);
-    const r = doorFacing(b);
-    const state = !b.interior ? "no_interior" : b.locked ? "locked" : "closed";
-    const label = [b.name, b.businessType, b.spec?.buildingRole].find((s) => typeof s === "string" && s !== "") ?? "Building";
-    return {
-      id: b.id,
-      state,
-      doorAt,
-      outside: { position: vec(doorAt.x + Math.sin(r) * DOOR_STANDOFF_M, doorAt.y, doorAt.z + Math.cos(r) * DOOR_STANDOFF_M), yaw: round(r) },
-      label,
-      interiorFunction: b.interior && typeof b.interior.function === "string" ? b.interior.function : null
-    };
-  }
-  function doorPrompt(buildings, player) {
-    if (player.inside) {
-      const b = buildings.find((x) => x.id === player.inside);
-      if (!b) return null;
-      const v = doorView(b);
-      return { building: b.id, action: "exit", label: v.label, state: v.state, distance: null };
-    }
-    let best = null;
-    for (const b of buildings) {
-      const v = doorView(b);
-      if (v.state === "no_interior") continue;
-      const d = Math.hypot(player.position.x - v.doorAt.x, player.position.z - v.doorAt.z);
-      if (d < DOOR_PROMPT_RADIUS_M && (best === null || d < best.d)) best = { b, v, d };
-    }
-    return best ? { building: best.b.id, action: "enter", label: best.v.label, state: best.v.state, distance: round(best.d) } : null;
-  }
-  function doorStep(buildings, state, action) {
-    const op = action?.op;
-    if (op !== "enter" && op !== "exit") return { ok: false, refusal: { code: "unknown_action", field: "op" } };
-    if (op === "exit") {
-      if (!state.inside) return { ok: false, refusal: { code: "not_inside", field: "op" } };
-      const b2 = buildings.find((x) => x.id === state.inside);
-      if (!b2) return { ok: false, refusal: { code: "unknown_building", field: "inside" } };
-      const v2 = doorView(b2);
-      return { ok: true, handoff: { op: "exit_to_exterior", building: b2.id, arrive: v2.outside.position, yaw: v2.outside.yaw }, inside: null };
-    }
-    if (typeof action.building !== "string" || action.building === "") return { ok: false, refusal: { code: "missing_field", field: "building" } };
-    if (state.inside) return { ok: false, refusal: { code: "already_inside", field: "op" } };
-    const b = buildings.find((x) => x.id === action.building);
-    if (!b) return { ok: false, refusal: { code: "unknown_building", field: "building" } };
-    const v = doorView(b);
-    if (v.state === "no_interior") return { ok: false, refusal: { code: "no_interior", field: "building" } };
-    let unlocked = false;
-    if (v.state === "locked") {
-      const key = b.keyItemId;
-      if (typeof key !== "string" || key === "" || !(state.playerItemIds ?? []).includes(key)) {
-        return { ok: false, refusal: { code: "locked", field: "building" } };
-      }
-      unlocked = true;
-    }
-    const entrance = (b.interior.doors ?? []).find((d) => d.kind === "entrance") ?? null;
-    return {
-      ok: true,
-      handoff: {
-        op: "enter_interior",
-        building: b.id,
-        interior: `interior:${b.id}`,
-        interiorFunction: v.interiorFunction,
-        arrive: entrance ? vec(entrance.position.x, entrance.position.y, entrance.position.z) : null,
-        entrance: entrance ? entrance.id : null,
-        unlocked
-      },
-      inside: b.id
-    };
-  }
 
   // @insimul/core/src/props/notice-board.ts
   var NOTICE_FLUENCY_THRESHOLDS = { beginner: 0, intermediate: 25, advanced: 55 };
@@ -34664,8 +36805,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     step(action) {
       const op = action?.op;
       if (!NOTICE_BOARD_ACTIONS.includes(op)) return { ok: false, refusal: { code: "unknown_action", field: "op" } };
-      const id = action.id;
-      const article = this.posted.find((a) => a.id === id);
+      const id4 = action.id;
+      const article = this.posted.find((a) => a.id === id4);
       if (!article) return { ok: false, refusal: { code: "unknown_notice", field: "id" } };
       if (!this.shownNotices().includes(article)) return { ok: false, refusal: { code: "not_shown", field: "id" } };
       const row = this.row(article);
@@ -35185,8 +37326,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     loadFromSaveState(player) {
       this.byId.clear();
       for (const raw of player?.inventory ?? []) {
-        const id = inventoryEntryId(raw);
-        if (id !== null) this.byId.set(id, { ...raw });
+        const id4 = inventoryEntryId(raw);
+        if (id4 !== null) this.byId.set(id4, { ...raw });
       }
       this.gold = Number.isFinite(player?.gold) ? player.gold : 0;
     }
@@ -35199,15 +37340,15 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     }
     /** Add an item, stacking its quantity (default 1) onto a held entry with the same id. */
     addItem(item) {
-      const id = inventoryEntryId(item);
-      if (id === null) return false;
+      const id4 = inventoryEntryId(item);
+      if (id4 === null) return false;
       const qty = Number.isFinite(item.quantity) ? item.quantity : 1;
-      const existing = this.byId.get(id);
+      const existing = this.byId.get(id4);
       if (existing) {
         existing.quantity = (Number.isFinite(existing.quantity) ? existing.quantity : 1) + qty;
         return true;
       }
-      this.byId.set(id, { ...item, quantity: qty });
+      this.byId.set(id4, { ...item, quantity: qty });
       return true;
     }
     /** Remove `quantity` (default 1) of an item; the entry goes at zero or below. */
@@ -35485,8 +37626,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       why: "a refusal is a decision an engine can act on"
     }
   ]);
-  var finite2 = (v) => typeof v === "number" && Number.isFinite(v);
-  var finitePoint = (p) => !!p && finite2(p.x) && finite2(p.z);
+  var finite3 = (v) => typeof v === "number" && Number.isFinite(v);
+  var finitePoint = (p) => !!p && finite3(p.x) && finite3(p.z);
   function unitAxis(axis) {
     if (!finitePoint(axis)) return { x: 1, z: 0 };
     const l = Math.hypot(axis.x, axis.z);
@@ -35503,7 +37644,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   }
   function areaShape(a) {
     if (finitePoint(a.half)) return { c: a.at, radius: -1, ax: unitAxis(a.axis), half: { x: Math.abs(a.half.x), z: Math.abs(a.half.z) } };
-    return { c: a.at, radius: finite2(a.radius) ? Math.max(0, a.radius) : 0, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
+    return { c: a.at, radius: finite3(a.radius) ? Math.max(0, a.radius) : 0, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
   }
   var DEFAULT_RADIUS = {
     door: PICKUP_DOOR_RADIUS_M,
@@ -35517,16 +37658,16 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     if (!finitePoint(o.at)) return null;
     const circle2 = DEFAULT_RADIUS[o.kind];
     if (circle2 !== void 0) {
-      return { c: o.at, radius: finite2(o.radius) ? Math.max(0, o.radius) : circle2, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
+      return { c: o.at, radius: finite3(o.radius) ? Math.max(0, o.radius) : circle2, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
     }
     const half = finitePoint(o.half) ? { x: Math.abs(o.half.x), z: Math.abs(o.half.z) } : null;
     if (half && half.x > PICKUP_GROUND_PIECE_HALF_M && half.z > PICKUP_GROUND_PIECE_HALF_M) return null;
-    const banded = finite2(o.yMin) && finite2(o.yMax);
+    const banded = finite3(o.yMin) && finite3(o.yMax);
     if (o.kind === "plant" && banded) {
       const height = o.yMax - o.yMin;
       if (height < PICKUP_GROUND_COVER_M) return null;
       if (height > PICKUP_TREE_HEIGHT_M) {
-        const h = half ?? (finite2(o.radius) ? { x: Math.abs(o.radius), z: Math.abs(o.radius) } : { x: 0, z: 0 });
+        const h = half ?? (finite3(o.radius) ? { x: Math.abs(o.radius), z: Math.abs(o.radius) } : { x: 0, z: 0 });
         const pivot = finitePoint(o.pivot) ? o.pivot : o.at;
         if (!bandHolds(o, groundY)) return null;
         return { c: pivot, radius: pickupTrunkRadius(h.x, h.z), ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
@@ -35534,7 +37675,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     }
     if (banded && !bandHolds(o, groundY)) return null;
     if (half) return { c: o.at, radius: -1, ax: unitAxis(o.axis), half };
-    return { c: o.at, radius: finite2(o.radius) ? Math.max(0, o.radius) : 0, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
+    return { c: o.at, radius: finite3(o.radius) ? Math.max(0, o.radius) : 0, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
   }
   function bandHolds(o, groundY) {
     return !(o.yMin > groundY + PICKUP_STAND_HIGH_M || o.yMax < groundY + PICKUP_STAND_LOW_M);
@@ -35543,18 +37684,18 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const out = { ...PICKUP_CLEARANCE_M };
     for (const k of PICKUP_CLEARANCE_KINDS) {
       const v = world2.clearance?.[k];
-      if (finite2(v)) out[k] = v;
+      if (finite3(v)) out[k] = v;
     }
     return out;
   }
   function searchOf(world2) {
     const s = { ...PICKUP_SEARCH };
     const given = world2.search ?? {};
-    if (finite2(given.ringStepM) && given.ringStepM > 0) s.ringStepM = given.ringStepM;
-    if (finite2(given.radiusM) && given.radiusM >= 0) s.radiusM = given.radiusM;
-    if (finite2(given.arcM) && given.arcM > 0) s.arcM = given.arcM;
-    if (finite2(given.minPoints) && given.minPoints >= 1) s.minPoints = Math.floor(given.minPoints);
-    if (finite2(given.maxPoints) && given.maxPoints >= 1) s.maxPoints = Math.floor(given.maxPoints);
+    if (finite3(given.ringStepM) && given.ringStepM > 0) s.ringStepM = given.ringStepM;
+    if (finite3(given.radiusM) && given.radiusM >= 0) s.radiusM = given.radiusM;
+    if (finite3(given.arcM) && given.arcM > 0) s.arcM = given.arcM;
+    if (finite3(given.minPoints) && given.minPoints >= 1) s.minPoints = Math.floor(given.minPoints);
+    if (finite3(given.maxPoints) && given.maxPoints >= 1) s.maxPoints = Math.floor(given.maxPoints);
     if (s.maxPoints < s.minPoints) s.maxPoints = s.minPoints;
     return s;
   }
@@ -35586,7 +37727,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     });
     const roads = [];
     (world2.roads ?? []).forEach((r, index) => {
-      const w = finite2(r?.width) ? r.width : PICKUP_ROAD_DEFAULT_WIDTH_M;
+      const w = finite3(r?.width) ? r.width : PICKUP_ROAD_DEFAULT_WIDTH_M;
       let prev = null;
       for (const q of r?.waypoints ?? []) {
         if (!finitePoint(q)) {
@@ -35608,7 +37749,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   }
   function groundOf(input) {
     const groundY = input.groundY ?? 0;
-    return finitePoint(input.spot) && finite2(groundY) ? groundY : null;
+    return finitePoint(input.spot) && finite3(groundY) ? groundY : null;
   }
   function clearanceAt(p, prep, settled) {
     let best = PICKUP_NOTHING_NEAR_M;
@@ -35726,107 +37867,6 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       else if (r.code === "no-clear-spot") settled.push({ at: r.clearest.at, index });
     });
     return { placements };
-  }
-
-  // @insimul/core/src/gathering/physical-actions.ts
-  var PHYSICAL_ACTION_IDS = Object.freeze([
-    "chopping",
-    "cooking",
-    "crafting",
-    "farm_harvest",
-    "farm_plant",
-    "farm_water",
-    "fishing",
-    "harvesting",
-    "herbalism",
-    "mining",
-    "painting",
-    "praying",
-    "reading",
-    "sweeping"
-  ]);
-  var def = (id, displayName, promptVerb, clip, clipFallback, seconds, energyCost, xp, rewards, places, extra = {}) => ({
-    id,
-    displayName,
-    promptVerb,
-    clip,
-    clipFallback,
-    durationMs: seconds * 1e3,
-    energyCost,
-    xp,
-    rewards: extra.production ? [] : rewards.map(([item, chancePercent, min, max]) => ({ item, chancePercent, min, max })),
-    production: extra.production ?? null,
-    tool: extra.tool ?? null,
-    places
-  });
-  var FARM = ["farm", "field", "garden", "plantation", "greenhouse"];
-  var DEFAULT_PHYSICAL_ACTIONS = Object.freeze([
-    def("chopping", "Chop Wood", "Chop", "TreeChopping_Loop", "Interact", 6, 7, 12, [["firewood", 90, 1, 3], ["timber", 30, 1, 1]], ["wood_pile", "lumber_yard", "tree_stump", "forest"], { tool: "axe" }),
-    def("cooking", "Cook", "Cook", "Interact", "Idle_Talking_Loop", 6, 4, 12, [["prepared_food", 80, 1, 1], ["baked_goods", 30, 1, 2]], ["kitchen", "oven", "stove", "hearth", "campfire", "bakery", "restaurant"]),
-    def("crafting", "Craft", "Craft", "Fixing_Kneeling", "Interact", 8, 6, 18, [], ["workbench", "forge", "blacksmith", "workshop", "anvil"], { production: { craft: "crafting", verb: "craft" } }),
-    def("farm_harvest", "Harvest Crops", "Harvest", "Farm_Harvest", "Interact", 6, 10, 15, [], FARM, { production: { craft: "farming", verb: "harvest" } }),
-    def("farm_plant", "Plant Crops", "Plant", "Farm_Harvest", "Interact", 5, 8, 10, [], FARM, { production: { craft: "farming", verb: "plant" } }),
-    def("farm_water", "Water Crops", "Water", "Farm_Watering", "Interact", 4, 5, 8, [], FARM, { production: { craft: "farming", verb: "water" } }),
-    def("fishing", "Fish", "Fish", "Farm_Harvest", "Interact", 10, 15, 15, [], ["water", "river", "lake", "pond", "dock", "pier", "stream", "marsh", "canal"], { production: { craft: "fishing", verb: "fish" } }),
-    def("harvesting", "Harvest", "Harvest", "Farm_Harvest", "Interact", 5, 3, 10, [["herbs", 60, 1, 3], ["vegetables", 50, 1, 2], ["flowers", 30, 1, 2]], ["garden", "farm", "field", "greenhouse", "plantation"]),
-    def("herbalism", "Pick", "Pick", "Farm_Harvest", "Interact", 4, 5, 8, [["lavande", 20, 1, 1], ["romarin", 20, 1, 1], ["menthe", 15, 1, 1], ["rose", 10, 1, 1], ["thym", 10, 1, 1], ["sauge", 10, 1, 1], ["basilic", 5, 1, 1], ["fleur_sauvage", 5, 1, 1]], ["garden", "forest", "meadow", "farm", "herb_shop", "greenhouse", "grove"]),
-    def("mining", "Mine", "Mine", "TreeChopping_Loop", "Interact", 8, 20, 20, [], ["mine", "quarry", "rock", "cave", "mountain", "ore_deposit"], { production: { craft: "mining", verb: "mine" } }),
-    def("painting", "Paint", "Paint", "Interact", "Idle_Talking_Loop", 10, 4, 15, [["painting", 70, 1, 1]], ["easel", "studio", "art_room"]),
-    def("praying", "Pray", "Pray", "Fixing_Kneeling", "Idle", 5, 1, 5, [["blessing_token", 15, 1, 1]], ["altar", "church", "chapel", "shrine", "temple"]),
-    def("reading", "Read", "Study", "Sitting_Idle_Loop", "Idle", 5, 1, 8, [["knowledge_scroll", 20, 1, 1]], ["bookshelf", "library", "desk", "study"]),
-    def("sweeping", "Sweep", "Sweep", "Farm_Watering", "Interact", 4, 2, 5, [["dust_bundle", 30, 1, 1]], ["broom", "porch", "floor", "entrance"])
-  ]);
-  var DEFAULT_PHYSICAL_ACTION_TUNING = Object.freeze({
-    actions: DEFAULT_PHYSICAL_ACTIONS.map((a) => ({ ...a })),
-    seed: "insimul",
-    energyCostPercent: 100,
-    energyGate: true
-  });
-  var BUSINESS_ACTIONS = Object.freeze({
-    art_studio: [{ action: "painting", furniture: "workbench" }],
-    bakery: [{ action: "cooking", furniture: "counter" }],
-    blacksmith: [{ action: "crafting", furniture: "workbench" }],
-    blacksmith_yard: [{ action: "mining", furniture: "anvil" }],
-    bookstore: [{ action: "reading", furniture: "bookshelf" }],
-    carpentry: [{ action: "crafting", furniture: "workbench" }],
-    chapel: [{ action: "praying", furniture: "pew" }],
-    church: [{ action: "praying", furniture: "pew" }],
-    farm: ["farm_plant", "farm_water", "farm_harvest", "harvesting"].map((action) => ({ action, furniture: "counter" })),
-    garden: ["farm_plant", "farm_water", "farm_harvest", "harvesting", "herbalism"].map((action) => ({ action, furniture: "counter" })),
-    greenhouse: ["farm_plant", "farm_water", "farm_harvest", "harvesting", "herbalism"].map((action) => ({ action, furniture: "counter" })),
-    herb_shop: [{ action: "herbalism", furniture: "counter" }],
-    library: [{ action: "reading", furniture: "bookshelf" }],
-    mine: [{ action: "mining", furniture: "workbench" }],
-    pharmacy: [{ action: "herbalism", furniture: "counter" }],
-    restaurant: [{ action: "cooking", furniture: "counter" }],
-    school: [{ action: "reading", furniture: "bookshelf" }],
-    tavern: [{ action: "cooking", furniture: "counter" }],
-    temple: [{ action: "praying", furniture: "pew" }],
-    university: [{ action: "reading", furniture: "bookshelf" }],
-    workshop: [{ action: "crafting", furniture: "workbench" }]
-  });
-  function actionPrompt(tuning, action) {
-    const d = tuning.actions.find((a) => a.id === action);
-    return d ? `${d.promptVerb} here` : action;
-  }
-  var ACTION_REFUSALS = Object.freeze(["unknown_action", "busy", "wrong_place", "no_tool", "too_tired", "production_refused"]);
-
-  // @insimul/core/src/props/interior-save.ts
-  var STATED_LAYOUT_SEED = null;
-  var DEFAULT_INTERIOR_FLOOR_HEIGHT_M = 3;
-  var isRec = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
-  function layoutSeedOf(v) {
-    return Number.isInteger(v) ? v : STATED_LAYOUT_SEED;
-  }
-  function readInteriorState(v) {
-    if (!isRec(v)) return null;
-    if (typeof v.buildingId !== "string" || v.buildingId === "") return null;
-    return {
-      buildingId: v.buildingId,
-      buildingName: typeof v.buildingName === "string" ? v.buildingName : "",
-      buildingType: typeof v.buildingType === "string" ? v.buildingType : "",
-      layoutSeed: layoutSeedOf(v.layoutSeed)
-    };
   }
 
   // @insimul/core/src/props/interactables.ts
@@ -36139,19 +38179,6 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     return { source: null, id: null, target: null, pick: null, shadowed: null };
   }
 
-  // @insimul/core/src/language-learning/progress.ts
-  var CEFR_ORDER = Object.freeze(["A1", "A2", "B1", "B2", "C1", "C2"]);
-  var ENCOUNTER_TYPES = Object.freeze(["active_use", "passive_hover", "passive_read", "quiz_correct", "quiz_incorrect"]);
-  var ENCOUNTER_HALVES = Object.freeze({
-    active_use: 2,
-    passive_hover: 1,
-    passive_read: 1,
-    quiz_correct: 2,
-    quiz_incorrect: 0
-  });
-  var GRAMMAR_WEAKNESS_RATE = Object.freeze({ num: 2, den: 5 });
-  var BOOK_REFUSALS = Object.freeze(["empty_word", "unknown_encounter"]);
-
   // @insimul/core/src/language-learning/adaptation.ts
   var SIGNAL_WEIGHTS = Object.freeze({ grammar: 300, targetLanguage: 300, length: 200, quality: 200 });
   var NPC_MODE_PERCENT = Object.freeze({
@@ -36366,16 +38393,16 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     "experience",
     "skills"
   ]);
-  function canonical2(value) {
-    if (Array.isArray(value)) return value.map(canonical2);
+  function canonical3(value) {
+    if (Array.isArray(value)) return value.map(canonical3);
     if (value !== null && typeof value === "object") {
       return Object.fromEntries(
-        Object.keys(value).sort().map((k) => [k, canonical2(value[k])])
+        Object.keys(value).sort().map((k) => [k, canonical3(value[k])])
       );
     }
     return value;
   }
-  var sameJson2 = (a, b) => JSON.stringify(canonical2(a)) === JSON.stringify(canonical2(b));
+  var sameJson2 = (a, b) => JSON.stringify(canonical3(a)) === JSON.stringify(canonical3(b));
   function axesOf(row, manifest) {
     if (manifest?.variants) {
       const v = manifest.variants;
@@ -36415,17 +38442,17 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const seen = /* @__PURE__ */ new Set();
     for (const c of o.preset) {
       if (c === null || typeof c !== "object" || typeof c.id !== "string") bad3("each preset entry has a string id");
-      const id = c.id;
-      if (!known.has(id)) bad3(`the pack index has no pack '${id}'`);
-      if (seen.has(id)) bad3(`'${id}' is preset twice`);
-      seen.add(id);
+      const id4 = c.id;
+      if (!known.has(id4)) bad3(`the pack index has no pack '${id4}'`);
+      if (seen.has(id4)) bad3(`'${id4}' is preset twice`);
+      seen.add(id4);
     }
-    for (const id of o.offered ?? []) {
-      if (typeof id !== "string" || !known.has(id)) bad3(`offered names unknown pack '${String(id)}'`);
+    for (const id4 of o.offered ?? []) {
+      if (typeof id4 !== "string" || !known.has(id4)) bad3(`offered names unknown pack '${String(id4)}'`);
     }
-    for (const [id, policy2] of Object.entries(o.gate ?? {})) {
-      if (!known.has(id)) bad3(`gate names unknown pack '${id}'`);
-      if (policy2 !== "gate-decides") bad3(`gate '${id}' is '${String(policy2)}'; the only policy is gate-decides`);
+    for (const [id4, policy2] of Object.entries(o.gate ?? {})) {
+      if (!known.has(id4)) bad3(`gate names unknown pack '${id4}'`);
+      if (policy2 !== "gate-decides") bad3(`gate '${id4}' is '${String(policy2)}'; the only policy is gate-decides`);
     }
     return {
       preset: o.preset,
@@ -36457,13 +38484,13 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const base = resolveGameGenre({ recipe, world: request.world ?? null });
     let presetDoc = { preset: [], offered: [], gate: {} };
     if (recipe !== null) {
-      const id = typeof recipe === "string" ? recipe : recipe.id;
-      const core = getRecipePackPreset(id);
+      const id4 = typeof recipe === "string" ? recipe : recipe.id;
+      const core = getRecipePackPreset(id4);
       const stated2 = typeof recipe === "string" ? void 0 : recipe.packs;
       if (stated2 !== void 0) {
-        const checked = checkPresetShape(stated2, `recipe '${id}' packs`, known);
+        const checked = checkPresetShape(stated2, `recipe '${id4}' packs`, known);
         if (core && !sameJson2(checked, core)) {
-          throw new CompositionError("preset-drift", `recipe '${id}' packs block disagrees with core's preset`);
+          throw new CompositionError("preset-drift", `recipe '${id4}' packs block disagrees with core's preset`);
         }
         presetDoc = core ?? checked;
       } else if (core) presetDoc = core;
@@ -36490,58 +38517,58 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const disabled = /* @__PURE__ */ new Set();
     const switchedOn = /* @__PURE__ */ new Set();
     const retuned = /* @__PURE__ */ new Set();
-    for (const id of Object.keys(game).sort((a, b) => (order2.get(a) ?? 1e9) - (order2.get(b) ?? 1e9) || a.localeCompare(b))) {
-      const g = game[id] ?? {};
-      if (!known.has(id)) {
-        refuse3("unknown-pack", id, `the pack index has no pack '${id}'`);
+    for (const id4 of Object.keys(game).sort((a, b) => (order2.get(a) ?? 1e9) - (order2.get(b) ?? 1e9) || a.localeCompare(b))) {
+      const g = game[id4] ?? {};
+      if (!known.has(id4)) {
+        refuse3("unknown-pack", id4, `the pack index has no pack '${id4}'`);
         continue;
       }
-      const presetHas = source.has(id);
+      const presetHas = source.has(id4);
       if (g.enabled === false) {
-        if (source.get(id) === "always-on") refuse3("always-on", id, `'${id}' is always on and cannot be switched off`);
-        else if (presetHas) disabled.add(id);
+        if (source.get(id4) === "always-on") refuse3("always-on", id4, `'${id4}' is always on and cannot be switched off`);
+        else if (presetHas) disabled.add(id4);
       } else if (g.enabled === true && !presetHas) {
-        source.set(id, "game");
-        switchedOn.add(id);
+        source.set(id4, "game");
+        switchedOn.add(id4);
       }
-      const c = choice.get(id) ?? { parameters: {}, from: {} };
+      const c = choice.get(id4) ?? { parameters: {}, from: {} };
       if (g.variant !== void 0 && g.variant !== c.variant) {
         c.variant = g.variant;
         c.from.variant = "game";
-        retuned.add(id);
+        retuned.add(id4);
       }
       if (g.style !== void 0 && g.style !== c.style) {
         c.style = g.style;
         c.from.style = "game";
-        retuned.add(id);
+        retuned.add(id4);
       }
       for (const [k, v] of Object.entries(g.parameters ?? {})) {
         if (c.parameters[k] !== v) {
           c.parameters[k] = v;
-          retuned.add(id);
+          retuned.add(id4);
         }
       }
-      choice.set(id, c);
+      choice.set(id4, c);
     }
-    const requiresOf = (id) => {
-      const m = manifests.get(id);
-      return m ? (m.requires ?? []).map((r) => r.id) : [...rows.get(id)?.dependsOn ?? []];
+    const requiresOf = (id4) => {
+      const m = manifests.get(id4);
+      return m ? (m.requires ?? []).map((r) => r.id) : [...rows.get(id4)?.dependsOn ?? []];
     };
-    const installed = new Set([...source.keys()].filter((id) => !disabled.has(id)));
+    const installed = new Set([...source.keys()].filter((id4) => !disabled.has(id4)));
     const requiredBy = /* @__PURE__ */ new Map();
     const queue = [...installed].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0));
     while (queue.length > 0) {
-      const id = queue.shift();
-      for (const dep of requiresOf(id)) {
+      const id4 = queue.shift();
+      for (const dep of requiresOf(id4)) {
         if (!known.has(dep)) {
-          refuse3("unknown-pack", id, `'${id}' requires '${dep}', which the pack index does not list`);
+          refuse3("unknown-pack", id4, `'${id4}' requires '${dep}', which the pack index does not list`);
           continue;
         }
         if (!requiredBy.has(dep)) requiredBy.set(dep, /* @__PURE__ */ new Set());
-        requiredBy.get(dep)?.add(id);
+        requiredBy.get(dep)?.add(id4);
         if (!installed.has(dep)) {
           if (disabled.has(dep)) {
-            refuse3("required-by", dep, `'${dep}' cannot be switched off: '${id}' requires it`);
+            refuse3("required-by", dep, `'${dep}' cannot be switched off: '${id4}' requires it`);
             disabled.delete(dep);
           } else source.set(dep, source.get(dep) ?? "dependency");
           installed.add(dep);
@@ -36550,39 +38577,39 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       }
     }
     let changes = 0;
-    for (const id of [.../* @__PURE__ */ new Set([...switchedOn, ...disabled, ...retuned])].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) {
-      if (switchedOn.has(id) || disabled.has(id) || installed.has(id)) changes += 1;
-      else refuse3("not-installed", id, `'${id}' is not installed, so its variant, style and parameters do nothing; switch it on first`);
+    for (const id4 of [.../* @__PURE__ */ new Set([...switchedOn, ...disabled, ...retuned])].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) {
+      if (switchedOn.has(id4) || disabled.has(id4) || installed.has(id4)) changes += 1;
+      else refuse3("not-installed", id4, `'${id4}' is not installed, so its variant, style and parameters do nothing; switch it on first`);
     }
     const sorted = [];
     const placed = /* @__PURE__ */ new Set();
-    const place = (id, stack) => {
-      if (placed.has(id) || stack.has(id)) return;
-      stack.add(id);
-      for (const dep of [...requiresOf(id)].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) {
+    const place = (id4, stack) => {
+      if (placed.has(id4) || stack.has(id4)) return;
+      stack.add(id4);
+      for (const dep of [...requiresOf(id4)].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) {
         if (installed.has(dep)) place(dep, stack);
       }
-      stack.delete(id);
-      placed.add(id);
-      sorted.push(id);
+      stack.delete(id4);
+      placed.add(id4);
+      sorted.push(id4);
     };
-    for (const id of [...installed].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) place(id, /* @__PURE__ */ new Set());
-    const gateOf = (id) => {
-      const m = manifests.get(id);
-      const decides = hasOwn2(presetDoc.gate, id);
-      const feature = m?.core.genreFeature ?? (decides && FEATURE_FLAGS.has(id) ? id : void 0);
+    for (const id4 of [...installed].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) place(id4, /* @__PURE__ */ new Set());
+    const gateOf = (id4) => {
+      const m = manifests.get(id4);
+      const decides = hasOwn2(presetDoc.gate, id4);
+      const feature = m?.core.genreFeature ?? (decides && FEATURE_FLAGS.has(id4) ? id4 : void 0);
       return feature === void 0 ? null : { feature, policy: decides ? "gate-decides" : "composer" };
     };
     const gatedBy = /* @__PURE__ */ new Map();
-    const addGate = (feature, id) => {
+    const addGate = (feature, id4) => {
       const list2 = gatedBy.get(feature) ?? [];
-      if (!list2.includes(id)) list2.push(id);
+      if (!list2.includes(id4)) list2.push(id4);
       gatedBy.set(feature, list2);
     };
     for (const m of catalog.manifests) if (m.core.genreFeature !== void 0) addGate(m.core.genreFeature, m.id);
-    for (const id of Object.keys(presetDoc.gate)) {
-      const g = gateOf(id);
-      if (g) addGate(g.feature, id);
+    for (const id4 of Object.keys(presetDoc.gate)) {
+      const g = gateOf(id4);
+      if (g) addGate(g.feature, id4);
     }
     const gatesIn = (path) => path.startsWith("features.") ? gatedBy.get(path.slice("features.".length)) : void 0;
     const gatedPhrase = (ids, own) => ids.includes(own) ? `'${own}'` : ids.map((x) => `'${x}'`).join(" and ");
@@ -36597,31 +38624,31 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       const axesBy = /* @__PURE__ */ new Map();
       const chosenOption = /* @__PURE__ */ new Map();
       const keptParameters = /* @__PURE__ */ new Map();
-      for (const id of sorted) {
-        const row = rows.get(id);
-        const m = manifests.get(id);
+      for (const id4 of sorted) {
+        const row = rows.get(id4);
+        const m = manifests.get(id4);
         const axes2 = axesOf(row, m);
-        axesBy.set(id, axes2);
-        const c = choice.get(id);
+        axesBy.set(id4, axes2);
+        const c = choice.get(id4);
         const picked = /* @__PURE__ */ new Map();
-        chosenOption.set(id, picked);
+        chosenOption.set(id4, picked);
         const kept = {};
-        keptParameters.set(id, kept);
-        const gate = gateOf(id);
+        keptParameters.set(id4, kept);
+        const gate = gateOf(id4);
         const write = (o) => {
-          contributed.add(id);
-          if (!withheld2.has(id)) pending.push(o);
+          contributed.add(id4);
+          if (!withheld2.has(id4)) pending.push(o);
         };
         if (c?.variant !== void 0 && c.variant !== WORLD_DEFAULT_VARIANT) {
           const axis = axes2.find((a) => a.options.some((o) => o.id === c.variant));
           if (!axis) {
-            refuseHere("unknown-variant", id, `'${id}' has no variant '${c.variant}'`);
+            refuseHere("unknown-variant", id4, `'${id4}' has no variant '${c.variant}'`);
           } else {
             const opt = axis.options.find((o) => o.id === c.variant);
             if (c.from.variant === "game" && opt.status === "port-later") {
-              refuseHere("variant-port-later", id, `'${id}' variant '${opt.id}' is port-later and is not offered yet`);
+              refuseHere("variant-port-later", id4, `'${id4}' variant '${opt.id}' is port-later and is not offered yet`);
             } else if (c.from.variant === "game" && opt.status === "blocked") {
-              refuseHere("variant-blocked", id, `'${id}' variant '${opt.id}' is blocked (shown, not offered)`);
+              refuseHere("variant-blocked", id4, `'${id4}' variant '${opt.id}' is blocked (shown, not offered)`);
             } else {
               picked.set(axis.axis, opt.id);
               if (c.from.variant === "game") {
@@ -36630,12 +38657,12 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
                   if (gated) {
                     refuseHere(
                       "variant-overrides-gate",
-                      id,
-                      `variant '${opt.id}' sets ${o.path}, the feature that gates ${gatedPhrase(gated, id)}; only the world and the composer switch it`
+                      id4,
+                      `variant '${opt.id}' sets ${o.path}, the feature that gates ${gatedPhrase(gated, id4)}; only the world and the composer switch it`
                     );
                     continue;
                   }
-                  write({ pack: id, from: "variant", path: o.path, value: o.value });
+                  write({ pack: id4, from: "variant", path: o.path, value: o.value });
                 }
               }
             }
@@ -36644,32 +38671,32 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         for (const [k, v] of Object.entries(c?.parameters ?? {})) {
           const p = (m?.parameters ?? []).find((x) => x.id === k);
           if (!p) {
-            refuseHere("unknown-parameter", id, `'${id}' has no parameter '${k}'`);
+            refuseHere("unknown-parameter", id4, `'${id4}' has no parameter '${k}'`);
             continue;
           }
           const problem = parameterProblem(p, v);
           if (problem) {
-            refuseHere("invalid-parameter", id, `'${id}' parameter '${k}': ${problem}`);
+            refuseHere("invalid-parameter", id4, `'${id4}' parameter '${k}': ${problem}`);
             continue;
           }
           if (p.maps.startsWith("genre:")) {
             const path = p.maps.slice("genre:".length);
             const gated = gatesIn(path);
             if (gated) {
-              refuseHere("parameter-overrides-gate", id, `parameter '${k}' maps ${path}, the feature that gates ${gatedPhrase(gated, id)}`);
+              refuseHere("parameter-overrides-gate", id4, `parameter '${k}' maps ${path}, the feature that gates ${gatedPhrase(gated, id4)}`);
               continue;
             }
-            write({ pack: id, from: "parameter", path, value: v });
+            write({ pack: id4, from: "parameter", path, value: v });
           }
           kept[k] = v;
         }
-        if (gate && gate.policy === "composer" && switchedOn.has(id)) {
-          write({ pack: id, from: "gate", path: `features.${gate.feature}`, value: true });
+        if (gate && gate.policy === "composer" && switchedOn.has(id4)) {
+          write({ pack: id4, from: "gate", path: `features.${gate.feature}`, value: true });
         }
       }
-      for (const id of [...disabled].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) {
-        const gate = gateOf(id);
-        if (gate && gate.policy === "composer") pending.push({ pack: id, from: "gate", path: `features.${gate.feature}`, value: false });
+      for (const id4 of [...disabled].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) {
+        const gate = gateOf(id4);
+        if (gate && gate.policy === "composer") pending.push({ pack: id4, from: "gate", path: `features.${gate.feature}`, value: false });
       }
       let config2 = base.config;
       const applied2 = [];
@@ -36707,49 +38734,49 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       }
       const features = config2.features ?? {};
       const packs2 = [];
-      for (const id of sorted) {
-        const row = rows.get(id);
-        const m = manifests.get(id);
-        const c = choice.get(id);
-        const picked = chosenOption.get(id);
+      for (const id4 of sorted) {
+        const row = rows.get(id4);
+        const m = manifests.get(id4);
+        const c = choice.get(id4);
+        const picked = chosenOption.get(id4);
         const variants = {};
-        for (const a of axesBy.get(id) ?? []) {
+        for (const a of axesBy.get(id4) ?? []) {
           const fromConfig = GENRE_AXES.has(a.axis) ? config2[a.axis] : void 0;
           const configOpt = typeof fromConfig === "string" && a.options.some((o) => o.id === fromConfig) ? fromConfig : void 0;
           const gamePick = c?.from.variant === "game" ? picked.get(a.axis) : void 0;
-          const landed = gamePick !== void 0 && (variantLanded.has(id) || !pending.some((o) => o.pack === id && o.from === "variant"));
+          const landed = gamePick !== void 0 && (variantLanded.has(id4) || !pending.some((o) => o.pack === id4 && o.from === "variant"));
           const fallbackPick = gamePick !== void 0 && !landed ? void 0 : picked.get(a.axis);
           const resolved = (landed ? gamePick : void 0) ?? configOpt ?? fallbackPick ?? a.default;
           variants[a.axis] = resolved;
           const stated2 = picked.get(a.axis);
           if (stated2 !== void 0 && stated2 !== resolved && c?.from.variant === "preset") {
-            passNotes.push({ code: "preset-variant-differs", pack: id, detail: `the preset says '${stated2}' for ${a.axis}; the game's settings say '${resolved}'` });
+            passNotes.push({ code: "preset-variant-differs", pack: id4, detail: `the preset says '${stated2}' for ${a.axis}; the game's settings say '${resolved}'` });
           }
         }
         let style = null;
         if (c?.style !== void 0) {
           if ((m?.styles?.presets ?? []).some((p) => p.id === c.style)) style = c.style;
-          else refuseHere("unknown-style", id, `'${id}' has no style '${c.style}'`);
+          else refuseHere("unknown-style", id4, `'${id4}' has no style '${c.style}'`);
         }
-        const g = gateOf(id);
+        const g = gateOf(id4);
         const gate = g ? { ...g, on: features[g.feature] === true } : null;
         if (gate && !gate.on) {
-          passNotes.push({ code: "gate-off", pack: id, detail: `'${id}' is installed but features.${gate.feature} is off, so it does not run` });
+          passNotes.push({ code: "gate-off", pack: id4, detail: `'${id4}' is installed but features.${gate.feature} is off, so it does not run` });
         }
-        if (gate?.policy === "gate-decides" && source.get(id) === "game") {
-          passNotes.push({ code: "gate-decides", pack: id, detail: `the recipe leaves features.${gate.feature} to the world` });
+        if (gate?.policy === "gate-decides" && source.get(id4) === "game") {
+          passNotes.push({ code: "gate-decides", pack: id4, detail: `the recipe leaves features.${gate.feature} to the world` });
         }
         packs2.push({
-          id,
+          id: id4,
           kind: row.kind,
           phase: row.phase,
           authored: m !== void 0,
           version: m?.version ?? null,
-          source: source.get(id),
-          requiredBy: [...requiredBy.get(id) ?? []].filter((x) => installed.has(x)).sort(),
+          source: source.get(id4),
+          requiredBy: [...requiredBy.get(id4) ?? []].filter((x) => installed.has(x)).sort(),
           variants,
           style,
-          parameters: { ...keptParameters.get(id) ?? {} },
+          parameters: { ...keptParameters.get(id4) ?? {} },
           gate,
           active: gate ? gate.on : true
         });
@@ -36788,9 +38815,9 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       } else if (engine !== null) {
         passNotes.push({ code: "no-engine-list", pack: null, detail: `no binding list was given for ${engine.id}; engine availability is not checked` });
       }
-      for (const id of sorted) {
-        if (withheld2.has(id) && contributed.has(id)) {
-          passNotes.push({ code: "choices-withheld", pack: id, detail: `'${id}' does not run, so its variant, parameter and gate choices are not applied` });
+      for (const id4 of sorted) {
+        if (withheld2.has(id4) && contributed.has(id4)) {
+          passNotes.push({ code: "choices-withheld", pack: id4, detail: `'${id4}' does not run, so its variant, parameter and gate choices are not applied` });
         }
       }
       return { config: config2, applied: applied2, packs: packs2, contributed, refusals: passRefusals, notes: passNotes };
@@ -36806,7 +38833,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const { config, applied, packs } = pass;
     refusals.push(...pass.refusals);
     notes.push(...pass.notes);
-    const modulesOf = (id) => manifests.get(id)?.core.modules ?? [];
+    const modulesOf = (id4) => manifests.get(id4)?.core.modules ?? [];
     const runningModules = (list2) => new Set(list2.filter((p) => p.active).flatMap((p) => modulesOf(p.id)));
     const now = runningModules(packs);
     const before = Object.keys(game).length === 0 ? now : runningModules(resolveComposition({ recipe: request.recipe, world: request.world }, catalog).packs);
@@ -36843,7 +38870,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       engine: engine?.id ?? null,
       preset: { recipe: base.recipe?.id ?? null, packs: presetIds, changes },
       packs,
-      offered: presetDoc.offered.filter((id) => !installed.has(id)),
+      offered: presetDoc.offered.filter((id4) => !installed.has(id4)),
       overrides: applied,
       genre: {
         id: base.genre.id,
@@ -36901,22 +38928,22 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function isRecord(v) {
     return typeof v === "object" && v !== null && !Array.isArray(v);
   }
-  function finite3(v, fallback) {
+  function finite4(v, fallback) {
     return typeof v === "number" && Number.isFinite(v) ? v : fallback;
   }
-  function vec3(v, fallback) {
+  function vec32(v, fallback) {
     if (!isRecord(v)) return { ...fallback };
     return {
-      x: finite3(v.x, fallback.x),
-      y: finite3(v.y, fallback.y),
-      z: finite3(v.z, fallback.z)
+      x: finite4(v.x, fallback.x),
+      y: finite4(v.y, fallback.y),
+      z: finite4(v.z, fallback.z)
     };
   }
   function readConvention(raw) {
     if (!isRecord(raw)) return { ...CORE_CONVENTION };
     const up = raw.up === "z" || raw.up === "y" ? raw.up : CORE_CONVENTION.up;
     const handedness = raw.handedness === "left" || raw.handedness === "right" ? raw.handedness : CORE_CONVENTION.handedness;
-    const units = finite3(raw.unitsPerMetre, CORE_CONVENTION.unitsPerMetre);
+    const units = finite4(raw.unitsPerMetre, CORE_CONVENTION.unitsPerMetre);
     return {
       up,
       handedness,
@@ -36928,13 +38955,13 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   }
   function readFootprint(raw, up = CORE_CONVENTION.up) {
     if (!isRecord(raw)) return null;
-    const size = vec3(raw.size, { x: 0, y: 0, z: 0 });
+    const size = vec32(raw.size, { x: 0, y: 0, z: 0 });
     if (!(size.x > 0) || !(size.y > 0) || !(size.z > 0)) return null;
-    return { size, pivot: vec3(raw.pivot, defaultPivot(size, up)) };
+    return { size, pivot: vec32(raw.pivot, defaultPivot(size, up)) };
   }
   function readScale(raw) {
     if (typeof raw === "number" && Number.isFinite(raw)) return { x: raw, y: raw, z: raw };
-    return vec3(raw, { x: 1, y: 1, z: 1 });
+    return vec32(raw, { x: 1, y: 1, z: 1 });
   }
   function readSocket(name, raw) {
     if (typeof raw === "string") {
@@ -36944,8 +38971,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     return {
       name,
       kind: typeof rec.kind === "string" ? rec.kind : "",
-      position: vec3(rec.position, { x: 0, y: 0, z: 0 }),
-      yaw: finite3(rec.yaw, 0),
+      position: vec32(rec.position, { x: 0, y: 0, z: 0 }),
+      yaw: finite4(rec.yaw, 0),
       node: typeof rec.node === "string" ? rec.node : ""
     };
   }
@@ -36960,8 +38987,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       // measurements. `footprint === null` is the separate, narrower fact.
       measured: true,
       footprint: readFootprint(transform?.footprint, declared.up),
-      offset: vec3(transform?.offset, { x: 0, y: 0, z: 0 }),
-      yaw: finite3(transform?.yaw, 0),
+      offset: vec32(transform?.offset, { x: 0, y: 0, z: 0 }),
+      yaw: finite4(transform?.yaw, 0),
       scale: readScale(transform?.scale),
       sockets: Object.keys(hasSockets ? sockets : {}).sort().map((name) => readSocket(name, sockets[name]))
     };
@@ -38132,9 +40159,9 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     }
     return ~c >>> 0;
   }
-  function lookHash01(id, salt) {
+  function lookHash01(id4, salt) {
     const seed = Math.imul(salt >>> 0, 2654435761) + 17 >>> 0;
-    return (strCrc32(id, seed) & 16777215) / 16777216;
+    return (strCrc32(id4, seed) & 16777215) / 16777216;
   }
   function backdropRing(box, ring, ringIndex, meshHalfExtents) {
     const out = [];
@@ -38147,8 +40174,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const hz0 = ez + ring.outside;
     const perimeter = 4 * (hx0 + hz0);
     for (let i = 0; i < ring.count; i += 1) {
-      const id = `backdrop.${ringIndex}.${i}`;
-      const s = ring.scale * (1 + ring.scaleJitter * (2 * lookHash01(id, 2) - 1));
+      const id4 = `backdrop.${ringIndex}.${i}`;
+      const s = ring.scale * (1 + ring.scaleJitter * (2 * lookHash01(id4, 2) - 1));
       const mesh = i % meshHalfExtents.length;
       const half = meshHalfExtents[mesh] * s;
       const hx = hx0 + half;
@@ -38165,8 +40192,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         d -= 2 * hx;
         at = [-hx, hz - d];
       }
-      const heading = Math.atan2(-at[1], -at[0]) + (lookHash01(id, 1) - 0.5) * 40 * Math.PI / 180;
-      out.push({ id, mesh, scale: s, x: cx + at[0], y: box.minY - ring.sink, z: cz + at[1], heading });
+      const heading = Math.atan2(-at[1], -at[0]) + (lookHash01(id4, 1) - 0.5) * 40 * Math.PI / 180;
+      out.push({ id: id4, mesh, scale: s, x: cx + at[0], y: box.minY - ring.sink, z: cz + at[1], heading });
     }
     return out;
   }
@@ -38655,10 +40682,10 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   var LOOK_PI = Math.fround(Math.PI);
   function lookNeighbours(layerId, row, look, terrain, plan2, paving, obstacles2, radius) {
     const density = Math.max(0, look.density);
-    const whole5 = Math.floor(density);
-    const frac = density - whole5;
+    const whole9 = Math.floor(density);
+    const frac = density - whole9;
     const key = layerInstanceKey(layerId, row.x, row.z);
-    const evenCopies = whole5 + (lookHash01(key, 0) < frac ? 1 : 0);
+    const evenCopies = whole9 + (lookHash01(key, 0) < frac ? 1 : 0);
     let copies = evenCopies;
     if (look.clumping > 0 && density > 1) {
       const d = density * clumpWeight(row.x, row.z, look.clumping, look.clumpCell);
@@ -38959,7 +40986,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     if (!Array.isArray(v)) bad(`${what} is not an array`);
     return v;
   }
-  function num3(o, k) {
+  function num4(o, k) {
     const v = o[k];
     if (typeof v !== "number") bad(`'${k}' is not a number`);
     return v;
@@ -38968,7 +40995,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const v = o[k];
     return typeof v === "number" ? v : d;
   }
-  function str4(o, k, d = "") {
+  function str9(o, k, d = "") {
     const v = o[k];
     return typeof v === "string" ? v : d;
   }
@@ -38978,13 +41005,13 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function present(o, k) {
     return o[k] !== void 0 && o[k] !== null;
   }
-  function point(v) {
+  function point2(v) {
     const a = arr(v, "a point");
     if (a.length < 2) bad("a point is [x, z]");
     return [a[0], a[1]];
   }
   function points(v) {
-    return arr(v, "points").map(point);
+    return arr(v, "points").map(point2);
   }
   function vec2(v) {
     const o = obj(v, "a vector");
@@ -38992,29 +41019,29 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   }
   function fittedDoor(v) {
     const o = obj(v, "a door");
-    return { x: num3(o, "x"), z: num3(o, "z"), heading: num3(o, "heading") };
+    return { x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
   }
   function frontLine(v) {
     const o = obj(v, "a front line");
-    return { street: num3(o, "street"), buildTo: num3(o, "buildTo") };
+    return { street: num4(o, "street"), buildTo: num4(o, "buildTo") };
   }
   function grid(v) {
     const o = obj(v, "a terrain grid");
     return {
-      resolution: num3(o, "resolution"),
-      sizeX: num3(o, "sizeX"),
-      sizeZ: num3(o, "sizeZ"),
+      resolution: num4(o, "resolution"),
+      sizeX: num4(o, "sizeX"),
+      sizeZ: num4(o, "sizeZ"),
       heights: arr(o.heights, "heights")
     };
   }
   var DOOR_SOURCES = ["none", "binding_socket", "mesh_socket", "component", "binding_yaw"];
   function door(v) {
     const o = obj(v, "a door");
-    const source = str4(o, "source", "none");
+    const source = str9(o, "source", "none");
     if (!DOOR_SOURCES.includes(source)) bad(`unknown door source '${source}'`);
     return {
       source,
-      name: str4(o, "name"),
+      name: str9(o, "name"),
       hasPosition: bool(o, "hasPosition"),
       position: present(o, "position") ? vec2(o.position) : { x: 0, y: 0, z: 0 },
       yaw: numOr2(o, "yaw", 0),
@@ -39024,20 +41051,20 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   }
   function candidate(v) {
     const o = obj(v, "a door candidate");
-    return { component: str4(o, "component"), mesh: str4(o, "mesh"), owner: str4(o, "owner"), min: vec2(o.min), max: vec2(o.max) };
+    return { component: str9(o, "component"), mesh: str9(o, "mesh"), owner: str9(o, "owner"), min: vec2(o.min), max: vec2(o.max) };
   }
   function policy(v) {
     const o = obj(v, "a fit policy");
     const d = defaultFitPolicy();
     const p = {
-      mode: str4(o, "mode", "lot") === "none" ? "none" : "lot",
+      mode: str9(o, "mode", "lot") === "none" ? "none" : "lot",
       scaleMin: numOr2(o, "scaleMin", d.scaleMin),
       scaleMax: numOr2(o, "scaleMax", d.scaleMax),
       doorClearance: numOr2(o, "doorClearance", d.doorClearance),
       seatSink: numOr2(o, "seatSink", d.seatSink),
       neighbourGap: numOr2(o, "neighbourGap", d.neighbourGap)
     };
-    if (present(o, "doorYaw")) p.doorYaw = num3(o, "doorYaw");
+    if (present(o, "doorYaw")) p.doorYaw = num4(o, "doorYaw");
     return p;
   }
   function fitInput(v) {
@@ -39045,29 +41072,29 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const g = obj(o.geometry, "geometry");
     const b = present(o, "bounds") ? obj(o.bounds, "bounds") : null;
     return {
-      entityId: str4(o, "entityId"),
-      lotId: str4(o, "lotId"),
+      entityId: str9(o, "entityId"),
+      lotId: str9(o, "lotId"),
       lot: present(o, "lot") ? readFitLot(o.lot) : null,
-      lotCentre: present(o, "lotCentre") ? point(o.lotCentre) : null,
+      lotCentre: present(o, "lotCentre") ? point2(o.lotCentre) : null,
       node: vec2(o.node),
-      nodeHeading: num3(o, "nodeHeading"),
+      nodeHeading: num4(o, "nodeHeading"),
       nodeScale: vec2(o.nodeScale),
-      geometry: { scale: vec2(g.scale), yaw: num3(g, "yaw"), offset: vec2(g.offset) },
+      geometry: { scale: vec2(g.scale), yaw: num4(g, "yaw"), offset: vec2(g.offset) },
       policy: policy(o.policy),
       bounds: b === null ? null : { min: vec2(b.min), max: vec2(b.max) },
       door: door(o.door),
       ground: present(o, "ground") ? grid(o.ground) : null,
       castHeight: numOr2(o, "castHeight", 0),
-      settleShift: point(o.settleShift),
+      settleShift: point2(o.settleShift),
       frontLine: present(o, "frontLine") ? frontLine(o.frontLine) : null
     };
   }
   function obstacle(v) {
     const o = obj(v, "an obstacle");
     return {
-      entityId: str4(o, "entityId"),
-      kind: str4(o, "kind"),
-      lotId: str4(o, "lotId"),
+      entityId: str9(o, "entityId"),
+      kind: str9(o, "kind"),
+      lotId: str9(o, "lotId"),
       points: points(o.points),
       halfWidth: numOr2(o, "halfWidth", 0),
       closed: bool(o, "closed")
@@ -39079,12 +41106,12 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function body(v) {
     const o = obj(v, "a body");
     return {
-      entityId: str4(o, "entityId"),
-      lotId: str4(o, "lotId"),
+      entityId: str9(o, "entityId"),
+      lotId: str9(o, "lotId"),
       outline: points(o.outline),
-      mass: num3(o, "mass"),
-      maxShift: num3(o, "maxShift"),
-      obstacleGap: num3(o, "obstacleGap"),
+      mass: num4(o, "mass"),
+      maxShift: num4(o, "maxShift"),
+      obstacleGap: num4(o, "obstacleGap"),
       class: numOr2(o, "class", 0),
       gap: numOr2(o, "gap", 0)
     };
@@ -39100,15 +41127,15 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       y = p[1];
     }
     return {
-      kind: str4(o, "kind"),
-      entityId: str4(o, "entityId"),
-      archetype: str4(o, "archetype"),
-      lotId: str4(o, "lotId"),
+      kind: str9(o, "kind"),
+      entityId: str9(o, "entityId"),
+      archetype: str9(o, "archetype"),
+      lotId: str9(o, "lotId"),
       path: present(o, "path") ? points(o.path) : [],
       width: numOr2(o, "width", 0),
       closed: bool(o, "closed"),
       lot: present(o, "lot") ? readFitLot(o.lot) : null,
-      lotCentre: present(o, "lotCentre") ? point(o.lotCentre) : null,
+      lotCentre: present(o, "lotCentre") ? point2(o.lotCentre) : null,
       position: position ?? [0, 0],
       y
     };
@@ -39117,12 +41144,12 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const o = obj(v, "a plan");
     const strips = present(o, "strips") ? arr(o.strips, "strips").map((x) => {
       const s = obj(x, "a strip");
-      const surface = str4(s, "surface");
+      const surface = str9(s, "surface");
       if (surface !== "road" && surface !== "plaza" && surface !== "path") bad("a strip's surface is road, plaza or path");
       return {
-        entityId: str4(s, "entityId"),
+        entityId: str9(s, "entityId"),
         surface,
-        lotId: str4(s, "lotId"),
+        lotId: str9(s, "lotId"),
         points: points(s.points),
         halfWidth: numOr2(s, "halfWidth", 0),
         closed: bool(s, "closed")
@@ -39131,14 +41158,14 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const lots = present(o, "lots") ? arr(o.lots, "lots").map((x) => {
       const l = obj(x, "a lot");
       return {
-        entityId: str4(l, "entityId"),
-        lotId: str4(l, "lotId"),
-        cx: num3(l, "cx"),
-        cz: num3(l, "cz"),
-        halfAcross: num3(l, "halfAcross"),
-        halfAway: num3(l, "halfAway"),
-        awayX: num3(l, "awayX"),
-        awayZ: num3(l, "awayZ")
+        entityId: str9(l, "entityId"),
+        lotId: str9(l, "lotId"),
+        cx: num4(l, "cx"),
+        cz: num4(l, "cz"),
+        halfAcross: num4(l, "halfAcross"),
+        halfAway: num4(l, "halfAway"),
+        awayX: num4(l, "awayX"),
+        awayZ: num4(l, "awayZ")
       };
     }) : [];
     return { strips, lots, terrain: present(o, "terrain") ? grid(o.terrain) : null };
@@ -39147,21 +41174,21 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     return arr(v, "obstacles").map((x) => {
       const o = obj(x, "a ground obstacle");
       return {
-        entityId: str4(o, "entityId"),
+        entityId: str9(o, "entityId"),
         building: bool(o, "building"),
-        cx: num3(o, "cx"),
-        cz: num3(o, "cz"),
-        halfX: num3(o, "halfX"),
-        halfZ: num3(o, "halfZ"),
-        axisX: num3(o, "axisX"),
-        axisZ: num3(o, "axisZ")
+        cx: num4(o, "cx"),
+        cz: num4(o, "cz"),
+        halfX: num4(o, "halfX"),
+        halfZ: num4(o, "halfZ"),
+        axisX: num4(o, "axisX"),
+        axisZ: num4(o, "axisZ")
       };
     });
   }
   function choices(v) {
     return arr(v, "authored").map((x) => {
       const o = obj(x, "a layer choice");
-      return { surface: str4(o, "surface"), layer: str4(o, "layer"), strength: numOr2(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
+      return { surface: str9(o, "surface"), layer: str9(o, "layer"), strength: numOr2(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
     });
   }
   var v3 = (v) => ({ x: v.x, y: v.y, z: v.z });
@@ -39263,13 +41290,13 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     switch (op) {
       // ── building-fit ──
       case "isDoorPartName":
-        return isDoorPartName({ component: str4(i, "component"), mesh: str4(i, "mesh"), owner: str4(i, "owner") });
+        return isDoorPartName({ component: str9(i, "component"), mesh: str9(i, "mesh"), owner: str9(i, "owner") });
       case "faceYawOf":
         return faceYawOf(vec2(i.point), vec2(i.min), vec2(i.max));
       case "chooseDoorPart":
         return doorJson(chooseDoorPart(arr(i.parts, "parts").map(candidate), vec2(i.boundsMin), vec2(i.boundsMax)));
       case "bodyStature":
-        return bodyStature(num3(i, "boundsHeight"), numOr2(i, "headBoneHeight", 0), numOr2(i, "crownTop", 0));
+        return bodyStature(num4(i, "boundsHeight"), numOr2(i, "headBoneHeight", 0), numOr2(i, "crownTop", 0));
       case "fitBuildingToLot":
         return fitJson(fitBuildingToLot(fitInput(input)));
       case "buildingAreaOf": {
@@ -39288,7 +41315,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
           const o = obj(x, "a footprint");
           const corners = points(o.corners);
           if (corners.length !== 4) bad("a footprint has four corners");
-          return { entityId: str4(o, "entityId"), lotId: str4(o, "lotId"), corners: corners.map((c) => [c[0], c[1]]) };
+          return { entityId: str9(o, "entityId"), lotId: str9(o, "lotId"), corners: corners.map((c) => [c[0], c[1]]) };
         });
         return findFitOverlaps(buildings, obstacles(i.obstacles)).map((o) => ({ entityId: o.entityId, with: o.with, withKind: o.withKind, depth: o.depth }));
       }
@@ -39298,7 +41325,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         return { gap: s.gap, axis: [s.axis[0], s.axis[1]] };
       }
       case "settleBodies": {
-        const rule2 = str4(i, "rule");
+        const rule2 = str9(i, "rule");
         if (rule2 !== "neighbour" && rule2 !== "clearance") bad(`unknown settle rule '${rule2}'`);
         return movesJson(settleBodies(
           arr(i.bodies, "bodies").map(body),
@@ -39310,16 +41337,16 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       case "settleFittedBuildings":
         return movesJson(settleFittedBuildings(arr(i.buildings, "buildings").map((x) => {
           const o = obj(x, "a fitted footprint");
-          return { entityId: str4(o, "entityId"), lotId: str4(o, "lotId"), corners: points(o.corners), neighbourGap: num3(o, "neighbourGap") };
+          return { entityId: str9(o, "entityId"), lotId: str9(o, "lotId"), corners: points(o.corners), neighbourGap: num4(o, "neighbourGap") };
         }), obstacles(i.obstacles)));
       case "settleDoorFrontage": {
         const buildings = arr(i.buildings, "buildings").map((x) => {
           const o = obj(x, "a fitted footprint");
           return {
-            entityId: str4(o, "entityId"),
-            lotId: str4(o, "lotId"),
+            entityId: str9(o, "entityId"),
+            lotId: str9(o, "lotId"),
             corners: points(o.corners),
-            neighbourGap: num3(o, "neighbourGap"),
+            neighbourGap: num4(o, "neighbourGap"),
             door: present(o, "door") ? fittedDoor(o.door) : null
           };
         });
@@ -39339,14 +41366,14 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       case "settleClearance": {
         const items = arr(i.items, "items").map((x) => {
           const o = obj(x, "a clearance item");
-          const kind = str4(o, "kind");
+          const kind = str9(o, "kind");
           const item = {
-            entityId: str4(o, "entityId"),
+            entityId: str9(o, "entityId"),
             kind: kind === "building" ? "building" : kind === "plant" ? "plant" : "prop",
             outline: points(o.outline)
           };
           item.area = numOr2(o, "area", 0);
-          item.archetype = str4(o, "archetype");
+          item.archetype = str9(o, "archetype");
           item.height = numOr2(o, "height", 0);
           item.longestPlan = numOr2(o, "longestPlan", 0);
           item.crownRadius = numOr2(o, "crownRadius", 1);
@@ -39369,19 +41396,19 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         return { startClearRadiusM: START_CLEAR_RADIUS_M, outline: startClearOutline(s.x, s.z).map(pt) };
       }
       case "clearancePairGap":
-        return clearancePairGap(num3(i, "classA"), num3(i, "gapA"), num3(i, "classB"), num3(i, "gapB"));
+        return clearancePairGap(num4(i, "classA"), num4(i, "gapA"), num4(i, "classB"), num4(i, "gapB"));
       case "plantTrunkOutline":
         return points(i.points).map((q) => plantTrunkOutline(q[0], q[1]).map(pt));
       case "layoutConstants":
         return { pairingNeighbourGap: PAIRING_NEIGHBOUR_GAP_M, crownRadius: CROWN_RADIUS_M };
       case "markerClearance":
-        return markerClearanceM(str4(i, "archetype"), num3(i, "height"), num3(i, "longestPlan"));
+        return markerClearanceM(str9(i, "archetype"), num4(i, "height"), num4(i, "longestPlan"));
       case "plantWallClearance":
-        return plantWallClearanceM(num3(i, "crownRadius"));
+        return plantWallClearanceM(num4(i, "crownRadius"));
       case "settleBuildingMaxShift":
-        return settleBuildingMaxShiftM(num3(i, "neighbourGap"));
+        return settleBuildingMaxShiftM(num4(i, "neighbourGap"));
       case "pairingSeatSink":
-        return pairingSeatSink(num3(i, "bottom"), present(i, "doorFoot") ? num3(i, "doorFoot") : null, num3(i, "factor"));
+        return pairingSeatSink(num4(i, "bottom"), present(i, "doorFoot") ? num4(i, "doorFoot") : null, num4(i, "factor"));
       case "layoutObstaclesOf":
         return layoutObstaclesOf(arr(i.nodes, "nodes").map(layoutNode)).map(obstacleJson);
       // ── ground plan ──
@@ -39411,11 +41438,11 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
           const o = obj(x, "a settled building");
           const d = present(o, "door") ? obj(o.door, "a door") : null;
           return {
-            entityId: str4(o, "entityId"),
-            lotId: str4(o, "lotId"),
+            entityId: str9(o, "entityId"),
+            lotId: str9(o, "lotId"),
             shiftX: numOr2(o, "shiftX", 0),
             shiftZ: numOr2(o, "shiftZ", 0),
-            door: d === null ? null : { x: num3(d, "x"), z: num3(d, "z"), faceX: num3(d, "faceX"), faceZ: num3(d, "faceZ") }
+            door: d === null ? null : { x: num4(d, "x"), z: num4(d, "z"), faceX: num4(d, "faceX"), faceZ: num4(d, "faceZ") }
           };
         });
         const f = followSettledBuildings(plan(i.plan), settled);
@@ -39432,7 +41459,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       case "lanternsAtPathMouths": {
         const mouths = arr(i.mouths, "mouths").map((x) => {
           const o = obj(x, "a mouth");
-          return { pathId: str4(o, "pathId"), x: num3(o, "x"), z: num3(o, "z"), dirX: num3(o, "dirX"), dirZ: num3(o, "dirZ"), halfWidth: num3(o, "halfWidth") };
+          return { pathId: str9(o, "pathId"), x: num4(o, "x"), z: num4(o, "z"), dirX: num4(o, "dirX"), dirZ: num4(o, "dirZ"), halfWidth: num4(o, "halfWidth") };
         });
         return lanternsAtPathMouths(mouths, points(i.lanterns)).map((l) => ({ ...l }));
       }
@@ -39458,15 +41485,15 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
           const r = q.length > 2 ? q[2] : 0;
           if (op === "trimGeneratedPoints") {
             const flat = p ?? { strips: [], lots: [], terrain: null };
-            return trimJson(present(i, "clumping") ? trimGeneratedPointClumped(flat, area, px, pz, r, obs, num3(i, "clumping"), num3(i, "clumpCell")) : trimGeneratedPoint(flat, area, px, pz, r, obs));
+            return trimJson(present(i, "clumping") ? trimGeneratedPointClumped(flat, area, px, pz, r, obs, num4(i, "clumping"), num4(i, "clumpCell")) : trimGeneratedPoint(flat, area, px, pz, r, obs));
           }
           if (op === "keepLookNeighbours") return trimJson(keepLookNeighbour(p, obs, px, pz, r));
           return trimJson(keepStatedRow(obs, px, pz));
         });
       }
       case "lookPropStands": {
-        const d = num3(i, "density");
-        return arr(i.entityIds, "entityIds").map((id) => lookPropStands(id, d));
+        const d = num4(i, "density");
+        return arr(i.entityIds, "entityIds").map((id4) => lookPropStands(id4, d));
       }
       case "lookNeighbours": {
         const look = obj(i.look, "a look");
@@ -39474,14 +41501,14 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         const paving = present(i, "paving") ? arr(i.paving, "paving").map(layoutNode).map((n) => ({ kind: n.kind, entityId: n.entityId, path: n.path ?? [], width: n.width ?? 0, closed: n.closed === true })) : [];
         const p = present(i, "plan") ? plan(i.plan) : null;
         const obs = groundObstacles(i.obstacles);
-        const radius = num3(i, "radius");
+        const radius = num4(i, "radius");
         return arr(i.rows, "rows").map((x) => {
           const q = arr(x, "a row");
           const r = lookNeighbours(
-            str4(i, "layerId"),
+            str9(i, "layerId"),
             { x: q[0], z: q[1], yaw: q[2] },
-            { density: num3(look, "density"), clumping: num3(look, "clumping"), clumpCell: num3(look, "clumpCell"), jitter: num3(look, "jitter") },
-            t === null ? null : { sizeX: num3(t, "sizeX"), sizeZ: num3(t, "sizeZ") },
+            { density: num4(look, "density"), clumping: num4(look, "clumping"), clumpCell: num4(look, "clumpCell"), jitter: num4(look, "jitter") },
+            t === null ? null : { sizeX: num4(t, "sizeX"), sizeZ: num4(t, "sizeZ") },
             p,
             paving,
             obs,
@@ -39524,8 +41551,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         return points(i.points).map((q) => groundLayerWeights(paint, sampleGroundCoverage(p, q[0], q[1])));
       }
       case "clump": {
-        const c = num3(i, "clumping");
-        const cell = num3(i, "cell");
+        const c = num4(i, "clumping");
+        const cell = num4(i, "cell");
         return points(i.points).map((q) => ({ weight: clumpWeight(q[0], q[1], c, cell), thins: clumpThins(q[0], q[1], c, cell) }));
       }
       // ── backdrop ──
@@ -39538,9 +41565,9 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         const box = obj(i.box, "a box");
         const ring = obj(i.ring, "a ring");
         return backdropRing(
-          { minX: num3(box, "minX"), minZ: num3(box, "minZ"), maxX: num3(box, "maxX"), maxZ: num3(box, "maxZ"), minY: num3(box, "minY") },
-          { count: num3(ring, "count"), outside: num3(ring, "outside"), scale: num3(ring, "scale"), scaleJitter: num3(ring, "scaleJitter"), sink: num3(ring, "sink") },
-          num3(i, "ringIndex"),
+          { minX: num4(box, "minX"), minZ: num4(box, "minZ"), maxX: num4(box, "maxX"), maxZ: num4(box, "maxZ"), minY: num4(box, "minY") },
+          { count: num4(ring, "count"), outside: num4(ring, "outside"), scale: num4(ring, "scale"), scaleJitter: num4(ring, "scaleJitter"), sink: num4(ring, "sink") },
+          num4(i, "ringIndex"),
           arr(i.meshHalfExtents, "meshHalfExtents")
         ).map((p) => ({ ...p }));
       }
@@ -39548,11 +41575,11 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         const box = obj(i.box, "a box");
         const m = obj(i.mesh, "a mesh");
         const f = backdropFrame(
-          { minX: num3(box, "minX"), minZ: num3(box, "minZ"), maxX: num3(box, "maxX"), maxZ: num3(box, "maxZ"), minY: num3(box, "minY") },
-          { minX: num3(m, "minX"), minZ: num3(m, "minZ"), maxX: num3(m, "maxX"), maxZ: num3(m, "maxZ") },
+          { minX: num4(box, "minX"), minZ: num4(box, "minZ"), maxX: num4(box, "maxX"), maxZ: num4(box, "maxZ"), minY: num4(box, "minY") },
+          { minX: num4(m, "minX"), minZ: num4(m, "minZ"), maxX: num4(m, "maxX"), maxZ: num4(m, "maxZ") },
           vec2(i.pieceScale),
-          num3(i, "offsetY"),
-          present(i, "edgeMinY") ? num3(i, "edgeMinY") : null
+          num4(i, "offsetY"),
+          present(i, "edgeMinY") ? num4(i, "edgeMinY") : null
         );
         return { laid: f.laid, outerHalfX: f.outerHalfX, outerHalfZ: f.outerHalfZ, height: f.height, strips: f.strips.map((s) => ({ ...s })) };
       }
@@ -39994,7 +42021,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         }
       }
     }
-    const kept = rows.filter((r) => !rows.some((o) => o.length > r.length && r.every((id) => o.includes(id))));
+    const kept = rows.filter((r) => !rows.some((o) => o.length > r.length && r.every((id4) => o.includes(id4))));
     const sortSets = (s) => s.sort((a, b) => a.join("|") < b.join("|") ? -1 : 1);
     return { blocks: sortSets(blocks), rows: sortSets(kept) };
   }
@@ -40025,10 +42052,10 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const anchors = anchorsOf(input, rules);
     const before = auditPropGroups(input, rules);
     const why = /* @__PURE__ */ new Map();
-    const add = (id, w) => why.set(id, [...why.get(id) ?? [], w].filter((x, k, a) => a.indexOf(x) === k));
-    for (const id of before.untied) add(id, "untied");
-    for (const b of before.blocks) for (const id of b) add(id, "block");
-    for (const r of before.rows) for (const id of r) add(id, "row");
+    const add = (id4, w) => why.set(id4, [...why.get(id4) ?? [], w].filter((x, k, a) => a.indexOf(x) === k));
+    for (const id4 of before.untied) add(id4, "untied");
+    for (const b of before.blocks) for (const id4 of b) add(id4, "block");
+    for (const r of before.rows) for (const id4 of r) add(id4, "row");
     const out = input.props.map((p) => ({
       entityId: p.entityId,
       purpose: propPurpose(p.archetype, rules),
@@ -40695,13 +42722,13 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
 
   // @insimul/core/src/editor/layout/composition/variety.ts
   var HOUSE_SIDES = WALL_SIDES;
-  function houseModelOf(id, entry) {
+  function houseModelOf(id4, entry) {
     const g = readAssetGeometry(entry.transform, entry.sockets);
     if (g.footprint === null) return null;
     const doorYaw = entranceSocket(g)?.yaw ?? 0;
     const side = Math.abs(Math.sin(doorYaw)) > Math.abs(Math.cos(doorYaw));
     const { x, z } = g.footprint.size;
-    return { id, width: side ? z : x, depth: side ? x : z, blank: readBlankWalls(entry.transform?.blankWalls) ?? [] };
+    return { id: id4, width: side ? z : x, depth: side ? x : z, blank: readBlankWalls(entry.transform?.blankWalls) ?? [] };
   }
   function axes(h) {
     const f = [Math.cos(h.heading), Math.sin(h.heading)];
@@ -41306,8 +43333,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const props = input.props ?? [];
     const grouping = groupProps({ plan: plan2, buildings: input.buildings, props }, rules);
     const given = new Map(props.map((p) => [p.entityId, p]));
-    const middleOf = (id) => {
-      const m = given.get(id).middle;
+    const middleOf = (id4) => {
+      const m = given.get(id4).middle;
       return m === void 0 ? [0, 0] : [m[0], m[1]];
     };
     const standing = grouping.props.filter((p) => p.verdict !== "set-aside").map((p) => ({ entityId: p.entityId, x: p.x + middleOf(p.entityId)[0], z: p.z + middleOf(p.entityId)[1], radius: given.get(p.entityId).radius }));
@@ -41438,58 +43465,58 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     if (!Array.isArray(v)) bad2(`${what} is not an array`);
     return v;
   }
-  function num4(o, k) {
+  function num5(o, k) {
     const v = o[k];
     if (typeof v !== "number") bad2(`'${k}' is not a number`);
     return v;
   }
-  function str5(o, k) {
+  function str10(o, k) {
     const v = o[k];
     if (typeof v !== "string") bad2(`'${k}' is not a string`);
     return v;
   }
-  function point2(v, what) {
+  function point3(v, what) {
     const p = arr2(v, what);
     if (p.length !== 2 || typeof p[0] !== "number" || typeof p[1] !== "number") bad2(`${what} is not [x, z]`);
     return [p[0], p[1]];
   }
   function points2(v, what) {
-    return arr2(v, what).map((p, k) => point2(p, `${what}[${k}]`));
+    return arr2(v, what).map((p, k) => point3(p, `${what}[${k}]`));
   }
   function terrainOf(v) {
     if (v === void 0 || v === null) return null;
     const t = obj2(v, "terrain");
     return {
-      resolution: num4(t, "resolution"),
-      sizeX: num4(t, "sizeX"),
-      sizeZ: num4(t, "sizeZ"),
+      resolution: num5(t, "resolution"),
+      sizeX: num5(t, "sizeX"),
+      sizeZ: num5(t, "sizeZ"),
       heights: arr2(t.heights, "terrain.heights")
     };
   }
   function stripOf(v) {
     const s = obj2(v, "a strip");
-    const surface = str5(s, "surface");
+    const surface = str10(s, "surface");
     if (surface !== "road" && surface !== "plaza" && surface !== "path") bad2(`unknown strip surface '${surface}'`);
     return {
-      entityId: str5(s, "entityId"),
+      entityId: str10(s, "entityId"),
       surface,
       lotId: typeof s.lotId === "string" ? s.lotId : "",
       points: points2(s.points, "a strip's points"),
-      halfWidth: num4(s, "halfWidth"),
+      halfWidth: num5(s, "halfWidth"),
       closed: s.closed === true
     };
   }
   function lotOf(v) {
     const l = obj2(v, "a lot");
     return {
-      entityId: str5(l, "entityId"),
+      entityId: str10(l, "entityId"),
       lotId: typeof l.lotId === "string" ? l.lotId : "",
-      cx: num4(l, "cx"),
-      cz: num4(l, "cz"),
-      halfAcross: num4(l, "halfAcross"),
-      halfAway: num4(l, "halfAway"),
-      awayX: num4(l, "awayX"),
-      awayZ: num4(l, "awayZ")
+      cx: num5(l, "cx"),
+      cz: num5(l, "cz"),
+      halfAcross: num5(l, "halfAcross"),
+      halfAway: num5(l, "halfAway"),
+      awayX: num5(l, "awayX"),
+      awayZ: num5(l, "awayZ")
     };
   }
   function compositionPlan(v) {
@@ -41520,7 +43547,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function doorsOf(v) {
     return arr2(v ?? [], "doors").map((d) => {
       const o = obj2(d, "a door");
-      return { entityId: str5(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
+      return { entityId: str10(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), heading: num5(o, "heading") };
     });
   }
   function groupingInput(i) {
@@ -41533,8 +43560,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function propsOf(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      const prop = { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
-      if (o.middle !== void 0) prop.middle = point2(o.middle, "middle");
+      const prop = { entityId: str10(o, "entityId"), archetype: str10(o, "archetype"), x: num5(o, "x"), z: num5(o, "z"), radius: num5(o, "radius") };
+      if (o.middle !== void 0) prop.middle = point3(o.middle, "middle");
       return prop;
     });
   }
@@ -41549,7 +43576,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function spotsOf(v, what) {
     return arr2(v ?? [], what).map((p) => {
       const o = obj2(p, what);
-      return { entityId: str5(o, "entityId"), x: num4(o, "x"), z: num4(o, "z") };
+      return { entityId: str10(o, "entityId"), x: num5(o, "x"), z: num5(o, "z") };
     });
   }
   var postsOf = (v) => spotsOf(v, "posts");
@@ -41558,38 +43585,38 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function foliageOf(v) {
     return arr2(v ?? [], "foliage").map((p) => {
       const o = obj2(p, "a foliage prop");
-      return { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), x: num4(o, "x"), z: num4(o, "z") };
+      return { entityId: str10(o, "entityId"), archetype: str10(o, "archetype"), x: num5(o, "x"), z: num5(o, "z") };
     });
   }
   function villagersOf(v) {
     return arr2(v ?? [], "villagers").map((p) => {
       const o = obj2(p, "a villager");
-      return { entityId: str5(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), target: typeof o.target === "string" ? o.target : null };
+      return { entityId: str10(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), target: typeof o.target === "string" ? o.target : null };
     });
   }
   function outlinedBuildings(v) {
     return arr2(v ?? [], "buildings").map((b) => {
       const o = obj2(b, "a building");
-      return { entityId: str5(o, "entityId"), outline: points2(o.outline, "a building's outline") };
+      return { entityId: str10(o, "entityId"), outline: points2(o.outline, "a building's outline") };
     });
   }
   function reachProps(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      return { entityId: str5(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
+      return { entityId: str10(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), radius: num5(o, "radius") };
     });
   }
   function seatsOf(v) {
     return arr2(v ?? [], "seats").map((s) => {
       const o = obj2(s, "a seat");
-      return { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading"), length: num4(o, "length") };
+      return { entityId: str10(o, "entityId"), archetype: str10(o, "archetype"), x: num5(o, "x"), z: num5(o, "z"), heading: num5(o, "heading"), length: num5(o, "length") };
     });
   }
   function compositionHouseModels(v) {
     return arr2(v ?? [], "models").map((m) => {
       const o = obj2(m, "a model");
       if (o.entry !== void 0) {
-        const model = houseModelOf(str5(o, "id"), obj2(o.entry, "a model's entry"));
+        const model = houseModelOf(str10(o, "id"), obj2(o.entry, "a model's entry"));
         if (model === null) bad2(`model ${JSON.stringify(o.id)}: its entry states no measured footprint`);
         return model;
       }
@@ -41597,7 +43624,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         if (typeof s !== "string" || !HOUSE_SIDES.includes(s)) bad2(`unknown house side ${JSON.stringify(s)}`);
         return s;
       });
-      return { id: str5(o, "id"), width: num4(o, "width"), depth: num4(o, "depth"), blank };
+      return { id: str10(o, "id"), width: num5(o, "width"), depth: num5(o, "depth"), blank };
     });
   }
   function runCompositionOp(op, input, rules = DEFAULT_COMPOSITION_RULES) {
@@ -41619,7 +43646,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         );
       case "transitionCoverage":
         return arr2(i.samples, "samples").map((s) => {
-          const [d, f] = point2(s, "a [distance, feather] sample");
+          const [d, f] = point3(s, "a [distance, feather] sample");
           return transitionCoverage(d, f);
         });
       case "edgeBreakup":
@@ -41635,16 +43662,16 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         return out;
       }
       case "auditGroundEdges":
-        return json4(auditGroundEdges(arr2(i.samples, "samples").map((s) => point2(s, "an [s, w] sample")), r));
+        return json4(auditGroundEdges(arr2(i.samples, "samples").map((s) => point3(s, "an [s, w] sample")), r));
       case "coverageAudit": {
-        const source = str5(i, "source");
+        const source = str10(i, "source");
         if (source !== "transition" && source !== "paint") bad2(`unknown coverage source '${source}'`);
         const profile = coverageProfile(
           compositionPlan(i.plan),
           surfaceOf(i.surface),
-          point2(i.from, "from"),
-          point2(i.to, "to"),
-          num4(i, "step"),
+          point3(i.from, "from"),
+          point3(i.to, "to"),
+          num5(i, "step"),
           source,
           r
         );
@@ -41669,7 +43696,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       case "composeYards": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
-          return { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
+          return { entityId: str10(o, "entityId"), archetype: str10(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
         });
         return json4(composeYards({ lots: compositionPlan(i.plan).lots, buildings, doors: doorsOf(i.doors), posts: postsOf(i.posts) }, r));
       }
@@ -41678,7 +43705,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         if (i.buildings === void 0 || i.props === void 0) bad2("a lanternsOnRoutes input states its 'buildings' and 'props' (empty means none)");
         const lines2 = arr2(i.lines ?? [], "lines").map((q) => {
           const o = obj2(q, "a line");
-          return { entityId: str5(o, "entityId"), points: points2(o.points, "a line's points") };
+          return { entityId: str10(o, "entityId"), points: points2(o.points, "a line's points") };
         });
         return json4(lanternsOnRoutes({ plan: compositionPlan(i.plan), routes, lanterns: lanternsOf(i.lanterns), buildings: outlinedBuildings(i.buildings), props: reachProps(i.props), lines: lines2 }, r));
       }
@@ -41694,7 +43721,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       case "assignHouseModels": {
         const houses = arr2(i.houses ?? [], "houses").map((h) => {
           const o = obj2(h, "a house");
-          return { entityId: str5(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
+          return { entityId: str10(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), heading: num5(o, "heading") };
         });
         return json4(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: compositionHouseModels(i.models) }, r));
       }
@@ -41707,7 +43734,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       case "composeVillage": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
-          return { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), outline: points2(o.outline, "an outline") };
+          return { entityId: str10(o, "entityId"), archetype: str10(o, "archetype"), outline: points2(o.outline, "an outline") };
         });
         return json4(
           composeVillage(
@@ -42508,8 +44535,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     return {
       add: ({ model }, op) => model.addItem(needObject(m, op.item, "item")),
       remove: ({ model }, op) => {
-        const id = needString(m, op.item, "item");
-        return op.quantity === void 0 || op.quantity === null ? model.removeItem(id) : model.removeItem(id, needNumber(m, op.quantity, "quantity"));
+        const id4 = needString(m, op.item, "item");
+        return op.quantity === void 0 || op.quantity === null ? model.removeItem(id4) : model.removeItem(id4, needNumber(m, op.quantity, "quantity"));
       },
       filter: ({ model }, op) => {
         model.setFilter(needString(m, op.filter, "filter"));
@@ -42528,9 +44555,9 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       // handleEquipItem, core's corpus step `equip_flag`): writes `equipped` on the
       // STORED object; false when nothing is held under that id.
       equip_flag: ({ model }, op) => {
-        const id = needString(m, op.item, "item");
+        const id4 = needString(m, op.item, "item");
         if (typeof op.equipped !== "boolean") throw refuse2(m, "`equipped` must be a boolean");
-        const item = model.getItem(id);
+        const item = model.getItem(id4);
         if (item) item.equipped = op.equipped;
         return !!item;
       },
@@ -42552,7 +44579,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     if (args.fluency !== void 0 && args.fluency !== null) input.fluency = needNumber(method, args.fluency, "fluency");
     for (const key of ["read", "answered"]) {
       const list2 = optArrayValue(method, args[key], key);
-      if (list2 !== void 0) input[key] = list2.map((id, i) => needString(method, id, `${key}[${i}]`));
+      if (list2 !== void 0) input[key] = list2.map((id4, i) => needString(method, id4, `${key}[${i}]`));
     }
     const status = optObject(method, args.questStatus, "questStatus");
     if (status !== void 0) {
@@ -42611,6 +44638,39 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function migrateWithOutcome(saveFile) {
     const { save, outcome } = migrateSaveFileWithOutcome(saveFile);
     return { saveFile: save, outcome, significant: isMigrationOutcomeSignificant(outcome) };
+  }
+  function villageSaveArg(method, value) {
+    return coded("invalid-input", () => needObject(method, value, "save"));
+  }
+  function runtimeArg(method, value) {
+    return coded("invalid-input", () => value === void 0 || value === null ? null : needString(method, value, "runtime"));
+  }
+  function villageWriteOptions(method, value, name) {
+    return coded("invalid-input", () => {
+      needObject(method, value, name);
+      for (const k of ["worldId", "runtime", "positionFrame"]) needString(method, value[k], `${name}.${k}`);
+      needNumber(method, value.tick, `${name}.tick`);
+      return { worldId: value.worldId, runtime: value.runtime, positionFrame: value.positionFrame, tick: value.tick };
+    });
+  }
+  function villageReadOptions(method, value, name) {
+    return coded("invalid-input", () => {
+      needObject(method, value, name);
+      needString(method, value.worldId, `${name}.worldId`);
+      if (value.runtime === void 0 || value.runtime === null) return { worldId: value.worldId };
+      return { worldId: value.worldId, runtime: needString(method, value.runtime, `${name}.runtime`) };
+    });
+  }
+  function refusalOf(refusal3) {
+    return plain(refusal3);
+  }
+  function villageWritten(r) {
+    if (!r.ok) return { ok: false, refusal: refusalOf(r.refusal) };
+    return { ok: true, currentState: plain(r.value.currentState), conversations: plain(r.value.conversations) };
+  }
+  function villageRead(r) {
+    if (!r.ok) return { ok: false, refusal: refusalOf(r.refusal) };
+    return { ok: true, gameState: plain(r.value) };
   }
   var QUEST_STATUSES = ["available", "active", "completed"];
   var QUEST_FILTERS = ["all", "active", "completed", "available"];
@@ -42822,6 +44882,196 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      * `significant` from core's `isMigrationOutcomeSignificant`.
      */
     "save.migrate": (args) => migrateWithOutcome(needObject("save.migrate", args.saveFile, "saveFile")),
+    // ── the village-state save (WV1 P1; PL.native-village-save-rows) ────────────
+    // Core's `save-file-game-state`: a game's save interchange (`GameSaveState`)
+    // in and out of the ONE persisted format (`SaveFile.currentState` and
+    // `conversations`), every rule core's. Each row is one core function; the
+    // args are a case's `input` of core's `conformance/saves/village-state.json`
+    // and the answer is in its `expected` shape, plus a refusal's `message`
+    // (core's sentence for a log, which the corpus does not pin). A refusal is a
+    // VALUE; only an argument core would dereference unread is an ERROR, coded
+    // `[invalid-input]`.
+    /**
+     * `save.village.contract` → the constants a binding must not hard-code:
+     * `{ saveFileVersion, gameStateVersion, extensionKey, playerAgentLocalId,
+     * runtimeSlot, positionFrameSlot, villagerSlots, weatherExtensionKey,
+     * weatherDirectorKeys, weatherBlockMembers, conversationRowKeys,
+     * conversationRecordKeys, conversationMsRange: [min, max] }`, keyed as the
+     * corpus's `contract` keys them.
+     */
+    "save.village.contract": () => ({
+      saveFileVersion: SAVE_FILE_VERSION,
+      gameStateVersion: GAME_STATE_VERSION,
+      extensionKey: BLACKBOARD_EXTENSION_KEY,
+      playerAgentLocalId: PLAYER_AGENT_LOCAL_ID,
+      runtimeSlot: RUNTIME_SLOT,
+      positionFrameSlot: POSITION_FRAME_SLOT,
+      villagerSlots: [...VILLAGER_SLOTS],
+      weatherExtensionKey: WEATHER_EXTENSION_KEY,
+      weatherDirectorKeys: [...WEATHER_DIRECTOR_KEYS],
+      weatherBlockMembers: [...WEATHER_BLOCK_MEMBERS],
+      conversationRowKeys: [...CONVERSATION_ROW_KEYS],
+      conversationRecordKeys: [...CONVERSATION_RECORD_KEYS],
+      conversationMsRange: [CONVERSATION_MS_MIN, CONVERSATION_MS_MAX]
+    }),
+    /**
+     * `save.village.write { save, gameState, options: { worldId, runtime,
+     * positionFrame, tick } }` → core's `writeVillageSave` (the CHECKED write):
+     * `{ ok: true, currentState, conversations }`, the two bodies a save PUT takes
+     * (put them over the save: `{ ...save, currentState, conversations }`), or `{
+     * ok: false, refusal: { code, field, found?, expected?, keys?, message } }`.
+     * The checks run in core's order: the save's version, the game state's, the
+     * save's extensions, each stored block, each written block, the conversation
+     * records. `gameState` is handed over as it came (a missing or wrong one is
+     * core's `wrong_version` refusal). Never mutates `save`.
+     */
+    "save.village.write": (args) => {
+      const m = "save.village.write";
+      const save = villageSaveArg(m, args.save);
+      const options = villageWriteOptions(m, args.options, "options");
+      return villageWritten(writeVillageSave(save, args.gameState, options));
+    },
+    /**
+     * `save.village.read { save, options: { worldId, runtime? } }` → core's
+     * `readVillageSave` (the CHECKED read): `{ ok: true, gameState }` or `{ ok:
+     * false, refusal }`. With `runtime`, only that runtime's villagers. It does not
+     * ask whose save it is: a game's Load asks `save.village.readRuntime`.
+     */
+    "save.village.read": (args) => {
+      const m = "save.village.read";
+      return villageRead(readVillageSave(villageSaveArg(m, args.save), villageReadOptions(m, args.options, "options")));
+    },
+    /** `save.village.check { save }` → `{ refusal }`: core's `checkVillageSave`, the first reason the mapping cannot vouch for the save, or null. */
+    "save.village.check": (args) => {
+      const r = checkVillageSave(villageSaveArg("save.village.check", args.save));
+      return { refusal: r ? refusalOf(r) : null };
+    },
+    /**
+     * `save.village.ownership { save, worldId, runtime }` → `{ refusal }`: core's
+     * `checkSaveOwnership`, `wrong_world` (field `worldId`) then `wrong_runtime`
+     * (field `runtime`, the C5-3 rule), each with `found` and `expected`, or null
+     * when the save is the game's own. `runtime` null (or absent) is the legacy
+     * runtime, which owns only unstamped saves.
+     */
+    "save.village.ownership": (args) => {
+      const m = "save.village.ownership";
+      const save = villageSaveArg(m, args.save);
+      const worldId = coded("invalid-input", () => needString(m, args.worldId, "worldId"));
+      const r = checkSaveOwnership(save, worldId, runtimeArg(m, args.runtime));
+      return { refusal: r ? refusalOf(r) : null };
+    },
+    /**
+     * `save.village.readRuntime { save, worldId, runtime }` → core's
+     * `readRuntimeSave`, a running game's Load: the ownership check, then the
+     * checked read of that runtime's villagers (every villager board for the
+     * legacy runtime, null). `{ ok: true, gameState }` or `{ ok: false, refusal }`
+     * with any code core states for a refused Load.
+     */
+    "save.village.readRuntime": (args) => {
+      const m = "save.village.readRuntime";
+      const save = villageSaveArg(m, args.save);
+      const worldId = coded("invalid-input", () => needString(m, args.worldId, "worldId"));
+      return villageRead(readRuntimeSave(save, worldId, runtimeArg(m, args.runtime)));
+    },
+    /** `save.village.runtimeOf { save, worldId }` → `{ runtime }`: core's `saveRuntimeOf`, the player board's stamp, or null (a legacy or never-played save). */
+    "save.village.runtimeOf": (args) => {
+      const m = "save.village.runtimeOf";
+      const save = villageSaveArg(m, args.save);
+      return { runtime: saveRuntimeOf(save, coded("invalid-input", () => needString(m, args.worldId, "worldId"))) };
+    },
+    /** `save.village.positionFrameOf { save, worldId }` → `{ positionFrame }`: core's `positionFrameOf`, the frame the save's positions are in, or null. */
+    "save.village.positionFrameOf": (args) => {
+      const m = "save.village.positionFrameOf";
+      const save = villageSaveArg(m, args.save);
+      return { positionFrame: positionFrameOf(save, coded("invalid-input", () => needString(m, args.worldId, "worldId"))) };
+    },
+    /** `save.village.belongsTo { save, worldId, runtime }` → `{ belongsTo }`: core's `saveBelongsTo` (the stamp equals `runtime`; null is the legacy runtime). */
+    "save.village.belongsTo": (args) => {
+      const m = "save.village.belongsTo";
+      const save = villageSaveArg(m, args.save);
+      const worldId = coded("invalid-input", () => needString(m, args.worldId, "worldId"));
+      return { belongsTo: saveBelongsTo(save, worldId, runtimeArg(m, args.runtime)) };
+    },
+    /** `save.village.runtimeLabel { runtime }` → `{ label }`: core's `runtimeLabel`, how a runtime is named to a player ("legacy" for null). */
+    "save.village.runtimeLabel": (args) => ({ label: runtimeLabel(runtimeArg("save.village.runtimeLabel", args.runtime)) }),
+    /** `save.village.agentCurie { localId, worldId }` → `{ curie }`: core's `agentCurie`, a villager's (or, with `player`, the player's) board key. */
+    "save.village.agentCurie": (args) => {
+      const m = "save.village.agentCurie";
+      const ids = coded("invalid-input", () => [needString(m, args.localId, "localId"), needString(m, args.worldId, "worldId")]);
+      return { curie: agentCurie(ids[0], ids[1]) };
+    },
+    /**
+     * `save.village.timeStateOf { totalHours, timeScale, isPaused }` → `{ timeState
+     * }`: core's `timeStateOf`, the saved clock for a total in-game hour count
+     * (`timeScale` and `isPaused` carried as handed).
+     */
+    "save.village.timeStateOf": (args) => {
+      const totalHours = coded("invalid-input", () => needNumber("save.village.timeStateOf", args.totalHours, "totalHours"));
+      return { timeState: plain(timeStateOf(totalHours, args.timeScale, args.isPaused)) };
+    },
+    /** `save.village.totalHoursOf { timeState }` → `{ totalHours }`: core's `totalHoursOf`, or null when the save has no clock. */
+    "save.village.totalHoursOf": (args) => ({ totalHours: totalHoursOf(args.timeState) }),
+    /**
+     * `save.village.weather.read { block }` → core's `readWeatherBlock`: `{ ok:
+     * true, value }` (null for no block) or `{ ok: false, keys }`, every unreadable
+     * member named in ascending order (none when the block is not an object).
+     */
+    "save.village.weather.read": (args) => plain(readWeatherBlock(args.block)),
+    /**
+     * `save.village.weather.saveState { session, surfaceWetness? }` → `{ weather }`:
+     * core's `weatherSaveState` over a `weather.create` session's director, the
+     * `GameSaveState.weather` a host writes (`surfaceWetness` absent: null).
+     */
+    "save.village.weather.saveState": (args) => {
+      const m = "save.village.weather.saveState";
+      const s = session(m, args, "weather");
+      const wetness = coded("invalid-input", () => optionalArg(args.surfaceWetness, (v) => needNumber(m, v, "surfaceWetness")));
+      return { weather: plain(weatherSaveState(s.director, wetness ?? null)) };
+    },
+    /**
+     * `save.village.weather.restore { session, gameState }` → `{ surfaceWetness,
+     * state, view, issues }`: core's `restoreWeatherFromSave` into a
+     * `weather.create` session's director (a game state with no weather restores
+     * the director's default, no sky), then the session's state and view. The
+     * wetness is what the host resumes from, or null.
+     */
+    "save.village.weather.restore": (args) => {
+      const m = "save.village.weather.restore";
+      const s = session(m, args, "weather");
+      const gameState = coded("invalid-input", () => needObject(m, args.gameState, "gameState"));
+      const surfaceWetness = restoreWeatherFromSave(s.director, gameState);
+      return { surfaceWetness, ...weatherSessionView(s.director) };
+    },
+    /**
+     * `save.village.conversations.read { records }` → core's
+     * `readConversationRecords`: `{ ok: true, value }` (absent or null reads as no
+     * record) or `{ ok: false, keys }`, every unreadable member named.
+     */
+    "save.village.conversations.read": (args) => plain(readConversationRecords(args.records)),
+    /**
+     * `save.village.conversations.rows { stored, records }` → `{ rows }`: core's
+     * `conversationRowsOf`, the per-conversation records folded into the save's
+     * one row per NPC (`stored`, the save's rows, any value; never mutated).
+     * `records` are read with core's `readConversationRecords` first, as the
+     * writer reads them; records it cannot read are `[invalid-input]`, naming
+     * core's keys.
+     */
+    "save.village.conversations.rows": (args) => {
+      const m = "save.village.conversations.rows";
+      const read = readConversationRecords(args.records);
+      if (!read.ok) {
+        coded("invalid-input", () => {
+          throw refuse2(m, `\`records\` cannot be read: ${read.keys.length ? read.keys.join(", ") : "not a list"}`);
+        });
+      }
+      return { rows: plain(conversationRowsOf(args.stored, read.value)) };
+    },
+    /** `save.village.conversations.records { rows }` → `{ records }`: core's `conversationRecordsOf`, the save's rows split back into one record per conversation. */
+    "save.village.conversations.records": (args) => ({ records: plain(conversationRecordsOf(args.rows)) }),
+    /** `save.village.conversations.timestamp { epochMs }` → `{ timestamp }`: core's `conversationTimestampOf`, the wall clock's instant, or null. */
+    "save.village.conversations.timestamp": (args) => ({ timestamp: conversationTimestampOf(args.epochMs) }),
+    /** `save.village.conversations.epochMs { timestamp }` → `{ epochMs }`: core's `epochMsOfConversationTimestamp`, the round trip back, or null. */
+    "save.village.conversations.epochMs": (args) => ({ epochMs: epochMsOfConversationTimestamp(args.timestamp) }),
     // ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
     /** `ui.notifications.create {}` → `{ session, view }` — core's `Notifications` toast queue. */
     "ui.notifications.create": () => {
@@ -42909,17 +45159,17 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     "ui.journal.apply": async (args) => {
       const m = "ui.journal.apply";
       const s = session(m, args, "ui.journal");
-      const id = (op) => needString(m, op.id, "id");
+      const id4 = (op) => needString(m, op.id, "id");
       const results = await applyOps(m, s, args, {
         setQuests: ({ model }, op) => model.setQuests(needArray(m, op.quests, "quests").map((q) => questEntry(m, q))),
         upsert: ({ model }, op) => model.upsert(questEntry(m, op.quest)),
-        accept: ({ model }, op) => model.accept(id(op)),
-        decline: ({ model }, op) => model.decline(id(op)),
-        complete: ({ model }, op) => model.complete(id(op)),
-        track: ({ model }, op) => model.track(id(op)),
-        untrack: ({ model }, op) => model.untrack(id(op)),
+        accept: ({ model }, op) => model.accept(id4(op)),
+        decline: ({ model }, op) => model.decline(id4(op)),
+        complete: ({ model }, op) => model.complete(id4(op)),
+        track: ({ model }, op) => model.track(id4(op)),
+        untrack: ({ model }, op) => model.untrack(id4(op)),
         setFilter: ({ model }, op) => model.setFilter(oneOf(m, op.filter, QUEST_FILTERS, "filter")),
-        get: ({ model }, op) => model.get(id(op)) ?? null
+        get: ({ model }, op) => model.get(id4(op)) ?? null
       });
       return { results, view: journalView(s.model) };
     },
@@ -43558,7 +45808,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         {
           inside: insideOf(m, args.inside),
           playerItemIds: (optArrayValue(m, args.playerItemIds, "playerItemIds") ?? []).map(
-            (id, i) => needString(m, id, `playerItemIds[${i}]`)
+            (id4, i) => needString(m, id4, `playerItemIds[${i}]`)
           )
         },
         needObject(m, args.action, "action")
@@ -43600,7 +45850,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      */
     "props.notices.generate": (args) => {
       const m = "props.notices.generate";
-      const [id, name, npcs] = coded("invalid-input", () => [
+      const [id4, name, npcs] = coded("invalid-input", () => [
         needString(m, args.settlementId, "settlementId"),
         needString(m, args.settlementName, "settlementName"),
         needArray(m, args.npcs, "npcs").map((npc, i) => {
@@ -43611,7 +45861,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
           return npc;
         })
       ]);
-      return { articles: plain(generateSettlementNotices(id, name, npcs)) };
+      return { articles: plain(generateSettlementNotices(id4, name, npcs)) };
     },
     // Where a pick-up is put down (PL.native-pickup-settle, U91(2); core's
     // PL.pickup-placement, U89(3)). Stateless, one core function each, answering
@@ -43919,7 +46169,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       const context = {
         quests,
         activeObjectiveNpcId: args.activeObjectiveNpcId ?? null,
-        questCompletionChecker: ready === null ? null : (id) => ready.has(id)
+        questCompletionChecker: ready === null ? null : (id4) => ready.has(id4)
       };
       const style = (kind) => kind === null ? null : MARKER_STYLES[kind];
       const npcs = (args.npcs === void 0 || args.npcs === null ? [] : needArray(m, args.npcs, "npcs")).map((npc) => {
@@ -44155,7 +46405,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       const m = "camera.movement.occluders";
       const input = coded("invalid-input", () => {
         const exclude = optArrayValue(m, args.exclude, "exclude") ?? [];
-        exclude.forEach((id, i) => needString(m, id, `exclude[${i}]`));
+        exclude.forEach((id4, i) => needString(m, id4, `exclude[${i}]`));
         return {
           mode: movementModeOf(m, args.mode),
           feet: movementFeetOf(m, args.feet),
@@ -45934,6 +48184,15 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      */
     "skill.kb.liveFacts": (args) => okValue(skillKbLiveFactsOf(args.prologFacts)),
     /**
+     * `skill.kb.loadJson { currentState }` → core's `skillKbLoadJson`, what a load
+     * recomposes the skill KB from (PL.native-village-save-rows: the village-state
+     * corpus's `skillKb` op, after a `save.village.read` that is not refused): `{
+     * ok: true, facts, dropped, roster }` (the live clauses, what was dropped, the
+     * roster the save's progression block publishes) or `{ ok: false, refusal: {
+     * code, field, keys } }`. `currentState` is any value, read as core reads it.
+     */
+    "skill.kb.loadJson": (args) => plain(skillKbLoadJson(args.currentState)),
+    /**
      * `skill.kb.compose { pack?, world?, facts? }` → core's `composeSkillKbProgram`: the
      * program a host that RECOMPOSES consults — the skill pack (absent: core's own),
      * one `:- dynamic(Name/Arity).` per live predicate when there are live clauses,
@@ -46130,8 +48389,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      */
     "modules.activate": (args) => {
       if (args.ir !== void 0 && args.ir !== null) {
-        const id = args.ir && args.ir.meta && args.ir.meta.genreConfig && args.ir.meta.genreConfig.id;
-        if (typeof id !== "string") return undeclared("the World IR carries no meta.genreConfig.id");
+        const id4 = args.ir && args.ir.meta && args.ir.meta.genreConfig && args.ir.meta.genreConfig.id;
+        if (typeof id4 !== "string") return undeclared("the World IR carries no meta.genreConfig.id");
         return activated("worldIr", activeModulesForWorld(args.ir));
       }
       if (typeof args.genre === "string") return activated("genre", resolveActiveModules(args.genre));

@@ -158,10 +158,18 @@ const P9A_COPY_ROOTS = ['conformance/modules', 'conformance/ui'];
 // save-slots corpus (PL.native-catchup; P1.core-slots, U83(1)), driven through the
 // `saves.slots.*` rows, and the tutorial progress corpus (PL.native-tutorial-save,
 // U99(1); core's PL.tutorial-progress-save), driven through the `ui.tutorial.*`
-// and `ui.onboarding.*` rows by tests/title_corpus.cpp. Only these files of
-// `conformance/saves/`: the rest of that directory is the save-file corpora
-// emit-bridge-cases.mjs transcribes (village-state.json has no rows here).
-const SAVES_CORPUS_FILES = ['conformance/saves/slots.json', 'conformance/saves/tutorial-progress.json'];
+// and `ui.onboarding.*` rows by tests/title_corpus.cpp, and the village-state
+// corpus (PL.native-village-save-rows; core's P1.core and
+// PL.core-save-conversations-projection), driven through the `save.village.*`
+// rows by tests/village_save_corpus.cpp and transcribed by emit-bridge-cases.mjs
+// into cases/core-saves-village.json. Only these files of `conformance/saves/`:
+// the rest of that directory is the save-file corpora emit-bridge-cases.mjs
+// transcribes.
+const SAVES_CORPUS_FILES = [
+  'conformance/saves/slots.json',
+  'conformance/saves/tutorial-progress.json',
+  'conformance/saves/village-state.json',
+];
 
 // core's P6 corpora (PL.native-props-rows, U89(2); P6.core), copied verbatim the
 // same way: the four props files and the inventory panel's cases. The inventory
@@ -262,13 +270,15 @@ const PROGRESSION_CORPUS_FILES = [
 ];
 
 // Core modules the bundle must NOT carry (PL.native-interact-target, U94(2)/(3)): core's
-// village-state comparator and the save-file game state behind it. No row needs them;
-// they came in only through a corpus RUNNER module's comparator import (the P8 rows
-// once imported `quests/tutorial-corpus` and `ui/title-flow-corpus`, ~29 KB of save
-// code), which is why the rows import core's `*-corpus-host` modules instead. A
-// write that would record one refuses, and `--check` (the core_vendor ctest) fails on
-// a VENDORED.json that records one, naming it: the import to repoint is the one that
-// reaches it.
+// village-state comparator. No row needs it; it came in only through a corpus RUNNER
+// module's comparator import (the P8 rows once imported `quests/tutorial-corpus` and
+// `ui/title-flow-corpus`, ~29 KB of save code), which is why the rows import core's
+// `*-corpus-host` modules instead. A write that would record one refuses, and `--check`
+// (the core_vendor ctest) fails on a VENDORED.json that records one, naming it: the
+// import to repoint is the one that reaches it. The save-file game state behind the
+// comparator (`src/save-file-game-state.ts`) was on this list until
+// PL.native-village-save-rows: the save.village.* rows import it, so it is bundled on
+// purpose now, and only the runner (`save-file-game-state-corpus`) stays out.
 //
 // Core's movement prose (PL.native-ground-row, U97(1)/(3); core's PL.movement-prose-split):
 // `camera/movement-prose` holds the frozen prose tables CAMERA_OCCLUSION_RULES and
@@ -277,7 +287,7 @@ const PROGRESSION_CORPUS_FILES = [
 // `camera/movement-contract` (which re-exports both) would bring it back, and nothing
 // in core can see native do that (its pl-movement-prose-split m1 and m4). Refused the
 // same way, with its own remedy.
-const UNBUNDLED_CORE_MODULES = ['src/save-file-game-state-corpus.ts', 'src/save-file-game-state.ts', 'src/camera/movement-prose.ts'];
+const UNBUNDLED_CORE_MODULES = ['src/save-file-game-state-corpus.ts', 'src/camera/movement-prose.ts'];
 const UNBUNDLED_REMEDY = {
   'src/camera/movement-prose.ts': 'a row imports camera/movement-contract (it re-exports the prose); import camera/movement-rules instead',
 };
@@ -357,6 +367,24 @@ function statedExtensionKeyLists(dir) {
 // every other check green, so --check holds the derived file to carry them (and, with
 // --core, exactly as many as core states at the pin).
 const LOAD_REFUSAL_CASES = path.join(CASES_DIR, 'core-ui-save-slots.json');
+// The village-state transcription (PL.native-village-save-rows): cases/core-saves-village.json
+// must carry one case per case of the vendored conformance/saves/village-state.json, by name
+// (`village-state <op>: <name>`), plus its contract case. A self-consistent re-vendor with an
+// emitter that dropped cases would otherwise pass `--check --core`; the vendored corpus is
+// hashed and byte-compared with core, so holding the transcription to it holds it to core.
+const VILLAGE_CASES = path.join(CASES_DIR, 'core-saves-village.json');
+const VILLAGE_CORPUS = path.join(OUT_DIR, 'conformance/saves/village-state.json');
+function villageTranscriptionProblems() {
+  const corpus = JSON.parse(fs.readFileSync(VILLAGE_CORPUS, 'utf8')).cases;
+  const names = new Set(JSON.parse(fs.readFileSync(VILLAGE_CASES, 'utf8')).cases.map((c) => c.name));
+  const missing = corpus.filter((c) => !names.has(`village-state ${c.op}: ${c.name}`)).map((c) => c.name);
+  const want = corpus.length + 1;
+  const problems = [];
+  if (missing.length) problems.push(`${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
+  if (names.size !== want) problems.push(`it carries ${names.size} case(s), not the corpus's ${corpus.length} and the contract case`);
+  return { problems, count: corpus.length };
+}
+
 function loadRefusalCasesOnDisk() {
   const doc = JSON.parse(fs.readFileSync(LOAD_REFUSAL_CASES, 'utf8'));
   return doc.cases.filter((c) => (c.steps ?? []).some((st) => st.call === 'ui.loadRefusal')).length;
@@ -691,9 +719,9 @@ function buildFilesAtPin(src) {
   return out;
 }
 
-/** core's save corpora (slots, tutorial progress) at the pin, as { 'vendor/core/<path>': Buffer }. */
+/** core's save corpora (slots, tutorial progress, village state) at the pin, as { 'vendor/core/<path>': Buffer }. */
 function savesFilesAtPin(src) {
-  return filesAtPin(src, SAVES_CORPUS_FILES, 'the saves.slots and tutorial progress rows');
+  return filesAtPin(src, SAVES_CORPUS_FILES, 'the saves.slots, tutorial progress and save.village rows');
 }
 
 /** Exactly `files` (core-relative) at the pin, as { 'vendor/core/<path>': Buffer }. */
@@ -1214,7 +1242,7 @@ async function check(coreDir) {
   }
   const savesFiles = savesFilesOnDisk();
   for (const rel of SAVES_CORPUS_FILES) {
-    if (!savesFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the save-slots or tutorial progress gate would run nothing`);
+    if (!savesFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the save-slots, tutorial progress or village save gate would run nothing`);
   }
   const propsFiles = propsFilesOnDisk();
   for (const rel of PROPS_CORPUS_FILES) {
@@ -1312,7 +1340,7 @@ async function check(coreDir) {
     `vendor-core-bundle: ${expectedList.length} file(s) match their recorded sha256 ` +
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
-      `${savesFiles.length} saves (slots, tutorial progress), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ` +
+      `${savesFiles.length} saves (slots, tutorial progress, village state), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ` +
       `${cameraFiles.length} camera movement, ${audioFiles.length} audio ground, ${survivalFiles.length} survival, ` +
       `${traversalFiles.length} traversal, ${buildFiles.length} headless build and ${progressionFiles.length} progression/skill corpus file(s), ` +
       `core ${manifest.coreCommit}, ` +
@@ -1328,6 +1356,14 @@ async function check(coreDir) {
     fail("cases/core-ui-save-slots.json carries no ui.loadRefusal case: core's load_refusals were not transcribed");
   }
   console.log(`vendor-core-bundle: load refusals — cases/core-ui-save-slots.json carries ${refusalCases} ui.loadRefusal case(s)`);
+  const village = villageTranscriptionProblems();
+  if (village.problems.length) {
+    fail(`cases/core-saves-village.json does not transcribe vendor/core/conformance/saves/village-state.json: ${village.problems.join('; ')}`);
+  }
+  console.log(
+    `vendor-core-bundle: village state — cases/core-saves-village.json transcribes all ${village.count} case(s) of ` +
+      'conformance/saves/village-state.json, by name, and its contract',
+  );
 
   if (coreDir) {
     const src = materialize(coreDir, pin);
@@ -1487,7 +1523,7 @@ async function check(coreDir) {
       console.log(
         `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s), ` +
           `all ${want.length} layout corpus file(s), all ${wantPacks.length} pack corpus/catalog file(s), all ` +
-          `${wantP9a.length} P9a corpus file(s), all ${wantSaves.length} save (slots, tutorial progress) corpus file(s), all ` +
+          `${wantP9a.length} P9a corpus file(s), all ${wantSaves.length} save (slots, tutorial progress, village state) corpus file(s), all ` +
           `${wantProps.length} P6 props/inventory corpus file(s), all ${wantTitle.length} P8 title/tutorial ` +
           `corpus file(s), all ${wantCamera.length} camera movement corpus file(s), all ${wantAudio.length} audio ground ` +
           `corpus file(s), all ${wantSurvival.length} survival corpus file(s), all ${wantTraversal.length} traversal ` +

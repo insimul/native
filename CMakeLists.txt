@@ -1085,6 +1085,32 @@ add_test(NAME progression_corpus_negative COMMAND insimulcore_progression_corpus
 set_tests_properties(progression_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "refusals: 10 of 10 unknown op[(]s[)], step[(]s[)], area[(]s[)] and row[(]s[)] refused\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*progression_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*progression_corpus --negative: PASS")
 
+# village_save_corpus (PL.native-village-save-rows, rulings U118, U128, U49(3) and U36):
+# core's village-state save (src/save-file-game-state.ts: P1.core, and the conversations
+# projection of PL.core-save-conversations-projection) as libinsimulcore's
+# `save.village.*` rows (and skill.kb.loadJson for the corpus's skillKb op), held to
+# core's own corpus conformance/saves/village-state.json, COPIED byte for byte into
+# corebridge/vendor/core/conformance/saves/ at the pin (vendor-core-bundle.mjs
+# SAVES_CORPUS_FILES; hashed, and byte-compared under --check --core).
+# tests/village_save_corpus.cpp drives each op as core's reference runner
+# (save-file-game-state-corpus.ts) composes it; the same cases also run on both legs as
+# the transcribed cases/core-saves-village.json. Unreal's interim village-save and
+# save-conversations copies are what these rows retire. The regex demands the refusal
+# probes' line with every probe refused, the contract line with every stated key agreeing,
+# the driven line with each of core's ten ops driven and 0 undriven, then PASS. It holds
+# no ';' (CMake would split it into a list, and a list passes when ANY part matches).
+add_executable(insimulcore_village_save_corpus tests/village_save_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_village_save_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_village_save_corpus PRIVATE insimulcore)
+set(INSIMUL_VILLAGE_SAVE_CORPUS ${INSIMUL_PROPS_CORPUS}/saves/village-state.json)
+add_test(NAME village_save_corpus COMMAND insimulcore_village_save_corpus ${INSIMUL_VILLAGE_SAVE_CORPUS})
+set_tests_properties(village_save_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\n.*contract: 13 key[(]s[)] save.village.contract states agree with the corpus's[^\n]*\n.*village-state: driven write [1-9][0-9]*, read [1-9][0-9]*, roundTrip [1-9][0-9]*, stamp [1-9][0-9]*, agentCurie [1-9][0-9]*, timeStateOf [1-9][0-9]*, totalHoursOf [1-9][0-9]*, conversationTimestamp [1-9][0-9]*, conversationEpochMs [1-9][0-9]*, skillKb [1-9][0-9]*. 0 undriven\nvillage_save_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nvillage_save_corpus: PASS")
+# Its negative pass: every case's expectation perturbed (its last leaf) must be refused.
+add_test(NAME village_save_corpus_negative COMMAND insimulcore_village_save_corpus --negative ${INSIMUL_VILLAGE_SAVE_CORPUS})
+set_tests_properties(village_save_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\n.*village_save_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nvillage_save_corpus --negative: PASS")
+
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest
 # (TutorialQuestSystem) and the onboarding flow on it (OnboardingManager) — as

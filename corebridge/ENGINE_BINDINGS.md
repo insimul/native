@@ -683,6 +683,37 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   Re-vendor `conformance/progression/*.json`, `conformance/skills/*.json` and
   `conformance/prolog/mechanic-skill.json` from core at this library's pin and drive
   each case as `tests/progression_corpus.cpp` does.
+- **The village-state save and its conversations (Unreal's
+  `P1.unreal.retire-village-save-copy` and `P9g.unreal.retire-save-conversations-copy`,
+  after PL.native-village-save-rows; U118, U128).** Core's `save-file-game-state` is the
+  `save.village.*` rows (`README.md`, "The village-state save rows"). The two retirement
+  rows bind them in place of the interim copy on unreal main (`234fc83`, read only):
+  `Portable/InsimulVillageSave.{h,cpp}` (319 + 3,562 lines), and the village-save and
+  save-conversations calls `InsimulUIStateBinding` (`HydrateConversation`,
+  `CanonicalOutsideConversations`) and `InsimulSocialBinding` (the session's
+  `GameSaveState.conversations` hand-off and `History`) make into it.
+
+  | Unreal's interim copy (`insimul::villagesave`) | Row |
+  |---|---|
+  | `kGameStateVersion`, `kSaveFileVersion`, `kExtensionKey`, `kPlayerAgentLocalId`, `kRuntimeSlot`, `kPositionFrameSlot`, `VillagerSlots`, `kConversationMsMin`/`Max`, `ConversationRowKeys`, `ConversationRecordKeys`, `StateBlockContract`'s weather keys | `save.village.contract {}` |
+  | `WriteVillageSave` (and the unchecked `WriteGameStateIntoSave` behind it), `ApplyWrite` | `save.village.write { save, gameState, options: { worldId, runtime, positionFrame, tick } }` → `{ ok, currentState, conversations }` or `{ ok: false, refusal }`; put the two bodies over the save (`ApplyWrite` stays the binding's: `{ ...save, ...body }`) |
+  | `ReadVillageSave` (and `ReadGameStateFromSave`) | `save.village.read { save, options: { worldId, runtime? } }` |
+  | `CheckVillageSave`, `FRefusal`, `RefusalCodes`, `RefusalOrder` | `save.village.check { save }` → `{ refusal }`; a refusal's `code` and `field` are the contract, `message` is core's sentence for a log |
+  | `CheckSaveOwnership`, `ReadRuntimeSave` (both overloads) | `save.village.ownership { save, worldId, runtime }`, `save.village.readRuntime { save, worldId, runtime }` (`runtime` null: the legacy runtime) |
+  | `WriteRuntimeSave` | the binding's composition: `save.village.belongsTo` (refuse a save another runtime stamped; a never-played save is written into), then `save.village.write`, then the bodies over the save |
+  | `SaveRuntimeOf`, `PositionFrameOf`, `SaveBelongsTo`, `RuntimeLabel`, `AgentCurie` (`SanitizeLocalId` inside it) | `save.village.runtimeOf`, `.positionFrameOf`, `.belongsTo`, `.runtimeLabel`, `.agentCurie` |
+  | `TimeStateOf`, `TotalHoursOf` | `save.village.timeStateOf`, `.totalHoursOf` |
+  | the weather block reader and the sky's hand-off to the director | `save.village.weather.read { block }`; `save.village.weather.saveState { session, surfaceWetness? }` and `.restore { session, gameState }` over a `weather.create` session |
+  | `ReadConversationRecords`, `ConversationRowsOf`, `ConversationRecordsOf`, `ConversationTimestampOf`, `EpochMsOfConversationTimestamp` | `save.village.conversations.read`, `.rows`, `.records`, `.timestamp`, `.epochMs` (the checked write and read already fold and split them) |
+  | `ReadProgression`/`WrittenProgression`, `ReadLanguage`/`WrittenLanguage`, `ReadSocial`/`WrittenSocial`, `ReadGathering`, `ReadGenreRunBlock`/`GenreRunBlockOf` | inside `save.village.write`/`.read` for the save; each block's own rows (`progression.save.*`, `traversal.save.*` and the other blocks' rows where native has them) for its own corpus. A block reader with no row of its own is not this row's: its system's native rows retire it |
+  | `VillageDigest`, `LoadedVillagerWordsOf`, `KeepLoadedVillagerWords`, `NpcRecordsByteForByte`, the KINP helpers' `Utf16Less`, `UnsanitizeLocalId`, the JSON helpers | engine-side: the game's own capture, re-save and test helpers, none of them a core rule |
+
+  The skill KB a load recomposes (the corpus's `skillKb` op) is `skill.kb.loadJson {
+  currentState }` after a `save.village.read` that is not refused. Re-vendor
+  `conformance/saves/village-state.json` from core at this library's pin and drive each
+  case as `tests/village_save_corpus.cpp` does: one row per op, `roundTrip` as a write
+  whose two bodies are put over the save and then read, `stamp` as the four stamp
+  readers, a refusal compared without its `message`.
 - **Run 22's cases, from the 45409ed pin** (PL.native-bundle-core-r2; U124, U126). What
   each Unreal cell binds, and what it does not get here:
   - **One E press, one object** (`P6.unreal.interact-press`; core's

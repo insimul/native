@@ -197,6 +197,27 @@
        "save.integrity",
        "save.migrate",
        "save.rules",
+       "save.village.agentCurie",
+       "save.village.belongsTo",
+       "save.village.check",
+       "save.village.contract",
+       "save.village.conversations.epochMs",
+       "save.village.conversations.read",
+       "save.village.conversations.records",
+       "save.village.conversations.rows",
+       "save.village.conversations.timestamp",
+       "save.village.ownership",
+       "save.village.positionFrameOf",
+       "save.village.read",
+       "save.village.readRuntime",
+       "save.village.runtimeLabel",
+       "save.village.runtimeOf",
+       "save.village.timeStateOf",
+       "save.village.totalHoursOf",
+       "save.village.weather.read",
+       "save.village.weather.restore",
+       "save.village.weather.saveState",
+       "save.village.write",
        "saves.slots.apply",
        "saves.slots.create",
        "session.dispose",
@@ -224,6 +245,7 @@
        "skill.kb.facts",
        "skill.kb.liveFacts",
        "skill.kb.load",
+       "skill.kb.loadJson",
        "skill.kb.open",
        "skill.kb.program",
        "skill.kb.retract",
@@ -379,7 +401,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 345}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 367}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -425,7 +447,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 345}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 367}}}}
    ]
   },
   {

@@ -177,6 +177,147 @@ function saves(root, coreCommit) {
 	);
 }
 
+// ── the village-state save: conformance/saves/village-state.json (village-state-corpus.test.ts) ──
+//
+// Core's reference runner is src/save-file-game-state-corpus.ts (`runVillageStateOp`);
+// each op becomes the calls it makes, through the save.village.* rows
+// (PL.native-village-save-rows):
+//
+//   write                 save.village.write { save, gameState, options }
+//   read                  save.village.read { save, options }
+//   roundTrip             save.village.write { save, gameState, options: writeOptions }, then
+//                         save.village.read { save: { ...save, currentState, conversations } (the
+//                         written bodies, by $ref), options: readOptions }; a refused case is the
+//                         write's refusal (the writer stores only blocks it read, so a written save
+//                         reads back; were a read ever to refuse instead, the write step fails loudly)
+//   stamp                 save.village.runtimeOf, positionFrameOf, belongsTo { runtime ?? null }, and
+//                         runtimeLabel over the runtimeOf answer (by $ref), one expected key each
+//   agentCurie            save.village.agentCurie
+//   timeStateOf           save.village.timeStateOf
+//   totalHoursOf          save.village.totalHoursOf
+//   conversationTimestamp save.village.conversations.timestamp
+//   conversationEpochMs   save.village.conversations.epochMs
+//   skillKb               save.village.read { save, options } (a refusal is the case's answer: the
+//                         read checks the progression block before skillKbLoadJson could), then
+//                         skill.kb.loadJson { currentState: save.currentState }
+//
+// A refusal is pinned as the corpus pins it, plus the row's `message` as any string
+// (core's sentence for a log; the corpus does not pin it). One more case states the
+// contract keys the save.village.contract row answers, from the corpus's own contract.
+// An op this map does not know fails the emit, so a new core op cannot be skipped.
+
+/** The corpus's contract keys save.village.contract states (the row keys them the same way). */
+const VILLAGE_CONTRACT_KEYS = [
+	'saveFileVersion',
+	'gameStateVersion',
+	'extensionKey',
+	'playerAgentLocalId',
+	'runtimeSlot',
+	'positionFrameSlot',
+	'villagerSlots',
+	'weatherExtensionKey',
+	'weatherDirectorKeys',
+	'weatherBlockMembers',
+	'conversationRowKeys',
+	'conversationRecordKeys',
+	'conversationMsRange',
+];
+
+/** A refused answer as the row gives it: the corpus's refusal plus core's message (any string). */
+const refusedRow = (expected) => ({ ok: false, refusal: { ...expected.refusal, message: { $type: 'string' } } });
+
+function villageSave(root, coreCommit) {
+	const r = reader(root);
+	const file = r.json('conformance/saves/village-state.json');
+	if (file.area !== 'saves') throw new Error('emit-bridge-cases: village-state.json is not the saves corpus');
+	const cases = [];
+	const contract = {};
+	for (const k of VILLAGE_CONTRACT_KEYS) {
+		if (!(k in file.contract)) throw new Error(`emit-bridge-cases: village-state.json's contract has no ${k}`);
+		contract[k] = file.contract[k];
+	}
+	cases.push({
+		name: 'village-state: the contract keys the save.village.contract row states',
+		steps: [{ call: 'save.village.contract', expect: contract }],
+	});
+	const one = (call, input, expected) => [{ call, args: input, expect: expected.ok === false ? refusedRow(expected) : expected }];
+	for (const c of file.cases) {
+		const i = c.input;
+		const e = c.expected;
+		let steps;
+		switch (c.op) {
+			case 'write':
+				steps = one('save.village.write', i, e);
+				break;
+			case 'read':
+				steps = one('save.village.read', i, e);
+				break;
+			case 'roundTrip': {
+				const write = { call: 'save.village.write', args: { save: i.save, gameState: i.gameState, options: i.writeOptions } };
+				if (e.ok === false) {
+					steps = [{ ...write, expect: refusedRow(e) }];
+					break;
+				}
+				const save = { ...i.save, currentState: { $ref: 'written.currentState' }, conversations: { $ref: 'written.conversations' } };
+				steps = [
+					{ ...write, expect: sub({ ok: true }), bind: 'written' },
+					{ call: 'save.village.read', args: { save, options: i.readOptions }, expect: e },
+				];
+				break;
+			}
+			case 'stamp': {
+				const at = { save: i.save, worldId: i.worldId };
+				steps = [
+					{ call: 'save.village.runtimeOf', args: at, expect: { runtime: e.runtime }, bind: 'writer' },
+					{ call: 'save.village.positionFrameOf', args: at, expect: { positionFrame: e.positionFrame } },
+					{ call: 'save.village.belongsTo', args: { ...at, runtime: i.runtime ?? null }, expect: { belongsTo: e.belongsTo } },
+					{ call: 'save.village.runtimeLabel', args: { runtime: { $ref: 'writer.runtime' } }, expect: { label: e.label } },
+				];
+				break;
+			}
+			case 'agentCurie':
+				steps = one('save.village.agentCurie', i, e);
+				break;
+			case 'timeStateOf':
+				steps = one('save.village.timeStateOf', i, e);
+				break;
+			case 'totalHoursOf':
+				steps = one('save.village.totalHoursOf', i, e);
+				break;
+			case 'conversationTimestamp':
+				steps = one('save.village.conversations.timestamp', i, e);
+				break;
+			case 'conversationEpochMs':
+				steps = one('save.village.conversations.epochMs', i, e);
+				break;
+			case 'skillKb': {
+				const read = { call: 'save.village.read', args: { save: i.save, options: i.options } };
+				if (e.ok === false) {
+					steps = [{ ...read, expect: refusedRow(e) }];
+					break;
+				}
+				steps = [
+					{ ...read, expect: sub({ ok: true }) },
+					{ call: 'skill.kb.loadJson', args: { currentState: i.save.currentState ?? null }, expect: e },
+				];
+				break;
+			}
+			default:
+				throw new Error(`emit-bridge-cases: village-state.json op ${c.op} has no transcription (case "${c.name}")`);
+		}
+		cases.push({ name: `village-state ${c.op}: ${c.name}`, steps });
+	}
+	return caseFile(
+		'saves-village',
+		"core's village-state save corpus (conformance/saves/village-state.json, P1.core and " +
+			'PL.core-save-conversations-projection) through the save.village.* rows and skill.kb.loadJson, each op as ' +
+			"core's reference runner (save-file-game-state-corpus.ts) composes it.",
+		coreCommit,
+		r.files,
+		cases,
+	);
+}
+
 // ── ui: conformance/ui/ (dialogue-menu-save-corpus.test.ts, quest-trade-corpus.test.ts, ui-corpus.test.ts)
 
 function pauseMenu(root, coreCommit) {
@@ -519,6 +660,7 @@ function quests(root, coreCommit) {
 export function emitBridgeCases(root, coreCommit) {
 	return {
 		'core-saves.json': saves(root, coreCommit),
+		'core-saves-village.json': villageSave(root, coreCommit),
 		'core-quests.json': quests(root, coreCommit),
 		'core-ui-pause-menu.json': pauseMenu(root, coreCommit),
 		'core-ui-quest-journal.json': questJournal(root, coreCommit),

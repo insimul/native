@@ -48,6 +48,43 @@ import {
 	computeSaveFileIntegrity,
 	validateSaveFileEnvelope,
 } from '@insimul/core/save-envelope';
+// The village-state save (PL.native-village-save-rows; core's P1.core and
+// PL.core-save-conversations-projection): the save.village.* rows.
+import {
+	CONVERSATION_MS_MAX,
+	CONVERSATION_MS_MIN,
+	CONVERSATION_RECORD_KEYS,
+	CONVERSATION_ROW_KEYS,
+	GAME_STATE_VERSION,
+	PLAYER_AGENT_LOCAL_ID,
+	POSITION_FRAME_SLOT,
+	RUNTIME_SLOT,
+	VILLAGER_SLOTS,
+	WEATHER_BLOCK_MEMBERS,
+	WEATHER_DIRECTOR_KEYS,
+	WEATHER_EXTENSION_KEY,
+	agentCurie,
+	checkSaveOwnership,
+	checkVillageSave,
+	conversationRecordsOf,
+	conversationRowsOf,
+	conversationTimestampOf,
+	epochMsOfConversationTimestamp,
+	positionFrameOf,
+	readConversationRecords,
+	readRuntimeSave,
+	readVillageSave,
+	readWeatherBlock,
+	restoreWeatherFromSave,
+	runtimeLabel,
+	saveBelongsTo,
+	saveRuntimeOf,
+	timeStateOf,
+	totalHoursOf,
+	weatherSaveState,
+	writeVillageSave,
+} from '@insimul/core/save-file-game-state';
+import { BLACKBOARD_EXTENSION_KEY } from '@insimul/core/ai/blackboard';
 
 // ── in-game UI view-models ────────────────────────────────────────────────────
 import { KIND_COLOR, Notifications } from '@insimul/core/ui/notifications';
@@ -349,7 +386,7 @@ import { SkillProgression } from '@insimul/core/game-engine/logic/SkillProgressi
 // PL.core-skill-kb-rule-head-facts, src/progression/skill-kb.ts): which of a save's
 // prologFacts a skill KB holds, the program a recomposing host consults, and core's
 // reference session that layers asserts and retracts and recomposes on a load.
-import { SkillKbSession, composeSkillKbProgram, skillKbLiveFactsOf } from '@insimul/core/progression/skill-kb';
+import { SkillKbSession, composeSkillKbProgram, skillKbLiveFactsOf, skillKbLoadJson } from '@insimul/core/progression/skill-kb';
 // The skill session's KB (`skill.create { kb }`) is a native Trealla KB, through the
 // same seam core's own `prolog-engine` import resolves to in this bundle.
 import { createPrologEngine } from './host-prolog-engine.js';
@@ -1953,6 +1990,66 @@ function migrateWithOutcome(saveFile) {
 	return { saveFile: save, outcome, significant: isMigrationOutcomeSignificant(outcome) };
 }
 
+// ── the village-state save (PL.native-village-save-rows) ──────────────────────
+// The rows' own checks, all coded `[invalid-input]`, are on what core
+// dereferences unread: the save document (every function reads its members), the
+// write's and read's options (the agent CURIEs and the board slots are built from
+// them), a world id and a runtime (a string, or null for the legacy runtime).
+// Everything core reads defensively (the game state, a stored block, a timestamp,
+// a clock) is handed over as it came, and core answers it, refusals included.
+
+/** A save document: core's functions read its members unread. */
+function villageSaveArg(method, value) {
+	return coded('invalid-input', () => needObject(method, value, 'save'));
+}
+
+/** `runtime`: a string, or null (absent too) for the legacy runtime, which stamps nothing. */
+function runtimeArg(method, value) {
+	return coded('invalid-input', () => (value === undefined || value === null ? null : needString(method, value, 'runtime')));
+}
+
+/** `WriteGameStateOptions`: every member is written into a board unread. */
+function villageWriteOptions(method, value, name) {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		for (const k of ['worldId', 'runtime', 'positionFrame']) needString(method, value[k], `${name}.${k}`);
+		needNumber(method, value.tick, `${name}.tick`);
+		return { worldId: value.worldId, runtime: value.runtime, positionFrame: value.positionFrame, tick: value.tick };
+	});
+}
+
+/** `ReadGameStateOptions`: `worldId`, and `runtime` (absent or null: every villager board of the world). */
+function villageReadOptions(method, value, name) {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		needString(method, value.worldId, `${name}.worldId`);
+		if (value.runtime === undefined || value.runtime === null) return { worldId: value.worldId };
+		return { worldId: value.worldId, runtime: needString(method, value.runtime, `${name}.runtime`) };
+	});
+}
+
+/**
+ * A core refusal as JSON: `{ code, field, found?, expected?, keys?, message }`,
+ * every key core set and none it left undefined (so `found: null`, "no version",
+ * stays, and an absent `keys` stays absent). The message is core's sentence for
+ * a log; the corpus pins the rest.
+ */
+function refusalOf(refusal) {
+	return plain(refusal);
+}
+
+/** A checked write's answer in the corpus's shape: `{ ok: true, currentState, conversations }` or `{ ok: false, refusal }`. */
+function villageWritten(r) {
+	if (!r.ok) return { ok: false, refusal: refusalOf(r.refusal) };
+	return { ok: true, currentState: plain(r.value.currentState), conversations: plain(r.value.conversations) };
+}
+
+/** A checked read's answer in the corpus's shape: `{ ok: true, gameState }` or `{ ok: false, refusal }`. */
+function villageRead(r) {
+	if (!r.ok) return { ok: false, refusal: refusalOf(r.refusal) };
+	return { ok: true, gameState: plain(r.value) };
+}
+
 // ── quests ────────────────────────────────────────────────────────────────────
 
 const QUEST_STATUSES = ['available', 'active', 'completed'];
@@ -2213,6 +2310,218 @@ const METHODS = {
 	 * `significant` from core's `isMigrationOutcomeSignificant`.
 	 */
 	'save.migrate': (args) => migrateWithOutcome(needObject('save.migrate', args.saveFile, 'saveFile')),
+
+	// ── the village-state save (WV1 P1; PL.native-village-save-rows) ────────────
+	// Core's `save-file-game-state`: a game's save interchange (`GameSaveState`)
+	// in and out of the ONE persisted format (`SaveFile.currentState` and
+	// `conversations`), every rule core's. Each row is one core function; the
+	// args are a case's `input` of core's `conformance/saves/village-state.json`
+	// and the answer is in its `expected` shape, plus a refusal's `message`
+	// (core's sentence for a log, which the corpus does not pin). A refusal is a
+	// VALUE; only an argument core would dereference unread is an ERROR, coded
+	// `[invalid-input]`.
+
+	/**
+	 * `save.village.contract` → the constants a binding must not hard-code:
+	 * `{ saveFileVersion, gameStateVersion, extensionKey, playerAgentLocalId,
+	 * runtimeSlot, positionFrameSlot, villagerSlots, weatherExtensionKey,
+	 * weatherDirectorKeys, weatherBlockMembers, conversationRowKeys,
+	 * conversationRecordKeys, conversationMsRange: [min, max] }`, keyed as the
+	 * corpus's `contract` keys them.
+	 */
+	'save.village.contract': () => ({
+		saveFileVersion: SAVE_FILE_VERSION,
+		gameStateVersion: GAME_STATE_VERSION,
+		extensionKey: BLACKBOARD_EXTENSION_KEY,
+		playerAgentLocalId: PLAYER_AGENT_LOCAL_ID,
+		runtimeSlot: RUNTIME_SLOT,
+		positionFrameSlot: POSITION_FRAME_SLOT,
+		villagerSlots: [...VILLAGER_SLOTS],
+		weatherExtensionKey: WEATHER_EXTENSION_KEY,
+		weatherDirectorKeys: [...WEATHER_DIRECTOR_KEYS],
+		weatherBlockMembers: [...WEATHER_BLOCK_MEMBERS],
+		conversationRowKeys: [...CONVERSATION_ROW_KEYS],
+		conversationRecordKeys: [...CONVERSATION_RECORD_KEYS],
+		conversationMsRange: [CONVERSATION_MS_MIN, CONVERSATION_MS_MAX],
+	}),
+
+	/**
+	 * `save.village.write { save, gameState, options: { worldId, runtime,
+	 * positionFrame, tick } }` → core's `writeVillageSave` (the CHECKED write):
+	 * `{ ok: true, currentState, conversations }`, the two bodies a save PUT takes
+	 * (put them over the save: `{ ...save, currentState, conversations }`), or `{
+	 * ok: false, refusal: { code, field, found?, expected?, keys?, message } }`.
+	 * The checks run in core's order: the save's version, the game state's, the
+	 * save's extensions, each stored block, each written block, the conversation
+	 * records. `gameState` is handed over as it came (a missing or wrong one is
+	 * core's `wrong_version` refusal). Never mutates `save`.
+	 */
+	'save.village.write': (args) => {
+		const m = 'save.village.write';
+		const save = villageSaveArg(m, args.save);
+		const options = villageWriteOptions(m, args.options, 'options');
+		return villageWritten(writeVillageSave(save, args.gameState, options));
+	},
+
+	/**
+	 * `save.village.read { save, options: { worldId, runtime? } }` → core's
+	 * `readVillageSave` (the CHECKED read): `{ ok: true, gameState }` or `{ ok:
+	 * false, refusal }`. With `runtime`, only that runtime's villagers. It does not
+	 * ask whose save it is: a game's Load asks `save.village.readRuntime`.
+	 */
+	'save.village.read': (args) => {
+		const m = 'save.village.read';
+		return villageRead(readVillageSave(villageSaveArg(m, args.save), villageReadOptions(m, args.options, 'options')));
+	},
+
+	/** `save.village.check { save }` → `{ refusal }`: core's `checkVillageSave`, the first reason the mapping cannot vouch for the save, or null. */
+	'save.village.check': (args) => {
+		const r = checkVillageSave(villageSaveArg('save.village.check', args.save));
+		return { refusal: r ? refusalOf(r) : null };
+	},
+
+	/**
+	 * `save.village.ownership { save, worldId, runtime }` → `{ refusal }`: core's
+	 * `checkSaveOwnership`, `wrong_world` (field `worldId`) then `wrong_runtime`
+	 * (field `runtime`, the C5-3 rule), each with `found` and `expected`, or null
+	 * when the save is the game's own. `runtime` null (or absent) is the legacy
+	 * runtime, which owns only unstamped saves.
+	 */
+	'save.village.ownership': (args) => {
+		const m = 'save.village.ownership';
+		const save = villageSaveArg(m, args.save);
+		const worldId = coded('invalid-input', () => needString(m, args.worldId, 'worldId'));
+		const r = checkSaveOwnership(save, worldId, runtimeArg(m, args.runtime));
+		return { refusal: r ? refusalOf(r) : null };
+	},
+
+	/**
+	 * `save.village.readRuntime { save, worldId, runtime }` → core's
+	 * `readRuntimeSave`, a running game's Load: the ownership check, then the
+	 * checked read of that runtime's villagers (every villager board for the
+	 * legacy runtime, null). `{ ok: true, gameState }` or `{ ok: false, refusal }`
+	 * with any code core states for a refused Load.
+	 */
+	'save.village.readRuntime': (args) => {
+		const m = 'save.village.readRuntime';
+		const save = villageSaveArg(m, args.save);
+		const worldId = coded('invalid-input', () => needString(m, args.worldId, 'worldId'));
+		return villageRead(readRuntimeSave(save, worldId, runtimeArg(m, args.runtime)));
+	},
+
+	/** `save.village.runtimeOf { save, worldId }` → `{ runtime }`: core's `saveRuntimeOf`, the player board's stamp, or null (a legacy or never-played save). */
+	'save.village.runtimeOf': (args) => {
+		const m = 'save.village.runtimeOf';
+		const save = villageSaveArg(m, args.save);
+		return { runtime: saveRuntimeOf(save, coded('invalid-input', () => needString(m, args.worldId, 'worldId'))) };
+	},
+
+	/** `save.village.positionFrameOf { save, worldId }` → `{ positionFrame }`: core's `positionFrameOf`, the frame the save's positions are in, or null. */
+	'save.village.positionFrameOf': (args) => {
+		const m = 'save.village.positionFrameOf';
+		const save = villageSaveArg(m, args.save);
+		return { positionFrame: positionFrameOf(save, coded('invalid-input', () => needString(m, args.worldId, 'worldId'))) };
+	},
+
+	/** `save.village.belongsTo { save, worldId, runtime }` → `{ belongsTo }`: core's `saveBelongsTo` (the stamp equals `runtime`; null is the legacy runtime). */
+	'save.village.belongsTo': (args) => {
+		const m = 'save.village.belongsTo';
+		const save = villageSaveArg(m, args.save);
+		const worldId = coded('invalid-input', () => needString(m, args.worldId, 'worldId'));
+		return { belongsTo: saveBelongsTo(save, worldId, runtimeArg(m, args.runtime)) };
+	},
+
+	/** `save.village.runtimeLabel { runtime }` → `{ label }`: core's `runtimeLabel`, how a runtime is named to a player ("legacy" for null). */
+	'save.village.runtimeLabel': (args) => ({ label: runtimeLabel(runtimeArg('save.village.runtimeLabel', args.runtime)) }),
+
+	/** `save.village.agentCurie { localId, worldId }` → `{ curie }`: core's `agentCurie`, a villager's (or, with `player`, the player's) board key. */
+	'save.village.agentCurie': (args) => {
+		const m = 'save.village.agentCurie';
+		const ids = coded('invalid-input', () => [needString(m, args.localId, 'localId'), needString(m, args.worldId, 'worldId')]);
+		return { curie: agentCurie(ids[0], ids[1]) };
+	},
+
+	/**
+	 * `save.village.timeStateOf { totalHours, timeScale, isPaused }` → `{ timeState
+	 * }`: core's `timeStateOf`, the saved clock for a total in-game hour count
+	 * (`timeScale` and `isPaused` carried as handed).
+	 */
+	'save.village.timeStateOf': (args) => {
+		const totalHours = coded('invalid-input', () => needNumber('save.village.timeStateOf', args.totalHours, 'totalHours'));
+		return { timeState: plain(timeStateOf(totalHours, args.timeScale, args.isPaused)) };
+	},
+
+	/** `save.village.totalHoursOf { timeState }` → `{ totalHours }`: core's `totalHoursOf`, or null when the save has no clock. */
+	'save.village.totalHoursOf': (args) => ({ totalHours: totalHoursOf(args.timeState) }),
+
+	/**
+	 * `save.village.weather.read { block }` → core's `readWeatherBlock`: `{ ok:
+	 * true, value }` (null for no block) or `{ ok: false, keys }`, every unreadable
+	 * member named in ascending order (none when the block is not an object).
+	 */
+	'save.village.weather.read': (args) => plain(readWeatherBlock(args.block)),
+
+	/**
+	 * `save.village.weather.saveState { session, surfaceWetness? }` → `{ weather }`:
+	 * core's `weatherSaveState` over a `weather.create` session's director, the
+	 * `GameSaveState.weather` a host writes (`surfaceWetness` absent: null).
+	 */
+	'save.village.weather.saveState': (args) => {
+		const m = 'save.village.weather.saveState';
+		const s = session(m, args, 'weather');
+		const wetness = coded('invalid-input', () => optionalArg(args.surfaceWetness, (v) => needNumber(m, v, 'surfaceWetness')));
+		return { weather: plain(weatherSaveState(s.director, wetness ?? null)) };
+	},
+
+	/**
+	 * `save.village.weather.restore { session, gameState }` → `{ surfaceWetness,
+	 * state, view, issues }`: core's `restoreWeatherFromSave` into a
+	 * `weather.create` session's director (a game state with no weather restores
+	 * the director's default, no sky), then the session's state and view. The
+	 * wetness is what the host resumes from, or null.
+	 */
+	'save.village.weather.restore': (args) => {
+		const m = 'save.village.weather.restore';
+		const s = session(m, args, 'weather');
+		const gameState = coded('invalid-input', () => needObject(m, args.gameState, 'gameState'));
+		const surfaceWetness = restoreWeatherFromSave(s.director, gameState);
+		return { surfaceWetness, ...weatherSessionView(s.director) };
+	},
+
+	/**
+	 * `save.village.conversations.read { records }` → core's
+	 * `readConversationRecords`: `{ ok: true, value }` (absent or null reads as no
+	 * record) or `{ ok: false, keys }`, every unreadable member named.
+	 */
+	'save.village.conversations.read': (args) => plain(readConversationRecords(args.records)),
+
+	/**
+	 * `save.village.conversations.rows { stored, records }` → `{ rows }`: core's
+	 * `conversationRowsOf`, the per-conversation records folded into the save's
+	 * one row per NPC (`stored`, the save's rows, any value; never mutated).
+	 * `records` are read with core's `readConversationRecords` first, as the
+	 * writer reads them; records it cannot read are `[invalid-input]`, naming
+	 * core's keys.
+	 */
+	'save.village.conversations.rows': (args) => {
+		const m = 'save.village.conversations.rows';
+		const read = readConversationRecords(args.records);
+		if (!read.ok) {
+			coded('invalid-input', () => {
+				throw refuse(m, `\`records\` cannot be read: ${read.keys.length ? read.keys.join(', ') : 'not a list'}`);
+			});
+		}
+		return { rows: plain(conversationRowsOf(args.stored, read.value)) };
+	},
+
+	/** `save.village.conversations.records { rows }` → `{ records }`: core's `conversationRecordsOf`, the save's rows split back into one record per conversation. */
+	'save.village.conversations.records': (args) => ({ records: plain(conversationRecordsOf(args.rows)) }),
+
+	/** `save.village.conversations.timestamp { epochMs }` → `{ timestamp }`: core's `conversationTimestampOf`, the wall clock's instant, or null. */
+	'save.village.conversations.timestamp': (args) => ({ timestamp: conversationTimestampOf(args.epochMs) }),
+
+	/** `save.village.conversations.epochMs { timestamp }` → `{ epochMs }`: core's `epochMsOfConversationTimestamp`, the round trip back, or null. */
+	'save.village.conversations.epochMs': (args) => ({ epochMs: epochMsOfConversationTimestamp(args.timestamp) }),
 
 	// ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
 
@@ -5614,6 +5923,16 @@ const METHODS = {
 	 * facts in clause order, the dropped in index order.
 	 */
 	'skill.kb.liveFacts': (args) => okValue(skillKbLiveFactsOf(args.prologFacts)),
+
+	/**
+	 * `skill.kb.loadJson { currentState }` → core's `skillKbLoadJson`, what a load
+	 * recomposes the skill KB from (PL.native-village-save-rows: the village-state
+	 * corpus's `skillKb` op, after a `save.village.read` that is not refused): `{
+	 * ok: true, facts, dropped, roster }` (the live clauses, what was dropped, the
+	 * roster the save's progression block publishes) or `{ ok: false, refusal: {
+	 * code, field, keys } }`. `currentState` is any value, read as core reads it.
+	 */
+	'skill.kb.loadJson': (args) => plain(skillKbLoadJson(args.currentState)),
 
 	/**
 	 * `skill.kb.compose { pack?, world?, facts? }` → core's `composeSkillKbProgram`: the

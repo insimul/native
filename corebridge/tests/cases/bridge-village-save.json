@@ -1,0 +1,6648 @@
+{
+ "area": "saves-village-hand",
+ "description": "Hand cases for the save.village.* rows (PL.native-village-save-rows) beyond core's village-state corpus: the contract whole, refusal probes for malformed saves and game states, foreign-world and foreign-runtime ownership through ownership and readRuntime, the [invalid-input] boundary, the conversations projection's round trip (rows, records, rows again; through the checked write and read), the conversation clock, the weather block against a weather.create session, and skill.kb.loadJson. Every expectation was computed by core's own functions at the pin (45409ed) by gen-bridge-village-save-cases.mts, kept with the item's loop records; nothing here is a rule of its own.",
+ "cases": [
+  {
+   "name": "save.village.contract states every constant, exactly",
+   "steps": [
+    {
+     "call": "save.village.contract",
+     "expect": {
+      "saveFileVersion": 3,
+      "gameStateVersion": 3,
+      "extensionKey": "aiBlackboards",
+      "playerAgentLocalId": "player",
+      "runtimeSlot": "runtime",
+      "positionFrameSlot": "positionFrame",
+      "villagerSlots": [
+       "runtime",
+       "x",
+       "y",
+       "z",
+       "state",
+       "block",
+       "activity",
+       "destination",
+       "runtimeState",
+       "inside",
+       "indoors",
+       "disposition"
+      ],
+      "weatherExtensionKey": "weather",
+      "weatherDirectorKeys": [
+       "day",
+       "season",
+       "condition"
+      ],
+      "weatherBlockMembers": [
+       "director",
+       "director.condition",
+       "director.day",
+       "director.season",
+       "surfaceWetness"
+      ],
+      "conversationRowKeys": [
+       "npcCharacterId",
+       "npcCharacterName",
+       "compressedHistory",
+       "recentTurns",
+       "totalTurnCount",
+       "lastLocationId",
+       "lastLocationName",
+       "wordsUsed",
+       "newWordsLearned",
+       "topics"
+      ],
+      "conversationRecordKeys": [
+       "npcId",
+       "npcName",
+       "timestamp",
+       "turnCount",
+       "wordsUsed",
+       "targetLanguagePercent",
+       "fluencyGained",
+       "lines"
+      ],
+      "conversationMsRange": [
+       -62167219200000,
+       253402300799999
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "save.village.check: a sound save, an older version, no version, unregistered extensions, an unreadable sky",
+   "steps": [
+    {
+     "call": "save.village.check",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "refusal": null
+     }
+    },
+    {
+     "call": "save.village.check",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      }
+     },
+     "expect": {
+      "refusal": null
+     }
+    },
+    {
+     "call": "save.village.check",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 2,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "refusal": {
+       "code": "wrong_version",
+       "field": "version",
+       "found": 2,
+       "expected": 3,
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.check",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "refusal": {
+       "code": "wrong_version",
+       "field": "version",
+       "found": null,
+       "expected": 3,
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.check",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "zModded": 1,
+         "aModded": {}
+        }
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "refusal": {
+       "code": "unregistered_extension",
+       "field": "currentState.extensions",
+       "keys": [
+        "aModded",
+        "zModded"
+       ],
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.check",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "weather": {
+          "director": {
+           "day": -1,
+           "season": 3
+          },
+          "surfaceWetness": 2
+         }
+        }
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "refusal": {
+       "code": "unreadable_weather",
+       "field": "currentState.extensions.weather",
+       "keys": [
+        "director.condition",
+        "director.day",
+        "director.season",
+        "surfaceWetness"
+       ],
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.check",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "weather": "rain"
+        }
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "refusal": {
+       "code": "unreadable_weather",
+       "field": "currentState.extensions.weather",
+       "keys": [],
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "save.village.write refuses a malformed save or game state as a value, in core order",
+   "steps": [
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 2,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "gameState": {
+       "version": 3,
+       "savedAt": 1,
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "questProgress": {},
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": [
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T10:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "bonjour"
+         ],
+         "targetLanguagePercent": 50,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Bonjour"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !"
+          }
+         ]
+        },
+        {
+         "npcId": "npc_bo",
+         "npcName": "Bo",
+         "timestamp": "2026-11-19T10:05:00.000Z",
+         "turnCount": 0,
+         "wordsUsed": [],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": []
+        },
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T11:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "merci",
+          "bonjour"
+         ],
+         "targetLanguagePercent": 40,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Merci"
+          }
+         ]
+        }
+       ]
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m",
+       "tick": 30.5
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "wrong_version",
+       "field": "version",
+       "found": 2,
+       "expected": 3,
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m",
+       "tick": 30.5
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "wrong_version",
+       "field": "gameState.version",
+       "found": null,
+       "expected": 3,
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "gameState": {
+       "savedAt": 1,
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "questProgress": {},
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": [
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T10:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "bonjour"
+         ],
+         "targetLanguagePercent": 50,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Bonjour"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !"
+          }
+         ]
+        },
+        {
+         "npcId": "npc_bo",
+         "npcName": "Bo",
+         "timestamp": "2026-11-19T10:05:00.000Z",
+         "turnCount": 0,
+         "wordsUsed": [],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": []
+        },
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T11:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "merci",
+          "bonjour"
+         ],
+         "targetLanguagePercent": 40,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Merci"
+          }
+         ]
+        }
+       ]
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m",
+       "tick": 30.5
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "wrong_version",
+       "field": "gameState.version",
+       "found": null,
+       "expected": 3,
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "gameState": "not a state",
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m",
+       "tick": 30.5
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "wrong_version",
+       "field": "gameState.version",
+       "found": null,
+       "expected": 3,
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "zModded": 1,
+         "aModded": {}
+        }
+       },
+       "conversations": []
+      },
+      "gameState": {
+       "version": 3,
+       "savedAt": 1,
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "questProgress": {},
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": [
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T10:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "bonjour"
+         ],
+         "targetLanguagePercent": 50,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Bonjour"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !"
+          }
+         ]
+        },
+        {
+         "npcId": "npc_bo",
+         "npcName": "Bo",
+         "timestamp": "2026-11-19T10:05:00.000Z",
+         "turnCount": 0,
+         "wordsUsed": [],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": []
+        },
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T11:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "merci",
+          "bonjour"
+         ],
+         "targetLanguagePercent": 40,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Merci"
+          }
+         ]
+        }
+       ]
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m",
+       "tick": 30.5
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "unregistered_extension",
+       "field": "currentState.extensions",
+       "keys": [
+        "aModded",
+        "zModded"
+       ],
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "gameState": {
+       "version": 3,
+       "savedAt": 1,
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "questProgress": {},
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": [
+        {
+         "npcId": "",
+         "npcName": 7,
+         "timestamp": 1,
+         "wordsUsed": [
+          3
+         ],
+         "lines": [
+          {
+           "role": "narrator",
+           "content": "x"
+          }
+         ]
+        },
+        "nope"
+       ]
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m",
+       "tick": 30.5
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "unreadable_conversations",
+       "field": "gameState.conversations",
+       "keys": [
+        "[0].lines[0]",
+        "[0].npcId",
+        "[0].npcName",
+        "[0].timestamp",
+        "[0].wordsUsed",
+        "[1]"
+       ],
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "gameState": {
+       "version": 3,
+       "savedAt": 1,
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "questProgress": {},
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": {
+        "npc": 1
+       }
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m",
+       "tick": 30.5
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "unreadable_conversations",
+       "field": "gameState.conversations",
+       "keys": [],
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "save.village.read refuses a malformed save as a value",
+   "steps": [
+    {
+     "call": "save.village.read",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 2,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "wrong_version",
+       "field": "version",
+       "found": 2,
+       "expected": 3,
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.read",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "weather": {
+          "director": {
+           "day": -1,
+           "season": 3
+          },
+          "surfaceWetness": 2
+         }
+        }
+       },
+       "conversations": []
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "unreadable_weather",
+       "field": "currentState.extensions.weather",
+       "keys": [
+        "director.condition",
+        "director.day",
+        "director.season",
+        "surfaceWetness"
+       ],
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.read",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "zModded": 1,
+         "aModded": {}
+        }
+       },
+       "conversations": []
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": null
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "unregistered_extension",
+       "field": "currentState.extensions",
+       "keys": [
+        "aModded",
+        "zModded"
+       ],
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "the rows refuse only what core would dereference unread, as [invalid-input]",
+   "steps": [
+    {
+     "call": "save.village.read",
+     "args": {
+      "save": null,
+      "options": {
+       "worldId": "0123456789abcdef01234567"
+      }
+     },
+     "expectError": "[invalid-input]"
+    },
+    {
+     "call": "save.village.read",
+     "args": {
+      "save": [],
+      "options": {
+       "worldId": "0123456789abcdef01234567"
+      }
+     },
+     "expectError": "`save` must be a JSON object"
+    },
+    {
+     "call": "save.village.read",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      }
+     },
+     "expectError": "`options` must be a JSON object"
+    },
+    {
+     "call": "save.village.read",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": 3
+      }
+     },
+     "expectError": "`options.runtime` must be a string"
+    },
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "gameState": {
+       "version": 3,
+       "savedAt": 1,
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "questProgress": {},
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": [
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T10:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "bonjour"
+         ],
+         "targetLanguagePercent": 50,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Bonjour"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !"
+          }
+         ]
+        },
+        {
+         "npcId": "npc_bo",
+         "npcName": "Bo",
+         "timestamp": "2026-11-19T10:05:00.000Z",
+         "turnCount": 0,
+         "wordsUsed": [],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": []
+        },
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T11:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "merci",
+          "bonjour"
+         ],
+         "targetLanguagePercent": 40,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Merci"
+          }
+         ]
+        }
+       ]
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m"
+      }
+     },
+     "expectError": "`options.tick` must be a finite number"
+    },
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "gameState": {
+       "version": 3,
+       "savedAt": 1,
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "questProgress": {},
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": [
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T10:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "bonjour"
+         ],
+         "targetLanguagePercent": 50,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Bonjour"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !"
+          }
+         ]
+        },
+        {
+         "npcId": "npc_bo",
+         "npcName": "Bo",
+         "timestamp": "2026-11-19T10:05:00.000Z",
+         "turnCount": 0,
+         "wordsUsed": [],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": []
+        },
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T11:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "merci",
+          "bonjour"
+         ],
+         "targetLanguagePercent": 40,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Merci"
+          }
+         ]
+        }
+       ]
+      },
+      "options": {
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m",
+       "tick": 1
+      }
+     },
+     "expectError": "[invalid-input]"
+    },
+    {
+     "call": "save.village.check",
+     "args": {},
+     "expectError": "`save` must be a JSON object"
+    },
+    {
+     "call": "save.village.ownership",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": 7,
+      "runtime": null
+     },
+     "expectError": "`worldId` must be a string"
+    },
+    {
+     "call": "save.village.readRuntime",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": {
+       "name": "x"
+      }
+     },
+     "expectError": "`runtime` must be a string"
+    },
+    {
+     "call": "save.village.agentCurie",
+     "args": {
+      "localId": "npc_ada"
+     },
+     "expectError": "`worldId` must be a string"
+    },
+    {
+     "call": "save.village.timeStateOf",
+     "args": {
+      "totalHours": "5",
+      "timeScale": 1,
+      "isPaused": false
+     },
+     "expectError": "`totalHours` must be a finite number"
+    },
+    {
+     "call": "save.village.weather.restore",
+     "args": {
+      "session": 99,
+      "gameState": {}
+     },
+     "expectError": "save.village.weather.restore"
+    }
+   ]
+  },
+  {
+   "name": "save.village.ownership: the game's own save, another world's, one naming no world, another runtime's, and the legacy runtime",
+   "steps": [
+    {
+     "call": "save.village.ownership",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": "unreal-village"
+     },
+     "expect": {
+      "refusal": null
+     }
+    },
+    {
+     "call": "save.village.ownership",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "fedcba9876543210fedcba98",
+      "runtime": "unreal-village"
+     },
+     "expect": {
+      "refusal": {
+       "code": "wrong_world",
+       "field": "worldId",
+       "found": "0123456789abcdef01234567",
+       "expected": "fedcba9876543210fedcba98",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.ownership",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": "unreal-village"
+     },
+     "expect": {
+      "refusal": {
+       "code": "wrong_world",
+       "field": "worldId",
+       "found": null,
+       "expected": "0123456789abcdef01234567",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.ownership",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": "bjs-village"
+     },
+     "expect": {
+      "refusal": {
+       "code": "wrong_runtime",
+       "field": "runtime",
+       "found": "unreal-village",
+       "expected": "bjs-village",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.ownership",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": null
+     },
+     "expect": {
+      "refusal": {
+       "code": "wrong_runtime",
+       "field": "runtime",
+       "found": "unreal-village",
+       "expected": null,
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.ownership",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567"
+     },
+     "expect": {
+      "refusal": {
+       "code": "wrong_runtime",
+       "field": "runtime",
+       "found": "unreal-village",
+       "expected": null,
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.ownership",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": null
+     },
+     "expect": {
+      "refusal": null
+     }
+    },
+    {
+     "call": "save.village.ownership",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": "unreal-village"
+     },
+     "expect": {
+      "refusal": {
+       "code": "wrong_runtime",
+       "field": "runtime",
+       "found": null,
+       "expected": "unreal-village",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "save.village.readRuntime: a game's Load refuses another world's, then another runtime's, then what the checked read refuses; its own loads",
+   "steps": [
+    {
+     "call": "save.village.readRuntime",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": "unreal-village"
+     },
+     "expect": {
+      "ok": true,
+      "gameState": {
+       "version": 3,
+       "slotIndex": 1,
+       "savedAt": "2026-11-19T00:00:00Z",
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "disposition": 0,
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "romance": {},
+       "merchants": [],
+       "currentZone": null,
+       "questProgress": {},
+       "timeState": {
+        "gameHour": 6,
+        "gameMinute": 30,
+        "dayNumber": 2,
+        "timeScale": 1,
+        "isPaused": false
+       },
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": [
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T10:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Bonjour"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !"
+          }
+         ]
+        },
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T11:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Merci"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "save.village.readRuntime",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "fedcba9876543210fedcba98",
+      "runtime": "unreal-village"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "wrong_world",
+       "field": "worldId",
+       "found": "0123456789abcdef01234567",
+       "expected": "fedcba9876543210fedcba98",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.readRuntime",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": "bjs-village"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "wrong_runtime",
+       "field": "runtime",
+       "found": "unreal-village",
+       "expected": "bjs-village",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.readRuntime",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 2,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "fedcba9876543210fedcba98",
+      "runtime": "bjs-village"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "wrong_world",
+       "field": "worldId",
+       "found": "0123456789abcdef01234567",
+       "expected": "fedcba9876543210fedcba98",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.readRuntime",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 2,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": "unreal-village"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "wrong_version",
+       "field": "version",
+       "found": 2,
+       "expected": 3,
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.readRuntime",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": null
+     },
+     "expect": {
+      "ok": true,
+      "gameState": {
+       "version": 3,
+       "slotIndex": 1,
+       "savedAt": "2026-11-19T00:00:00Z",
+       "gameTime": 0,
+       "player": {
+        "position": {
+         "x": 0,
+         "y": 0,
+         "z": 0
+        },
+        "rotation": {
+         "x": 0,
+         "y": 0,
+         "z": 0
+        },
+        "gold": 10,
+        "health": 100,
+        "energy": 100,
+        "inventory": []
+       },
+       "npcs": [],
+       "relationships": {},
+       "romance": {},
+       "merchants": [],
+       "currentZone": null,
+       "questProgress": {}
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "the stamp readers over a stamped and a never-played save",
+   "steps": [
+    {
+     "call": "save.village.runtimeOf",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567"
+     },
+     "expect": {
+      "runtime": "unreal-village"
+     }
+    },
+    {
+     "call": "save.village.runtimeOf",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "worldId": "0123456789abcdef01234567"
+     },
+     "expect": {
+      "runtime": null
+     }
+    },
+    {
+     "call": "save.village.runtimeOf",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "fedcba9876543210fedcba98"
+     },
+     "expect": {
+      "runtime": null
+     }
+    },
+    {
+     "call": "save.village.positionFrameOf",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567"
+     },
+     "expect": {
+      "positionFrame": "world-ir-m"
+     }
+    },
+    {
+     "call": "save.village.positionFrameOf",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "worldId": "0123456789abcdef01234567"
+     },
+     "expect": {
+      "positionFrame": null
+     }
+    },
+    {
+     "call": "save.village.belongsTo",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "worldId": "0123456789abcdef01234567",
+      "runtime": "unreal-village"
+     },
+     "expect": {
+      "belongsTo": true
+     }
+    },
+    {
+     "call": "save.village.belongsTo",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "worldId": "0123456789abcdef01234567"
+     },
+     "expect": {
+      "belongsTo": true
+     }
+    },
+    {
+     "call": "save.village.runtimeLabel",
+     "args": {
+      "runtime": null
+     },
+     "expect": {
+      "label": "legacy"
+     }
+    },
+    {
+     "call": "save.village.runtimeLabel",
+     "args": {},
+     "expect": {
+      "label": "legacy"
+     }
+    },
+    {
+     "call": "save.village.runtimeLabel",
+     "args": {
+      "runtime": "unreal-village"
+     },
+     "expect": {
+      "label": "unreal-village"
+     }
+    },
+    {
+     "call": "save.village.agentCurie",
+     "args": {
+      "localId": "player",
+      "worldId": "0123456789abcdef01234567"
+     },
+     "expect": {
+      "curie": "insimul:world:0123456789abcdef01234567:ent:player"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the conversations projection: records read, folded into rows, split back, and folded again changing nothing",
+   "steps": [
+    {
+     "call": "save.village.conversations.read",
+     "args": {
+      "records": [
+       {
+        "npcId": "npc_ada",
+        "npcName": "Ada",
+        "timestamp": "2026-11-19T10:00:00.000Z",
+        "turnCount": 1,
+        "wordsUsed": [
+         "bonjour"
+        ],
+        "targetLanguagePercent": 50,
+        "fluencyGained": 1,
+        "lines": [
+         {
+          "role": "player",
+          "content": "Bonjour"
+         },
+         {
+          "role": "npc",
+          "content": "Bonjour !"
+         }
+        ]
+       },
+       {
+        "npcId": "npc_bo",
+        "npcName": "Bo",
+        "timestamp": "2026-11-19T10:05:00.000Z",
+        "turnCount": 0,
+        "wordsUsed": [],
+        "targetLanguagePercent": 0,
+        "fluencyGained": 0,
+        "lines": []
+       },
+       {
+        "npcId": "npc_ada",
+        "npcName": "Ada",
+        "timestamp": "2026-11-19T11:00:00.000Z",
+        "turnCount": 1,
+        "wordsUsed": [
+         "merci",
+         "bonjour"
+        ],
+        "targetLanguagePercent": 40,
+        "fluencyGained": 1,
+        "lines": [
+         {
+          "role": "player",
+          "content": "Merci"
+         }
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "value": [
+       {
+        "npcId": "npc_ada",
+        "npcName": "Ada",
+        "timestamp": "2026-11-19T10:00:00.000Z",
+        "turnCount": 1,
+        "wordsUsed": [
+         "bonjour"
+        ],
+        "targetLanguagePercent": 50,
+        "fluencyGained": 1,
+        "lines": [
+         {
+          "role": "player",
+          "content": "Bonjour"
+         },
+         {
+          "role": "npc",
+          "content": "Bonjour !"
+         }
+        ]
+       },
+       {
+        "npcId": "npc_bo",
+        "npcName": "Bo",
+        "timestamp": "2026-11-19T10:05:00.000Z",
+        "turnCount": 0,
+        "wordsUsed": [],
+        "targetLanguagePercent": 0,
+        "fluencyGained": 0,
+        "lines": []
+       },
+       {
+        "npcId": "npc_ada",
+        "npcName": "Ada",
+        "timestamp": "2026-11-19T11:00:00.000Z",
+        "turnCount": 1,
+        "wordsUsed": [
+         "merci",
+         "bonjour"
+        ],
+        "targetLanguagePercent": 40,
+        "fluencyGained": 1,
+        "lines": [
+         {
+          "role": "player",
+          "content": "Merci"
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "call": "save.village.conversations.rows",
+     "args": {
+      "stored": [],
+      "records": [
+       {
+        "npcId": "npc_ada",
+        "npcName": "Ada",
+        "timestamp": "2026-11-19T10:00:00.000Z",
+        "turnCount": 1,
+        "wordsUsed": [
+         "bonjour"
+        ],
+        "targetLanguagePercent": 50,
+        "fluencyGained": 1,
+        "lines": [
+         {
+          "role": "player",
+          "content": "Bonjour"
+         },
+         {
+          "role": "npc",
+          "content": "Bonjour !"
+         }
+        ]
+       },
+       {
+        "npcId": "npc_bo",
+        "npcName": "Bo",
+        "timestamp": "2026-11-19T10:05:00.000Z",
+        "turnCount": 0,
+        "wordsUsed": [],
+        "targetLanguagePercent": 0,
+        "fluencyGained": 0,
+        "lines": []
+       },
+       {
+        "npcId": "npc_ada",
+        "npcName": "Ada",
+        "timestamp": "2026-11-19T11:00:00.000Z",
+        "turnCount": 1,
+        "wordsUsed": [
+         "merci",
+         "bonjour"
+        ],
+        "targetLanguagePercent": 40,
+        "fluencyGained": 1,
+        "lines": [
+         {
+          "role": "player",
+          "content": "Merci"
+         }
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "rows": [
+       {
+        "npcCharacterId": "npc_ada",
+        "npcCharacterName": "Ada",
+        "compressedHistory": null,
+        "recentTurns": [
+         {
+          "role": "player",
+          "content": "Bonjour",
+          "timestamp": "2026-11-19T10:00:00.000Z"
+         },
+         {
+          "role": "npc",
+          "content": "Bonjour !",
+          "timestamp": "2026-11-19T10:00:00.000Z"
+         },
+         {
+          "role": "player",
+          "content": "Merci",
+          "timestamp": "2026-11-19T11:00:00.000Z"
+         }
+        ],
+        "totalTurnCount": 3,
+        "lastLocationId": null,
+        "lastLocationName": null,
+        "wordsUsed": [
+         "bonjour",
+         "merci"
+        ],
+        "newWordsLearned": [],
+        "topics": []
+       }
+      ]
+     },
+     "bind": "first"
+    },
+    {
+     "call": "save.village.conversations.records",
+     "args": {
+      "rows": {
+       "$ref": "first.rows"
+      }
+     },
+     "expect": {
+      "records": [
+       {
+        "npcId": "npc_ada",
+        "npcName": "Ada",
+        "timestamp": "2026-11-19T10:00:00.000Z",
+        "turnCount": 1,
+        "wordsUsed": [],
+        "targetLanguagePercent": 0,
+        "fluencyGained": 0,
+        "lines": [
+         {
+          "role": "player",
+          "content": "Bonjour"
+         },
+         {
+          "role": "npc",
+          "content": "Bonjour !"
+         }
+        ]
+       },
+       {
+        "npcId": "npc_ada",
+        "npcName": "Ada",
+        "timestamp": "2026-11-19T11:00:00.000Z",
+        "turnCount": 1,
+        "wordsUsed": [
+         "bonjour",
+         "merci"
+        ],
+        "targetLanguagePercent": 0,
+        "fluencyGained": 0,
+        "lines": [
+         {
+          "role": "player",
+          "content": "Merci"
+         }
+        ]
+       }
+      ]
+     },
+     "bind": "back"
+    },
+    {
+     "call": "save.village.conversations.rows",
+     "args": {
+      "stored": {
+       "$ref": "first.rows"
+      },
+      "records": {
+       "$ref": "back.records"
+      }
+     },
+     "expect": {
+      "rows": [
+       {
+        "npcCharacterId": "npc_ada",
+        "npcCharacterName": "Ada",
+        "compressedHistory": null,
+        "recentTurns": [
+         {
+          "role": "player",
+          "content": "Bonjour",
+          "timestamp": "2026-11-19T10:00:00.000Z"
+         },
+         {
+          "role": "npc",
+          "content": "Bonjour !",
+          "timestamp": "2026-11-19T10:00:00.000Z"
+         },
+         {
+          "role": "player",
+          "content": "Merci",
+          "timestamp": "2026-11-19T11:00:00.000Z"
+         }
+        ],
+        "totalTurnCount": 3,
+        "lastLocationId": null,
+        "lastLocationName": null,
+        "wordsUsed": [
+         "bonjour",
+         "merci"
+        ],
+        "newWordsLearned": [],
+        "topics": []
+       }
+      ]
+     }
+    },
+    {
+     "call": "save.village.conversations.rows",
+     "args": {
+      "stored": [
+       {
+        "npcCharacterId": "npc_ada",
+        "npcCharacterName": "Ada L.",
+        "compressedHistory": "met at the well",
+        "recentTurns": [
+         {
+          "role": "npc",
+          "content": "Salut",
+          "timestamp": "2026-11-18T09:00:00.000Z"
+         }
+        ],
+        "totalTurnCount": 2.5,
+        "lastLocationId": "bld_1",
+        "lastLocationName": "Well",
+        "wordsUsed": [
+         "salut"
+        ],
+        "newWordsLearned": [
+         "salut"
+        ],
+        "topics": [
+         "water"
+        ],
+        "mood": "kind"
+       },
+       {
+        "npcCharacterName": "nobody"
+       }
+      ],
+      "records": [
+       {
+        "npcId": "npc_ada",
+        "npcName": "Ada",
+        "timestamp": "2026-11-19T10:00:00.000Z",
+        "turnCount": 1,
+        "wordsUsed": [
+         "bonjour"
+        ],
+        "targetLanguagePercent": 50,
+        "fluencyGained": 1,
+        "lines": [
+         {
+          "role": "player",
+          "content": "Bonjour"
+         },
+         {
+          "role": "npc",
+          "content": "Bonjour !"
+         }
+        ]
+       },
+       {
+        "npcId": "npc_bo",
+        "npcName": "Bo",
+        "timestamp": "2026-11-19T10:05:00.000Z",
+        "turnCount": 0,
+        "wordsUsed": [],
+        "targetLanguagePercent": 0,
+        "fluencyGained": 0,
+        "lines": []
+       },
+       {
+        "npcId": "npc_ada",
+        "npcName": "Ada",
+        "timestamp": "2026-11-19T11:00:00.000Z",
+        "turnCount": 1,
+        "wordsUsed": [
+         "merci",
+         "bonjour"
+        ],
+        "targetLanguagePercent": 40,
+        "fluencyGained": 1,
+        "lines": [
+         {
+          "role": "player",
+          "content": "Merci"
+         }
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "rows": [
+       {
+        "npcCharacterId": "npc_ada",
+        "npcCharacterName": "Ada",
+        "compressedHistory": "met at the well",
+        "recentTurns": [
+         {
+          "role": "npc",
+          "content": "Salut",
+          "timestamp": "2026-11-18T09:00:00.000Z"
+         },
+         {
+          "role": "player",
+          "content": "Bonjour",
+          "timestamp": "2026-11-19T10:00:00.000Z"
+         },
+         {
+          "role": "npc",
+          "content": "Bonjour !",
+          "timestamp": "2026-11-19T10:00:00.000Z"
+         },
+         {
+          "role": "player",
+          "content": "Merci",
+          "timestamp": "2026-11-19T11:00:00.000Z"
+         }
+        ],
+        "totalTurnCount": 3,
+        "lastLocationId": "bld_1",
+        "lastLocationName": "Well",
+        "wordsUsed": [
+         "salut",
+         "bonjour",
+         "merci"
+        ],
+        "newWordsLearned": [
+         "salut"
+        ],
+        "topics": [
+         "water"
+        ],
+        "mood": "kind"
+       },
+       {
+        "npcCharacterName": "nobody"
+       }
+      ]
+     }
+    },
+    {
+     "call": "save.village.conversations.rows",
+     "args": {
+      "records": []
+     },
+     "expect": {
+      "rows": []
+     }
+    },
+    {
+     "call": "save.village.conversations.records",
+     "args": {
+      "rows": [
+       {
+        "npcCharacterId": "npc_ada",
+        "npcCharacterName": "Ada L.",
+        "compressedHistory": "met at the well",
+        "recentTurns": [
+         {
+          "role": "npc",
+          "content": "Salut",
+          "timestamp": "2026-11-18T09:00:00.000Z"
+         }
+        ],
+        "totalTurnCount": 2.5,
+        "lastLocationId": "bld_1",
+        "lastLocationName": "Well",
+        "wordsUsed": [
+         "salut"
+        ],
+        "newWordsLearned": [
+         "salut"
+        ],
+        "topics": [
+         "water"
+        ],
+        "mood": "kind"
+       },
+       {
+        "npcCharacterName": "nobody"
+       }
+      ]
+     },
+     "expect": {
+      "records": [
+       {
+        "npcId": "npc_ada",
+        "npcName": "Ada L.",
+        "timestamp": "2026-11-18T09:00:00.000Z",
+        "turnCount": 0,
+        "wordsUsed": [
+         "salut"
+        ],
+        "targetLanguagePercent": 0,
+        "fluencyGained": 0,
+        "lines": [
+         {
+          "role": "npc",
+          "content": "Salut"
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "call": "save.village.conversations.records",
+     "args": {
+      "rows": "none"
+     },
+     "expect": {
+      "records": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "the conversations projection through the checked write and read: a save written twice and a load saved again change no row",
+   "steps": [
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "gameState": {
+       "version": 3,
+       "savedAt": 1,
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "questProgress": {},
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": [
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T10:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "bonjour"
+         ],
+         "targetLanguagePercent": 50,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Bonjour"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !"
+          }
+         ]
+        },
+        {
+         "npcId": "npc_bo",
+         "npcName": "Bo",
+         "timestamp": "2026-11-19T10:05:00.000Z",
+         "turnCount": 0,
+         "wordsUsed": [],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": []
+        },
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T11:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "merci",
+          "bonjour"
+         ],
+         "targetLanguagePercent": 40,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Merci"
+          }
+         ]
+        }
+       ]
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m",
+       "tick": 30.5
+      }
+     },
+     "expect": {
+      "ok": true,
+      "currentState": {
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ],
+        "cefrLevel": null
+       },
+       "quests": {
+        "progress": {}
+       },
+       "npcs": {
+        "relationships": {}
+       },
+       "prologFacts": [],
+       "extensions": {
+        "aiBlackboards": {
+         "insimul:world:0123456789abcdef01234567:ent:player": {
+          "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+          "updatedTick": 30.5,
+          "slots": {
+           "runtime": "unreal-village",
+           "positionFrame": "world-ir-m"
+          }
+         },
+         "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+          "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+          "updatedTick": 30.5,
+          "slots": {
+           "runtime": "unreal-village",
+           "x": 1,
+           "y": 0,
+           "z": 2,
+           "state": "walking",
+           "block": null,
+           "activity": "work",
+           "destination": "bld_1",
+           "runtimeState": "walking",
+           "inside": null,
+           "indoors": null,
+           "disposition": null
+          }
+         }
+        },
+        "weather": {
+         "director": {
+          "day": 4,
+          "season": "only",
+          "condition": "fog"
+         },
+         "surfaceWetness": 0.25
+        }
+       },
+       "timeState": {
+        "gameHour": 6,
+        "gameMinute": 30,
+        "dayNumber": 2,
+        "timeScale": 1,
+        "isPaused": false
+       }
+      },
+      "conversations": [
+       {
+        "npcCharacterId": "npc_ada",
+        "npcCharacterName": "Ada",
+        "compressedHistory": null,
+        "recentTurns": [
+         {
+          "role": "player",
+          "content": "Bonjour",
+          "timestamp": "2026-11-19T10:00:00.000Z"
+         },
+         {
+          "role": "npc",
+          "content": "Bonjour !",
+          "timestamp": "2026-11-19T10:00:00.000Z"
+         },
+         {
+          "role": "player",
+          "content": "Merci",
+          "timestamp": "2026-11-19T11:00:00.000Z"
+         }
+        ],
+        "totalTurnCount": 3,
+        "lastLocationId": null,
+        "lastLocationName": null,
+        "wordsUsed": [
+         "bonjour",
+         "merci"
+        ],
+        "newWordsLearned": [],
+        "topics": []
+       }
+      ]
+     },
+     "bind": "once"
+    },
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "$ref": "once.currentState"
+       },
+       "conversations": {
+        "$ref": "once.conversations"
+       }
+      },
+      "gameState": {
+       "version": 3,
+       "savedAt": 1,
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "questProgress": {},
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": [
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T10:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "bonjour"
+         ],
+         "targetLanguagePercent": 50,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Bonjour"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !"
+          }
+         ]
+        },
+        {
+         "npcId": "npc_bo",
+         "npcName": "Bo",
+         "timestamp": "2026-11-19T10:05:00.000Z",
+         "turnCount": 0,
+         "wordsUsed": [],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": []
+        },
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T11:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "merci",
+          "bonjour"
+         ],
+         "targetLanguagePercent": 40,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Merci"
+          }
+         ]
+        }
+       ]
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m",
+       "tick": 30.5
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "save.village.read",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "gameState": {
+       "version": 3,
+       "slotIndex": 1,
+       "savedAt": "2026-11-19T00:00:00Z",
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "disposition": 0,
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "romance": {},
+       "merchants": [],
+       "currentZone": null,
+       "questProgress": {},
+       "timeState": {
+        "gameHour": 6,
+        "gameMinute": 30,
+        "dayNumber": 2,
+        "timeScale": 1,
+        "isPaused": false
+       },
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": [
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T10:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Bonjour"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !"
+          }
+         ]
+        },
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T11:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Merci"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "bind": "loaded"
+    },
+    {
+     "call": "save.village.write",
+     "args": {
+      "save": {
+       "id": "save-hand-1",
+       "worldId": "0123456789abcdef01234567",
+       "slotIndex": 1,
+       "version": 3,
+       "lastSavedAt": "2026-11-19T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": -2
+         },
+         "rotation": {
+          "x": 0,
+          "y": 90,
+          "z": 0
+         },
+         "gold": 12,
+         "health": 90,
+         "energy": 80,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0123456789abcdef01234567:ent:player": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:player",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0123456789abcdef01234567:ent:npc_ada": {
+           "agent": "insimul:world:0123456789abcdef01234567:ent:npc_ada",
+           "updatedTick": 30.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "walking",
+            "block": null,
+            "activity": "work",
+            "destination": "bld_1",
+            "runtimeState": "walking",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         },
+         "weather": {
+          "director": {
+           "day": 4,
+           "season": "only",
+           "condition": "fog"
+          },
+          "surfaceWetness": 0.25
+         }
+        },
+        "timeState": {
+         "gameHour": 6,
+         "gameMinute": 30,
+         "dayNumber": 2,
+         "timeScale": 1,
+         "isPaused": false
+        }
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      },
+      "gameState": {
+       "$ref": "loaded.gameState"
+      },
+      "options": {
+       "worldId": "0123456789abcdef01234567",
+       "runtime": "unreal-village",
+       "positionFrame": "world-ir-m",
+       "tick": 30.5
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "conversations": [
+        {
+         "npcCharacterId": "npc_ada",
+         "npcCharacterName": "Ada",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "player",
+           "content": "Bonjour",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !",
+           "timestamp": "2026-11-19T10:00:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Merci",
+           "timestamp": "2026-11-19T11:00:00.000Z"
+          }
+         ],
+         "totalTurnCount": 3,
+         "lastLocationId": null,
+         "lastLocationName": null,
+         "wordsUsed": [
+          "bonjour",
+          "merci"
+         ],
+         "newWordsLearned": [],
+         "topics": []
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "the conversations projection refuses unreadable records: a value from the read and the write, an error from the rows row",
+   "steps": [
+    {
+     "call": "save.village.conversations.read",
+     "args": {
+      "records": [
+       {
+        "npcId": "",
+        "npcName": 7,
+        "timestamp": 1,
+        "wordsUsed": [
+         3
+        ],
+        "lines": [
+         {
+          "role": "narrator",
+          "content": "x"
+         }
+        ]
+       },
+       "nope"
+      ]
+     },
+     "expect": {
+      "ok": false,
+      "keys": [
+       "[0].lines[0]",
+       "[0].npcId",
+       "[0].npcName",
+       "[0].timestamp",
+       "[0].wordsUsed",
+       "[1]"
+      ]
+     }
+    },
+    {
+     "call": "save.village.conversations.read",
+     "args": {
+      "records": {
+       "npc": 1
+      }
+     },
+     "expect": {
+      "ok": false,
+      "keys": []
+     }
+    },
+    {
+     "call": "save.village.conversations.read",
+     "args": {},
+     "expect": {
+      "ok": true,
+      "value": []
+     }
+    },
+    {
+     "call": "save.village.conversations.rows",
+     "args": {
+      "stored": [],
+      "records": [
+       {
+        "npcId": "",
+        "npcName": 7,
+        "timestamp": 1,
+        "wordsUsed": [
+         3
+        ],
+        "lines": [
+         {
+          "role": "narrator",
+          "content": "x"
+         }
+        ]
+       },
+       "nope"
+      ]
+     },
+     "expectError": "[invalid-input]"
+    },
+    {
+     "call": "save.village.conversations.rows",
+     "args": {
+      "stored": [],
+      "records": [
+       {
+        "npcId": "",
+        "npcName": 7,
+        "timestamp": 1,
+        "wordsUsed": [
+         3
+        ],
+        "lines": [
+         {
+          "role": "narrator",
+          "content": "x"
+         }
+        ]
+       },
+       "nope"
+      ]
+     },
+     "expectError": "[0].lines[0]"
+    },
+    {
+     "call": "save.village.conversations.rows",
+     "args": {
+      "stored": [],
+      "records": "x"
+     },
+     "expectError": "not a list"
+    }
+   ]
+  },
+  {
+   "name": "the conversation clock: the wall clock's instant, its bounds, and the round trip back",
+   "steps": [
+    {
+     "call": "save.village.conversations.timestamp",
+     "args": {
+      "epochMs": 0
+     },
+     "expect": {
+      "timestamp": "1970-01-01T00:00:00.000Z"
+     }
+    },
+    {
+     "call": "save.village.conversations.timestamp",
+     "args": {
+      "epochMs": 1763546400123.9
+     },
+     "expect": {
+      "timestamp": "2025-11-19T10:00:00.123Z"
+     }
+    },
+    {
+     "call": "save.village.conversations.timestamp",
+     "args": {
+      "epochMs": -62167219200000
+     },
+     "expect": {
+      "timestamp": "0000-01-01T00:00:00.000Z"
+     }
+    },
+    {
+     "call": "save.village.conversations.timestamp",
+     "args": {
+      "epochMs": 253402300799999
+     },
+     "expect": {
+      "timestamp": "9999-12-31T23:59:59.999Z"
+     }
+    },
+    {
+     "call": "save.village.conversations.timestamp",
+     "args": {
+      "epochMs": -62167219200001
+     },
+     "expect": {
+      "timestamp": null
+     }
+    },
+    {
+     "call": "save.village.conversations.timestamp",
+     "args": {
+      "epochMs": 253402300800000
+     },
+     "expect": {
+      "timestamp": null
+     }
+    },
+    {
+     "call": "save.village.conversations.timestamp",
+     "args": {
+      "epochMs": -1.5
+     },
+     "expect": {
+      "timestamp": "1969-12-31T23:59:59.998Z"
+     }
+    },
+    {
+     "call": "save.village.conversations.timestamp",
+     "args": {
+      "epochMs": "0"
+     },
+     "expect": {
+      "timestamp": null
+     }
+    },
+    {
+     "call": "save.village.conversations.epochMs",
+     "args": {
+      "timestamp": "2026-11-19T10:00:00.000Z"
+     },
+     "expect": {
+      "epochMs": 1795082400000
+     }
+    },
+    {
+     "call": "save.village.conversations.epochMs",
+     "args": {
+      "timestamp": "2026-11-19T10:00:00Z"
+     },
+     "expect": {
+      "epochMs": null
+     }
+    },
+    {
+     "call": "save.village.conversations.epochMs",
+     "args": {
+      "timestamp": "2026-02-30T00:00:00.000Z"
+     },
+     "expect": {
+      "epochMs": null
+     }
+    },
+    {
+     "call": "save.village.conversations.epochMs",
+     "args": {
+      "timestamp": "2026-11-19T10:00:00.000+01:00"
+     },
+     "expect": {
+      "epochMs": null
+     }
+    },
+    {
+     "call": "save.village.conversations.epochMs",
+     "args": {
+      "timestamp": 5
+     },
+     "expect": {
+      "epochMs": null
+     }
+    },
+    {
+     "call": "save.village.conversations.epochMs",
+     "args": {
+      "timestamp": null
+     },
+     "expect": {
+      "epochMs": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "the clock: timeStateOf carries an hour that rounds to 24 into the next day, and totalHoursOf reads it back",
+   "steps": [
+    {
+     "call": "save.village.timeStateOf",
+     "args": {
+      "totalHours": 23.9999,
+      "timeScale": 2,
+      "isPaused": true
+     },
+     "expect": {
+      "timeState": {
+       "gameHour": 0,
+       "gameMinute": 0,
+       "dayNumber": 2,
+       "timeScale": 2,
+       "isPaused": true
+      }
+     }
+    },
+    {
+     "call": "save.village.timeStateOf",
+     "args": {
+      "totalHours": -3,
+      "timeScale": 1,
+      "isPaused": false
+     },
+     "expect": {
+      "timeState": {
+       "gameHour": 0,
+       "gameMinute": 0,
+       "dayNumber": 1,
+       "timeScale": 1,
+       "isPaused": false
+      }
+     }
+    },
+    {
+     "call": "save.village.totalHoursOf",
+     "args": {
+      "timeState": {
+       "gameHour": 24,
+       "dayNumber": 1
+      }
+     },
+     "expect": {
+      "totalHours": 24
+     }
+    },
+    {
+     "call": "save.village.totalHoursOf",
+     "args": {
+      "timeState": {
+       "gameHour": 5
+      }
+     },
+     "expect": {
+      "totalHours": null
+     }
+    },
+    {
+     "call": "save.village.totalHoursOf",
+     "args": {},
+     "expect": {
+      "totalHours": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "save.village.weather.read: none, unreadable as a whole, readable, and every unreadable member named",
+   "steps": [
+    {
+     "call": "save.village.weather.read",
+     "args": {},
+     "expect": {
+      "ok": true,
+      "value": null
+     }
+    },
+    {
+     "call": "save.village.weather.read",
+     "args": {
+      "block": null
+     },
+     "expect": {
+      "ok": true,
+      "value": null
+     }
+    },
+    {
+     "call": "save.village.weather.read",
+     "args": {
+      "block": "rain"
+     },
+     "expect": {
+      "ok": false,
+      "keys": []
+     }
+    },
+    {
+     "call": "save.village.weather.read",
+     "args": {
+      "block": {
+       "director": null
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "director": null,
+       "surfaceWetness": null
+      }
+     }
+    },
+    {
+     "call": "save.village.weather.read",
+     "args": {
+      "block": {
+       "director": {
+        "day": 2,
+        "season": "wet",
+        "condition": null
+       },
+       "surfaceWetness": 0.5,
+       "climate": "dropped"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "director": {
+        "day": 2,
+        "season": "wet",
+        "condition": null
+       },
+       "surfaceWetness": 0.5
+      }
+     }
+    },
+    {
+     "call": "save.village.weather.read",
+     "args": {
+      "block": {
+       "director": {
+        "day": 1.5,
+        "season": 4,
+        "condition": []
+       },
+       "surfaceWetness": -0.1
+      }
+     },
+     "expect": {
+      "ok": false,
+      "keys": [
+       "director.condition",
+       "director.day",
+       "director.season",
+       "surfaceWetness"
+      ]
+     }
+    },
+    {
+     "call": "save.village.weather.read",
+     "args": {
+      "block": {}
+     },
+     "expect": {
+      "ok": false,
+      "keys": [
+       "director"
+      ]
+     }
+    },
+    {
+     "call": "save.village.weather.read",
+     "args": {
+      "block": {
+       "director": {
+        "day": 0
+       }
+      }
+     },
+     "expect": {
+      "ok": false,
+      "keys": [
+       "director.condition",
+       "director.season"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "save.village.weather.restore and saveState: a saved sky into a director and back out; a game state with no weather restores no sky",
+   "steps": [
+    {
+     "call": "weather.create",
+     "args": {
+      "seed": 7,
+      "weather": {
+       "seasons": [
+        {
+         "id": "only",
+         "length": 3,
+         "weather": [
+          {
+           "condition": "fog",
+           "weight": 1
+          }
+         ]
+        }
+       ],
+       "conditions": [
+        {
+         "id": "fog",
+         "severity": 10
+        }
+       ]
+      }
+     },
+     "bind": "s"
+    },
+    {
+     "call": "save.village.weather.restore",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "gameState": {
+       "version": 3,
+       "savedAt": 1,
+       "gameTime": 30.5,
+       "player": {
+        "position": {
+         "x": 4,
+         "y": 0,
+         "z": -2
+        },
+        "rotation": {
+         "x": 0,
+         "y": 90,
+         "z": 0
+        },
+        "gold": 12,
+        "health": 90,
+        "energy": 80,
+        "inventory": [
+         {
+          "id": "bread"
+         }
+        ]
+       },
+       "npcs": [
+        {
+         "id": "npc_ada",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "state": "walking",
+         "activity": "work",
+         "destinationId": "bld_1",
+         "runtimeState": "walking"
+        }
+       ],
+       "relationships": {},
+       "questProgress": {},
+       "weather": {
+        "director": {
+         "day": 4,
+         "season": "only",
+         "condition": "fog"
+        },
+        "surfaceWetness": 0.25
+       },
+       "conversations": [
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T10:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "bonjour"
+         ],
+         "targetLanguagePercent": 50,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Bonjour"
+          },
+          {
+           "role": "npc",
+           "content": "Bonjour !"
+          }
+         ]
+        },
+        {
+         "npcId": "npc_bo",
+         "npcName": "Bo",
+         "timestamp": "2026-11-19T10:05:00.000Z",
+         "turnCount": 0,
+         "wordsUsed": [],
+         "targetLanguagePercent": 0,
+         "fluencyGained": 0,
+         "lines": []
+        },
+        {
+         "npcId": "npc_ada",
+         "npcName": "Ada",
+         "timestamp": "2026-11-19T11:00:00.000Z",
+         "turnCount": 1,
+         "wordsUsed": [
+          "merci",
+          "bonjour"
+         ],
+         "targetLanguagePercent": 40,
+         "fluencyGained": 1,
+         "lines": [
+          {
+           "role": "player",
+           "content": "Merci"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "$subset": {
+       "surfaceWetness": 0.25,
+       "state": {
+        "day": 4,
+        "season": "only",
+        "condition": "fog"
+       }
+      }
+     }
+    },
+    {
+     "call": "save.village.weather.saveState",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "surfaceWetness": 0.4
+     },
+     "expect": {
+      "weather": {
+       "director": {
+        "day": 4,
+        "season": "only",
+        "condition": "fog"
+       },
+       "surfaceWetness": 0.4
+      }
+     }
+    },
+    {
+     "call": "save.village.weather.saveState",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "weather": {
+       "director": {
+        "day": 4,
+        "season": "only",
+        "condition": "fog"
+       },
+       "surfaceWetness": null
+      }
+     }
+    },
+    {
+     "call": "save.village.weather.saveState",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "surfaceWetness": "wet"
+     },
+     "expectError": "`surfaceWetness` must be a finite number"
+    },
+    {
+     "call": "save.village.weather.restore",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "gameState": {}
+     },
+     "expect": {
+      "$subset": {
+       "surfaceWetness": null,
+       "state": null
+      }
+     }
+    },
+    {
+     "call": "save.village.weather.restore",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "gameState": null
+     },
+     "expectError": "`gameState` must be a JSON object"
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "skill.kb.loadJson reads any currentState as core does",
+   "steps": [
+    {
+     "call": "skill.kb.loadJson",
+     "args": {},
+     "expect": {
+      "ok": true,
+      "facts": [],
+      "dropped": [],
+      "roster": []
+     }
+    },
+    {
+     "call": "skill.kb.loadJson",
+     "args": {
+      "currentState": "x"
+     },
+     "expect": {
+      "ok": true,
+      "facts": [],
+      "dropped": [],
+      "roster": []
+     }
+    },
+    {
+     "call": "skill.kb.loadJson",
+     "args": {
+      "currentState": {
+       "extensions": {
+        "progression": "bad"
+       },
+       "prologFacts": []
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "unreadable_progression",
+       "field": "currentState.extensions.progression",
+       "keys": []
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

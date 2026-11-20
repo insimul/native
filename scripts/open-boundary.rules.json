@@ -651,6 +651,24 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/save-file-game-state",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the save.village.* rows (core's village-state save: the checked write and read, the ownership check, the stamp readers, the clock, the weather block and the conversations projection, P1.core and PL.core-save-conversations-projection) (PL.native-village-save-rows, rulings U118, U128 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-village-save-rows (Features Gauntlet PL.native-village-save-rows)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ai/blackboard",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the save.village.* rows (the board extension key, BLACKBOARD_EXTENSION_KEY, that save.village.contract states) (PL.native-village-save-rows, rulings U118, U128 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-village-save-rows (Features Gauntlet PL.native-village-save-rows)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/stamina/stamina",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the survival.stamina.* rows (core's stamina meter: tuning, bands, spend, regen and the rest clock) (PL.native-survival-rows, rulings U106(1) and U36), exactly as the audio.ground.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

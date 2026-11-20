@@ -583,7 +583,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival, traversal, headless build and progression ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival, traversal, headless build, progression and village save ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -853,6 +853,19 @@
   `skill_goal_met/2` there; with none, core's no-KB rule stands (a node that asks
   anything stays locked). Never import `progression/systems-corpus` (core's runner).
   The JS case leg has no Prolog: a KB-backed hand case is `"legs": ["c"]`.
+- **The village-state save rows (PL.native-village-save-rows, U118, U128) run core's
+  `conformance/saves/village-state.json` UNCHANGED**, copied with the save set
+  (`SAVES_CORPUS_FILES`) and driven by `tests/village_save_corpus.cpp` as
+  `village_save_corpus` (+ `_negative`); `emit-bridge-cases.mjs` also transcribes it
+  into `vendor/core/cases/core-saves-village.json` so both case legs run it, and
+  `core_vendor` holds that transcription to the vendored corpus case by case.
+  `save.village.<fn>` is one function of core's `save-file-game-state` each (the
+  checked write and read, the ownership check and a game's Load, the stamp readers,
+  the clock, the weather block over a `weather.create` session, the conversations
+  projection), answered in the corpus's shape with a refusal as a VALUE plus core's
+  `message`; `[invalid-input]` only for what core dereferences unread. The bundle now
+  carries `src/save-file-game-state.ts` on purpose (it left `UNBUNDLED_CORE_MODULES`);
+  never import `save-file-game-state-corpus` (core's runner), which stays refused.
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain
