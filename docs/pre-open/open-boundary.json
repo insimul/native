@@ -3,15 +3,15 @@
   "rules": "scripts/open-boundary.rules.json",
   "rulesVersion": 1,
   "repository": {
-    "root": "native-native-genre-rows-s2-platformer",
-    "gitHead": "f3117093f9fce8279dccfd39ae3b540d8b0ef2f0"
+    "root": "native-native-genre-rows-s3-strategy",
+    "gitHead": "e9bd658384b87c4e0efa4658fbc33dae661816fd"
   },
   "coverage": {
-    "files": 517,
-    "packScanned": 264,
+    "files": 524,
+    "packScanned": 271,
     "packDocuments": [],
     "importFiles": 21,
-    "importSpecifiers": 207,
+    "importSpecifiers": 211,
     "cargoManifests": 3,
     "cargoDependencies": 3,
     "cFiles": 153,
@@ -2391,7 +2391,59 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 949,
+      "line": 970,
+      "specifier": "@insimul/core/strategy/strategy",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the strategy.* campaign rows (core's strategy module's pure half: the campaign a world gives over its businesses and settlements, its facts, the world facts it is decided over, a turn's books, a holding's price, control and neighbours) and strategy.contract's default tables (PL.native-genre-rows slice 3, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s3-strategy (Features Gauntlet PL.native-genre-rows slice 3)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 971,
+      "specifier": "@insimul/core/strategy/strategy-predicates",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of strategy.contract's pack area and the strategy pack's authored and runtime predicates (PL.native-genre-rows slice 3, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s3-strategy (Features Gauntlet PL.native-genre-rows slice 3)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 972,
+      "specifier": "@insimul/core/strategy/strategy-save",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the strategy.save.* rows (core's strategy save block: its reader, the block a save stores and the block the writer stores) and strategy.contract's extension key and block members (PL.native-genre-rows slice 3, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s3-strategy (Features Gauntlet PL.native-genre-rows slice 3)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 973,
+      "specifier": "@insimul/core/game-engine/logic/StrategyDirector",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the strategy.director.* rows (core's StrategyDirector: start, claim, assign, release, endTurn, holderOf, stockpile, controls, victory, progress, serialize and restore) and strategy.contract's written predicates (PL.native-genre-rows slice 3, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s3-strategy (Features Gauntlet PL.native-genre-rows slice 3)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 978,
       "specifier": "@insimul/core/system-packs/composer",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2404,7 +2456,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 958,
+      "line": 987,
       "specifier": "@insimul/core/editor/layout/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2417,7 +2469,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 959,
+      "line": 988,
       "specifier": "@insimul/core/editor/layout/composition/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2602,7 +2654,7 @@
       "unresolved": 0
     },
     "dependency": {
-      "findings": 126,
+      "findings": 130,
       "unresolved": 0
     },
     "unusedAllowances": 0

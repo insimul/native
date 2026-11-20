@@ -1,11 +1,11 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-native-genre-rows-s2-platformer",
-    "gitHead": "f3117093f9fce8279dccfd39ae3b540d8b0ef2f0"
+    "root": "native-native-genre-rows-s3-strategy",
+    "gitHead": "e9bd658384b87c4e0efa4658fbc33dae661816fd"
   },
   "coverage": {
-    "trackedFiles": 517,
+    "trackedFiles": 524,
     "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,
