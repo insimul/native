@@ -1101,7 +1101,8 @@ function langChat(S, c) {
 		case 'run': {
 			let book = langBook(S, i.book);
 			let session = null;
-			let difficulty = null;
+			// core's runner starts the monitor before the first chat too, and again with each chat.
+			let difficulty = slotOf(S.call('language.difficulty.initial', {}), 'state');
 			langCheck(e.length === i.steps.length, S.where, 'one answer per step');
 			i.steps.forEach((st, k) => {
 				const x = e[k];

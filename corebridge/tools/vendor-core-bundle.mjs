@@ -431,8 +431,10 @@ function villageTranscriptionProblems() {
 // per corpus case by name (`language/<file> <op>: <name>`), whose first call is the one
 // core's runner makes first for that op (systems-corpus.ts, through the rows) and whose
 // every call is a language.* row (or examine's pick, props.interactables.examinePick, which
-// the prompts runner's `examinePick` is). A self-consistent re-vendor with an emitter that
-// dropped or mis-transcribed cases would otherwise pass `--check --core`.
+// the prompts runner's `examinePick` is), and whose calls are, row for row and count for
+// count, the ones core's runner makes for that case (languageCallsOf). A self-consistent
+// re-vendor with an emitter that dropped or mis-transcribed cases would otherwise pass
+// `--check --core`.
 const LANGUAGE_FIRST_CALL = {
   progress: { mastery: 'language.book.mastery', gain: 'language.book.fluencyGain', run: 'language.book.empty', facts: 'language.facts.cefr' },
   save: { block: (c) => (Array.isArray(c.input.encounters) ? 'language.book.empty' : 'language.save.block'), read: 'language.save.read', restore: 'language.save.read' },
@@ -440,6 +442,123 @@ const LANGUAGE_FIRST_CALL = {
   hover: { tokens: 'language.hover.tokenize', run: 'language.hover.initial' },
   chat: { words: 'language.book.empty', percent: 'language.chat.targetPercent', hear: 'language.chat.start', usages: 'language.book.empty', run: 'language.book.empty' },
 };
+/**
+ * The calls core's runner makes for one case (systems-corpus.ts, through the rows), as a
+ * multiset { row: count }: every kernel it calls per op and per step. The transcription must
+ * make exactly these, so an emitter that drops or doubles a call is red.
+ */
+function languageCallsOf(base, c) {
+  const n = {};
+  const add = (row, k = 1) => {
+    if (k > 0) n[row] = (n[row] ?? 0) + k;
+  };
+  const i = c.input;
+  const e = c.expected;
+  const steps = Array.isArray(i.steps) ? i.steps : [];
+  const count = (d) => steps.filter((st) => st.do === d).length;
+  if (base === 'progress') {
+    if (c.op === 'mastery') add('language.book.mastery', i.pairs.length);
+    if (c.op === 'gain') add('language.book.fluencyGain', i.conversations.length);
+    if (c.op === 'facts') {
+      add('language.facts.cefr');
+      add('language.facts.weakDimensions');
+    }
+    if (c.op === 'run') {
+      add('language.book.empty');
+      add('language.book.advance', count('advance'));
+      add('language.book.encounterOfEvent', count('event'));
+      add('language.book.recordEncounter', count('encounter') + steps.filter((st, k) => st.do === 'event' && e[k]?.heard !== false).length);
+      add('language.book.recordGrammar', count('grammar'));
+      add('language.book.recordConversation', count('conversation'));
+      add('language.book.setCefr', count('cefr'));
+      add('language.book.weakPatterns', count('weak'));
+      add('language.book.findWord', steps.filter((st) => st.do === 'weak' && typeof st.word === 'string').length);
+      add('language.book.wordView', steps.filter((st, k) => st.do === 'weak' && typeof st.word === 'string' && e[k]?.word !== null).length);
+      add('language.book.summary', count('summary'));
+    }
+  }
+  if (base === 'save') {
+    if (c.op === 'block') {
+      if (Array.isArray(i.encounters)) {
+        add('language.book.empty');
+        add('language.book.recordEncounter', i.encounters.length);
+        add('language.book.recordGrammar', (i.grammar ?? []).length);
+        if (i.cefr) add('language.book.setCefr');
+      }
+      add('language.save.block');
+      add('language.save.blockOf');
+    }
+    if (c.op === 'read') add('language.save.read');
+    if (c.op === 'restore') {
+      add('language.save.read');
+      if (e.ok !== false) {
+        if (i.block === undefined || i.block === null) add('language.save.block');
+        add('language.save.blockOf');
+        if (e.summary !== null) {
+          add('language.book.summary');
+          add('language.book.mastery', e.mastery.length);
+          add('language.book.weakPatterns');
+        }
+      }
+    }
+  }
+  if (base === 'prompts') {
+    add('language.contract');
+    add('language.identification.initial');
+    add('language.naming.initial');
+    add('language.prompts.initial');
+    if (steps.some((st) => st.tags !== undefined || st.do === 'reach' || st.do === 'choose')) add('language.collection.initial');
+    add('language.identification.registerTargets', steps.filter((st) => st.do === 'register' && st.targets !== undefined).length);
+    add('language.naming.nameableObjects', steps.filter((st) => st.do === 'register' && st.world !== undefined).length);
+    add('language.naming.registerNameable', steps.filter((st) => st.do === 'register' && st.world !== undefined).length);
+    add('language.collection.registerTags', steps.filter((st) => st.do === 'register' && st.tags !== undefined).length);
+    add('props.interactables.examinePick', steps.filter((st) => st.do === 'pick' && st.object === undefined).length);
+    add('language.prompts.onPick', count('pick'));
+    add('language.prompts.standing', count('standing'));
+    add('language.prompts.answer', count('answer'));
+    add('language.prompts.quizOnReach', count('reach'));
+    add('language.prompts.answerQuiz', count('choose'));
+  }
+  if (base === 'hover') {
+    if (c.op === 'tokens') add('language.hover.tokenize');
+    if (c.op === 'run') {
+      add('language.hover.initial');
+      add('language.hover.addHints', count('hints'));
+      add('language.hover.seeWord', count('see'));
+      add('language.hover.setMastery', count('mastery'));
+      add('language.hover.lookup', count('lookup'));
+      add('language.hover.resolve', count('resolve'));
+      add('language.hover.isLikelyTarget', steps.filter((st) => st.do === 'likely').reduce((a, st) => a + st.words.length, 0));
+      add('language.hover.display', count('display'));
+    }
+  }
+  if (base === 'chat') {
+    if (c.op === 'words') {
+      add('language.book.empty');
+      add('language.chat.lineWords', i.lines.length);
+    }
+    if (c.op === 'usages') {
+      add('language.book.empty');
+      add('language.chat.questUsages', i.lines.length);
+    }
+    if (c.op === 'percent') add('language.chat.targetPercent', i.pairs.length);
+    if (c.op === 'hear') {
+      add('language.chat.start');
+      add('language.chat.hear', i.checks.length);
+    }
+    if (c.op === 'run') {
+      add('language.book.empty');
+      add('language.difficulty.initial', 1 + count('start'));
+      add('language.chat.start', count('start'));
+      add('language.chat.line', count('line'));
+      add('language.difficulty.recordTurn', steps.filter((st, k) => st.do === 'line' && e[k]?.ok === true).length);
+      add('language.chat.hear', count('hear'));
+      add('language.chat.finish', count('end'));
+    }
+  }
+  return n;
+}
+
 function languageTranscriptionProblems() {
   const problems = [];
   let count = 0;
@@ -467,7 +586,12 @@ function languageTranscriptionProblems() {
       const calls = (byName.get(nameOf(c))?.steps ?? []).map((st) => st.call);
       if (calls.length === 0) return false;
       const first = typeof firstCall[c.op] === 'function' ? firstCall[c.op](c) : firstCall[c.op];
-      return calls[0] !== first || calls.some((call) => !call.startsWith('language.') && call !== 'props.interactables.examinePick');
+      if (calls[0] !== first || calls.some((call) => !call.startsWith('language.') && call !== 'props.interactables.examinePick')) return true;
+      const made = {};
+      for (const call of calls) made[call] = (made[call] ?? 0) + 1;
+      const want = languageCallsOf(base, c);
+      const rows = new Set([...Object.keys(made), ...Object.keys(want)]);
+      return [...rows].some((row) => (made[row] ?? 0) !== (want[row] ?? 0));
     }).map((c) => c.name);
     if (missing.length) problems.push(`core-language-${base}.json: ${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
     if (wrong.length) problems.push(`core-language-${base}.json: ${wrong.length} case(s) not transcribed as core's runner calls their op, first: ${wrong[0]}`);
@@ -1486,7 +1610,7 @@ async function check(coreDir) {
   if (lang.problems.length) fail(`the language transcription does not hold the vendored language corpora: ${lang.problems.join('; ')}`);
   console.log(
     `vendor-core-bundle: language — cases/core-language-{${lang.files.join(',')}}.json transcribe all ${lang.count} case(s) of ` +
-      'the vendored conformance/language/ files, by name and by the calls core\'s runner makes',
+      'the vendored conformance/language/ files, by name and by the calls core\'s runner makes, row for row',
   );
 
   if (coreDir) {

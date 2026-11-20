@@ -2089,7 +2089,7 @@ unknown op or step fails its case and that an unknown row is the method table's 
 on both case legs (and `corebridge_cases_parity`) as
 `vendor/core/cases/core-language-{progress,save,prompts,hover,chat}.json`, which
 `emit-bridge-cases.mjs` transcribes and `core_vendor` holds to the vendored corpora case by
-case (by name, by the first call core's runner makes, and to `language.*` rows only).
+case (by name, and by the calls core's runner makes for it, row for row and count for count).
 Hand cases: `tests/cases/bridge-language.json` (every row; malformed books and the
 `[invalid-input]` boundary of every state; core's refusals as values; a game's own
 tunings), every expectation computed by core's own functions at the pin.

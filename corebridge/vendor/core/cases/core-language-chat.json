@@ -3671,6 +3671,10 @@
      "bind": "b1"
     },
     {
+     "call": "language.difficulty.initial",
+     "args": {}
+    },
+    {
      "call": "language.chat.start",
      "args": {
       "npcName": "Ada"
@@ -4617,6 +4621,10 @@
      "bind": "b1"
     },
     {
+     "call": "language.difficulty.initial",
+     "args": {}
+    },
+    {
      "call": "language.chat.start",
      "args": {
       "npcName": "Bram"
@@ -5188,6 +5196,10 @@
       "language": "fr"
      },
      "bind": "b1"
+    },
+    {
+     "call": "language.difficulty.initial",
+     "args": {}
     },
     {
      "call": "language.chat.start",
@@ -5797,6 +5809,10 @@
      "bind": "b1"
     },
     {
+     "call": "language.difficulty.initial",
+     "args": {}
+    },
+    {
      "call": "language.chat.start",
      "args": {
       "npcName": "Olga"
@@ -6258,6 +6274,10 @@
       "language": "fr"
      },
      "bind": "b1"
+    },
+    {
+     "call": "language.difficulty.initial",
+     "args": {}
     },
     {
      "call": "language.chat.start",
@@ -7674,6 +7694,10 @@
       "language": "fr"
      },
      "bind": "b1"
+    },
+    {
+     "call": "language.difficulty.initial",
+     "args": {}
     },
     {
      "call": "language.chat.start",

@@ -321,7 +321,7 @@
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genres-recipes.json": "39edd39d967b4afe2744b2c1a90f33d3e43d9d66833663b7cf49a26f7d2f0dfa",
     "vendor/core/cases/core-genres-registry.json": "b840323e8706158c85dda9be4b2f1056d1e0f501da583101a413734c6dfe7adc",
-    "vendor/core/cases/core-language-chat.json": "fb2a782ac95fe926512779f4bd24d19e4208e80cc7da2569a31bcaeb1d2f59ae",
+    "vendor/core/cases/core-language-chat.json": "a9f159445303a141440e4d3c3ea40af526fbde3e6e987f32da3d42a57f57be86",
     "vendor/core/cases/core-language-hover.json": "edcfb5bde128e6b60565bfc8f40c5fbf89331a6513d105614dd4fb4719bf2625",
     "vendor/core/cases/core-language-progress.json": "8fc92a9d2a86723dc9fc69f5f587b14dc7b1a572e314a482001d3cf947e6819e",
     "vendor/core/cases/core-language-prompts.json": "7fcdf72d5cbb97b19271f0f6dc006b4801f1f58dc73f6caae2cb3b3ddde96b10",
@@ -428,7 +428,7 @@
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
-    "tools/emit-bridge-cases.mjs": "8c907002ba44b2f6087c9a6ab0aee6514b164e31229e60610cb4234e8da11d04",
+    "tools/emit-bridge-cases.mjs": "f1b129bb409ffaf8fa50ec57fe09522a8b7a896d20e87e4d1446f0d102114646",
     "core-pin.json": "37c23d70d9c1d527c0470e00fb93dbcf1354365fc82bd202d81e16cb58af251b"
   }
 }
