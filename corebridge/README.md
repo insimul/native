@@ -148,7 +148,7 @@ game; **meta** = about the bridge itself.
 | `save.village.conversations.records` | `{ rows }` → `{ records }`: the rows split back, one record per conversation | `save-file-game-state` `conversationRecordsOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
 | `save.village.conversations.timestamp` | `{ epochMs }` → `{ timestamp }` (null outside the range) | `save-file-game-state` `conversationTimestampOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
 | `save.village.conversations.epochMs` | `{ timestamp }` → `{ epochMs }` (null unless it writes back to itself) | `save-file-game-state` `epochMsOfConversationTimestamp` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
-| `language.contract` | `{}` → `{ cefrOrder, encounterTypes, encounterHalves, grammarWeaknessMinAttempts, grammarWeaknessRate, grammarMasteryCorrectUses, fluencyMax, fluencyGainMin, fluencyGainMax, bookRefusals, extensionKey, blockMembers, bookKeys, wordKeys, grammarKeys, namingKeys, identificationKeys, promptRefusals, examineRange, identificationTuning, namingTuning, collectionTuning, hoverRefusals, chatRefusals, chatPercentPerWordPerTurn, vocabularySorts, masteryLabels, masteryTones, dueLabel, dueTone, cardInteractions, weaknessMinAttempts, weaknessMinRatePermille, weaknessMax, improvementPermille, weaknessVolumePermille, weaknessConfidencePermille, questCategories, skillDimensions, skillToCategories, learningHistoryStatuses, scaffoldingThreshold, scaffoldingTurns, stretchThreshold, stretchTurns, signalWeights, npcModePercent, hintBehavior, cefrAdvancement, frequencyRanges, textComplexity, questPoolSizes, closeThreshold, phoneticWeight, passScore, baseXp, worldWordRefusals, signRoles, compositionRefusals, commonEnglishWords, listeningPass, storyMinLength }` | `language-learning/{progress,language-save,prompt-selector,world-words,reading-writing,chat-metrics,bank-profile,adaptation,pronunciation}` constants | P9h language (PL.native-language-rows slices 1 to 3; core's P9h.core) |
+| `language.contract` | `{}` → `{ cefrOrder, encounterTypes, encounterHalves, grammarWeaknessMinAttempts, grammarWeaknessRate, grammarMasteryCorrectUses, fluencyMax, fluencyGainMin, fluencyGainMax, bookRefusals, extensionKey, blockMembers, bookKeys, wordKeys, grammarKeys, namingKeys, identificationKeys, promptRefusals, examineRange, identificationTuning, namingTuning, collectionTuning, hoverRefusals, chatRefusals, chatPercentPerWordPerTurn, vocabularySorts, masteryLabels, masteryTones, dueLabel, dueTone, cardInteractions, weaknessMinAttempts, weaknessMinRatePermille, weaknessMax, improvementPermille, weaknessVolumePermille, weaknessConfidencePermille, questCategories, skillDimensions, skillToCategories, learningHistoryStatuses, scaffoldingThreshold, scaffoldingTurns, stretchThreshold, stretchTurns, signalWeights, npcModePercent, hintBehavior, cefrAdvancement, frequencyRanges, textComplexity, questPoolSizes, closeThreshold, phoneticWeight, passScore, baseXp, worldWordRefusals, signRoles, compositionRefusals, commonEnglishWords, listeningPass, storyMinLength, feedbackTypes, pronunciationObjectives, pronunciationDefaultRequired, vocabularyObjectives, vocabularyDefaultRequired, grammarObjectives, grammarDefaultRequired, recentFeedbackMax, patternExamplesMax, languageObjectiveTypeMap, languageRewardTypeMap }` | `language-learning/{progress,language-save,prompt-selector,world-words,reading-writing,chat-metrics,bank-profile,adaptation,pronunciation,quest-feedback}`, `quest-types/language-learning` constants | P9h language (PL.native-language-rows slices 1 to 4; core's P9h.core) |
 | `language.book.empty` | `{ language? }` → `{ book }` | `language-learning/progress` `emptyBook` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
 | `language.book.mastery` | `{ encountered, halves }` → `{ mastery }` | `language-learning/progress` `masteryOf` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
 | `language.book.wordView` | `{ row }` → `{ view }` (a row core's save reader cannot read: `[invalid-input]`) | `language-learning/progress` `wordView` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
@@ -264,6 +264,30 @@ game; **meta** = about the bridge itself.
 | `language.listening.chat` | `{ state, npcId, player, npc }` → `{ state, captured, needsGrade }` | `language-learning/reading-writing` `listeningChat` | P9h language (PL.native-language-rows slice 3; core's P9h.core) |
 | `language.listening.fallbackGrade` | `{ quest: { questions, answers } }` → `{ score, results }` | `language-learning/reading-writing` `fallbackGrade` | P9h language (PL.native-language-rows slice 3; core's P9h.core) |
 | `language.listening.grade` | `{ state, questId, score }` → `{ state, completed }` | `language-learning/reading-writing` `gradeListening` | P9h language (PL.native-language-rows slice 3; core's P9h.core) |
+| `language.questFeedback.initial` | `{ questId, objectives, meanings? }` → `{ state }` | `language-learning/quest-feedback` `questFeedback` | P9h language (PL.native-language-rows slice 4; core's P9h.core, U118(10)) |
+| `language.questFeedback.targets` | `{ objectives }` → `{ targetWords, grammarPatterns, pronunciationPhrases, vocabularyRequired, pronunciationRequired, grammarRequired }` | `language-learning/quest-feedback` `questLanguageTargets` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questFeedback.useVocabulary` | `{ state, usages }` → `{ state, items }` | `language-learning/quest-feedback` `useVocabulary` | P9h language (PL.native-language-rows slice 4; core's P9h.core, U118(10)) |
+| `language.questFeedback.syncLifecycle` | `{ state, objectives }` → `{ state, items }` (the lifecycle's records, by index) | `language-learning/quest-feedback` `syncLifecycle` | P9h language (PL.native-language-rows slice 4; core's P9h.core, U118(10)) |
+| `language.questFeedback.lockedVocabulary` | `{ state }` → `{ locked }` (indices) | `language-learning/quest-feedback` `lockedVocabulary` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questFeedback.lockedPronunciation` | `{ state }` → `{ locked }` (indices) | `language-learning/quest-feedback` `lockedPronunciation` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questFeedback.lockedGrammar` | `{ state }` → `{ locked }` (indices) | `language-learning/quest-feedback` `lockedGrammar` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questFeedback.grammar` | `{ state, feedback }` → `{ state, items, objectivesUpdated }` | `language-learning/quest-feedback` `grammarFeedback` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questFeedback.correctUsage` | `{ state, pattern, example? }` → `{ state, objectivesUpdated }` | `language-learning/quest-feedback` `correctUsage` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questFeedback.grammarObjectiveComplete` | `{ state, index, accuracy?, correct? }` → `{ complete }` | `language-learning/quest-feedback` `grammarObjectiveComplete` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questFeedback.pronunciation` | `{ state, result }` → `{ state, items }` | `language-learning/quest-feedback` `pronunciationFeedback` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questFeedback.hints` | `{ state, max? }` → `{ state, items }` | `language-learning/quest-feedback` `vocabularyHints` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questFeedback.done` | `{ state }` → `{ vocabulary, pronunciation, grammar }` | `language-learning/quest-feedback` `questFeedbackDone` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questTypes.forWorld` | `{ world }` → `{ types }` (ids) | `quest-types/index` `getQuestTypesForWorld` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questTypes.primary` | `{ world }` → `{ type }` (id) | `quest-types/index` `getQuestTypeForWorld` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questTypes.definition` | `{ id }` → `{ definition }` (as data, or null) | `quest-types/index` `getQuestTypeById` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questTypes.has` | `{ id }` → `{ has }` | `quest-types/index` `hasQuestType` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questTypes.all` | `{}` → `{ definitions }` (as data) | `quest-types/index` `getAllQuestTypes` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questTypes.mixing` | `{ ids }` → `{ definitions }` (as data) | `quest-types/index` `getQuestTypesForMixing` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questTypes.merge` | `{ definitions }` → `{ questCategories, objectiveTypes, rewardTypes }` | `quest-types/index` `mergeQuestTypes` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questTypes.objectiveComplete` | `{ questType, objective, progress }` → `{ complete }` | `quest-types/index` `QUEST_TYPE_REGISTRY` (an objective type's `completionCheck`) | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questTypes.templates` | `{}` → `{ templates }` | `language/quest-templates` `QUEST_TEMPLATES` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questTypes.templatesByDifficulty` | `{ difficulty }` → `{ templates }` | `language/quest-templates` `getTemplatesByDifficulty` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `language.questTypes.templatesByCategory` | `{ category }` → `{ templates }` | `language/quest-templates` `getTemplatesByCategory` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `ui.loadRefusal` | `{ refusal }` → `{ outcome, message }`: every string `invalid_format` with its message; any other value `{ outcome: null, message: '' }` | `ui/save-slot-model` `slotOutcomeOfLoadRefusal`, `loadRefusalMessage` | P1 refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1), U126(2)) |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
@@ -2081,19 +2105,20 @@ foreign-world and foreign-runtime ownership through `ownership` and `readRuntime
 the checked write and read, the conversation clock, the sky against a `weather.create`
 session), every expectation computed by core's own functions at the pin.
 
-### The language rows: the book, the save block, the prompt selector, hover, the chat, the bank and profile, adaptation, pronunciation, the words in the world, composition and listening (PL.native-language-rows, slices 1 to 3)
+### The language rows: the book, the save block, the prompt selector, hover, the chat, the bank and profile, adaptation, pronunciation, the words in the world, composition and listening, quest feedback and the quest types (PL.native-language-rows, slices 1 to 4)
 
 Core's P9h language kernels (`src/language-learning/`, `docs/language-systems.md`) are
 rows (U118, U128), so an engine binds them instead of keeping a copy (Unreal's interim
 `Portable/InsimulLanguage*`, which `P9h.unreal.retire-language-copy` retires once the
-row's last slice lands; `ENGINE_BINDINGS.md` maps them function by function). Core's
+row's last slice, slice 4, lands; `ENGINE_BINDINGS.md` maps them function by function). Core's
 kernels are PURE: each takes a state and returns a new one, so each row takes the state
 as JSON and answers core's result as JSON, and the host keeps the state between calls
 (no session). Slice 1 binds five of core's thirteen corpus files, slice 2 three more
 (the bank and learning profile, adaptation, pronunciation) and slice 3 three more
-(collection, objects, writing); the quest feedback and the quest types (slice 4) follow
-(`chat-strip.json`, the NPC reply's marker strip, is the chat-cefr copy's and goes with
-`PL.native-chat-cefr-rows`).
+(collection, objects, writing) and slice 4, the last, two more (quest feedback, quest
+types): twelve of the thirteen (`chat-strip.json`, the NPC reply's marker strip, is the
+chat-cefr copy's and goes with `PL.native-chat-cefr-rows`; core's genre quest types,
+`conformance/quest-types/`, go with `PL.native-genre-rows`).
 
 - **The book** (`progress.ts`): `language.book.empty`, `.recordEncounter`, `.advance`,
   `.recordGrammar`, `.recordConversation`, `.setCefr` move a book; `.findWord`,
@@ -2169,6 +2194,28 @@ as JSON and answers core's result as JSON, and the host keeps the state between 
   grade's `score` is core's `number | null` and must be stated. `stripPunctuation` and
   `hoverKey` are core's `stripWordEdges` and `wordKey` under other names:
   `language.word.stripEdges` and `language.word.key` answer them.
+- **Quest feedback** (slice 4, `quest-feedback.ts`; the quest lifecycle governs, U118(10)):
+  `language.questFeedback.initial` (the strip's state from a quest's objectives, read as
+  the lifecycle reads them; `meanings` absent or null: none), `.useVocabulary`,
+  `.grammar`, `.correctUsage`, `.pronunciation` and `.hints` move it;
+  `.syncLifecycle` takes the lifecycle's records of the same quest again (by index);
+  `.lockedVocabulary`, `.lockedPronunciation`, `.lockedGrammar`, `.done`,
+  `.grammarObjectiveComplete` (the analyser's check; `accuracy` and `correct` absent or
+  null: core's 60 and 3) and `.targets` (`questLanguageTargets`) read. Core states no
+  refusal here. Every member of an objective and of the state is held to core's declared
+  type (slice 3's verdict m1): a null is `[invalid-input]` where core declares an optional
+  string, number, list or boolean, and taken where core declares `| null`; an objective's
+  `index` must name one of the state's `objectiveLocks`.
+- **The quest types** (slice 4, `quest-types/index.ts` with `language-learning.ts`,
+  `business-scavenger-hunt.ts`, `customer-service.ts`, and `language/quest-templates.ts`):
+  `language.questTypes.forWorld` (every quest type a world gets, as ids), `.primary`,
+  `.definition` (as data: JSON drops the tracking and completion functions and the
+  generation prompt; null when unknown), `.has`, `.all`, `.mixing`, `.merge` (over
+  definitions as data), `.objectiveComplete` (a registered objective type's
+  `completionCheck`; an unknown quest type or objective is `[invalid-input]`, where core's
+  runner throws), and `.templates`, `.templatesByDifficulty`, `.templatesByCategory`. The
+  objective and reward type maps are `language.contract`'s. The genre quest types
+  (`quest-types/genre-quests.ts`) are bundled through `index.ts` and bound by no row here.
 - **Refusals are values** in core's shape: `empty_word`, `unknown_encounter`
   (the book handed back unchanged), `no_target_language`, `empty_line`, `no_turns`,
   `nothing_in_reach`, `no_prompt`, `no_quiz`; slice 3: `unknown_object`, `already_named`,
@@ -2178,33 +2225,40 @@ as JSON and answers core's result as JSON, and the host keeps the state between 
   core's types declare (a CEFR band, a grammar status, a word difficulty, a tuning's
   kind; slice 2: a vocabulary sort, a card interaction, a translation display mode, a
   scaffolding level, an NPC language mode, a word match; slice 3: a composition's
-  objective type), each checked as core's
+  objective type; slice 4: a grammar feedback status, a feedback item type, a reward
+  type), each checked as core's
   declared TypeScript type reads it (slice 1's line). **`language.contract`** states the
   constants a binding must not hard-code, every one imported from core.
 
 Evidence: `language_corpus` (`tests/language_corpus.cpp`) drives core's
-`conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation,collection,objects,writing}.json`
-(157 cases at 45409ed: 14, 12, 10, 20 and 20; slice 2's 24, 16 and 15; slice 3's 3, 18 and 5), copied byte for byte at the pin, each op composed from the
+`conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation,collection,objects,writing,quest-feedback,quest-types}.json`
+(186 cases at 45409ed: 14, 12, 10, 20 and 20; slice 2's 24, 16 and 15; slice 3's 3, 18 and 5; slice 4's 22 and 7), copied byte for byte at the pin, each op composed from the
 rows as core's reference runner (`systems-corpus.ts`, `runLanguageSystemsOp`) composes
 core's kernels, and needs each file's declared `ops` and `steps` to be exactly the ones
-it drives (0 undriven, every step driven). Its 22 refusal probes show that core's thirteen
-refusals are values, that an unreadable book, a vocabulary sort and a band outside core's
-types and a listening grade with no score are `[invalid-input]` naming the member, that an
-unknown op or step fails its case
+it drives (0 undriven, every step driven). Its 27 refusal probes show that core's thirteen
+refusals and an unknown quest type's null definition are values, that an unreadable book, a
+vocabulary sort and a band outside core's types, a listening grade with no score, an
+objective type a quest type does not define, a grammar status outside core's three, an
+objective's null description and an objective index naming no lock are `[invalid-input]`
+naming the member, that an unknown op or step fails its case
 and that an unknown row is the method table's error.
-`language_corpus_negative` perturbs every case's expectation. The same 157 cases also run
+`language_corpus_negative` perturbs every case's expectation. The same 186 cases also run
 on both case legs (and `corebridge_cases_parity`) as
 `vendor/core/cases/core-language-<file>.json`, which
 `emit-bridge-cases.mjs` transcribes and `core_vendor` holds to the vendored corpora case by
 case (by name, by the calls core's runner makes for it, row for row and count for count,
-and with every answer of a run's steps stated in some expectation; for slice 2's and 3's
+and with every answer of a run's steps stated in some expectation; for slice 2's to 4's
 files every member of every answer, except the input echoes the runner makes, which the
-emitter checks, and a register's ids and a listening quest's projection, stated in their own
-shape, each still required in that shape); `core_vendor_language_negative` proves the guard names fourteen perturbations of
-those files.
+emitter checks, and a register's ids, a listening quest's projection, a quest feedback run's
+recent ids, a quest type's categories and objectives and a template's objectives and
+parameters, stated in their own shape, each still required in that shape, and a quest
+feedback step's members assembled from several rows, each member required);
+`core_vendor_language_negative` proves the guard names twenty perturbations of those files.
 Hand cases: `tests/cases/bridge-language.json` (every row; malformed books and the
 `[invalid-input]` boundary of every state; core's refusals as values; a game's own
-tunings), every expectation computed by core's own functions at the pin.
+tunings; slice 4: every quest feedback row on its own with its defaults, every setting a
+world's quest type is read from, the definitions and templates whole, every objective
+type's completion check), every expectation computed by core's own functions at the pin.
 
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 

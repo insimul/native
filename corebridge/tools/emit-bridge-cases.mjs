@@ -668,8 +668,10 @@ function quests(root, coreCommit) {
 // last answered that state (the state has not changed since). Every value expected is
 // the corpus's own.
 
-/** The corpus files the language rows answer (slice 1, slice 2, then slice 3), by their `file` key. */
-export const LANGUAGE_CASE_FILES = ['progress', 'save', 'prompts', 'hover', 'chat', 'bank', 'adaptation', 'pronunciation', 'collection', 'objects', 'writing'];
+/** The corpus files the language rows answer (slices 1 to 4, in order), by their `file` key. */
+export const LANGUAGE_CASE_FILES = [
+	'progress', 'save', 'prompts', 'hover', 'chat', 'bank', 'adaptation', 'pronunciation', 'collection', 'objects', 'writing', 'quest-feedback', 'quest-types',
+];
 
 class LanguageSteps {
 	constructor(where) {
@@ -1534,6 +1536,179 @@ function langWriting(S, c) {
 	throw new Error(`emit-bridge-cases: ${S.where}: writing op ${c.op} has no transcription`);
 }
 
+// Slice 4: real-time quest language feedback (quest-feedback.ts) and the language quest
+// types and templates (quest-types/, language/quest-templates.ts). A run's state members
+// are stated on the call that answered them (its `start` as the initial state's members);
+// the members the runner assembles from several kernels (a step's `done`, its `locked`, a
+// lifecycle step's `pronunciation` and `uses`) on the calls that answer each; a run's
+// `recent` ids as `$ids` on the call that last answered the state. A quest type's
+// categories and objectives are stated as `$ids`, a template's objectives as subsets of
+// its objective templates and its parameters as `$ids` (core_vendor's
+// LANGUAGE_RESHAPED_FORMS); every other member verbatim.
+
+const QF = (fn) => `language.questFeedback.${fn}`;
+
+function langQuestFeedback(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	if (c.op === 'targets') {
+		S.call(QF('targets'), { objectives: i.objectives }, e);
+		return;
+	}
+	langCheck(c.op === 'run', S.where, `quest-feedback op ${c.op} has no transcription`);
+	langCheck(e.length === i.steps.length + 1 && e[0].do === 'start', S.where, 'the start, then one answer per step');
+	const init = S.call(QF('initial'), { questId: i.questId, objectives: i.objectives, meanings: i.meanings ?? {} });
+	for (const [key, v] of Object.entries(e[0].state)) S.want(init, ['state', key], v);
+	let state = slotOf(init, 'state');
+	// The runner's members read off the state: a step's answer key -> the state's member.
+	const wantState = (s, x, pairs) => {
+		for (const [key, member] of pairs) S.want(s, ['state', member], x[key]);
+	};
+	const done = (kind, value) => S.call(QF('done'), { state: S.cur(state) }, sub({ [kind]: value }));
+	const locked = (kind, value) => S.call(QF(`locked${kind}`), { state: S.cur(state) }, { locked: value });
+	i.steps.forEach((st, k) => {
+		const x = e[k + 1];
+		langCheck(x.do === st.do, S.where, `step ${k} answers ${x.do}, not ${st.do}`);
+		switch (st.do) {
+			case 'vocabulary': {
+				const s = S.call(QF('useVocabulary'), { state: S.cur(state), usages: st.usages });
+				S.want(s, ['items'], x.items);
+				wantState(s, x, [['used', 'vocabularyUsed'], ['required', 'vocabularyRequired'], ['progress', 'vocabularyProgress'], ['objectives', 'vocabularyObjectives']]);
+				state = slotOf(s, 'state');
+				done('vocabulary', x.done);
+				locked('Vocabulary', x.locked);
+				return;
+			}
+			case 'lifecycle': {
+				const s = S.call(QF('syncLifecycle'), { state: S.cur(state), objectives: st.objectives });
+				S.want(s, ['items'], x.items);
+				wantState(s, x, [['used', 'vocabularyUsed'], ['required', 'vocabularyRequired'], ['progress', 'vocabularyProgress'], ['objectives', 'vocabularyObjectives']]);
+				wantState(s, x.pronunciation, [['passed', 'pronunciationPassed'], ['required', 'pronunciationRequired'], ['progress', 'pronunciationProgress'], ['objectives', 'pronunciationObjectives']]);
+				wantState(s, x.uses, [['used', 'grammarUsed'], ['required', 'grammarRequired'], ['progress', 'grammarProgress'], ['objectives', 'grammarObjectives']]);
+				state = slotOf(s, 'state');
+				done('vocabulary', x.done);
+				locked('Vocabulary', x.locked);
+				done('pronunciation', x.pronunciation.done);
+				locked('Pronunciation', x.pronunciation.locked);
+				done('grammar', x.uses.done);
+				locked('Grammar', x.uses.locked);
+				return;
+			}
+			case 'grammar': {
+				const s = S.call(QF('grammar'), { state: S.cur(state), feedback: st.feedback });
+				S.want(s, ['items'], x.items);
+				S.want(s, ['objectivesUpdated'], x.objectivesUpdated);
+				wantState(s, x, [['accuracy', 'grammarAccuracy'], ['grammar', 'grammar'], ['objectives', 'objectives']]);
+				wantState(s, x.uses, [['used', 'grammarUsed'], ['required', 'grammarRequired'], ['progress', 'grammarProgress'], ['objectives', 'grammarObjectives']]);
+				state = slotOf(s, 'state');
+				done('grammar', x.uses.done);
+				locked('Grammar', x.uses.locked);
+				return;
+			}
+			case 'correct': {
+				const args = { state: S.cur(state), pattern: st.pattern };
+				if (typeof st.example === 'string') args.example = st.example;
+				const s = S.call(QF('correctUsage'), args);
+				S.want(s, ['objectivesUpdated'], x.objectivesUpdated);
+				wantState(s, x, [['objectives', 'objectives']]);
+				state = slotOf(s, 'state');
+				return;
+			}
+			case 'pronunciation': {
+				const s = S.call(QF('pronunciation'), { state: S.cur(state), result: st.result });
+				S.want(s, ['items'], x.items);
+				wantState(s, x, [
+					['passed', 'pronunciationPassed'], ['required', 'pronunciationRequired'], ['progress', 'pronunciationProgress'],
+					['average', 'pronunciationAverage'], ['phrases', 'pronunciation'], ['objectives', 'pronunciationObjectives'],
+				]);
+				state = slotOf(s, 'state');
+				done('pronunciation', x.done);
+				locked('Pronunciation', x.locked);
+				return;
+			}
+			case 'hints': {
+				const s = S.call(QF('hints'), typeof st.max === 'number' ? { state: S.cur(state), max: st.max } : { state: S.cur(state) });
+				S.want(s, ['items'], x.items);
+				state = slotOf(s, 'state');
+				return;
+			}
+			case 'objective': {
+				langCheck(x.index === st.index, S.where, `step ${k}: the index is not echoed`);
+				const args = { state: S.cur(state), index: st.index };
+				if (st.accuracy !== undefined) args.accuracy = st.accuracy;
+				if (st.correct !== undefined) args.correct = st.correct;
+				S.call(QF('grammarObjectiveComplete'), args, { complete: x.complete });
+				return;
+			}
+			case 'done':
+				S.call(QF('done'), { state: S.cur(state) }, { vocabulary: x.vocabulary, pronunciation: x.pronunciation, grammar: x.grammar });
+				S.wantState(state, 'recent', { $ids: x.recent, $key: 'id' });
+				return;
+		}
+		throw new Error(`emit-bridge-cases: ${S.where}: quest-feedback run step ${st.do} has no transcription`);
+	});
+}
+
+/** core's runner's three language quest types (systems-corpus.ts LANGUAGE_QUEST_TYPES), in its order. */
+const LANGUAGE_QUEST_TYPE_IDS = ['language-learning', 'business-scavenger-hunt', 'customer-service'];
+const QT = (fn) => `language.questTypes.${fn}`;
+
+function langQuestTypes(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	switch (c.op) {
+		case 'select':
+			langCheck(e.length === i.worlds.length, S.where, 'one answer per world');
+			i.worlds.forEach((world, k) => {
+				echoes(S, e[k], { world }, ['world']);
+				langCheck(JSON.stringify(Object.keys(e[k])) === JSON.stringify(['world', 'types']), S.where, `world ${k}: the answer is not the world and its types`);
+				S.call(QT('forWorld'), { world }, { types: e[k].types });
+			});
+			return;
+		case 'table':
+			langCheck(JSON.stringify(e.map((x) => x.id)) === JSON.stringify(LANGUAGE_QUEST_TYPE_IDS), S.where, "the table is not the runner's three language quest types");
+			for (const x of e) {
+				const definition = sub({
+					id: x.id,
+					name: x.name,
+					questCategories: { $ids: x.categories, $key: 'id' },
+					objectiveTypes: { $ids: x.objectives, $key: 'id' },
+					rewardTypes: x.rewardTypes,
+					difficultyScaling: x.difficultyScaling,
+				});
+				S.call(QT('definition'), { id: x.id }, { definition });
+			}
+			return;
+		case 'complete':
+			langCheck(e.length === i.checks.length, S.where, 'one answer per check');
+			i.checks.forEach((ch, k) => {
+				echoes(S, e[k], ch, ['questType', 'objective', 'progress']);
+				S.call(QT('objectiveComplete'), { questType: ch.questType, objective: ch.objective, progress: ch.progress }, { complete: e[k].complete });
+			});
+			return;
+		case 'map':
+			S.call('language.contract', {}, sub({ languageObjectiveTypeMap: e.objectives, languageRewardTypeMap: e.rewards }));
+			return;
+		case 'templates': {
+			// The runner's order: a difficulty when a string, else a category when a string, else every template.
+			const [call, args] = typeof i.difficulty === 'string'
+				? [QT('templatesByDifficulty'), { difficulty: i.difficulty }]
+				: typeof i.category === 'string' ? [QT('templatesByCategory'), { category: i.category }] : [QT('templates'), {}];
+			const templates = e.map((t) => sub({
+				id: t.id,
+				category: t.category,
+				difficulty: t.difficulty,
+				objectiveTemplates: t.objectives.map((o) => sub({ type: o.type, requiredCount: o.requiredCount })),
+				rewardScale: t.rewardScale,
+				parameters: { $ids: t.parameters, $key: 'name' },
+			}));
+			S.call(call, args, { templates });
+			return;
+		}
+	}
+	throw new Error(`emit-bridge-cases: ${S.where}: quest-types op ${c.op} has no transcription`);
+}
+
 const LANGUAGE_TRANSCRIBERS = {
 	progress: langProgress,
 	save: langSave,
@@ -1546,6 +1721,8 @@ const LANGUAGE_TRANSCRIBERS = {
 	collection: langCollection,
 	objects: langObjects,
 	writing: langWriting,
+	'quest-feedback': langQuestFeedback,
+	'quest-types': langQuestTypes,
 };
 
 /** One case file per language corpus file: `core-language-<file>.json`. */

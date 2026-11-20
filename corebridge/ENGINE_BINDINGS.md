@@ -714,8 +714,8 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   case as `tests/village_save_corpus.cpp` does: one row per op, `roundTrip` as a write
   whose two bodies are put over the save and then read, `stamp` as the four stamp
   readers, a refusal compared without its `message`.
-- **The language kernels, slices 1 to 3 (Unreal's `P9h.unreal.retire-language-copy`, after
-  every slice of PL.native-language-rows; U118, U128, U107(2)).** Core's P9h language
+- **The language kernels, slices 1 to 4 (Unreal's `P9h.unreal.retire-language-copy`,
+  released by slice 4, the last of PL.native-language-rows; U118, U128, U107(2)).** Core's P9h language
   kernels are the `language.*` rows (`README.md`, "The language rows"). The retirement
   row binds them in place of the interim copy on unreal main (`234fc83`, read only):
   `Portable/InsimulLanguage.{h,cpp}` (282 + 1,437 lines), `InsimulLanguageInternal.h`
@@ -724,10 +724,11 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `InsimulLanguageTables.generated.inl` (51), held to core's language corpus by its
   `language_corpus` (+ `_negative`). The rows are stateless: the binding's `FSession`
   keeps the JSON states (the book, the collection, naming, identification, the prompt
-  state, the hover state, a chat's session and difficulty state) and hands each to the
-  row that moves it. Slices 1 to 3 answer these, file by file of the header's list; the
-  rest (quest feedback and quest types: slice 4) is the last slice's, and the retirement
-  waits on it.
+  state, the hover state, a chat's session and difficulty state, a quest's feedback
+  strip) and hands each to the row that moves it. Slices 1 to 4 answer these, file by
+  file of the header's list; every function the header declares has a row, so the
+  retirement waits on nothing more of this row (the chat-cefr copy, `InsimulChatCefr`,
+  is PL.native-chat-cefr-rows').
 
   | Unreal's interim copy (`insimul::language`) | Row |
   |---|---|
@@ -749,11 +750,16 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   | slice 3, world-words.ts: `CollectionTuning`, `IdentificationTuning`, `NamingTuning` (`{...DEFAULTS, ...Params}`), and the copy's refusal codes and sign roles | `language.contract {}`'s `collectionTuning`, `identificationTuning`, `namingTuning` with the game's params over them (each row's `tuning` absent or null is core's default); `worldWordRefusals`, `signRoles` |
   | slice 3, reading-writing.ts (the header's reading-writing section beyond slice 1's hover): `CountWords`, `CompositionView`, `SubmitComposition` | `language.writing.countWords`, `.view`, `.submit` |
   | slice 3, reading-writing.ts: `RegisterListening`, `ListeningPrompt`, `ListeningChat`, `GradeListening` (`ServerScore` nullptr = null) | `language.listening.register` (the state starts as `[]`), `.prompt`, `.chat`, `.grade` (`score` stated: a number, or null for the local grade); core's `fallbackGrade` (inside the copy's `GradeListening`) is `language.listening.fallbackGrade`; `LISTENING_PASS`, `STORY_MIN_LENGTH`, `COMPOSITION_REFUSALS` and `COMMON_ENGLISH_WORDS` are `language.contract`'s `listeningPass`, `storyMinLength`, `compositionRefusals`, `commonEnglishWords` |
+  | slice 4, quest-feedback.ts (the header's quest-feedback section, lines 214-233): `QuestFeedback`, `UseVocabulary`, `SyncLifecycle`, `LockedVocabulary`, `LockedPronunciation`, `LockedGrammar` | `language.questFeedback.initial { questId, objectives, meanings? }` (meanings absent or null: none), `.useVocabulary`, `.syncLifecycle` (the lifecycle's records of the same quest, by index), `.lockedVocabulary`, `.lockedPronunciation`, `.lockedGrammar` |
+  | slice 4, quest-feedback.ts: `GrammarFeedback`, `CorrectUsage` (`Example` nullptr = absent), `GrammarObjectiveComplete` (`RequiredAccuracy`/`RequiredCorrect` nullptr = 60, 3), `PronunciationFeedback`, `VocabularyHints` (`Max` 3), `QuestFeedbackDone`, `QuestLanguageTargets` | `language.questFeedback.grammar`, `.correctUsage` (`example` absent), `.grammarObjectiveComplete` (`accuracy`, `correct` absent or null), `.pronunciation`, `.hints` (`max` absent or null), `.done`, `.targets`; `FEEDBACK_TYPES`, the three objective-type lists, their default required counts and the two caps are `language.contract`'s `feedbackTypes`, `pronunciationObjectives`, `pronunciationDefaultRequired`, `vocabularyObjectives`, `vocabularyDefaultRequired`, `grammarObjectives`, `grammarDefaultRequired`, `recentFeedbackMax`, `patternExamplesMax` |
+  | slice 4, quest types (the header's quest-types section, lines 235-247; `InsimulLanguageQuests.cpp` and the generated tables): `QuestTypesForWorld`, `QuestTypeDefinition` (functions dropped, nullptr when unknown), `ObjectiveComplete` (throws on an unknown type or objective) | `language.questTypes.forWorld { world }`, `.definition { id }` (as data, null when unknown), `.objectiveComplete { questType, objective, progress }` (an unknown type or objective is `[invalid-input]`); also `.primary`, `.has`, `.all`, `.mixing`, `.merge`, the rest of `quest-types/index.ts` |
+  | slice 4: `LanguageObjectiveTypeMap`, `LanguageRewardTypeMap`, `QuestTemplates`, `TablesCoreCommit` | `language.contract`'s `languageObjectiveTypeMap`, `languageRewardTypeMap`; `language.questTypes.templates` (core's order), `.templatesByDifficulty`, `.templatesByCategory`; the commit is `insimul_core_version()`'s (`core <sha>`; no generated tables left to date) |
   | `Utf32`, `JsLower`, `JsTrim`, `CompareUtf16` and the other JavaScript string semantics | gone with the copy: QuickJS is JavaScript |
 
-  Re-vendor `conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation,collection,objects,writing}.json`
-  from core at this library's pin (Unreal's `collection.json`, `objects.json` and
-  `writing.json` at `234fc83` are already byte-identical to core's at 45409ed) and drive
+  Re-vendor `conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation,collection,objects,writing,quest-feedback,quest-types}.json`
+  from core at this library's pin (Unreal's `collection.json`, `objects.json`,
+  `writing.json`, `quest-feedback.json` and `quest-types.json` at `234fc83` are already
+  byte-identical to core's at 45409ed) and drive
   each case as `tests/language_corpus.cpp` does: each op
   composed from the rows as core's `runLanguageSystemsOp` composes its kernels (a case's
   book is `language.book.empty` with the case's book over it, core's `bookOf`; a prompts,
@@ -762,8 +768,13 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   reveal case's three modes and three interactions are the runner's own lists; a
   normalize pair's score is over the expected answer's code points; a listening run starts
   from `[]`, a chat's missing `player` or `npc` is `''`, a grade's absent score is null, and
-  each quest's `answers` is answered as their count, as in core's runner),
-  exact comparison, key sets included. `chat-strip.json` (the NPC reply's marker strip,
+  each quest's `answers` is answered as their count, as in core's runner; a quest feedback
+  run starts with `meanings ?? {}`, answers its start as the state less `recent` and
+  `nextId`, reads each step's `done` from `.done` and its `locked` from the matching
+  `.locked*` row, a lifecycle step's passes and grammar uses likewise, and a done step's
+  `recent` as the state's item ids; a quest type table is the runner's three language
+  types, their categories and objectives as ids; a template as its objective templates'
+  type and count and its parameters' names), exact comparison, key sets included. `chat-strip.json` (the NPC reply's marker strip,
   which `InsimulChatCefr` holds) is not this row's: it goes with PL.native-chat-cefr-rows.
 - **Run 22's cases, from the 45409ed pin** (PL.native-bundle-core-r2; U124, U126). What
   each Unreal cell binds, and what it does not get here:

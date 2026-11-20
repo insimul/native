@@ -91,8 +91,11 @@
 //       answer weakened to a subset, a mode at one band dropped; slice 3: an
 //       identification answer dropped, an examine weakened, a collection run's first call
 //       changed, a collection's collected words expected nowhere, a listening chat dropped,
-//       a listening chat's quests not expected, a composition's submit weakened) and fails unless the guard names each (the
-//       core_vendor_language_negative ctest).
+//       a listening chat's quests not expected, a composition's submit weakened; slice 4: a
+//       quest feedback run's locks dropped, a lifecycle sync's pronunciation expected nowhere,
+//       a run's recent ids not expected, a quest type table's categories not expected, a
+//       template's parameters not expected, a world's quest types weakened) and fails unless
+//       the guard names each (the core_vendor_language_negative ctest).
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --check-extension-keys <case dir>
 //       Only the save.rules extensionKeys check (below, SAVE_RULES_CASES_DIR) over
@@ -289,9 +292,10 @@ const PROGRESSION_CORPUS_FILES = [
 // the learning profile (bank), the difficulty monitor and the CEFR adaptation
 // (adaptation), and listen and repeat (pronunciation); slice 3 three more: knowledge
 // collection (collection), object identification, point and name and examine (objects),
-// and composition and listening (writing). The rest join with the slices that bind them
-// (quest-feedback and quest-types with slice 4, chat-strip.json with
-// PL.native-chat-cefr-rows). conformance/language/
+// and composition and listening (writing); slice 4, the last, two more: real-time quest
+// language feedback (quest-feedback) and the language quest types and templates
+// (quest-types). chat-strip.json joins with PL.native-chat-cefr-rows (U133), and core's
+// genre quest types (conformance/quest-types/) with PL.native-genre-rows. conformance/language/
 // is this set's alone, so a file an earlier pin left there is seen, hashed and removed.
 const LANGUAGE_CORPUS_FILES = [
   'conformance/language/adaptation.json',
@@ -303,6 +307,8 @@ const LANGUAGE_CORPUS_FILES = [
   'conformance/language/progress.json',
   'conformance/language/prompts.json',
   'conformance/language/pronunciation.json',
+  'conformance/language/quest-feedback.json',
+  'conformance/language/quest-types.json',
   'conformance/language/save.json',
   'conformance/language/writing.json',
 ];
@@ -480,6 +486,18 @@ const LANGUAGE_FIRST_CALL = {
     composition: 'language.writing.countWords',
     // the state starts as [] and the first step's row takes it
     listening: (c) => ({ register: 'language.listening.register', prompt: 'language.listening.prompt', chat: 'language.listening.chat', grade: 'language.listening.grade' })[c.input.steps[0]?.do],
+  },
+  // slice 4
+  'quest-feedback': { targets: 'language.questFeedback.targets', run: 'language.questFeedback.initial' },
+  'quest-types': {
+    select: 'language.questTypes.forWorld',
+    table: 'language.questTypes.definition',
+    complete: 'language.questTypes.objectiveComplete',
+    map: 'language.contract',
+    // the runner's order: a difficulty when a string, else a category when a string, else every template
+    templates: (c) => (typeof c.input.difficulty === 'string'
+      ? 'language.questTypes.templatesByDifficulty'
+      : typeof c.input.category === 'string' ? 'language.questTypes.templatesByCategory' : 'language.questTypes.templates'),
   },
 };
 /**
@@ -695,6 +713,33 @@ function languageCallsOf(base, c) {
       add('language.listening.grade', count('grade'));
     }
   }
+  if (base === 'quest-feedback') {
+    if (c.op === 'targets') add('language.questFeedback.targets');
+    if (c.op === 'run') {
+      add('language.questFeedback.initial');
+      add('language.questFeedback.useVocabulary', count('vocabulary'));
+      add('language.questFeedback.syncLifecycle', count('lifecycle'));
+      add('language.questFeedback.grammar', count('grammar'));
+      add('language.questFeedback.correctUsage', count('correct'));
+      add('language.questFeedback.pronunciation', count('pronunciation'));
+      add('language.questFeedback.hints', count('hints'));
+      add('language.questFeedback.grammarObjectiveComplete', count('objective'));
+      // questFeedbackDone: once for a vocabulary, grammar or pronunciation step's `done`, three
+      // times for a lifecycle step (its words, its passes, its grammar uses), once for done
+      add('language.questFeedback.done', count('vocabulary') + 3 * count('lifecycle') + count('grammar') + count('pronunciation') + count('done'));
+      add('language.questFeedback.lockedVocabulary', count('vocabulary') + count('lifecycle'));
+      add('language.questFeedback.lockedPronunciation', count('lifecycle') + count('pronunciation'));
+      add('language.questFeedback.lockedGrammar', count('lifecycle') + count('grammar'));
+    }
+  }
+  if (base === 'quest-types') {
+    if (c.op === 'select') add('language.questTypes.forWorld', i.worlds.length);
+    // the runner's three language quest types (LANGUAGE_QUEST_TYPES)
+    if (c.op === 'table') add('language.questTypes.definition', 3);
+    if (c.op === 'complete') add('language.questTypes.objectiveComplete', i.checks.length);
+    if (c.op === 'map') add('language.contract');
+    if (c.op === 'templates') add(LANGUAGE_FIRST_CALL['quest-types'].templates(c));
+  }
   return n;
 }
 
@@ -713,6 +758,10 @@ const LANGUAGE_RESHAPED_KEYS = {
   collection: ['do', 'objects'],
   objects: ['do', 'targets'],
   writing: ['do', 'quests'],
+  // slice 4: a step's echoed objective index; a run's recent ids as `$ids`; a lifecycle
+  // step's passes and grammar uses and a grammar step's uses, each spread over the calls
+  // that answer them (LANGUAGE_NESTED_KEYS holds every member)
+  'quest-feedback': ['do', 'index', 'recent', 'pronunciation', 'uses'],
 };
 // Slice 3's reshaped members are still held: each must appear in the case's expectations
 // in exactly the shape the emitter states it (its form here), so an emitter that drops
@@ -725,7 +774,22 @@ const LANGUAGE_RESHAPED_FORMS = {
       ? { $ids: v, $key: 'questId' }
       : v.map((q) => ({ $subset: { questId: q.questId, storyHeard: q.storyHeard, answers: { $len: q.answers }, evaluated: q.evaluated, score: q.score } }))),
   },
+  // slice 4: a run's recent ids (stated on the call that last answered the state); a quest
+  // type's categories and objectives as `$ids`; a template's objectives as subsets of its
+  // objective templates and its parameters as `$ids`
+  'quest-feedback': { recent: (v) => ({ $ids: v, $key: 'id' }) },
+  'quest-types': {
+    categories: (v) => ({ $ids: v, $key: 'id' }),
+    objectives: (v) => (!Array.isArray(v) ? undefined : v.every((o) => typeof o === 'string')
+      ? { $ids: v, $key: 'id' }
+      : v.map((o) => ({ $subset: { type: o.type, requiredCount: o.requiredCount } }))),
+    parameters: (v) => ({ $ids: v, $key: 'name' }),
+  },
 };
+// Slice 4's run members that are objects the runner assembles from several calls (a
+// lifecycle step's `pronunciation` and `uses`, a grammar step's `uses`): each of their
+// members must be stated in some expectation of the case.
+const LANGUAGE_NESTED_KEYS = { 'quest-feedback': ['pronunciation', 'uses'] };
 // Slice 2's and slice 3's files hold EVERY case to the stated-value check, not only a run's
 // steps: each member of an answer (each member of each element, for a list of objects)
 // must be stated in some expectation of the case, except the members the runner echoes
@@ -741,6 +805,9 @@ const LANGUAGE_ANSWER_ECHOES = {
   collection: { run: ['do', 'objects'] },
   objects: { normalize: [], identify: ['do', 'targets'], naming: ['do'], examine: [] },
   writing: { composition: ['text'], listening: ['do', 'quests'] },
+  // slice 4 (a reshaped member with a form above is held in its form, here too)
+  'quest-feedback': { targets: [], run: ['do', 'index', 'recent', 'pronunciation', 'uses'] },
+  'quest-types': { select: ['world'], table: [], complete: ['questType', 'objective', 'progress'], map: [], templates: [] },
 };
 
 /** Every subtree of a transcribed case's expectations, operators included, as JSON text (for LANGUAGE_RESHAPED_FORMS). */
@@ -826,10 +893,13 @@ function languageTranscriptionProblems(load = (base) => {
       const stated = statedValues(kase);
       const forms = LANGUAGE_RESHAPED_FORMS[base] ?? {};
       const nodes = Object.keys(forms).length ? expectationNodes(kase) : null;
+      const nested = LANGUAGE_NESTED_KEYS[base] ?? [];
       c.expected.forEach((x, k) => {
         for (const [key, v] of Object.entries(x)) {
           if (forms[key]) {
             if (!nodes.has(JSON.stringify(forms[key](v, x)))) unstated.push(`${c.name} (step ${k} ${x.do}: ${key}, reshaped)`);
+          } else if (nested.includes(key)) {
+            for (const [k2, v2] of Object.entries(v)) if (!stated.has(JSON.stringify(v2))) unstated.push(`${c.name} (step ${k} ${x.do}: ${key}.${k2})`);
           } else if (!LANGUAGE_RESHAPED_KEYS[base].includes(key) && !stated.has(JSON.stringify(v))) unstated.push(`${c.name} (step ${k} ${x.do}: ${key})`);
         }
       });
@@ -850,8 +920,16 @@ function languageTranscriptionProblems(load = (base) => {
           : c.expected && typeof c.expected === 'object' && !Array.isArray(c.expected)
             ? Object.entries(c.expected).map(([key, v]) => [key, key, v])
             : [['$', null, c.expected]];
+        const forms = LANGUAGE_RESHAPED_FORMS[base] ?? {};
+        const nodes = expectationNodes(kase);
         for (const [where, key, v] of members) {
-          if (!skip.includes(key) && !stated.has(JSON.stringify(v))) unstated.push(`${c.name} (${where})`);
+          // a reshaped member of a non-run answer (slice 4's quest types), held in its form; a
+          // form answers undefined for a member of another shape under the same name (the type
+          // map's `objectives`), which is then held verbatim
+          const form = key !== null && forms[key] && !skip.includes(key) ? forms[key](v) : undefined;
+          if (form !== undefined) {
+            if (!nodes.has(JSON.stringify(form))) unstated.push(`${c.name} (${where}, reshaped)`);
+          } else if (!skip.includes(key) && !stated.has(JSON.stringify(v))) unstated.push(`${c.name} (${where})`);
         }
       }
     }
@@ -931,6 +1009,36 @@ function languageTranscriptionNegative() {
     ['an answer weakened to a subset (a submitted composition without its events)', 'writing', (d) => {
       const st = d.cases.flatMap((c) => c.steps).find((x) => x.call === 'language.writing.submit' && x.expect.ok === true);
       st.expect = { $subset: { ok: true } };
+    }, 'answer(s) of the corpus expected nowhere'],
+    // slice 4
+    ['a quest feedback run\'s locks dropped (a vocabulary step\'s lockedVocabulary)', 'quest-feedback', (d) => {
+      const kase = d.cases.find((c) => c.steps.some((x) => x.call === 'language.questFeedback.lockedVocabulary'));
+      kase.steps.splice(kase.steps.findIndex((x) => x.call === 'language.questFeedback.lockedVocabulary'), 1);
+    }, "not transcribed as core's runner calls their op"],
+    ['a lifecycle sync\'s pronunciation objectives expected nowhere (a nested member)', 'quest-feedback', (d) => {
+      // Every expectation of the pronunciation objectives in the first case that syncs them is dropped.
+      const kase = d.cases.find((c) => c.steps.some((x) => x.call === 'language.questFeedback.syncLifecycle') && c.name.includes('pronunciation'));
+      for (const st of kase.steps) {
+        const held = st.expect?.$subset?.state?.$subset;
+        if (held) delete held.pronunciationObjectives;
+      }
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a run\'s recent ids not expected (a reshaped member)', 'quest-feedback', (d) => {
+      const kase = d.cases.find((c) => c.name.includes('last twenty'));
+      for (const st of kase.steps) {
+        const held = st.expect?.$subset?.state?.$subset;
+        if (held) delete held.recent;
+      }
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a quest type table\'s categories not expected (a reshaped member)', 'quest-types', (d) => {
+      for (const st of d.cases.flatMap((c) => c.steps)) if (st.call === 'language.questTypes.definition') delete st.expect.definition.$subset.questCategories;
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a template\'s parameters not expected (a reshaped member)', 'quest-types', (d) => {
+      const st = d.cases.flatMap((c) => c.steps).find((x) => x.call === 'language.questTypes.templatesByCategory');
+      for (const t of st.expect.templates) delete t.$subset.parameters;
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['an answer weakened to a subset (every world\'s quest types)', 'quest-types', (d) => {
+      for (const st of d.cases.flatMap((c) => c.steps)) if (st.call === 'language.questTypes.forWorld') st.expect = { $subset: {} };
     }, 'answer(s) of the corpus expected nowhere'],
   ];
   let named = 0;

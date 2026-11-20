@@ -1,0 +1,2568 @@
+{
+  "schema": "insimul.conformance.language/1",
+  "area": "language",
+  "file": "language/quest-types",
+  "phase": "P9h",
+  "description": "Language quest types: which a world gets, their categories and objectives, completion checks, the generic type map, quest templates (src/quest-types/, src/language/quest-templates.ts).",
+  "runner": "src/language-learning/systems-corpus.ts (runLanguageSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "quest-language-quest-types"
+  ],
+  "ops": [
+    "select",
+    "table",
+    "complete",
+    "map",
+    "templates"
+  ],
+  "steps": {},
+  "cases": [
+    {
+      "name": "select: a world's quest types from its config, its modules, its game type or its setting",
+      "op": "select",
+      "input": {
+        "worlds": [
+          {
+            "id": "w1",
+            "name": "Brightwater",
+            "gameType": "language-learning"
+          },
+          {
+            "id": "w2",
+            "name": "Shopfront",
+            "worldType": "Business district"
+          },
+          {
+            "id": "w3",
+            "name": "Front desk",
+            "worldType": "hospitality"
+          },
+          {
+            "id": "w4",
+            "name": "Plain",
+            "worldType": "village"
+          },
+          {
+            "id": "w5",
+            "name": "Modules",
+            "enabledModules": [
+              "knowledge-acquisition",
+              "customer-service",
+              "pattern-recognition"
+            ]
+          },
+          {
+            "id": "w6",
+            "name": "Modules with a primary",
+            "gameType": "rpg",
+            "enabledModules": [
+              "conversation-analytics"
+            ]
+          },
+          {
+            "id": "w7",
+            "name": "Configured",
+            "config": {
+              "questTypes": [
+                "customer-service",
+                "nope",
+                "business-scavenger-hunt"
+              ]
+            }
+          },
+          {
+            "id": "w8",
+            "name": "Configured with none known",
+            "config": {
+              "questTypes": [
+                "nope"
+              ]
+            },
+            "worldType": "market town"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "world": {
+            "id": "w1",
+            "name": "Brightwater",
+            "gameType": "language-learning"
+          },
+          "types": [
+            "language-learning"
+          ]
+        },
+        {
+          "world": {
+            "id": "w2",
+            "name": "Shopfront",
+            "worldType": "Business district"
+          },
+          "types": [
+            "business-scavenger-hunt"
+          ]
+        },
+        {
+          "world": {
+            "id": "w3",
+            "name": "Front desk",
+            "worldType": "hospitality"
+          },
+          "types": [
+            "customer-service"
+          ]
+        },
+        {
+          "world": {
+            "id": "w4",
+            "name": "Plain",
+            "worldType": "village"
+          },
+          "types": [
+            "language-learning"
+          ]
+        },
+        {
+          "world": {
+            "id": "w5",
+            "name": "Modules",
+            "enabledModules": [
+              "knowledge-acquisition",
+              "customer-service",
+              "pattern-recognition"
+            ]
+          },
+          "types": [
+            "language-learning",
+            "customer-service",
+            "puzzle"
+          ]
+        },
+        {
+          "world": {
+            "id": "w6",
+            "name": "Modules with a primary",
+            "gameType": "rpg",
+            "enabledModules": [
+              "conversation-analytics"
+            ]
+          },
+          "types": [
+            "rpg",
+            "language-learning"
+          ]
+        },
+        {
+          "world": {
+            "id": "w7",
+            "name": "Configured",
+            "config": {
+              "questTypes": [
+                "customer-service",
+                "nope",
+                "business-scavenger-hunt"
+              ]
+            }
+          },
+          "types": [
+            "customer-service",
+            "business-scavenger-hunt"
+          ]
+        },
+        {
+          "world": {
+            "id": "w8",
+            "name": "Configured with none known",
+            "config": {
+              "questTypes": [
+                "nope"
+              ]
+            },
+            "worldType": "market town"
+          },
+          "types": [
+            "business-scavenger-hunt"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "table: the three language quest types: categories, objectives, rewards and difficulty scaling",
+      "op": "table",
+      "input": {},
+      "expected": [
+        {
+          "id": "language-learning",
+          "name": "Language Learning",
+          "categories": [
+            "conversation",
+            "vocabulary",
+            "grammar",
+            "translation",
+            "cultural",
+            "visual_vocabulary",
+            "follow_instructions",
+            "scavenger_hunt",
+            "listening_comprehension",
+            "translation_challenge",
+            "navigation",
+            "social",
+            "storytelling",
+            "teaching"
+          ],
+          "objectives": [
+            "use_vocabulary",
+            "complete_conversation",
+            "practice_grammar",
+            "collect_item",
+            "visit_location",
+            "talk_to_npc",
+            "use_vocabulary_category",
+            "sustained_conversation",
+            "master_words",
+            "learn_new_words",
+            "collect_vocabulary",
+            "identify_object",
+            "follow_directions",
+            "find_vocabulary_items",
+            "listening_comprehension",
+            "translation_challenge",
+            "navigate_language",
+            "build_friendship",
+            "give_gift",
+            "teach_vocabulary",
+            "teach_phrase"
+          ],
+          "rewardTypes": [
+            "experience",
+            "fluency",
+            "items",
+            "unlock"
+          ],
+          "difficultyScaling": {
+            "beginner": {
+              "xp": 10,
+              "multiplier": 1
+            },
+            "intermediate": {
+              "xp": 25,
+              "multiplier": 1.5
+            },
+            "advanced": {
+              "xp": 50,
+              "multiplier": 2
+            }
+          }
+        },
+        {
+          "id": "business-scavenger-hunt",
+          "name": "Business Scavenger Hunt",
+          "categories": [
+            "item_hunt",
+            "shop_tour",
+            "clue_trail",
+            "timed_hunt"
+          ],
+          "objectives": [
+            "visit_business",
+            "identify_business_item",
+            "collect_business_item",
+            "get_clue_from_owner"
+          ],
+          "rewardTypes": [
+            "experience",
+            "fluency",
+            "items",
+            "reputation"
+          ],
+          "difficultyScaling": {
+            "beginner": {
+              "multiplier": 1,
+              "xp": 20,
+              "itemCount": 3,
+              "cefrLevel": "A1"
+            },
+            "intermediate": {
+              "multiplier": 1.5,
+              "xp": 40,
+              "itemCount": 5,
+              "cefrLevel": "A2"
+            },
+            "advanced": {
+              "multiplier": 2,
+              "xp": 70,
+              "itemCount": 8,
+              "cefrLevel": "B1"
+            },
+            "expert": {
+              "multiplier": 3,
+              "xp": 100,
+              "itemCount": 10,
+              "cefrLevel": "B2"
+            }
+          }
+        },
+        {
+          "id": "customer-service",
+          "name": "Customer Service",
+          "categories": [
+            "make_return",
+            "file_complaint",
+            "make_reservation",
+            "ask_recommendations",
+            "urgent_request"
+          ],
+          "objectives": [
+            "request_refund",
+            "explain_problem",
+            "negotiate_resolution",
+            "reserve_slot",
+            "describe_preference",
+            "express_urgency"
+          ],
+          "rewardTypes": [
+            "experience",
+            "fluency",
+            "reputation"
+          ],
+          "difficultyScaling": {
+            "beginner": {
+              "multiplier": 1,
+              "xp": 25,
+              "cefrLevel": "A1"
+            },
+            "intermediate": {
+              "multiplier": 1.5,
+              "xp": 50,
+              "cefrLevel": "A2"
+            },
+            "advanced": {
+              "multiplier": 2,
+              "xp": 80,
+              "cefrLevel": "B1"
+            },
+            "expert": {
+              "multiplier": 3,
+              "xp": 120,
+              "cefrLevel": "B2"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "complete: each objective type's completion check",
+      "op": "complete",
+      "input": {
+        "checks": [
+          {
+            "questType": "language-learning",
+            "objective": "use_vocabulary",
+            "progress": {
+              "vocabularyUsed": 5,
+              "vocabularyRequired": 5
+            }
+          },
+          {
+            "questType": "language-learning",
+            "objective": "use_vocabulary",
+            "progress": {
+              "vocabularyUsed": 4,
+              "vocabularyRequired": 5
+            }
+          },
+          {
+            "questType": "language-learning",
+            "objective": "complete_conversation",
+            "progress": {
+              "conversationTurns": 3,
+              "requiredTurns": 4
+            }
+          },
+          {
+            "questType": "language-learning",
+            "objective": "practice_grammar",
+            "progress": {
+              "grammarPatternsUsed": 2,
+              "patternsRequired": 2
+            }
+          },
+          {
+            "questType": "language-learning",
+            "objective": "collect_item",
+            "progress": {
+              "collected": 1,
+              "required": 1
+            }
+          },
+          {
+            "questType": "language-learning",
+            "objective": "teach_phrase",
+            "progress": {
+              "phrasesTaught": 0
+            }
+          },
+          {
+            "questType": "language-learning",
+            "objective": "teach_phrase",
+            "progress": {
+              "phrasesTaught": 1
+            }
+          },
+          {
+            "questType": "business-scavenger-hunt",
+            "objective": "visit_business",
+            "progress": {
+              "businessVisited": true
+            }
+          },
+          {
+            "questType": "business-scavenger-hunt",
+            "objective": "identify_business_item",
+            "progress": {}
+          },
+          {
+            "questType": "business-scavenger-hunt",
+            "objective": "identify_business_item",
+            "progress": {
+              "itemsIdentified": 2,
+              "itemsRequired": 2
+            }
+          },
+          {
+            "questType": "customer-service",
+            "objective": "request_refund",
+            "progress": {
+              "refundRequested": false
+            }
+          },
+          {
+            "questType": "customer-service",
+            "objective": "request_refund",
+            "progress": {
+              "refundRequested": true
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "questType": "language-learning",
+          "objective": "use_vocabulary",
+          "progress": {
+            "vocabularyUsed": 5,
+            "vocabularyRequired": 5
+          },
+          "complete": true
+        },
+        {
+          "questType": "language-learning",
+          "objective": "use_vocabulary",
+          "progress": {
+            "vocabularyUsed": 4,
+            "vocabularyRequired": 5
+          },
+          "complete": false
+        },
+        {
+          "questType": "language-learning",
+          "objective": "complete_conversation",
+          "progress": {
+            "conversationTurns": 3,
+            "requiredTurns": 4
+          },
+          "complete": false
+        },
+        {
+          "questType": "language-learning",
+          "objective": "practice_grammar",
+          "progress": {
+            "grammarPatternsUsed": 2,
+            "patternsRequired": 2
+          },
+          "complete": true
+        },
+        {
+          "questType": "language-learning",
+          "objective": "collect_item",
+          "progress": {
+            "collected": 1,
+            "required": 1
+          },
+          "complete": true
+        },
+        {
+          "questType": "language-learning",
+          "objective": "teach_phrase",
+          "progress": {
+            "phrasesTaught": 0
+          },
+          "complete": false
+        },
+        {
+          "questType": "language-learning",
+          "objective": "teach_phrase",
+          "progress": {
+            "phrasesTaught": 1
+          },
+          "complete": true
+        },
+        {
+          "questType": "business-scavenger-hunt",
+          "objective": "visit_business",
+          "progress": {
+            "businessVisited": true
+          },
+          "complete": true
+        },
+        {
+          "questType": "business-scavenger-hunt",
+          "objective": "identify_business_item",
+          "progress": {},
+          "complete": false
+        },
+        {
+          "questType": "business-scavenger-hunt",
+          "objective": "identify_business_item",
+          "progress": {
+            "itemsIdentified": 2,
+            "itemsRequired": 2
+          },
+          "complete": true
+        },
+        {
+          "questType": "customer-service",
+          "objective": "request_refund",
+          "progress": {
+            "refundRequested": false
+          },
+          "complete": false
+        },
+        {
+          "questType": "customer-service",
+          "objective": "request_refund",
+          "progress": {
+            "refundRequested": true
+          },
+          "complete": true
+        }
+      ]
+    },
+    {
+      "name": "map: language objective and reward types to the generic modules' types",
+      "op": "map",
+      "input": {},
+      "expected": {
+        "objectives": {
+          "use_vocabulary": "apply_knowledge",
+          "practice_grammar": "demonstrate_pattern",
+          "master_words": "master_knowledge",
+          "learn_new_words": "discover_knowledge",
+          "collect_vocabulary": "discover_knowledge",
+          "identify_object": "apply_knowledge",
+          "listening_comprehension": "complete_assessment",
+          "translation_challenge": "demonstrate_pattern",
+          "teach_vocabulary": "demonstrate_knowledge",
+          "teach_phrase": "demonstrate_knowledge"
+        },
+        "rewards": {
+          "fluency": "proficiency_gain",
+          "experience": "experience",
+          "items": "items",
+          "unlock": "unlock"
+        }
+      }
+    },
+    {
+      "name": "templates: the advanced quest templates",
+      "op": "templates",
+      "input": {
+        "difficulty": "advanced"
+      },
+      "expected": [
+        {
+          "id": "navigate_to",
+          "category": "navigation",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "navigate_language",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 40,
+            "fluency": 5
+          },
+          "parameters": [
+            "destination",
+            "language"
+          ]
+        },
+        {
+          "id": "listen_and_learn",
+          "category": "listening_comprehension",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "listening_comprehension",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 40,
+            "fluency": 5
+          },
+          "parameters": [
+            "npcName",
+            "questionCount"
+          ]
+        },
+        {
+          "id": "proverb_hunter",
+          "category": "cultural",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 3
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            },
+            {
+              "type": "listening_comprehension",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 45,
+            "fluency": 6
+          },
+          "parameters": [
+            "npcCount",
+            "wordCount",
+            "proverbCount"
+          ]
+        },
+        {
+          "id": "traditional_craft",
+          "category": "cultural",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 6
+            },
+            {
+              "type": "identify_object",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 45,
+            "fluency": 6
+          },
+          "parameters": [
+            "npcName",
+            "location",
+            "wordCount",
+            "objectCount"
+          ]
+        },
+        {
+          "id": "local_legend",
+          "category": "storytelling",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "listening_comprehension",
+              "requiredCount": 3
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 45,
+            "fluency": 6
+          },
+          "parameters": [
+            "storytellerName",
+            "listenerName",
+            "questionCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "advanced_tutor",
+          "category": "teaching",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "teach_vocabulary",
+              "requiredCount": 8
+            },
+            {
+              "type": "teach_phrase",
+              "requiredCount": 4
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 50,
+            "fluency": 7
+          },
+          "parameters": [
+            "npcName",
+            "wordCount",
+            "phraseCount"
+          ]
+        },
+        {
+          "id": "daily_schedule",
+          "category": "time_activity",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "follow_directions",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 45,
+            "fluency": 6
+          },
+          "parameters": [
+            "count"
+          ]
+        },
+        {
+          "id": "seasonal_scene",
+          "category": "weather_time",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "describe_scene",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 8
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 45,
+            "fluency": 6
+          },
+          "parameters": [
+            "location",
+            "npcName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "recipe_translation",
+          "category": "crafting",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "read_sign",
+              "requiredCount": 1
+            },
+            {
+              "type": "translation_challenge",
+              "requiredCount": 3
+            },
+            {
+              "type": "collect_item",
+              "requiredCount": 3
+            },
+            {
+              "type": "craft_item",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 55,
+            "fluency": 6
+          },
+          "parameters": [
+            "npcName",
+            "phraseCount"
+          ]
+        },
+        {
+          "id": "urgent_request",
+          "category": "customer_service",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 50,
+            "fluency": 7
+          },
+          "parameters": [
+            "businessName",
+            "ownerName",
+            "wordCount"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "templates: the conversation quest templates",
+      "op": "templates",
+      "input": {
+        "category": "conversation"
+      },
+      "expected": [
+        {
+          "id": "greet_the_locals",
+          "category": "conversation",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 3
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 15,
+            "fluency": 2
+          },
+          "parameters": [
+            "npcCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "sustained_chat",
+          "category": "conversation",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName",
+            "turns"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "templates: every quest template",
+      "op": "templates",
+      "input": {},
+      "expected": [
+        {
+          "id": "greet_the_locals",
+          "category": "conversation",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 3
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 15,
+            "fluency": 2
+          },
+          "parameters": [
+            "npcCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "sustained_chat",
+          "category": "conversation",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName",
+            "turns"
+          ]
+        },
+        {
+          "id": "food_vocabulary",
+          "category": "vocabulary",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 5
+            },
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 20,
+            "fluency": 3
+          },
+          "parameters": [
+            "wordCount",
+            "vocabularyCategory"
+          ]
+        },
+        {
+          "id": "profession_vocabulary",
+          "category": "vocabulary",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            },
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 25,
+            "fluency": 3
+          },
+          "parameters": [
+            "wordCount",
+            "npcCount"
+          ]
+        },
+        {
+          "id": "master_words",
+          "category": "vocabulary",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 5
+          },
+          "parameters": [
+            "wordCount"
+          ]
+        },
+        {
+          "id": "word_explorer_nouns",
+          "category": "vocabulary",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 20,
+            "fluency": 3
+          },
+          "parameters": [
+            "wordCount",
+            "vocabularyCategory"
+          ]
+        },
+        {
+          "id": "color_hunter",
+          "category": "vocabulary",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 15,
+            "fluency": 2
+          },
+          "parameters": [
+            "wordCount"
+          ]
+        },
+        {
+          "id": "action_spotter",
+          "category": "vocabulary",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 15,
+            "fluency": 2
+          },
+          "parameters": [
+            "npcCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "grammar_practice",
+          "category": "grammar",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 25,
+            "fluency": 3
+          },
+          "parameters": [
+            "pattern",
+            "count"
+          ]
+        },
+        {
+          "id": "past_tense_tales",
+          "category": "grammar",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName",
+            "count"
+          ]
+        },
+        {
+          "id": "question_master",
+          "category": "grammar",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "count",
+            "language"
+          ]
+        },
+        {
+          "id": "polite_requests",
+          "category": "grammar",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 3
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 4
+          },
+          "parameters": [
+            "shopCount"
+          ]
+        },
+        {
+          "id": "scavenger_hunt",
+          "category": "scavenger_hunt",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "identify_object",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 20,
+            "fluency": 2
+          },
+          "parameters": [
+            "itemCount",
+            "language"
+          ]
+        },
+        {
+          "id": "identify_objects",
+          "category": "visual_vocabulary",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "identify_object",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 15,
+            "fluency": 2
+          },
+          "parameters": [
+            "count"
+          ]
+        },
+        {
+          "id": "find_by_description",
+          "category": "visual_vocabulary",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "identify_object",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 20,
+            "fluency": 2.5
+          },
+          "parameters": [
+            "count",
+            "vocabulary_set"
+          ]
+        },
+        {
+          "id": "follow_directions",
+          "category": "follow_instructions",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "follow_directions",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "stepCount"
+          ]
+        },
+        {
+          "id": "navigate_to",
+          "category": "navigation",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "navigate_language",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 40,
+            "fluency": 5
+          },
+          "parameters": [
+            "destination",
+            "language"
+          ]
+        },
+        {
+          "id": "translation_test",
+          "category": "translation_challenge",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "translation_challenge",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "phraseCount"
+          ]
+        },
+        {
+          "id": "listen_and_learn",
+          "category": "listening_comprehension",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "listening_comprehension",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 40,
+            "fluency": 5
+          },
+          "parameters": [
+            "npcName",
+            "questionCount"
+          ]
+        },
+        {
+          "id": "cultural_exploration",
+          "category": "cultural",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 3
+            },
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "festival_day",
+          "category": "cultural",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 3
+            },
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 5
+            },
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 25,
+            "fluency": 3
+          },
+          "parameters": [
+            "npcCount",
+            "wordCount",
+            "location"
+          ]
+        },
+        {
+          "id": "recipe_quest",
+          "category": "cultural",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "follow_directions",
+              "requiredCount": 4
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 5
+          },
+          "parameters": [
+            "npcName",
+            "stepCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "cultural_exchange",
+          "category": "cultural",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 6
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 5
+          },
+          "parameters": [
+            "npcName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "proverb_hunter",
+          "category": "cultural",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 3
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            },
+            {
+              "type": "listening_comprehension",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 45,
+            "fluency": 6
+          },
+          "parameters": [
+            "npcCount",
+            "wordCount",
+            "proverbCount"
+          ]
+        },
+        {
+          "id": "traditional_craft",
+          "category": "cultural",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 6
+            },
+            {
+              "type": "identify_object",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 45,
+            "fluency": 6
+          },
+          "parameters": [
+            "npcName",
+            "location",
+            "wordCount",
+            "objectCount"
+          ]
+        },
+        {
+          "id": "pronunciation_challenge",
+          "category": "pronunciation",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "pronunciation_check",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "phraseCount"
+          ]
+        },
+        {
+          "id": "shop_vocabulary",
+          "category": "shopping",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 20,
+            "fluency": 3
+          },
+          "parameters": [
+            "businessName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "bakery_order",
+          "category": "shopping",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 25,
+            "fluency": 3
+          },
+          "parameters": [
+            "businessName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "price_haggling",
+          "category": "shopping",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 6
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "businessName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "shopping_list",
+          "category": "shopping",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "collect_item",
+              "requiredCount": 3
+            },
+            {
+              "type": "deliver_item",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName",
+            "itemCount",
+            "businessCount"
+          ]
+        },
+        {
+          "id": "merchant_interview",
+          "category": "shopping",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 3
+            },
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "make_a_friend",
+          "category": "social",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "build_friendship",
+              "requiredCount": 3
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 25,
+            "fluency": 3
+          },
+          "parameters": [
+            "npcName",
+            "conversationCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "gift_of_friendship",
+          "category": "social",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "collect_item",
+              "requiredCount": 1
+            },
+            {
+              "type": "give_gift",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName"
+          ]
+        },
+        {
+          "id": "community_builder",
+          "category": "social",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 5
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 3
+          },
+          "parameters": [
+            "npcCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "language_exchange",
+          "category": "social",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "build_friendship",
+              "requiredCount": 2
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 40,
+            "fluency": 5
+          },
+          "parameters": [
+            "npcName",
+            "conversationCount",
+            "turns",
+            "wordCount",
+            "language"
+          ]
+        },
+        {
+          "id": "the_helpful_stranger",
+          "category": "social",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "collect_item",
+              "requiredCount": 1
+            },
+            {
+              "type": "deliver_item",
+              "requiredCount": 1
+            },
+            {
+              "type": "build_friendship",
+              "requiredCount": 2
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName"
+          ]
+        },
+        {
+          "id": "story_circle",
+          "category": "storytelling",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 3
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 6
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 5
+          },
+          "parameters": [
+            "npcCount",
+            "turns",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "local_legend",
+          "category": "storytelling",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "listening_comprehension",
+              "requiredCount": 3
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 45,
+            "fluency": 6
+          },
+          "parameters": [
+            "storytellerName",
+            "listenerName",
+            "questionCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "my_adventure",
+          "category": "storytelling",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 8
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName",
+            "turns",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "picture_this",
+          "category": "storytelling",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 6
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "location",
+            "npcName",
+            "turns",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "vocabulary_tutor",
+          "category": "teaching",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "teach_vocabulary",
+              "requiredCount": 5
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 40,
+            "fluency": 5
+          },
+          "parameters": [
+            "npcName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "phrase_coach",
+          "category": "teaching",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "teach_phrase",
+              "requiredCount": 3
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 5
+          },
+          "parameters": [
+            "npcName",
+            "phraseCount"
+          ]
+        },
+        {
+          "id": "newcomer_welcome",
+          "category": "teaching",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 1
+            },
+            {
+              "type": "teach_vocabulary",
+              "requiredCount": 4
+            },
+            {
+              "type": "teach_phrase",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 40,
+            "fluency": 5
+          },
+          "parameters": [
+            "npcName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "advanced_tutor",
+          "category": "teaching",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "teach_vocabulary",
+              "requiredCount": 8
+            },
+            {
+              "type": "teach_phrase",
+              "requiredCount": 4
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 50,
+            "fluency": 7
+          },
+          "parameters": [
+            "npcName",
+            "wordCount",
+            "phraseCount"
+          ]
+        },
+        {
+          "id": "time_appointment",
+          "category": "time_activity",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "location",
+            "count"
+          ]
+        },
+        {
+          "id": "daily_schedule",
+          "category": "time_activity",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "follow_directions",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 45,
+            "fluency": 6
+          },
+          "parameters": [
+            "count"
+          ]
+        },
+        {
+          "id": "grammar_correction_drill",
+          "category": "error_correction",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "practice_grammar",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 20,
+            "fluency": 3
+          },
+          "parameters": [
+            "pattern",
+            "count"
+          ]
+        },
+        {
+          "id": "grammar_correction_conversation",
+          "category": "error_correction",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "practice_grammar",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName",
+            "pattern",
+            "count"
+          ]
+        },
+        {
+          "id": "vocabulary_correction_practice",
+          "category": "error_correction",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 20,
+            "fluency": 3
+          },
+          "parameters": [
+            "wordList"
+          ]
+        },
+        {
+          "id": "vocabulary_correction_conversation",
+          "category": "error_correction",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName",
+            "count"
+          ]
+        },
+        {
+          "id": "mixed_error_review",
+          "category": "error_correction",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "practice_grammar",
+              "requiredCount": 3
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 40,
+            "fluency": 5
+          },
+          "parameters": [
+            "grammarCount",
+            "vocabCount"
+          ]
+        },
+        {
+          "id": "morning_weather_chat",
+          "category": "weather_time",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 4
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 2
+            }
+          ],
+          "rewardScale": {
+            "xp": 20,
+            "fluency": 3
+          },
+          "parameters": [
+            "npcName",
+            "wordCount",
+            "timeWordCount"
+          ]
+        },
+        {
+          "id": "weather_watcher",
+          "category": "weather_time",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "describe_scene",
+              "requiredCount": 1
+            },
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 15,
+            "fluency": 2
+          },
+          "parameters": [
+            "npcName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "evening_routine_report",
+          "category": "weather_time",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 20,
+            "fluency": 3
+          },
+          "parameters": [
+            "npcName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "weather_and_plans",
+          "category": "weather_time",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName",
+            "weatherWordCount",
+            "timeWordCount"
+          ]
+        },
+        {
+          "id": "npc_schedule_tracker",
+          "category": "weather_time",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 3
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName",
+            "locationCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "storm_story",
+          "category": "weather_time",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "listening_comprehension",
+              "requiredCount": 3
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName",
+            "questionCount",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "seasonal_scene",
+          "category": "weather_time",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "describe_scene",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 8
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 45,
+            "fluency": 6
+          },
+          "parameters": [
+            "location",
+            "npcName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "day_night_vocabulary",
+          "category": "weather_time",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 5
+            },
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 2
+            }
+          ],
+          "rewardScale": {
+            "xp": 15,
+            "fluency": 2
+          },
+          "parameters": [
+            "wordCount",
+            "npcCount"
+          ]
+        },
+        {
+          "id": "material_identification",
+          "category": "crafting",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "examine_object",
+              "requiredCount": 4
+            },
+            {
+              "type": "identify_object",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 20,
+            "fluency": 2
+          },
+          "parameters": [
+            "station",
+            "materialCount"
+          ]
+        },
+        {
+          "id": "tool_naming",
+          "category": "crafting",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "point_and_name",
+              "requiredCount": 4
+            },
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 20,
+            "fluency": 2
+          },
+          "parameters": [
+            "station",
+            "toolCount"
+          ]
+        },
+        {
+          "id": "simple_craft",
+          "category": "crafting",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "collect_item",
+              "requiredCount": 2
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 2
+            },
+            {
+              "type": "craft_item",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 30,
+            "fluency": 3
+          },
+          "parameters": [
+            "station",
+            "materialCount"
+          ]
+        },
+        {
+          "id": "apprentice_lesson",
+          "category": "crafting",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 1
+            },
+            {
+              "type": "collect_vocabulary",
+              "requiredCount": 3
+            },
+            {
+              "type": "follow_directions",
+              "requiredCount": 3
+            },
+            {
+              "type": "craft_item",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 40,
+            "fluency": 4
+          },
+          "parameters": [
+            "npcName",
+            "station",
+            "actionCount"
+          ]
+        },
+        {
+          "id": "recipe_translation",
+          "category": "crafting",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "read_sign",
+              "requiredCount": 1
+            },
+            {
+              "type": "translation_challenge",
+              "requiredCount": 3
+            },
+            {
+              "type": "collect_item",
+              "requiredCount": 3
+            },
+            {
+              "type": "craft_item",
+              "requiredCount": 1
+            }
+          ],
+          "rewardScale": {
+            "xp": 55,
+            "fluency": 6
+          },
+          "parameters": [
+            "npcName",
+            "phraseCount"
+          ]
+        },
+        {
+          "id": "make_return",
+          "category": "customer_service",
+          "difficulty": "beginner",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 1
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 3
+            }
+          ],
+          "rewardScale": {
+            "xp": 25,
+            "fluency": 4
+          },
+          "parameters": [
+            "businessName",
+            "ownerName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "file_complaint",
+          "category": "customer_service",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 5
+          },
+          "parameters": [
+            "businessName",
+            "ownerName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "make_reservation",
+          "category": "customer_service",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "talk_to_npc",
+              "requiredCount": 1
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 4
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 5
+          },
+          "parameters": [
+            "businessName",
+            "ownerName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "ask_recommendations",
+          "category": "customer_service",
+          "difficulty": "intermediate",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 35,
+            "fluency": 5
+          },
+          "parameters": [
+            "businessName",
+            "ownerName",
+            "wordCount"
+          ]
+        },
+        {
+          "id": "urgent_request",
+          "category": "customer_service",
+          "difficulty": "advanced",
+          "objectives": [
+            {
+              "type": "visit_location",
+              "requiredCount": 1
+            },
+            {
+              "type": "complete_conversation",
+              "requiredCount": 1
+            },
+            {
+              "type": "use_vocabulary",
+              "requiredCount": 5
+            }
+          ],
+          "rewardScale": {
+            "xp": 50,
+            "fluency": 7
+          },
+          "parameters": [
+            "businessName",
+            "ownerName",
+            "wordCount"
+          ]
+        }
+      ]
+    }
+  ]
+}

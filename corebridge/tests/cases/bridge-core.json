@@ -156,6 +156,30 @@
        "language.pronunciation.wordFeedback",
        "language.pronunciation.wordSimilarity",
        "language.pronunciation.xp",
+       "language.questFeedback.correctUsage",
+       "language.questFeedback.done",
+       "language.questFeedback.grammar",
+       "language.questFeedback.grammarObjectiveComplete",
+       "language.questFeedback.hints",
+       "language.questFeedback.initial",
+       "language.questFeedback.lockedGrammar",
+       "language.questFeedback.lockedPronunciation",
+       "language.questFeedback.lockedVocabulary",
+       "language.questFeedback.pronunciation",
+       "language.questFeedback.syncLifecycle",
+       "language.questFeedback.targets",
+       "language.questFeedback.useVocabulary",
+       "language.questTypes.all",
+       "language.questTypes.definition",
+       "language.questTypes.forWorld",
+       "language.questTypes.has",
+       "language.questTypes.merge",
+       "language.questTypes.mixing",
+       "language.questTypes.objectiveComplete",
+       "language.questTypes.primary",
+       "language.questTypes.templates",
+       "language.questTypes.templatesByCategory",
+       "language.questTypes.templatesByDifficulty",
        "language.quests.filterByCefr",
        "language.save.block",
        "language.save.blockOf",
@@ -517,7 +541,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 483}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 507}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -563,7 +587,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 483}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 507}}}}
    ]
   },
   {

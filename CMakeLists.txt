@@ -612,19 +612,22 @@ set_tests_properties(core_vendor_extension_keys_negative PROPERTIES
 
 # Its sibling for the language transcriptions (PL.native-language-rows): the guard that
 # holds cases/core-language-*.json to the vendored corpora (by name, by the calls core's
-# runner makes, row for row, and with every answer stated) is given fourteen perturbations of
+# runner makes, row for row, and with every answer stated) is given twenty perturbations of
 # those files in memory (a dropped case, a dropped call, a first call changed, an answer
 # expected nowhere, a call that is no language row; slice 2: an answer weakened to a subset,
 # an NPC's mode at one band dropped; slice 3: an identification answer dropped, an examine
 # weakened to a subset, a collection run's first call changed, a knowledge world's collected
 # words expected nowhere, a listening chat dropped, a listening chat's quests not expected,
-# a submitted composition weakened) and passes only when all fourteen are named.
+# a submitted composition weakened; slice 4: a quest feedback run's locks dropped, a lifecycle
+# sync's pronunciation objectives expected nowhere, a run's recent ids not expected, a quest
+# type table's categories not expected, a template's parameters not expected, every world's
+# quest types weakened) and passes only when all twenty are named.
 add_test(NAME core_vendor_language_negative COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
        --check-language-transcription-negative)
 set_tests_properties(core_vendor_language_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "language transcription negative [^ ]* 14 of 14 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_language_negative")
+  PASS_REGULAR_EXPRESSION "language transcription negative [^ ]* 20 of 20 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_language_negative")
 
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus
@@ -1127,22 +1130,24 @@ add_test(NAME village_save_corpus_negative COMMAND insimulcore_village_save_corp
 set_tests_properties(village_save_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\n.*village_save_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nvillage_save_corpus --negative: PASS")
 
-# language_corpus (PL.native-language-rows slices 1 to 3, rulings U128, U118, U107(2), U49(3)
+# language_corpus (PL.native-language-rows slices 1 to 4, rulings U128, U118, U107(2), U49(3)
 # and U36): core's P9h language kernels (src/language-learning/: the book, the save block, the
 # prompt selector with the registers it reads, hover and its word key, the chat metrics
 # with the difficulty monitor its lines feed; src/prolog/player-language-state.ts; slice 2:
 # the vocabulary bank and the learning profile, the rest of adaptation.ts, listen and repeat
 # with src/language/phonetic-similarity.ts's code; slice 3: the rest of world-words.ts, knowledge
 # collection, object identification, point and name, examine, and the rest of reading-writing.ts,
-# composition and listening) as libinsimulcore's `language.*` rows, held to core's own corpora
-# conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation,
-# collection,objects,writing}.json, COPIED byte for byte into
+# composition and listening; slice 4: quest-feedback.ts, the real-time quest language feedback
+# the quest lifecycle governs, and the language quest types of src/quest-types/ with
+# src/language/quest-templates.ts) as libinsimulcore's `language.*` rows, held to core's own
+# corpora conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation,
+# collection,objects,writing,quest-feedback,quest-types}.json, COPIED byte for byte into
 # corebridge/vendor/core/conformance/language/ at the pin (vendor-core-bundle.mjs
 # LANGUAGE_CORPUS_FILES; hashed, and byte-compared under --check --core).
 # tests/language_corpus.cpp composes each op from the rows as core's reference runner
 # (src/language-learning/systems-corpus.ts) composes core's kernels; the same cases also run
 # on both legs as the transcribed cases/core-language-*.json. Unreal's interim language copy
-# (Portable/InsimulLanguage*) is what these rows, with the later slices, retire. The regex
+# (Portable/InsimulLanguage*) is what these rows retire (P9h.unreal.retire-language-copy). The regex
 # demands every refusal probe refused, each file's driven line with every op and step of
 # core's runner driven and 0 undriven, every row it names called, then PASS. It holds no ';'.
 add_executable(insimulcore_language_corpus tests/language_corpus.cpp tests/radiant/json_value.cpp)
@@ -1159,14 +1164,16 @@ set(INSIMUL_LANGUAGE_CORPORA
   ${INSIMUL_PROPS_CORPUS}/language/pronunciation.json
   ${INSIMUL_PROPS_CORPUS}/language/collection.json
   ${INSIMUL_PROPS_CORPUS}/language/objects.json
-  ${INSIMUL_PROPS_CORPUS}/language/writing.json)
+  ${INSIMUL_PROPS_CORPUS}/language/writing.json
+  ${INSIMUL_PROPS_CORPUS}/language/quest-feedback.json
+  ${INSIMUL_PROPS_CORPUS}/language/quest-types.json)
 add_test(NAME language_corpus COMMAND insimulcore_language_corpus ${INSIMUL_LANGUAGE_CORPORA})
 set_tests_properties(language_corpus PROPERTIES
-  PASS_REGULAR_EXPRESSION "refusals: 22 of 22 probe[(]s[)] refused as core refuses[^\n]*\n.*language/progress: driven mastery [1-9][0-9]*, gain [1-9][0-9]*, run [1-9][0-9]*, facts [1-9][0-9]*. 0 undriven. steps advance [1-9][0-9]*, encounter [1-9][0-9]*, event [1-9][0-9]*, grammar [1-9][0-9]*, conversation [1-9][0-9]*, cefr [1-9][0-9]*, weak [1-9][0-9]*, summary [1-9][0-9]*\n.*language/save: driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*language/prompts: driven run [1-9][0-9]*. 0 undriven. steps register [1-9][0-9]*, pick [1-9][0-9]*, standing [1-9][0-9]*, answer [1-9][0-9]*, reach [1-9][0-9]*, choose [1-9][0-9]*\n.*language/hover: driven tokens [1-9][0-9]*, run [1-9][0-9]*. 0 undriven. steps hints [1-9][0-9]*, see [1-9][0-9]*, mastery [1-9][0-9]*, lookup [1-9][0-9]*, resolve [1-9][0-9]*, likely [1-9][0-9]*, display [1-9][0-9]*\n.*language/chat: driven words [1-9][0-9]*, percent [1-9][0-9]*, hear [1-9][0-9]*, usages [1-9][0-9]*, run [1-9][0-9]*. 0 undriven. steps start [1-9][0-9]*, line [1-9][0-9]*, hear [1-9][0-9]*, end [1-9][0-9]*\n.*language/bank: driven cards [1-9][0-9]*, reveal [1-9][0-9]*, grammar [1-9][0-9]*, tables [1-9][0-9]*, profile [1-9][0-9]*, history [1-9][0-9]*. 0 undriven\n.*language/adaptation: driven struggle [1-9][0-9]*, difficulty [1-9][0-9]*, mode [1-9][0-9]*, npc [1-9][0-9]*, hint [1-9][0-9]*, quests [1-9][0-9]*, advance [1-9][0-9]*. 0 undriven. steps turn [1-9][0-9]*\n.*language/pronunciation: driven encode [1-9][0-9]*, similarity [1-9][0-9]*, score [1-9][0-9]*, repeat [1-9][0-9]*, xp [1-9][0-9]*, hints [1-9][0-9]*. 0 undriven\n.*language/collection: driven run [1-9][0-9]*. 0 undriven. steps register [1-9][0-9]*, seed [1-9][0-9]*, reach [1-9][0-9]*, quiz [1-9][0-9]*, answer [1-9][0-9]*\n.*language/objects: driven normalize [1-9][0-9]*, identify [1-9][0-9]*, naming [1-9][0-9]*, examine [1-9][0-9]*. 0 undriven. steps register [1-9][0-9]*, prompt [1-9][0-9]*, answer [1-9][0-9]*, remove [1-9][0-9]*, quest [1-9][0-9]*, register [1-9][0-9]*, point [1-9][0-9]*, name [1-9][0-9]*\n.*language/writing: driven composition [1-9][0-9]*, listening [1-9][0-9]*. 0 undriven. steps register [1-9][0-9]*, prompt [1-9][0-9]*, chat [1-9][0-9]*, grade [1-9][0-9]*\n.*rows: 95 of 95 called by the corpora's cases\nlanguage_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nlanguage_corpus: PASS")
+  PASS_REGULAR_EXPRESSION "refusals: 27 of 27 probe[(]s[)] refused as core refuses[^\n]*\n.*language/progress: driven mastery [1-9][0-9]*, gain [1-9][0-9]*, run [1-9][0-9]*, facts [1-9][0-9]*. 0 undriven. steps advance [1-9][0-9]*, encounter [1-9][0-9]*, event [1-9][0-9]*, grammar [1-9][0-9]*, conversation [1-9][0-9]*, cefr [1-9][0-9]*, weak [1-9][0-9]*, summary [1-9][0-9]*\n.*language/save: driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*language/prompts: driven run [1-9][0-9]*. 0 undriven. steps register [1-9][0-9]*, pick [1-9][0-9]*, standing [1-9][0-9]*, answer [1-9][0-9]*, reach [1-9][0-9]*, choose [1-9][0-9]*\n.*language/hover: driven tokens [1-9][0-9]*, run [1-9][0-9]*. 0 undriven. steps hints [1-9][0-9]*, see [1-9][0-9]*, mastery [1-9][0-9]*, lookup [1-9][0-9]*, resolve [1-9][0-9]*, likely [1-9][0-9]*, display [1-9][0-9]*\n.*language/chat: driven words [1-9][0-9]*, percent [1-9][0-9]*, hear [1-9][0-9]*, usages [1-9][0-9]*, run [1-9][0-9]*. 0 undriven. steps start [1-9][0-9]*, line [1-9][0-9]*, hear [1-9][0-9]*, end [1-9][0-9]*\n.*language/bank: driven cards [1-9][0-9]*, reveal [1-9][0-9]*, grammar [1-9][0-9]*, tables [1-9][0-9]*, profile [1-9][0-9]*, history [1-9][0-9]*. 0 undriven\n.*language/adaptation: driven struggle [1-9][0-9]*, difficulty [1-9][0-9]*, mode [1-9][0-9]*, npc [1-9][0-9]*, hint [1-9][0-9]*, quests [1-9][0-9]*, advance [1-9][0-9]*. 0 undriven. steps turn [1-9][0-9]*\n.*language/pronunciation: driven encode [1-9][0-9]*, similarity [1-9][0-9]*, score [1-9][0-9]*, repeat [1-9][0-9]*, xp [1-9][0-9]*, hints [1-9][0-9]*. 0 undriven\n.*language/collection: driven run [1-9][0-9]*. 0 undriven. steps register [1-9][0-9]*, seed [1-9][0-9]*, reach [1-9][0-9]*, quiz [1-9][0-9]*, answer [1-9][0-9]*\n.*language/objects: driven normalize [1-9][0-9]*, identify [1-9][0-9]*, naming [1-9][0-9]*, examine [1-9][0-9]*. 0 undriven. steps register [1-9][0-9]*, prompt [1-9][0-9]*, answer [1-9][0-9]*, remove [1-9][0-9]*, quest [1-9][0-9]*, register [1-9][0-9]*, point [1-9][0-9]*, name [1-9][0-9]*\n.*language/writing: driven composition [1-9][0-9]*, listening [1-9][0-9]*. 0 undriven. steps register [1-9][0-9]*, prompt [1-9][0-9]*, chat [1-9][0-9]*, grade [1-9][0-9]*\n.*language/quest-feedback: driven targets [1-9][0-9]*, run [1-9][0-9]*. 0 undriven. steps vocabulary [1-9][0-9]*, lifecycle [1-9][0-9]*, grammar [1-9][0-9]*, correct [1-9][0-9]*, pronunciation [1-9][0-9]*, hints [1-9][0-9]*, objective [1-9][0-9]*, done [1-9][0-9]*\n.*language/quest-types: driven select [1-9][0-9]*, table [1-9][0-9]*, complete [1-9][0-9]*, map [1-9][0-9]*, templates [1-9][0-9]*. 0 undriven\n.*rows: 114 of 114 called by the corpora's cases\nlanguage_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nlanguage_corpus: PASS")
 # Its negative pass: every case's expectation perturbed (its last leaf) must be refused.
 add_test(NAME language_corpus_negative COMMAND insimulcore_language_corpus --negative ${INSIMUL_LANGUAGE_CORPORA})
 set_tests_properties(language_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "refusals: 22 of 22 probe[(]s[)] refused as core refuses[^\n]*\n.*rows: 95 of 95 called by the corpora's cases\nlanguage_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nlanguage_corpus --negative: PASS")
+  PASS_REGULAR_EXPRESSION "refusals: 27 of 27 probe[(]s[)] refused as core refuses[^\n]*\n.*rows: 114 of 114 called by the corpora's cases\nlanguage_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nlanguage_corpus --negative: PASS")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest

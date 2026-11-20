@@ -741,6 +741,42 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language-learning/quest-feedback",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.questFeedback.* rows (core's real-time quest language feedback strip, which the quest lifecycle governs: its targets, quest words, grammar corrections and objective accuracy, pronunciation, milestones and the lifecycle sync) (PL.native-language-rows slice 4, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s4-quest-feedback-quest-types (Features Gauntlet PL.native-language-rows slice 4)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/quest-types/index",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.questTypes.* rows (core's quest type registry: which quest types a world gets, their definitions as data, mixing and merging, and each objective type's completion check) (PL.native-language-rows slice 4, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s4-quest-feedback-quest-types (Features Gauntlet PL.native-language-rows slice 4)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/quest-types/language-learning",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of language.contract's languageObjectiveTypeMap and languageRewardTypeMap (core's language objective and reward type maps to the generic modules' types) (PL.native-language-rows slice 4, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s4-quest-feedback-quest-types (Features Gauntlet PL.native-language-rows slice 4)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language/quest-templates",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.questTypes.templates* rows (core's language quest templates, whole, by difficulty and by category) (PL.native-language-rows slice 4, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s4-quest-feedback-quest-types (Features Gauntlet PL.native-language-rows slice 4)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/progression/skill-kb",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the skill.kb.* rows (core's skill KB that sees the live facts: which facts a skill KB holds, the program a recomposing host consults, and its reference session, PL.core-skill-kb-live-facts and PL.core-skill-kb-rule-head-facts) (PL.native-bundle-core-r2, rulings U124, U126 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

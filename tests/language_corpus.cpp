@@ -1,15 +1,17 @@
 // language_corpus.cpp — core's P9h language corpora, driven through
 // libinsimulcore's `language.*` rows.
 //
-// PL.native-language-rows, slices 1 to 3 (rulings U128, U118, U107(2), U101(1),
+// PL.native-language-rows, slices 1 to 4 (rulings U128, U118, U107(2), U101(1),
 // U49(3), U36). Core's language kernels (src/language-learning/: the book, the save
 // block, the prompt selector, hover and its word key, the chat metrics; slice 2: the
 // vocabulary bank and the learning profile, the rest of adaptation.ts, listen and
-// repeat; slice 3: the rest of world-words.ts and reading-writing.ts; and
-// src/prolog/player-language-state.ts, src/language/phonetic-similarity.ts) are rows of
-// corebridge/js/entry.js. This gate holds them to core's own corpora,
-// conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,
-// pronunciation,collection,objects,writing}.json, COPIED byte for byte into corebridge/vendor/core/conformance/
+// repeat; slice 3: the rest of world-words.ts and reading-writing.ts; slice 4:
+// quest-feedback.ts, and the language quest types of src/quest-types/ with
+// src/language/quest-templates.ts; and src/prolog/player-language-state.ts,
+// src/language/phonetic-similarity.ts) are rows of corebridge/js/entry.js. This gate
+// holds them to core's own corpora, conformance/language/{progress,save,prompts,hover,
+// chat,bank,adaptation,pronunciation,collection,objects,writing,quest-feedback,
+// quest-types}.json, COPIED byte for byte into corebridge/vendor/core/conformance/
 // language/ at the pin and sha256-checked by the `core_vendor` ctest. Nothing here
 // re-writes a case or computes an answer: every answer comes out of the rows; this
 // file only composes them per op, as core's reference runner
@@ -91,6 +93,23 @@
 //             listening the state [] then per step: register, prompt, chat (player and npc ??
 //                       ''; each quest's answers counted), grade (the score when a number, else
 //                       null)
+//   quest-feedback targets language.questFeedback.targets
+//             run       language.questFeedback.initial (meanings ?? {}; the start is the state
+//                       less recent and nextId), then per step: vocabulary (useVocabulary, then
+//                       done and lockedVocabulary), lifecycle (syncLifecycle, then done and
+//                       lockedVocabulary, done and lockedPronunciation, done and lockedGrammar),
+//                       grammar (grammar, then done and lockedGrammar), correct (correctUsage,
+//                       the example when a string), pronunciation (pronunciation, then done and
+//                       lockedPronunciation), hints (the max when a number), objective
+//                       (grammarObjectiveComplete), done (done; recent: the state's item ids)
+//   quest-types select  language.questTypes.forWorld per world
+//             table     language.questTypes.definition for each of the runner's three language
+//                       quest types (categories and objectives as ids)
+//             complete  language.questTypes.objectiveComplete per check
+//             map       language.contract (languageObjectiveTypeMap, languageRewardTypeMap)
+//             templates language.questTypes.templatesByDifficulty (a difficulty string), else
+//                       .templatesByCategory (a category string), else .templates; each template
+//                       as its objective templates' type and count and its parameters' names
 //
 // Comparison is the corpora's own rule: exact, object key sets included. Each file's
 // declared `ops` and `steps` must be exactly the ones this runner drives (core's
@@ -98,10 +117,12 @@
 // failure here, never a skip. An unknown op or step fails its case. The refusal probes
 // show on every start that core's refusals are VALUES (empty_word, unknown_encounter,
 // no_target_language, empty_line, no_turns, nothing_in_reach, no_prompt, no_quiz;
-// slice 3: unknown_object, already_named, no_attempts_left, empty, too_short), that
-// a book core's own save reader cannot read is the `[invalid-input]` ERROR naming its
-// key (as are a vocabulary sort and a band outside core's types, and a listening grade
-// with no score), and that an unknown
+// slice 3: unknown_object, already_named, no_attempts_left, empty, too_short; slice 4: an
+// unknown quest type's null definition), that a book core's own save reader cannot read
+// is the `[invalid-input]` ERROR naming its key (as are a vocabulary sort and a band
+// outside core's types, a listening grade with no score, and slice 4's objective type a
+// quest type does not define, grammar status outside core's three, objective's null
+// description and objective index naming no lock), and that an unknown
 // row is the method table's error. The run FAILS on a file
 // that is not a language corpus or holds no case, on an op of a file that no case
 // drives, on a row missing from the method table, on a session left open, and when its
@@ -137,7 +158,7 @@ using insimul::JsonValuePtr;
 namespace {
 
 // core's LANGUAGE_SYSTEMS_CORPUS_OPS and LANGUAGE_SYSTEMS_CORPUS_STEPS
-// (src/language-learning/systems-corpus.ts) for the files slices 1 to 3 bind.
+// (src/language-learning/systems-corpus.ts) for the files slices 1 to 4 bind.
 struct FileSpec {
 	const char *file;
 	std::vector<std::string> ops;
@@ -159,6 +180,10 @@ const std::vector<FileSpec> kFiles = {
     {"language/objects", {"normalize", "identify", "naming", "examine"},
      {{"identify", {"register", "prompt", "answer", "remove", "quest"}}, {"naming", {"register", "point", "name"}}}},
     {"language/writing", {"composition", "listening"}, {{"listening", {"register", "prompt", "chat", "grade"}}}},
+    // slice 4
+    {"language/quest-feedback", {"targets", "run"},
+     {{"run", {"vocabulary", "lifecycle", "grammar", "correct", "pronunciation", "hints", "objective", "done"}}}},
+    {"language/quest-types", {"select", "table", "complete", "map", "templates"}, {}},
 };
 
 // Every row this runner calls.
@@ -196,7 +221,15 @@ const char *const kRows[] = {
     "language.identification.answer", "language.identification.quest", "language.naming.point",
     "language.naming.submit",     "language.objects.examine",     "language.writing.countWords",
     "language.writing.view",      "language.writing.submit",      "language.listening.register",
-    "language.listening.prompt",  "language.listening.chat",      "language.listening.grade"};
+    "language.listening.prompt",  "language.listening.chat",      "language.listening.grade",
+    // slice 4
+    "language.questFeedback.initial", "language.questFeedback.targets", "language.questFeedback.useVocabulary",
+    "language.questFeedback.syncLifecycle", "language.questFeedback.lockedVocabulary", "language.questFeedback.lockedPronunciation",
+    "language.questFeedback.lockedGrammar", "language.questFeedback.grammar", "language.questFeedback.correctUsage",
+    "language.questFeedback.grammarObjectiveComplete", "language.questFeedback.pronunciation", "language.questFeedback.hints",
+    "language.questFeedback.done", "language.questTypes.forWorld", "language.questTypes.definition",
+    "language.questTypes.objectiveComplete", "language.questTypes.templates", "language.questTypes.templatesByDifficulty",
+    "language.questTypes.templatesByCategory"};
 
 std::string read_file(const std::string &path, bool &ok) {
 	std::ifstream in(path, std::ios::binary);
@@ -1559,6 +1592,195 @@ JsonValuePtr writing(Run &r, const std::string &op, const JsonValue &input) {
 	throw DriveError("op " + op + " is not one of core's language/writing ops");
 }
 
+// slice 4: the quest feedback strip and the language quest types.
+
+// A member of the quest feedback state (the runner's `s.<key>`).
+JsonValuePtr st_of(const JsonValuePtr &state, const char *key) { return deep_copy(need(*state, key, "the quest feedback state")); }
+
+JsonValuePtr quest_feedback(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "targets") return c.call("language.questFeedback.targets", Obj().put("objectives", need(input, "objectives", "the input")));
+	if (op != "run") throw DriveError("op " + op + " is not one of core's language/quest-feedback ops");
+	// s = questFeedback(questId, objectives, meanings ?? {})
+	const JsonValue *meanings = input.find("meanings");
+	Obj a;
+	a.put("questId", need(input, "questId", "the input")).put("objectives", need(input, "objectives", "the input"));
+	a.put("meanings", meanings && !meanings->is_null() ? deep_copy(*meanings) : Obj().v);
+	JsonValuePtr state = member(c.call("language.questFeedback.initial", a), "state", "questFeedback.initial");
+	auto done_of = [&](const char *kind) {
+		return member(c.call("language.questFeedback.done", Obj().put("state", state)), kind, "questFeedback.done");
+	};
+	auto locked_of = [&](const char *row) { return member(c.call(row, Obj().put("state", state)), "locked", row); };
+	// grammarUses(s): { used, required, progress, done, objectives, locked }
+	auto grammar_uses = [&]() {
+		Obj u;
+		u.put("used", st_of(state, "grammarUsed")).put("required", st_of(state, "grammarRequired")).put("progress", st_of(state, "grammarProgress"));
+		u.put("done", done_of("grammar")).put("objectives", st_of(state, "grammarObjectives"));
+		u.put("locked", locked_of("language.questFeedback.lockedGrammar"));
+		return u.v;
+	};
+	std::vector<JsonValuePtr> out;
+	{
+		// { do: 'start', state: feedbackView(s) }: the state without recent and nextId
+		Obj view;
+		for (const auto &kv : state->object_items) {
+			if (kv.first != "recent" && kv.first != "nextId") view.put(kv.first, *kv.second);
+		}
+		out.push_back(Obj().put("do", "start").put("state", view.v).v);
+	}
+	for (const auto &sp : items(need(input, "steps", "the input"), "steps")) {
+		const JsonValue &st = *sp;
+		const std::string d = do_of(st);
+		r.step_known(op, d);
+		Obj o;
+		o.put("do", d);
+		if (d == "vocabulary") {
+			auto v = c.call("language.questFeedback.useVocabulary", Obj().put("state", state).put("usages", need(st, "usages", "a vocabulary step")));
+			state = member(v, "state", "useVocabulary");
+			o.put("items", member(v, "items", "useVocabulary"));
+			o.put("used", st_of(state, "vocabularyUsed")).put("required", st_of(state, "vocabularyRequired")).put("progress", st_of(state, "vocabularyProgress"));
+			o.put("done", done_of("vocabulary")).put("objectives", st_of(state, "vocabularyObjectives"));
+			o.put("locked", locked_of("language.questFeedback.lockedVocabulary"));
+		} else if (d == "lifecycle") {
+			auto v = c.call("language.questFeedback.syncLifecycle", Obj().put("state", state).put("objectives", need(st, "objectives", "a lifecycle step")));
+			state = member(v, "state", "syncLifecycle");
+			o.put("items", member(v, "items", "syncLifecycle"));
+			o.put("used", st_of(state, "vocabularyUsed")).put("required", st_of(state, "vocabularyRequired")).put("progress", st_of(state, "vocabularyProgress"));
+			o.put("done", done_of("vocabulary")).put("objectives", st_of(state, "vocabularyObjectives"));
+			o.put("locked", locked_of("language.questFeedback.lockedVocabulary"));
+			Obj p;
+			p.put("passed", st_of(state, "pronunciationPassed")).put("required", st_of(state, "pronunciationRequired")).put("progress", st_of(state, "pronunciationProgress"));
+			p.put("done", done_of("pronunciation")).put("objectives", st_of(state, "pronunciationObjectives"));
+			p.put("locked", locked_of("language.questFeedback.lockedPronunciation"));
+			o.put("pronunciation", p.v);
+			o.put("uses", grammar_uses());
+		} else if (d == "grammar") {
+			auto v = c.call("language.questFeedback.grammar", Obj().put("state", state).put("feedback", need(st, "feedback", "a grammar step")));
+			state = member(v, "state", "questFeedback.grammar");
+			o.put("items", member(v, "items", "questFeedback.grammar")).put("accuracy", st_of(state, "grammarAccuracy")).put("grammar", st_of(state, "grammar"));
+			o.put("objectivesUpdated", member(v, "objectivesUpdated", "questFeedback.grammar")).put("objectives", st_of(state, "objectives"));
+			o.put("uses", grammar_uses());
+		} else if (d == "correct") {
+			// correctUsage(s, pattern, typeof step.example === 'string' ? step.example : undefined)
+			Obj ca;
+			ca.put("state", state).put("pattern", need(st, "pattern", "a correct step"));
+			const JsonValue *ex = st.find("example");
+			if (ex && ex->is_string()) ca.put("example", *ex);
+			auto v = c.call("language.questFeedback.correctUsage", ca);
+			state = member(v, "state", "correctUsage");
+			o.put("objectivesUpdated", member(v, "objectivesUpdated", "correctUsage")).put("objectives", st_of(state, "objectives"));
+		} else if (d == "pronunciation") {
+			auto v = c.call("language.questFeedback.pronunciation", Obj().put("state", state).put("result", need(st, "result", "a pronunciation step")));
+			state = member(v, "state", "questFeedback.pronunciation");
+			o.put("items", member(v, "items", "questFeedback.pronunciation"));
+			o.put("passed", st_of(state, "pronunciationPassed")).put("required", st_of(state, "pronunciationRequired")).put("progress", st_of(state, "pronunciationProgress"));
+			o.put("average", st_of(state, "pronunciationAverage")).put("phrases", st_of(state, "pronunciation"));
+			o.put("done", done_of("pronunciation")).put("objectives", st_of(state, "pronunciationObjectives"));
+			o.put("locked", locked_of("language.questFeedback.lockedPronunciation"));
+		} else if (d == "hints") {
+			// vocabularyHints(s, typeof step.max === 'number' ? step.max : undefined)
+			Obj ha;
+			ha.put("state", state);
+			const JsonValue *mx = st.find("max");
+			if (mx && mx->type == JsonType::Number) ha.put("max", *mx);
+			auto v = c.call("language.questFeedback.hints", ha);
+			state = member(v, "state", "questFeedback.hints");
+			o.put("items", member(v, "items", "questFeedback.hints"));
+		} else if (d == "objective") {
+			// { index: step.index, complete: grammarObjectiveComplete(s, index, step.accuracy, step.correct) }
+			const JsonValue &index = need(st, "index", "an objective step");
+			if (index.type != JsonType::Number) throw DriveError("an objective step's index is not a number");
+			Obj oa;
+			oa.put("state", state).put("index", index);
+			oa.copy(st, "accuracy").copy(st, "correct");
+			o.put("index", index);
+			o.put("complete", member(c.call("language.questFeedback.grammarObjectiveComplete", oa), "complete", "grammarObjectiveComplete"));
+		} else if (d == "done") {
+			auto v = c.call("language.questFeedback.done", Obj().put("state", state));
+			o.copy(*v, "vocabulary").copy(*v, "pronunciation").copy(*v, "grammar");
+			o.put("recent", pluck(need(*state, "recent", "the quest feedback state"), "id", "a feedback item"));
+		}
+		out.push_back(o.v);
+	}
+	return make_array(out);
+}
+
+// core's runner's three language quest types (systems-corpus.ts LANGUAGE_QUEST_TYPES), in its order.
+const char *const kLanguageQuestTypes[] = {"language-learning", "business-scavenger-hunt", "customer-service"};
+
+JsonValuePtr quest_types(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "select") {
+		std::vector<JsonValuePtr> out;
+		for (const auto &w : items(need(input, "worlds", "the input"), "worlds")) {
+			Obj o;
+			o.put("world", *w).put("types", member(c.call("language.questTypes.forWorld", Obj().put("world", *w)), "types", "questTypes.forWorld"));
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	if (op == "table") {
+		// { id, name, categories: ids, objectives: ids, rewardTypes, difficultyScaling }
+		std::vector<JsonValuePtr> out;
+		for (const char *id : kLanguageQuestTypes) {
+			auto t = member(c.call("language.questTypes.definition", Obj().put("id", id)), "definition", "questTypes.definition");
+			if (!t->is_object()) throw DriveError(std::string("the registry holds no ") + id);
+			Obj o;
+			o.put("id", need(*t, "id", "a definition")).put("name", need(*t, "name", "a definition"));
+			o.put("categories", pluck(need(*t, "questCategories", "a definition"), "id", "a category"));
+			o.put("objectives", pluck(need(*t, "objectiveTypes", "a definition"), "id", "an objective type"));
+			o.put("rewardTypes", need(*t, "rewardTypes", "a definition")).put("difficultyScaling", need(*t, "difficultyScaling", "a definition"));
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	if (op == "complete") {
+		std::vector<JsonValuePtr> out;
+		for (const auto &ch : items(need(input, "checks", "the input"), "checks")) {
+			Obj a;
+			a.put("questType", need(*ch, "questType", "a check")).put("objective", need(*ch, "objective", "a check")).put("progress", need(*ch, "progress", "a check"));
+			auto v = c.call("language.questTypes.objectiveComplete", a);
+			Obj o;
+			o.put("questType", need(*ch, "questType", "a check")).put("objective", need(*ch, "objective", "a check")).put("progress", need(*ch, "progress", "a check"));
+			o.put("complete", member(v, "complete", "questTypes.objectiveComplete"));
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	if (op == "map") {
+		auto k = c.call("language.contract", Obj());
+		Obj o;
+		o.put("objectives", member(k, "languageObjectiveTypeMap", "language.contract")).put("rewards", member(k, "languageRewardTypeMap", "language.contract"));
+		return o.v;
+	}
+	if (op == "templates") {
+		// a difficulty when a string, else a category when a string, else every template
+		const JsonValue *difficulty = input.find("difficulty");
+		const JsonValue *category = input.find("category");
+		JsonValuePtr v;
+		if (difficulty && difficulty->is_string()) v = c.call("language.questTypes.templatesByDifficulty", Obj().put("difficulty", *difficulty));
+		else if (category && category->is_string()) v = c.call("language.questTypes.templatesByCategory", Obj().put("category", *category));
+		else v = c.call("language.questTypes.templates", Obj());
+		std::vector<JsonValuePtr> out;
+		for (const auto &t : items(need(*v, "templates", "the templates"), "templates")) {
+			// { id, category, difficulty, objectives: [{ type, requiredCount }], rewardScale, parameters: names }
+			Obj o;
+			o.put("id", need(*t, "id", "a template")).put("category", need(*t, "category", "a template")).put("difficulty", need(*t, "difficulty", "a template"));
+			std::vector<JsonValuePtr> objectives;
+			for (const auto &ot : items(need(*t, "objectiveTemplates", "a template"), "objective templates")) {
+				Obj x;
+				x.put("type", need(*ot, "type", "an objective template")).put("requiredCount", need(*ot, "requiredCount", "an objective template"));
+				objectives.push_back(x.v);
+			}
+			o.put("objectives", make_array(objectives)).put("rewardScale", need(*t, "rewardScale", "a template"));
+			o.put("parameters", pluck(need(*t, "parameters", "a template"), "name", "a parameter"));
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	throw DriveError("op " + op + " is not one of core's language/quest-types ops");
+}
+
 JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	for (const auto &spec : kFiles) {
 		if (r.file != spec.file) continue;
@@ -1577,6 +1799,8 @@ JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	if (r.file == "language/collection") return collection(r, op, input);
 	if (r.file == "language/objects") return objects(r, op, input);
 	if (r.file == "language/writing") return writing(r, op, input);
+	if (r.file == "language/quest-feedback") return quest_feedback(r, op, input);
+	if (r.file == "language/quest-types") return quest_types(r, op, input);
 	throw DriveError("file " + r.file + " is not one this runner drives");
 }
 
@@ -1695,7 +1919,36 @@ void refusal_probes(Caller &c, std::map<std::string, int> &sink, Probes &p) {
 		p.check(!g && c.last_error.find("[invalid-input]") != std::string::npos && c.last_error.find("`score`") != std::string::npos,
 		        "a listening grade with no score was not [invalid-input] naming score");
 	}
-	// 11. An unknown row is the method table's error.
+	// 11. Slice 4: core states no refusal in quest-feedback.ts or the quest types. An unknown id
+	// is a VALUE (a definition of null, has false); what core's declared types exclude is the
+	// [invalid-input] ERROR naming the member: an objective type the registry's quest type does
+	// not define (core's runner throws there), a grammar status outside core's three, an
+	// objective's null description (an optional string), and a state whose objective index names
+	// no lock (core sets objectiveLocks[index] unread).
+	{
+		auto d = c.try_call("language.questTypes.definition", "{\"id\":\"nope\"}");
+		const JsonValue *def = d ? d->find("definition") : nullptr;
+		p.check(def && def->is_null(), "an unknown quest type's definition was not the value null");
+		auto o = c.try_call("language.questTypes.objectiveComplete", "{\"questType\":\"language-learning\",\"objective\":\"fly\",\"progress\":{}}");
+		p.check(!o && c.last_error.find("[invalid-input]") != std::string::npos && c.last_error.find("`objective`") != std::string::npos,
+		        "an objective type the quest type does not define was not [invalid-input] naming objective");
+		auto s0 = c.try_call("language.questFeedback.initial", "{\"questId\":\"q\",\"objectives\":[{\"type\":\"use_vocabulary\",\"targetWords\":[\"pain\"]}]}");
+		const JsonValue *state = s0 ? s0->find("state") : nullptr;
+		auto g = state ? c.try_call("language.questFeedback.grammar", "{\"state\":" + json_of(*state) + ",\"feedback\":{\"status\":\"maybe\"}}") : nullptr;
+		p.check(state && !g && c.last_error.find("[invalid-input]") != std::string::npos && c.last_error.find("feedback.status") != std::string::npos,
+		        "a grammar status outside core's three was not [invalid-input] naming feedback.status");
+		auto n = c.try_call("language.questFeedback.initial", "{\"questId\":\"q\",\"objectives\":[{\"type\":\"use_vocabulary\",\"description\":null}]}");
+		p.check(!n && c.last_error.find("[invalid-input]") != std::string::npos && c.last_error.find("objectives[0].description") != std::string::npos,
+		        "an objective's null description was not [invalid-input] naming objectives[0].description");
+		std::string bad = state ? json_of(*state) : std::string("{}");
+		const std::string at = "\"index\":0";
+		const std::size_t k = bad.find(at);
+		if (k != std::string::npos) bad.replace(k, at.size(), "\"index\":7");
+		auto l = c.try_call("language.questFeedback.lockedVocabulary", "{\"state\":" + bad + "}");
+		p.check(k != std::string::npos && !l && c.last_error.find("[invalid-input]") != std::string::npos && c.last_error.find("state.vocabularyObjectives[0].index") != std::string::npos,
+		        "an objective index naming no lock was not [invalid-input] naming state.vocabularyObjectives[0].index");
+	}
+	// 12. An unknown row is the method table's error.
 	{
 		auto r = c.try_call("language.book.fly", "{}");
 		p.check(!r && c.last_error.find("unknown method") != std::string::npos, "an unknown row was answered");
@@ -1751,8 +2004,10 @@ int main(int argc, char **argv) {
 	if (probes.passed != probes.total) failed++;
 	std::printf("refusals: %d of %d probe(s) refused as core refuses (values: empty_word, unknown_encounter, no_target_language, "
 	            "empty_line, no_turns, nothing_in_reach, no_prompt, no_quiz, unknown_object, already_named, no_attempts_left, "
-	            "empty, too_short; errors: [invalid-input] for an unreadable book, an unknown vocabulary sort, an unknown band, "
-	            "a listening grade with no score, an unknown row; an unknown op or step fails its case)\n",
+	            "empty, too_short, an unknown quest type's null definition; errors: [invalid-input] for an unreadable book, an unknown "
+	            "vocabulary sort, an unknown band, a listening grade with no score, an objective type a quest type does not define, "
+	            "a grammar status outside core's three, an objective's null description, an objective index naming no lock, an "
+	            "unknown row; an unknown op or step fails its case)\n",
 	            probes.passed, probes.total);
 
 	int total_cases = 0, total_driven = 0, refused = 0, accepted = 0;

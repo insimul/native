@@ -831,6 +831,48 @@ import {
 	wordSimilarity,
 } from '@insimul/core/language-learning/pronunciation';
 import { phoneticEncode } from '@insimul/core/language/phonetic-similarity';
+// Slice 4 (U128, U118(10), U107(2)): real-time quest language feedback (quest-feedback.ts: the
+// targets, the quest words, grammar corrections and objective accuracy, pronunciation, the
+// milestones and the lifecycle sync), and the language quest types (quest-types/index.ts's
+// registry with language-learning, business-scavenger-hunt and customer-service; the language
+// objective and reward type maps; language/quest-templates.ts). Core's genre quest types
+// (quest-types/genre-quests.ts) are PL.native-genre-rows'.
+import {
+	FEEDBACK_TYPES,
+	GRAMMAR_DEFAULT_REQUIRED,
+	GRAMMAR_OBJECTIVES,
+	PATTERN_EXAMPLES_MAX,
+	PRONUNCIATION_DEFAULT_REQUIRED,
+	PRONUNCIATION_OBJECTIVES,
+	RECENT_FEEDBACK_MAX,
+	VOCABULARY_DEFAULT_REQUIRED,
+	VOCABULARY_OBJECTIVES,
+	correctUsage,
+	grammarFeedback,
+	grammarObjectiveComplete,
+	lockedGrammar,
+	lockedPronunciation,
+	lockedVocabulary,
+	pronunciationFeedback,
+	questFeedback,
+	questFeedbackDone,
+	questLanguageTargets,
+	syncLifecycle,
+	useVocabulary,
+	vocabularyHints,
+} from '@insimul/core/language-learning/quest-feedback';
+import {
+	QUEST_TYPE_REGISTRY,
+	getAllQuestTypes,
+	getQuestTypeById,
+	getQuestTypeForWorld,
+	getQuestTypesForMixing,
+	getQuestTypesForWorld,
+	hasQuestType,
+	mergeQuestTypes,
+} from '@insimul/core/quest-types/index';
+import { LANGUAGE_OBJECTIVE_TYPE_MAP, LANGUAGE_REWARD_TYPE_MAP } from '@insimul/core/quest-types/language-learning';
+import { QUEST_TEMPLATES, getTemplatesByCategory, getTemplatesByDifficulty } from '@insimul/core/language/quest-templates';
 
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
@@ -2726,6 +2768,194 @@ function listeningStateArg(method, value, name = 'state') {
 	});
 }
 
+// Slice 4's boundary (quest-feedback.ts, quest-types/, language/quest-templates.ts). As slices 1
+// to 3, and as slice 3's verdict m1 asks: `[invalid-input]` follows core's declared types for every
+// member core reads. A member present must be of its declared type: a null is refused where core
+// declares an optional string, number, list or boolean, and taken where core declares `| null`
+// (an objective's `order`; a state's nullable members). A defaulted parameter absent or null takes
+// core's default (slices 2 and 3's reading (a)): `meanings`, `max`, an objective check's
+// `accuracy` and `correct`. Where core reads a declared-optional member defensively (a `typeof`
+// test, `Array.isArray`, `=== true`), the row still holds it to its declared type, so core's
+// defensive reading is never reached through a row with a value core's types exclude.
+
+/** A list of finite numbers. */
+function numberList(method, value, name) {
+	needArray(method, value, name).forEach((x, i) => needNumber(method, x, `${name}[${i}]`));
+	return value;
+}
+
+/** A boolean. */
+function needBoolean(method, value, name) {
+	if (typeof value !== 'boolean') throw refuse(method, `\`${name}\` must be a boolean`);
+	return value;
+}
+
+const QUEST_OBJECTIVE_STRINGS = ['id', 'description', 'target', 'difficulty', 'grammarFocus', 'category'];
+const QUEST_OBJECTIVE_NUMBERS = ['requiredCount', 'maxAttempts', 'minAverageScore', 'currentCount', 'attempts'];
+const QUEST_OBJECTIVE_STRING_LISTS = ['dependsOn', 'targetWords', 'wordsUsed', 'grammarPatterns', 'pronunciationPhrases'];
+const QUEST_OBJECTIVE_BOOLEANS = ['completed', 'failed'];
+
+/**
+ * A `QuestObjectiveIn` (a quest's objective, or the lifecycle's record of it): `type` a string;
+ * each member core declares, when present, of its declared type (`order` a number or null,
+ * `pronunciationScores` numbers). Members core does not declare are not read.
+ */
+function questObjectiveArg(method, value, name) {
+	needObject(method, value, name);
+	needString(method, value.type, `${name}.type`);
+	for (const k of QUEST_OBJECTIVE_STRINGS) if (value[k] !== undefined) needString(method, value[k], `${name}.${k}`);
+	for (const k of QUEST_OBJECTIVE_NUMBERS) if (value[k] !== undefined) needNumber(method, value[k], `${name}.${k}`);
+	for (const k of QUEST_OBJECTIVE_STRING_LISTS) if (value[k] !== undefined) stringList(method, value[k], `${name}.${k}`);
+	for (const k of QUEST_OBJECTIVE_BOOLEANS) if (value[k] !== undefined) needBoolean(method, value[k], `${name}.${k}`);
+	if (value.order !== undefined && value.order !== null) needNumber(method, value.order, `${name}.order`);
+	if (value.pronunciationScores !== undefined) numberList(method, value.pronunciationScores, `${name}.pronunciationScores`);
+	return value;
+}
+
+/** A list of `QuestObjectiveIn`. */
+function questObjectivesArg(method, value, name = 'objectives') {
+	return coded('invalid-input', () => {
+		needArray(method, value, name).forEach((o, i) => questObjectiveArg(method, o, `${name}[${i}]`));
+		return value;
+	});
+}
+
+const FEEDBACK_STATE_NUMBERS = [
+	'vocabularyUsed', 'vocabularyRequired', 'vocabularyProgress', 'grammarCorrect', 'grammarErrors', 'grammarAccuracy',
+	'pronunciationAttempts', 'pronunciationPassed', 'pronunciationRequired', 'pronunciationAverage', 'pronunciationProgress',
+	'grammarUsed', 'grammarRequired', 'grammarProgress', 'nextId',
+];
+
+/**
+ * A `QuestFeedbackState` (what `language.questFeedback.initial` answered, and every row after it):
+ * each member of core's declared type, each nested record's too. An objective's `index` must name
+ * one of `objectiveLocks` (core sets `objectiveLocks[o.index].completed` unread when it completes
+ * one).
+ */
+function questFeedbackStateArg(method, value, name = 'state') {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		needString(method, value.questId, `${name}.questId`);
+		const each = (list, at, check) => needArray(method, list, at).forEach((x, i) => {
+			needObject(method, x, `${at}[${i}]`);
+			check(x, `${at}[${i}]`);
+		});
+		const nums = (x, at, keys) => keys.forEach((k) => needNumber(method, x[k], `${at}.${k}`));
+		const bools = (x, at, keys) => keys.forEach((k) => needBoolean(method, x[k], `${at}.${k}`));
+		const strs = (x, at, keys) => keys.forEach((k) => needString(method, x[k], `${at}.${k}`));
+		const strsOrNull = (x, at, keys) => keys.forEach((k) => x[k] !== null && needString(method, x[k], `${at}.${k}`));
+		const numsOrNull = (x, at, keys) => keys.forEach((k) => x[k] !== null && needNumber(method, x[k], `${at}.${k}`));
+		each(value.objectiveLocks, `${name}.objectiveLocks`, (x, at) => {
+			strsOrNull(x, at, ['id']);
+			numsOrNull(x, at, ['order']);
+			stringList(method, x.dependsOn, `${at}.dependsOn`);
+			bools(x, at, ['completed']);
+		});
+		const locks = value.objectiveLocks.length;
+		const indexed = (x, at) => {
+			needNumber(method, x.index, `${at}.index`);
+			if (!Number.isInteger(x.index) || x.index < 0 || x.index >= locks) throw refuse(method, `\`${at}.index\` must name one of \`${name}.objectiveLocks\``);
+			strs(x, at, ['type']);
+			nums(x, at, ['required', 'current']);
+			bools(x, at, ['completed']);
+		};
+		each(value.vocabulary, `${name}.vocabulary`, (x, at) => {
+			strs(x, at, ['word', 'meaning']);
+			strsOrNull(x, at, ['category']);
+			bools(x, at, ['used', 'usedCorrectly']);
+			nums(x, at, ['uses']);
+		});
+		each(value.vocabularyObjectives, `${name}.vocabularyObjectives`, (x, at) => {
+			indexed(x, at);
+			if (x.targetWords !== null) stringList(method, x.targetWords, `${at}.targetWords`);
+			stringList(method, x.wordsUsed, `${at}.wordsUsed`);
+		});
+		each(value.grammar, `${name}.grammar`, (x, at) => {
+			strs(x, at, ['pattern']);
+			strsOrNull(x, at, ['description', 'lastFeedback']);
+			nums(x, at, ['correct', 'incorrect']);
+		});
+		each(value.pronunciation, `${name}.pronunciation`, (x, at) => {
+			strs(x, at, ['phrase']);
+			nums(x, at, ['bestScore', 'attempts']);
+			bools(x, at, ['passed']);
+		});
+		each(value.pronunciationObjectives, `${name}.pronunciationObjectives`, (x, at) => {
+			indexed(x, at);
+			nums(x, at, ['attempts']);
+			numberList(method, x.scores, `${at}.scores`);
+			strsOrNull(x, at, ['difficulty']);
+			numsOrNull(x, at, ['maxAttempts', 'minAverageScore']);
+			bools(x, at, ['failed']);
+		});
+		each(value.grammarObjectives, `${name}.grammarObjectives`, indexed);
+		if (value.objectives !== null) {
+			each(value.objectives, `${name}.objectives`, (x, at) => {
+				nums(x, at, ['index', 'correct', 'errors', 'accuracy']);
+				strs(x, at, ['focus']);
+				bools(x, at, ['completed']);
+				each(x.patterns, `${at}.patterns`, (p, pat) => {
+					strs(p, pat, ['pattern']);
+					nums(p, pat, ['correct', 'incorrect']);
+					strsOrNull(p, pat, ['lastFeedback']);
+					needObject(method, p.examples, `${pat}.examples`);
+					stringList(method, p.examples.correct, `${pat}.examples.correct`);
+					stringList(method, p.examples.incorrect, `${pat}.examples.incorrect`);
+				});
+			});
+		}
+		each(value.recent, `${name}.recent`, (x, at) => {
+			strs(x, at, ['id', 'message']);
+			oneOf(method, x.type, FEEDBACK_TYPES, `${at}.type`);
+			if (x.detail !== undefined) needString(method, x.detail, `${at}.detail`);
+		});
+		nums(value, name, FEEDBACK_STATE_NUMBERS);
+		return value;
+	});
+}
+
+/** A `World` as core's quest type registry reads it: its declared `id` and `name`, optional strings, and the members core casts (`config.questTypes`, `enabledModules`: strings). */
+function questWorldArg(method, value, name = 'world') {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		needString(method, value.id, `${name}.id`);
+		needString(method, value.name, `${name}.name`);
+		for (const k of ['worldType', 'gameType', 'description', 'targetLanguage']) if (value[k] !== undefined) needString(method, value[k], `${name}.${k}`);
+		if (value.config !== undefined && value.config !== null) {
+			needObject(method, value.config, `${name}.config`);
+			if (value.config.questTypes !== undefined) stringList(method, value.config.questTypes, `${name}.config.questTypes`);
+		}
+		if (value.enabledModules !== undefined) stringList(method, value.enabledModules, `${name}.enabledModules`);
+		return value;
+	});
+}
+
+// Core's `RewardType`, a type-only union (quest-types/types.ts).
+const QUEST_REWARD_TYPES = ['experience', 'fluency', 'items', 'gold', 'skills', 'reputation', 'unlock'];
+
+/** A quest type definition as data, as `mergeQuestTypes` reads it: its categories (`QuestCategory`: four strings), objective types (`id` and `name`) and reward types (core's `RewardType`). */
+function questTypeDataArg(method, value, name) {
+	needObject(method, value, name);
+	needArray(method, value.questCategories, `${name}.questCategories`).forEach((c, i) => {
+		const at = `${name}.questCategories[${i}]`;
+		needObject(method, c, at);
+		for (const k of ['id', 'name', 'icon', 'description']) needString(method, c[k], `${at}.${k}`);
+	});
+	needArray(method, value.objectiveTypes, `${name}.objectiveTypes`).forEach((o, i) => {
+		const at = `${name}.objectiveTypes[${i}]`;
+		needObject(method, o, at);
+		for (const k of ['id', 'name']) needString(method, o[k], `${at}.${k}`);
+	});
+	needArray(method, value.rewardTypes, `${name}.rewardTypes`).forEach((r, i) => oneOf(method, r, QUEST_REWARD_TYPES, `${name}.rewardTypes[${i}]`));
+	return value;
+}
+
+/** A value as JSON carries it: functions dropped (a definition's tracking and completion checks, its prompt), and null where JSON has no value. */
+function jsonData(value) {
+	const text = JSON.stringify(value);
+	return text === undefined ? null : JSON.parse(text);
+}
+
 // ── quests ────────────────────────────────────────────────────────────────────
 
 const QUEST_STATUSES = ['available', 'active', 'completed'];
@@ -3199,11 +3429,12 @@ const METHODS = {
 	/** `save.village.conversations.epochMs { timestamp }` → `{ epochMs }`: core's `epochMsOfConversationTimestamp`, the round trip back, or null. */
 	'save.village.conversations.epochMs': (args) => ({ epochMs: epochMsOfConversationTimestamp(args.timestamp) }),
 
-	// ── language learning (PL.native-language-rows, slices 1 to 3) ─────────────
+	// ── language learning (PL.native-language-rows, slices 1 to 4) ─────────────
 	// One core function per row, state in and out as JSON (README "The language
 	// rows"). Core's corpus runner composes them per op; tests/language_corpus.cpp
 	// replays conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,
-	// pronunciation,collection,objects,writing}.json the same way.
+	// pronunciation,collection,objects,writing,quest-feedback,quest-types}.json the
+	// same way.
 
 	/**
 	 * `language.contract` → the constants a binding must not hard-code: the CEFR
@@ -3220,7 +3451,10 @@ const METHODS = {
 	 * close threshold, phonetic weight, pass score and base XP; and (slice 3) the
 	 * world words' refusals and sign roles, the composition refusals, the common
 	 * English words hover passes over, listening's pass score and a story's
-	 * minimum length.
+	 * minimum length; and (slice 4) quest feedback's item types, the lifecycle's
+	 * pronunciation, vocabulary and grammar objective types with their default
+	 * required counts, the recent feedback's and a pattern's examples' caps, and the
+	 * language objective and reward type maps.
 	 */
 	'language.contract': () => ({
 		cefrOrder: [...CEFR_ORDER],
@@ -3289,6 +3523,18 @@ const METHODS = {
 		commonEnglishWords: [...COMMON_ENGLISH_WORDS],
 		listeningPass: LISTENING_PASS,
 		storyMinLength: STORY_MIN_LENGTH,
+		// Slice 4: quest feedback (quest-feedback.ts) and the language quest types' maps (quest-types/language-learning.ts).
+		feedbackTypes: [...FEEDBACK_TYPES],
+		pronunciationObjectives: [...PRONUNCIATION_OBJECTIVES],
+		pronunciationDefaultRequired: PRONUNCIATION_DEFAULT_REQUIRED,
+		vocabularyObjectives: [...VOCABULARY_OBJECTIVES],
+		vocabularyDefaultRequired: VOCABULARY_DEFAULT_REQUIRED,
+		grammarObjectives: [...GRAMMAR_OBJECTIVES],
+		grammarDefaultRequired: GRAMMAR_DEFAULT_REQUIRED,
+		recentFeedbackMax: RECENT_FEEDBACK_MAX,
+		patternExamplesMax: PATTERN_EXAMPLES_MAX,
+		languageObjectiveTypeMap: { ...LANGUAGE_OBJECTIVE_TYPE_MAP },
+		languageRewardTypeMap: { ...LANGUAGE_REWARD_TYPE_MAP },
 	}),
 
 	// The language book (progress.ts) and the player's CEFR facts (prolog/player-language-state.ts).
@@ -4281,6 +4527,201 @@ const METHODS = {
 		});
 		return plain(gradeListening(state, questId, score));
 	},
+
+	// Slice 4: real-time quest language feedback (quest-feedback.ts). The strip is
+	// STATELESS here too: `language.questFeedback.initial` answers the state, every
+	// other row takes it and answers the next one. The quest lifecycle governs
+	// (U118(10)): a host feeds the lifecycle's records back with `.syncLifecycle`.
+	// Core states no refusal in this module.
+
+	/** `language.questFeedback.initial { questId, objectives, meanings? }` → `{ state }`: core's `questFeedback`, the targets read from the objectives as the lifecycle reads them (meanings absent or null: none). */
+	'language.questFeedback.initial': (args) => {
+		const m = 'language.questFeedback.initial';
+		const questId = coded('invalid-input', () => needString(m, args.questId, 'questId'));
+		const objectives = questObjectivesArg(m, args.objectives);
+		const meanings = coded('invalid-input', () => {
+			if (args.meanings === undefined || args.meanings === null) return undefined;
+			needObject(m, args.meanings, 'meanings');
+			for (const [k, v] of Object.entries(args.meanings)) needString(m, v, `meanings.${k}`);
+			return args.meanings;
+		});
+		return { state: plain(meanings === undefined ? questFeedback(questId, objectives) : questFeedback(questId, objectives, meanings)) };
+	},
+
+	/** `language.questFeedback.targets { objectives }` → `{ targetWords, grammarPatterns, pronunciationPhrases, vocabularyRequired, pronunciationRequired, grammarRequired }`: core's `questLanguageTargets`. */
+	'language.questFeedback.targets': (args) => plain(questLanguageTargets(questObjectivesArg('language.questFeedback.targets', args.objectives))),
+
+	/** `language.questFeedback.useVocabulary { state, usages }` → `{ state, items }`: core's `useVocabulary`, each correct use counted as the lifecycle counts it (`usages`: `{ word, usedCorrectly }`). */
+	'language.questFeedback.useVocabulary': (args) => {
+		const m = 'language.questFeedback.useVocabulary';
+		const state = questFeedbackStateArg(m, args.state);
+		const usages = coded('invalid-input', () => needArray(m, args.usages, 'usages').map((u, i) => {
+			needObject(m, u, `usages[${i}]`);
+			needString(m, u.word, `usages[${i}].word`);
+			needBoolean(m, u.usedCorrectly, `usages[${i}].usedCorrectly`);
+			return u;
+		}));
+		return plain(useVocabulary(state, usages));
+	},
+
+	/** `language.questFeedback.syncLifecycle { state, objectives }` → `{ state, items }`: core's `syncLifecycle`, the lifecycle's records of the same quest (by index) taken again, with the milestones the change earns. */
+	'language.questFeedback.syncLifecycle': (args) => {
+		const m = 'language.questFeedback.syncLifecycle';
+		const state = questFeedbackStateArg(m, args.state);
+		return plain(syncLifecycle(state, questObjectivesArg(m, args.objectives)));
+	},
+
+	/** `language.questFeedback.lockedVocabulary { state }` → `{ locked }`: core's `lockedVocabulary`, the vocabulary objectives locked now, by index. */
+	'language.questFeedback.lockedVocabulary': (args) => ({ locked: plain(lockedVocabulary(questFeedbackStateArg('language.questFeedback.lockedVocabulary', args.state))) }),
+
+	/** `language.questFeedback.lockedPronunciation { state }` → `{ locked }`: core's `lockedPronunciation`. */
+	'language.questFeedback.lockedPronunciation': (args) => ({ locked: plain(lockedPronunciation(questFeedbackStateArg('language.questFeedback.lockedPronunciation', args.state))) }),
+
+	/** `language.questFeedback.lockedGrammar { state }` → `{ locked }`: core's `lockedGrammar`. */
+	'language.questFeedback.lockedGrammar': (args) => ({ locked: plain(lockedGrammar(questFeedbackStateArg('language.questFeedback.lockedGrammar', args.state))) }),
+
+	/**
+	 * `language.questFeedback.grammar { state, feedback }` → `{ state, items,
+	 * objectivesUpdated }`: core's `grammarFeedback` (`feedback`: `{ status, errorCount?,
+	 * errors? }`, status one of correct, corrected, no_target_language; each error's four
+	 * members strings).
+	 */
+	'language.questFeedback.grammar': (args) => {
+		const m = 'language.questFeedback.grammar';
+		const state = questFeedbackStateArg(m, args.state);
+		const feedback = coded('invalid-input', () => {
+			const fb = needObject(m, args.feedback, 'feedback');
+			oneOf(m, fb.status, ['correct', 'corrected', 'no_target_language'], 'feedback.status');
+			if (fb.errorCount !== undefined) needNumber(m, fb.errorCount, 'feedback.errorCount');
+			if (fb.errors !== undefined) {
+				needArray(m, fb.errors, 'feedback.errors').forEach((e, i) => {
+					needObject(m, e, `feedback.errors[${i}]`);
+					for (const k of ['pattern', 'incorrect', 'corrected', 'explanation']) needString(m, e[k], `feedback.errors[${i}].${k}`);
+				});
+			}
+			return fb;
+		});
+		return plain(grammarFeedback(state, feedback));
+	},
+
+	/** `language.questFeedback.correctUsage { state, pattern, example? }` → `{ state, objectivesUpdated }`: core's `correctUsage`, a correct use of one pattern named by the grader. */
+	'language.questFeedback.correctUsage': (args) => {
+		const m = 'language.questFeedback.correctUsage';
+		const state = questFeedbackStateArg(m, args.state);
+		const [pattern, example] = coded('invalid-input', () => [
+			needString(m, args.pattern, 'pattern'),
+			args.example === undefined ? undefined : needString(m, args.example, 'example'),
+		]);
+		return plain(example === undefined ? correctUsage(state, pattern) : correctUsage(state, pattern, example));
+	},
+
+	/** `language.questFeedback.grammarObjectiveComplete { state, index, accuracy?, correct? }` → `{ complete }`: core's `grammarObjectiveComplete` (accuracy and correct absent or null: core's 60 and 3). */
+	'language.questFeedback.grammarObjectiveComplete': (args) => {
+		const m = 'language.questFeedback.grammarObjectiveComplete';
+		const state = questFeedbackStateArg(m, args.state);
+		const [index, accuracy, correct] = coded('invalid-input', () => [needNumber(m, args.index, 'index'), optNumber(m, args.accuracy, 'accuracy'), optNumber(m, args.correct, 'correct')]);
+		return { complete: grammarObjectiveComplete(state, index, accuracy, correct) };
+	},
+
+	/** `language.questFeedback.pronunciation { state, result }` → `{ state, items }`: core's `pronunciationFeedback` (`result`: `{ phrase, score, passed, words? }`, each word `{ word, status }`). */
+	'language.questFeedback.pronunciation': (args) => {
+		const m = 'language.questFeedback.pronunciation';
+		const state = questFeedbackStateArg(m, args.state);
+		const result = coded('invalid-input', () => {
+			const r = needObject(m, args.result, 'result');
+			needString(m, r.phrase, 'result.phrase');
+			needNumber(m, r.score, 'result.score');
+			needBoolean(m, r.passed, 'result.passed');
+			if (r.words !== undefined) {
+				needArray(m, r.words, 'result.words').forEach((w, i) => {
+					needObject(m, w, `result.words[${i}]`);
+					needString(m, w.word, `result.words[${i}].word`);
+					needString(m, w.status, `result.words[${i}].status`);
+				});
+			}
+			return r;
+		});
+		return plain(pronunciationFeedback(state, result));
+	},
+
+	/** `language.questFeedback.hints { state, max? }` → `{ state, items }`: core's `vocabularyHints`, the first unused quest words (max absent or null: core's 3). */
+	'language.questFeedback.hints': (args) => {
+		const m = 'language.questFeedback.hints';
+		const state = questFeedbackStateArg(m, args.state);
+		const max = coded('invalid-input', () => optNumber(m, args.max, 'max'));
+		return plain(max === undefined ? vocabularyHints(state) : vocabularyHints(state, max));
+	},
+
+	/** `language.questFeedback.done { state }` → `{ vocabulary, pronunciation, grammar }`: core's `questFeedbackDone`, each kind complete as the lifecycle completes it (none of a kind: false). */
+	'language.questFeedback.done': (args) => plain(questFeedbackDone(questFeedbackStateArg('language.questFeedback.done', args.state))),
+
+	// Slice 4: the language quest types (quest-types/index.ts's registry,
+	// language-learning.ts, business-scavenger-hunt.ts, customer-service.ts) and the
+	// quest templates (language/quest-templates.ts). A definition is answered as data:
+	// JSON drops its tracking and completion functions and its generation prompt.
+
+	/** `language.questTypes.forWorld { world }` → `{ types }`: core's `getQuestTypesForWorld`, the ids of every quest type a world gets (its config's, its modules', else one). */
+	'language.questTypes.forWorld': (args) => ({ types: plain(getQuestTypesForWorld(questWorldArg('language.questTypes.forWorld', args.world)).map((t) => t.id)) }),
+
+	/** `language.questTypes.primary { world }` → `{ type }`: core's `getQuestTypeForWorld`, the one quest type of a world's game type or setting (language-learning when none matches). */
+	'language.questTypes.primary': (args) => ({ type: plain(getQuestTypeForWorld(questWorldArg('language.questTypes.primary', args.world)).id) }),
+
+	/** `language.questTypes.definition { id }` → `{ definition }`: core's `getQuestTypeById`, as data, or null. */
+	'language.questTypes.definition': (args) => ({ definition: jsonData(getQuestTypeById(coded('invalid-input', () => needString('language.questTypes.definition', args.id, 'id')))) }),
+
+	/** `language.questTypes.has { id }` → `{ has }`: core's `hasQuestType`. */
+	'language.questTypes.has': (args) => ({ has: hasQuestType(coded('invalid-input', () => needString('language.questTypes.has', args.id, 'id'))) }),
+
+	/** `language.questTypes.all {}` → `{ definitions }`: core's `getAllQuestTypes`, every registered definition as data, in the registry's order. */
+	'language.questTypes.all': () => ({ definitions: jsonData(getAllQuestTypes()) }),
+
+	/** `language.questTypes.mixing { ids }` → `{ definitions }`: core's `getQuestTypesForMixing`, the definitions of the ids the registry holds, in the ids' order, as data. */
+	'language.questTypes.mixing': (args) => ({
+		definitions: jsonData(getQuestTypesForMixing(coded('invalid-input', () => stringList('language.questTypes.mixing', args.ids, 'ids')))),
+	}),
+
+	/** `language.questTypes.merge { definitions }` → `{ questCategories, objectiveTypes, rewardTypes }`: core's `mergeQuestTypes` over definitions as data (each category, objective and reward kept once, first seen first). */
+	'language.questTypes.merge': (args) => {
+		const m = 'language.questTypes.merge';
+		const definitions = coded('invalid-input', () => needArray(m, args.definitions, 'definitions').map((d, i) => questTypeDataArg(m, d, `definitions[${i}]`)));
+		return plain(mergeQuestTypes(definitions));
+	},
+
+	/**
+	 * `language.questTypes.objectiveComplete { questType, objective, progress }` → `{
+	 * complete }`: the registered quest type's objective type's `completionCheck(progress)`.
+	 * A quest type the registry does not hold, or an objective type it does not define, is
+	 * `[invalid-input]` (core's runner throws there).
+	 */
+	'language.questTypes.objectiveComplete': (args) => {
+		const m = 'language.questTypes.objectiveComplete';
+		const [objective, progress] = coded('invalid-input', () => {
+			const t = oneOf(m, args.questType, Object.keys(QUEST_TYPE_REGISTRY), 'questType');
+			const ids = QUEST_TYPE_REGISTRY[t].objectiveTypes.map((o) => o.id);
+			const o = QUEST_TYPE_REGISTRY[t].objectiveTypes[ids.indexOf(oneOf(m, args.objective, ids, 'objective'))];
+			const p = needObject(m, args.progress, 'progress');
+			// use_vocabulary_category filters `wordsUsed` and reads each one's category unread.
+			if (o.id === 'use_vocabulary_category' && p.wordsUsed) {
+				needArray(m, p.wordsUsed, 'progress.wordsUsed');
+				if (p.targetCategory) p.wordsUsed.forEach((w, i) => needObject(m, w, `progress.wordsUsed[${i}]`));
+			}
+			return [o, p];
+		});
+		return { complete: plain(objective.completionCheck(progress)) };
+	},
+
+	/** `language.questTypes.templates {}` → `{ templates }`: core's `QUEST_TEMPLATES`, every quest template, in core's order. */
+	'language.questTypes.templates': () => ({ templates: plain(QUEST_TEMPLATES) }),
+
+	/** `language.questTypes.templatesByDifficulty { difficulty }` → `{ templates }`: core's `getTemplatesByDifficulty`. */
+	'language.questTypes.templatesByDifficulty': (args) => ({
+		templates: plain(getTemplatesByDifficulty(coded('invalid-input', () => needString('language.questTypes.templatesByDifficulty', args.difficulty, 'difficulty')))),
+	}),
+
+	/** `language.questTypes.templatesByCategory { category }` → `{ templates }`: core's `getTemplatesByCategory`. */
+	'language.questTypes.templatesByCategory': (args) => ({
+		templates: plain(getTemplatesByCategory(coded('invalid-input', () => needString('language.questTypes.templatesByCategory', args.category, 'category')))),
+	}),
 
 	// ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
 

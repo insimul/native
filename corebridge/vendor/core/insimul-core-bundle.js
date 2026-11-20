@@ -3491,9 +3491,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   var SURVIVAL_CONSUMED_ITEM_TYPES = Object.freeze(["consumable", "drink", "food"]);
   var SURVIVAL_KEPT_ITEM_TYPES = Object.freeze(["collectible", "document", "key", "quest"]);
   var SURVIVAL_ITEM_RESTORE_ACTIONS = Object.freeze({ food: "eat", drink: "drink" });
-  function useItemForNeeds(state, tuning, item, at) {
-    const held = fin(item.quantity) ? item.quantity : 1;
-    const type = typeof item.type === "string" ? item.type : "";
+  function useItemForNeeds(state, tuning, item2, at) {
+    const held = fin(item2.quantity) ? item2.quantity : 1;
+    const type = typeof item2.type === "string" ? item2.type : "";
     const consumedType = SURVIVAL_CONSUMED_ITEM_TYPES.includes(type);
     if (!consumedType && !SURVIVAL_KEPT_ITEM_TYPES.includes(type)) {
       return { ok: false, reason: "not_usable", state: cloneState(state) };
@@ -3502,7 +3502,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (!consumedType) {
       return { ok: true, state: cloneState(state), consumed: 0, remaining: held, applied: [], action: null, events: [] };
     }
-    const effects = isObj(item.effects) ? item.effects : {};
+    const effects = isObj(item2.effects) ? item2.effects : {};
     const fed = consumeForNeeds(state, tuning, effects, at);
     let next = fed.state;
     const events = [...fed.events];
@@ -3658,7 +3658,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     durationMs: seconds * 1e3,
     energyCost,
     xp,
-    rewards: extra.production ? [] : rewards.map(([item, chancePercent, min, max]) => ({ item, chancePercent, min, max })),
+    rewards: extra.production ? [] : rewards.map(([item2, chancePercent, min, max]) => ({ item: item2, chancePercent, min, max })),
     production: extra.production ?? null,
     tool: extra.tool ?? null,
     places
@@ -7001,16 +7001,16 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     tick(delta) {
       if (this.items.length === 0) return false;
       const before = this.items.length;
-      this.items = this.items.filter((item) => {
-        item.remaining -= delta;
-        return item.remaining > 0;
+      this.items = this.items.filter((item2) => {
+        item2.remaining -= delta;
+        return item2.remaining > 0;
       });
       return this.items.length !== before;
     }
     /** Dismiss a notification by id early. Returns true if one was removed. */
     dismiss(id4) {
       const before = this.items.length;
-      this.items = this.items.filter((item) => item.id !== id4);
+      this.items = this.items.filter((item2) => item2.id !== id4);
       return this.items.length !== before;
     }
     /** Currently visible notifications (oldest first). */
@@ -17351,8 +17351,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     util2.assertNever = assertNever;
     util2.arrayToEnum = (items) => {
       const obj3 = {};
-      for (const item of items) {
-        obj3[item] = item;
+      for (const item2 of items) {
+        obj3[item2] = item2;
       }
       return obj3;
     };
@@ -17379,9 +17379,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       return keys;
     };
     util2.find = (arr3, checker) => {
-      for (const item of arr3) {
-        if (checker(item))
-          return item;
+      for (const item2 of arr3) {
+        if (checker(item2))
+          return item2;
       }
       return void 0;
     };
@@ -19521,14 +19521,14 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         }
       }
       if (ctx.common.async) {
-        return Promise.all([...ctx.data].map((item, i) => {
-          return def2.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+        return Promise.all([...ctx.data].map((item2, i) => {
+          return def2.type._parseAsync(new ParseInputLazyPath(ctx, item2, ctx.path, i));
         })).then((result3) => {
           return ParseStatus.mergeArray(status, result3);
         });
       }
-      const result2 = [...ctx.data].map((item, i) => {
-        return def2.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+      const result2 = [...ctx.data].map((item2, i) => {
+        return def2.type._parseSync(new ParseInputLazyPath(ctx, item2, ctx.path, i));
       });
       return ParseStatus.mergeArray(status, result2);
     }
@@ -19588,7 +19588,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     } else if (schema instanceof ZodNullable) {
       return ZodNullable.create(deepPartialify(schema.unwrap()));
     } else if (schema instanceof ZodTuple) {
-      return ZodTuple.create(schema.items.map((item) => deepPartialify(item)));
+      return ZodTuple.create(schema.items.map((item2) => deepPartialify(item2)));
     } else {
       return schema;
     }
@@ -20252,11 +20252,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         });
         status.dirty();
       }
-      const items = [...ctx.data].map((item, itemIndex) => {
+      const items = [...ctx.data].map((item2, itemIndex) => {
         const schema = this._def.items[itemIndex] || this._def.rest;
         if (!schema)
           return null;
-        return schema._parse(new ParseInputLazyPath(ctx, item, ctx.path, itemIndex));
+        return schema._parse(new ParseInputLazyPath(ctx, item2, ctx.path, itemIndex));
       }).filter((x) => !!x);
       if (ctx.common.async) {
         return Promise.all(items).then((results) => {
@@ -20456,7 +20456,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         }
         return { status: status.value, value: parsedSet };
       }
-      const elements = [...ctx.data.values()].map((item, i) => valueType._parse(new ParseInputLazyPath(ctx, item, ctx.path, i)));
+      const elements = [...ctx.data.values()].map((item2, i) => valueType._parse(new ParseInputLazyPath(ctx, item2, ctx.path, i)));
       if (ctx.common.async) {
         return Promise.all(elements).then((elements2) => finalizeSet(elements2));
       } else {
@@ -37492,52 +37492,52 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     if (typeof r.itemId === "string" && r.itemId !== "") return r.itemId;
     return null;
   }
-  function inventoryItemName(item) {
-    const r = item;
+  function inventoryItemName(item2) {
+    const r = item2;
     if (typeof r.name === "string" && r.name !== "") return r.name;
     if (typeof r.itemName === "string" && r.itemName !== "") return r.itemName;
-    return inventoryEntryId(item) ?? "";
+    return inventoryEntryId(item2) ?? "";
   }
-  function rarityRank(item) {
-    return INVENTORY_RARITY_ORDER[item.rarity || "common"] ?? INVENTORY_RARITY_ORDER.common;
+  function rarityRank(item2) {
+    return INVENTORY_RARITY_ORDER[item2.rarity || "common"] ?? INVENTORY_RARITY_ORDER.common;
   }
   function itemTypeColor(type) {
     return INVENTORY_TYPE_COLORS[type] ?? INVENTORY_DEFAULT_TYPE_COLOR;
   }
-  function itemNameColor(item) {
-    if (item.rarity && INVENTORY_RARITY_COLORS[item.rarity]) return INVENTORY_RARITY_COLORS[item.rarity];
-    return itemTypeColor(item.type);
+  function itemNameColor(item2) {
+    if (item2.rarity && INVENTORY_RARITY_COLORS[item2.rarity]) return INVENTORY_RARITY_COLORS[item2.rarity];
+    return itemTypeColor(item2.type);
   }
   function rarityBorderColor(rarity) {
     if (rarity && rarity !== "common" && INVENTORY_RARITY_COLORS[rarity]) return `${INVENTORY_RARITY_COLORS[rarity]}88`;
     return INVENTORY_PLAIN_BORDER;
   }
-  function itemTagLine(item) {
+  function itemTagLine(item2) {
     const parts = [];
-    if (item.rarity && item.rarity !== "common") parts.push(item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1));
-    if (item.baseType) parts.push(titleWords(item.baseType));
-    else if (item.type) parts.push(item.type.charAt(0).toUpperCase() + item.type.slice(1));
-    if (item.material) parts.push(titleWords(item.material));
+    if (item2.rarity && item2.rarity !== "common") parts.push(item2.rarity.charAt(0).toUpperCase() + item2.rarity.slice(1));
+    if (item2.baseType) parts.push(titleWords(item2.baseType));
+    else if (item2.type) parts.push(item2.type.charAt(0).toUpperCase() + item2.type.slice(1));
+    if (item2.material) parts.push(titleWords(item2.material));
     return parts.join(" \xB7 ");
   }
-  function itemFilterCategory(item) {
-    const cat = typeof item.category === "string" ? foldInventoryName(item.category) : void 0;
-    const type = item.type;
+  function itemFilterCategory(item2) {
+    const cat = typeof item2.category === "string" ? foldInventoryName(item2.category) : void 0;
+    const type = item2.type;
     if (type === "quest" || type === "key") return "quest";
     if (type === "weapon" || type === "armor" || type === "tool" || cat === "weapons" || cat === "armor" || cat === "tools") return "weapons_armor";
     if (type === "consumable" || type === "food" || type === "drink" || cat === "consumables" || cat === "food_drink" || cat === "alchemy") return "consumables";
     if (type === "material" || cat === "materials" || cat === "crafting") return "materials";
     return "other";
   }
-  function itemGroupLabel(item) {
-    if (item.category) return titleWords(item.category);
-    return (item.type || "Other").replace(/\b\w/g, (c) => c.toUpperCase());
+  function itemGroupLabel(item2) {
+    if (item2.category) return titleWords(item2.category);
+    return (item2.type || "Other").replace(/\b\w/g, (c) => c.toUpperCase());
   }
-  function itemEquipmentSlot(item) {
-    if (item.equipSlot) return item.equipSlot;
-    if (item.type === "weapon") return "weapon";
-    if (item.type === "armor") return "armor";
-    if (item.type === "tool" && item.effects) return "accessory";
+  function itemEquipmentSlot(item2) {
+    if (item2.equipSlot) return item2.equipSlot;
+    if (item2.type === "weapon") return "weapon";
+    if (item2.type === "armor") return "armor";
+    if (item2.type === "tool" && item2.effects) return "accessory";
     return null;
   }
   var InventoryViewModel = class _InventoryViewModel {
@@ -37570,16 +37570,16 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
       return { gold: this.gold, inventory: this.allItems() };
     }
     /** Add an item, stacking its quantity (default 1) onto a held entry with the same id. */
-    addItem(item) {
-      const id4 = inventoryEntryId(item);
+    addItem(item2) {
+      const id4 = inventoryEntryId(item2);
       if (id4 === null) return false;
-      const qty = Number.isFinite(item.quantity) ? item.quantity : 1;
+      const qty = Number.isFinite(item2.quantity) ? item2.quantity : 1;
       const existing = this.byId.get(id4);
       if (existing) {
         existing.quantity = (Number.isFinite(existing.quantity) ? existing.quantity : 1) + qty;
         return true;
       }
-      this.byId.set(id4, { ...item, quantity: qty });
+      this.byId.set(id4, { ...item2, quantity: qty });
       return true;
     }
     /** Remove `quantity` (default 1) of an item; the entry goes at zero or below. */
@@ -37636,10 +37636,10 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     /** The equipped item in each slot (the first equipped in insertion order), or null. */
     equipment() {
       const out = Object.fromEntries(EQUIPMENT_SLOTS.map((s) => [s, null]));
-      for (const item of this.liveItems()) {
-        if (!item.equipped) continue;
-        const slot = itemEquipmentSlot(item);
-        if (slot && !out[slot]) out[slot] = item;
+      for (const item2 of this.liveItems()) {
+        if (!item2.equipped) continue;
+        const slot = itemEquipmentSlot(item2);
+        if (slot && !out[slot]) out[slot] = item2;
       }
       return out;
     }
@@ -37659,7 +37659,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     }
     filteredItems() {
       const all = this.liveItems();
-      return this.filter === "all" ? all : all.filter((item) => itemFilterCategory(item) === this.filter);
+      return this.filter === "all" ? all : all.filter((item2) => itemFilterCategory(item2) === this.filter);
     }
     counts() {
       return { total: this.byId.size, shown: this.filteredItems().length };
@@ -37675,10 +37675,10 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
         return [{ kind: "empty", message: this.filter === "all" ? INVENTORY_EMPTY_MESSAGES.all : INVENTORY_EMPTY_MESSAGES.filtered }];
       }
       const groups = /* @__PURE__ */ new Map();
-      for (const item of filtered) {
-        const label = itemGroupLabel(item);
+      for (const item2 of filtered) {
+        const label = itemGroupLabel(item2);
         if (!groups.has(label)) groups.set(label, []);
-        groups.get(label).push(item);
+        groups.get(label).push(item2);
       }
       const sorted = Array.from(groups.entries()).sort(([a], [b]) => {
         if (a === b) return 0;
@@ -37700,31 +37700,31 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
           if (byName !== 0) return byName;
           return compareInventoryNames(inventoryEntryId(a) ?? "", inventoryEntryId(b) ?? "");
         });
-        for (const item of ordered) rows.push(this.itemRow(item, label));
+        for (const item2 of ordered) rows.push(this.itemRow(item2, label));
       }
       return rows;
     }
-    itemRow(item, group) {
-      const slot = itemEquipmentSlot(item);
-      const equipped = !!item.equipped;
-      const isDocument = item.type === "document" || item.category === "document";
+    itemRow(item2, group) {
+      const slot = itemEquipmentSlot(item2);
+      const equipped = !!item2.equipped;
+      const isDocument = item2.type === "document" || item2.category === "document";
       return {
         kind: "item",
-        item,
-        id: inventoryEntryId(item) ?? "",
-        name: inventoryItemName(item),
-        quantity: Number.isFinite(item.quantity) ? item.quantity : 1,
+        item: item2,
+        id: inventoryEntryId(item2) ?? "",
+        name: inventoryItemName(item2),
+        quantity: Number.isFinite(item2.quantity) ? item2.quantity : 1,
         group,
-        nameColor: equipped ? INVENTORY_EQUIPPED_NAME_COLOR : itemNameColor(item),
+        nameColor: equipped ? INVENTORY_EQUIPPED_NAME_COLOR : itemNameColor(item2),
         equipped,
         slot,
         canEquip: !!slot && !equipped,
         canUnequip: !!slot && equipped,
-        canUse: INVENTORY_USABLE_TYPES.includes(item.type),
+        canUse: INVENTORY_USABLE_TYPES.includes(item2.type),
         useLabel: isDocument ? "Read" : "Use",
-        canDrop: item.type !== "quest" && !equipped,
-        borderColor: rarityBorderColor(item.rarity),
-        tagLine: itemTagLine(item)
+        canDrop: item2.type !== "quest" && !equipped,
+        borderColor: rarityBorderColor(item2.rarity),
+        tagLine: itemTagLine(item2)
       };
     }
   };
@@ -39910,6 +39910,3735 @@ After asking each question, wait for the player's response before moving to the 
     };
   }
 
+  // @insimul/core/src/language-learning/quest-feedback.ts
+  var FEEDBACK_TYPES = Object.freeze(["vocabulary_used", "vocabulary_hint", "grammar_correct", "grammar_correction", "grammar_focus", "pronunciation_good", "pronunciation_retry", "milestone"]);
+  var PRONUNCIATION_OBJECTIVES = Object.freeze(["pronunciation_check", "listen_and_repeat", "speak_phrase"]);
+  var PRONUNCIATION_DEFAULT_REQUIRED = getDefaultRequiredCount("pronunciation_check");
+  var VOCABULARY_OBJECTIVES = Object.freeze(["use_vocabulary", "collect_vocabulary", "vocabulary"]);
+  var VOCABULARY_DEFAULT_REQUIRED = getDefaultRequiredCount("use_vocabulary");
+  var GRAMMAR_OBJECTIVES = Object.freeze(["grammar"]);
+  var GRAMMAR_DEFAULT_REQUIRED = getDefaultRequiredCount("grammar");
+  var RECENT_FEEDBACK_MAX = 20;
+  var PATTERN_EXAMPLES_MAX = 5;
+  var clone3 = (s) => JSON.parse(JSON.stringify(s));
+  function questFeedback(questId, objectives, meanings = {}) {
+    const s = {
+      questId,
+      vocabulary: [],
+      vocabularyObjectives: [],
+      objectiveLocks: [],
+      vocabularyUsed: 0,
+      vocabularyRequired: 0,
+      vocabularyProgress: 0,
+      grammar: [],
+      grammarCorrect: 0,
+      grammarErrors: 0,
+      grammarAccuracy: 100,
+      pronunciation: [],
+      pronunciationObjectives: [],
+      pronunciationAttempts: 0,
+      pronunciationPassed: 0,
+      pronunciationRequired: 0,
+      pronunciationAverage: 0,
+      pronunciationProgress: 0,
+      objectives: null,
+      grammarObjectives: [],
+      grammarUsed: 0,
+      grammarRequired: 0,
+      grammarProgress: 0,
+      recent: [],
+      nextId: 0
+    };
+    const hasGrammar = objectives.some((o) => o.grammarFocus || o.grammarPatterns?.length);
+    const addGrammar = (pattern, description) => {
+      if (s.grammar.some((g) => g.pattern.toLowerCase() === pattern.toLowerCase())) return;
+      s.grammar.push({ pattern, description: description ?? null, correct: 0, incorrect: 0, lastFeedback: null });
+    };
+    objectives.forEach((o, index) => {
+      s.objectiveLocks.push(objectiveLock(o));
+      const p = pronunciationObjective(o, index);
+      if (p !== null) s.pronunciationObjectives.push(p);
+      const g = grammarObjective(o, index);
+      if (g !== null) s.grammarObjectives.push(g);
+      const v = vocabularyObjective(o, index);
+      if (v === null) return;
+      s.vocabularyObjectives.push(v);
+      for (const w of v.targetWords ?? []) {
+        if (!s.vocabulary.some((x) => x.word.toLowerCase() === w.toLowerCase())) s.vocabulary.push({ word: w, meaning: meanings[w] ?? "", category: o.category ?? null, used: false, usedCorrectly: false, uses: 0 });
+      }
+    });
+    markCounted(s);
+    tallyVocabulary(s);
+    tallyPronunciation(s);
+    tallyGrammar(s);
+    for (const o of objectives) {
+      if (o.grammarPatterns && o.grammarPatterns.length > 0) for (const p of o.grammarPatterns) addGrammar(p, o.description);
+      if (o.grammarFocus && !o.grammarPatterns?.length) addGrammar(o.grammarFocus, o.description);
+      if (o.pronunciationPhrases) for (const phrase of o.pronunciationPhrases) s.pronunciation.push({ phrase, bestScore: 0, attempts: 0, passed: false });
+      if (isGrammarObjectiveType(o.type) && !o.grammarPatterns) s.grammar.push({ pattern: o.target ?? "general", description: o.description ?? null, correct: 0, incorrect: 0, lastFeedback: null });
+    }
+    if (hasGrammar) {
+      s.objectives = [];
+      objectives.forEach((o, index) => {
+        if (!o.grammarFocus && !o.grammarPatterns?.length) return;
+        const patterns = o.grammarPatterns && o.grammarPatterns.length > 0 ? o.grammarPatterns : ["general"];
+        s.objectives.push({ index, focus: o.grammarFocus || "general", patterns: patterns.map((p) => ({ pattern: p, correct: 0, incorrect: 0, lastFeedback: null, examples: { correct: [], incorrect: [] } })), correct: 0, errors: 0, accuracy: 100, completed: false });
+      });
+    }
+    return s;
+  }
+  var lifecycleType = (type) => normalizeObjectiveType(type) ?? type;
+  var isGrammarObjectiveType = (type) => GRAMMAR_OBJECTIVES.includes(lifecycleType(type));
+  function vocabularyObjective(o, index) {
+    const type = lifecycleType(o.type);
+    if (!VOCABULARY_OBJECTIVES.includes(type)) return null;
+    const targets = Array.isArray(o.targetWords) && o.targetWords.length > 0 ? o.targetWords.map(String) : null;
+    const v = { index, type, targetWords: targets, required: o.requiredCount || VOCABULARY_DEFAULT_REQUIRED, current: 0, wordsUsed: [], completed: false };
+    takeProgress(v, o);
+    return v;
+  }
+  function takeProgress(v, o) {
+    v.current = typeof o.currentCount === "number" && o.currentCount > 0 ? o.currentCount : 0;
+    v.wordsUsed = Array.isArray(o.wordsUsed) ? o.wordsUsed.map((w) => String(w).toLowerCase()) : [];
+    v.completed = o.completed === true;
+  }
+  function pronunciationObjective(o, index) {
+    const type = lifecycleType(o.type);
+    if (!PRONUNCIATION_OBJECTIVES.includes(type)) return null;
+    const p = {
+      index,
+      type,
+      required: o.requiredCount || PRONUNCIATION_DEFAULT_REQUIRED,
+      current: 0,
+      attempts: 0,
+      scores: [],
+      difficulty: typeof o.difficulty === "string" && o.difficulty.length > 0 ? o.difficulty : null,
+      maxAttempts: typeof o.maxAttempts === "number" && o.maxAttempts > 0 ? o.maxAttempts : null,
+      minAverageScore: typeof o.minAverageScore === "number" && o.minAverageScore > 0 ? o.minAverageScore : null,
+      completed: false,
+      failed: false
+    };
+    takePronunciation(p, o);
+    return p;
+  }
+  function takePronunciation(p, o) {
+    p.current = typeof o.currentCount === "number" && o.currentCount > 0 ? o.currentCount : 0;
+    p.attempts = typeof o.attempts === "number" && o.attempts > 0 ? o.attempts : 0;
+    p.scores = Array.isArray(o.pronunciationScores) ? o.pronunciationScores.filter((x) => typeof x === "number") : [];
+    p.completed = o.completed === true;
+    p.failed = o.failed === true;
+  }
+  function grammarObjective(o, index) {
+    const type = lifecycleType(o.type);
+    if (!GRAMMAR_OBJECTIVES.includes(type)) return null;
+    const g = { index, type, required: o.requiredCount || GRAMMAR_DEFAULT_REQUIRED, current: 0, completed: false };
+    takeGrammar(g, o);
+    return g;
+  }
+  function takeGrammar(g, o) {
+    g.current = typeof o.currentCount === "number" && o.currentCount > 0 ? o.currentCount : 0;
+    g.completed = o.completed === true;
+  }
+  function objectiveLock(o) {
+    return {
+      id: typeof o.id === "string" ? o.id : null,
+      order: typeof o.order === "number" ? o.order : null,
+      dependsOn: Array.isArray(o.dependsOn) ? o.dependsOn.map(String) : [],
+      completed: o.completed === true
+    };
+  }
+  function isLocked(s, index) {
+    const me = s.objectiveLocks[index];
+    if (!me) return false;
+    for (const dep of me.dependsOn) {
+      const d = s.objectiveLocks.find((x) => x.id === dep);
+      if (d && !d.completed) return true;
+    }
+    if (me.order !== null) {
+      for (let i = 0; i < s.objectiveLocks.length; i++) {
+        const other = s.objectiveLocks[i];
+        if (i === index || me.id !== null && other.id === me.id) continue;
+        if (other.order !== null && other.order < me.order && !other.completed) return true;
+      }
+    }
+    return false;
+  }
+  function lockedVocabulary(s) {
+    return s.vocabularyObjectives.filter((o) => !o.completed && isLocked(s, o.index)).map((o) => o.index);
+  }
+  function lockedPronunciation(s) {
+    return s.pronunciationObjectives.filter((o) => !o.completed && isLocked(s, o.index)).map((o) => o.index);
+  }
+  function lockedGrammar(s) {
+    return s.grammarObjectives.filter((o) => !o.completed && isLocked(s, o.index)).map((o) => o.index);
+  }
+  function markCounted(s) {
+    for (const t of s.vocabulary) {
+      if (s.vocabularyObjectives.some((o) => o.wordsUsed.includes(t.word.toLowerCase()))) t.used = true;
+    }
+  }
+  function tallyVocabulary(s) {
+    s.vocabularyRequired = s.vocabularyObjectives.reduce((n, o) => n + o.required, 0);
+    s.vocabularyUsed = s.vocabularyObjectives.reduce((n, o) => n + (o.completed ? o.required : Math.min(o.current, o.required)), 0);
+    s.vocabularyProgress = s.vocabularyRequired > 0 ? Math.min(100, halfUpPercent(s.vocabularyUsed, s.vocabularyRequired)) : 0;
+  }
+  var vocabularyDone = (s) => s.vocabularyObjectives.length > 0 && s.vocabularyObjectives.every((o) => o.completed);
+  function tallyPronunciation(s) {
+    s.pronunciationRequired = s.pronunciationObjectives.reduce((n, o) => n + o.required, 0);
+    s.pronunciationPassed = s.pronunciationObjectives.reduce((n, o) => n + (o.completed ? o.required : Math.min(o.current, o.required)), 0);
+    s.pronunciationProgress = s.pronunciationRequired > 0 ? Math.min(100, halfUpPercent(s.pronunciationPassed, s.pronunciationRequired)) : 0;
+  }
+  var pronunciationDone = (s) => s.pronunciationObjectives.length > 0 && s.pronunciationObjectives.every((o) => o.completed);
+  function tallyGrammar(s) {
+    s.grammarRequired = s.grammarObjectives.reduce((n, o) => n + o.required, 0);
+    s.grammarUsed = s.grammarObjectives.reduce((n, o) => n + (o.completed ? o.required : Math.min(o.current, o.required)), 0);
+    s.grammarProgress = s.grammarRequired > 0 ? Math.min(100, halfUpPercent(s.grammarUsed, s.grammarRequired)) : 0;
+  }
+  var grammarDone = (s) => s.grammarObjectives.length > 0 && s.grammarObjectives.every((o) => o.completed);
+  function item(s, type, message, detail) {
+    s.nextId += 1;
+    const it = detail === void 0 ? { id: `qfb_${s.nextId}`, type, message } : { id: `qfb_${s.nextId}`, type, message, detail };
+    s.recent.push(it);
+    if (s.recent.length > RECENT_FEEDBACK_MAX) s.recent.shift();
+    return it;
+  }
+  function vocabularyMilestone(s, wasDone, before, items) {
+    if (!wasDone && vocabularyDone(s)) items.push(item(s, "milestone", "Vocabulary objective complete!"));
+    else if (!vocabularyDone(s) && before < 50 && s.vocabularyProgress >= 50) items.push(item(s, "milestone", `Halfway there! ${s.vocabularyUsed}/${s.vocabularyRequired} words used`));
+  }
+  function pronunciationMilestone(s, wasDone, before, items) {
+    if (!wasDone && pronunciationDone(s)) items.push(item(s, "milestone", "Pronunciation objective complete!"));
+    else if (!pronunciationDone(s) && before < 50 && s.pronunciationProgress >= 50) items.push(item(s, "milestone", `Halfway there! ${s.pronunciationPassed}/${s.pronunciationRequired} phrases pronounced`));
+  }
+  function grammarMilestone(s, wasDone, before, items) {
+    if (!wasDone && grammarDone(s)) items.push(item(s, "milestone", "Grammar objective complete!"));
+    else if (!grammarDone(s) && before < 50 && s.grammarProgress >= 50) items.push(item(s, "milestone", `Halfway there! ${s.grammarUsed}/${s.grammarRequired} grammar uses`));
+  }
+  function useVocabulary(state, usages) {
+    const s = clone3(state);
+    const items = [];
+    const wasDone = vocabularyDone(s);
+    const before = s.vocabularyProgress;
+    for (const u of usages) {
+      if (typeof u.word !== "string" || u.word.length === 0) continue;
+      const word = u.word.toLowerCase();
+      const t = s.vocabulary.find((v) => v.word.toLowerCase() === word);
+      if (t) {
+        t.uses += 1;
+        t.usedCorrectly = u.usedCorrectly;
+      }
+      if (!u.usedCorrectly) continue;
+      const locked = lockedVocabulary(s);
+      let counted = false;
+      for (const o of s.vocabularyObjectives) {
+        if (o.completed || locked.includes(o.index)) continue;
+        if (o.targetWords !== null && !o.targetWords.some((w) => w.toLowerCase() === word)) continue;
+        if (o.wordsUsed.includes(word)) continue;
+        o.wordsUsed.push(word);
+        o.current += 1;
+        counted = true;
+        if (o.current >= o.required) {
+          o.completed = true;
+          s.objectiveLocks[o.index].completed = true;
+        }
+      }
+      if (t && counted && !t.used) {
+        t.used = true;
+        items.push(item(s, "vocabulary_used", `Used quest word: "${t.word}"${t.meaning ? ` (${t.meaning})` : ""}`));
+      }
+    }
+    tallyVocabulary(s);
+    vocabularyMilestone(s, wasDone, before, items);
+    return { state: s, items };
+  }
+  function syncLifecycle(state, objectives) {
+    const s = clone3(state);
+    const items = [];
+    const wasDone = vocabularyDone(s);
+    const before = s.vocabularyProgress;
+    const wasPronounced = pronunciationDone(s);
+    const beforePronounced = s.pronunciationProgress;
+    const wasGrammar = grammarDone(s);
+    const beforeGrammar = s.grammarProgress;
+    s.objectiveLocks.forEach((l, index) => {
+      const record = objectives[index];
+      if (record) l.completed = record.completed === true;
+    });
+    for (const o of s.vocabularyObjectives) {
+      const record = objectives[o.index];
+      if (record) takeProgress(o, record);
+    }
+    for (const o of s.pronunciationObjectives) {
+      const record = objectives[o.index];
+      if (record) takePronunciation(o, record);
+    }
+    for (const o of s.grammarObjectives) {
+      const record = objectives[o.index];
+      if (record) takeGrammar(o, record);
+    }
+    markCounted(s);
+    tallyVocabulary(s);
+    tallyPronunciation(s);
+    tallyGrammar(s);
+    vocabularyMilestone(s, wasDone, before, items);
+    pronunciationMilestone(s, wasPronounced, beforePronounced, items);
+    grammarMilestone(s, wasGrammar, beforeGrammar, items);
+    return { state: s, items };
+  }
+  function matchPattern(patterns, name) {
+    const lower = name.toLowerCase();
+    return patterns.find((p) => p.pattern.toLowerCase() === lower) ?? patterns.find((p) => lower.includes(p.pattern.toLowerCase()) || p.pattern.toLowerCase().includes(lower));
+  }
+  var pushExample = (arr3, ex) => {
+    if (arr3.length >= PATTERN_EXAMPLES_MAX) arr3.shift();
+    arr3.push(ex);
+  };
+  function grammarFeedback(state, fb) {
+    if (fb.status === "no_target_language") return { state, items: [], objectivesUpdated: [] };
+    const s = clone3(state);
+    const items = [];
+    const errors = fb.errors ?? [];
+    if (fb.status === "correct") {
+      s.grammarCorrect += 1;
+      for (const g of s.grammar) g.correct += 1;
+      items.push(item(s, "grammar_correct", "Grammar correct!"));
+      const wasDone = grammarDone(s);
+      const before = s.grammarProgress;
+      const locked = lockedGrammar(s);
+      for (const o of s.grammarObjectives) {
+        if (o.completed || locked.includes(o.index)) continue;
+        o.current += 1;
+        if (o.current >= o.required) {
+          o.completed = true;
+          s.objectiveLocks[o.index].completed = true;
+        }
+      }
+      tallyGrammar(s);
+      grammarMilestone(s, wasDone, before, items);
+    } else {
+      s.grammarErrors += fb.errorCount ?? errors.length;
+      for (const e of errors) {
+        const g = s.grammar.find((x) => x.pattern.toLowerCase() === e.pattern.toLowerCase());
+        if (g) {
+          g.incorrect += 1;
+          g.lastFeedback = e.explanation;
+        }
+        items.push(item(s, "grammar_correction", `"${e.incorrect}" \u2192 "${e.corrected}"`, e.explanation));
+      }
+    }
+    const updated = [];
+    for (const o of s.objectives ?? []) {
+      if (o.completed) continue;
+      if (fb.status === "correct") {
+        o.correct += 1;
+        for (const p of o.patterns) p.correct += 1;
+        updated.push(o.index);
+      } else {
+        for (const e of errors) {
+          const m = matchPattern(o.patterns, e.pattern);
+          if (m) {
+            m.incorrect += 1;
+            m.lastFeedback = e.explanation;
+            pushExample(m.examples.incorrect, e.incorrect);
+          }
+          o.errors += 1;
+          updated.push(o.index);
+        }
+      }
+      const total2 = o.correct + o.errors;
+      o.accuracy = total2 > 0 ? halfUpPercent(o.correct, total2) : 100;
+    }
+    const total = s.grammarCorrect + s.grammarErrors;
+    s.grammarAccuracy = total > 0 ? halfUpPercent(s.grammarCorrect, total) : 100;
+    return { state: s, items, objectivesUpdated: updated.filter((v, i, a) => a.indexOf(v) === i) };
+  }
+  function correctUsage(state, pattern, example) {
+    const s = clone3(state);
+    const updated = [];
+    for (const o of s.objectives ?? []) {
+      if (o.completed) continue;
+      const m = matchPattern(o.patterns, pattern);
+      if (!m) continue;
+      m.correct += 1;
+      if (example) pushExample(m.examples.correct, example);
+      o.correct += 1;
+      o.accuracy = halfUpPercent(o.correct, o.correct + o.errors);
+      updated.push(o.index);
+    }
+    return { state: s, objectivesUpdated: updated };
+  }
+  function grammarObjectiveComplete(state, index, requiredAccuracy = 60, requiredCorrect = 3) {
+    const o = (state.objectives ?? []).find((x) => x.index === index);
+    if (!o || o.correct + o.errors === 0) return false;
+    return o.accuracy >= requiredAccuracy && o.correct >= requiredCorrect;
+  }
+  function pronunciationFeedback(state, r) {
+    const s = clone3(state);
+    const items = [];
+    const wasDone = pronunciationDone(s);
+    const before = s.pronunciationProgress;
+    s.pronunciationAttempts += 1;
+    const t = s.pronunciation.find((x) => x.phrase.toLowerCase() === r.phrase.toLowerCase());
+    if (t) {
+      t.attempts += 1;
+      if (r.score > t.bestScore) t.bestScore = r.score;
+      if (r.passed) t.passed = true;
+    }
+    if (r.passed) {
+      const label = r.score >= 90 ? "Excellent" : r.score >= 70 ? "Good" : "Acceptable";
+      items.push(item(s, "pronunciation_good", `${label} pronunciation! (${r.score}%)`, r.phrase));
+    } else {
+      const weak = (r.words ?? []).filter((w) => w.status === "needs_work" || w.status === "missed").map((w) => w.word).join(", ");
+      items.push(item(s, "pronunciation_retry", `Try again: "${r.phrase}" (${r.score}%)`, weak || void 0));
+    }
+    const locked = lockedPronunciation(s);
+    for (const o of s.pronunciationObjectives) {
+      if (o.completed || o.failed || locked.includes(o.index)) continue;
+      const config = o.difficulty !== null ? DIFFICULTY_CONFIGS[o.difficulty] : void 0;
+      const passed = config ? r.score >= config.passThreshold : r.passed;
+      o.scores.push(r.score);
+      if (!passed && r.score < PRONUNCIATION_RETRY_THRESHOLD) continue;
+      o.attempts += 1;
+      if (!passed) {
+        if (o.maxAttempts !== null && o.attempts >= o.maxAttempts) o.failed = true;
+        continue;
+      }
+      o.current += 1;
+      if (o.current < o.required) continue;
+      if (o.minAverageScore !== null && o.scores.reduce((a, b) => a + b, 0) / o.scores.length < o.minAverageScore) continue;
+      o.completed = true;
+      s.objectiveLocks[o.index].completed = true;
+    }
+    tallyPronunciation(s);
+    if (s.pronunciation.length > 0) {
+      const scores = s.pronunciation.filter((x) => x.attempts > 0).map((x) => x.bestScore);
+      s.pronunciationAverage = scores.length > 0 ? Math.floor((scores.reduce((a, b) => a + b, 0) * 2 + scores.length) / (2 * scores.length)) : 0;
+    }
+    pronunciationMilestone(s, wasDone, before, items);
+    return { state: s, items };
+  }
+  function vocabularyHints(state, max = 3) {
+    const s = clone3(state);
+    const items = s.vocabulary.filter((v) => !v.used).slice(0, max).map((v) => item(s, "vocabulary_hint", `Try using: "${v.word}"${v.meaning ? ` (${v.meaning})` : ""}`));
+    return { state: s, items };
+  }
+  function questFeedbackDone(s) {
+    return {
+      /** Every vocabulary objective complete, as the lifecycle completes it (none: false). */
+      vocabulary: vocabularyDone(s),
+      /** Every pronunciation objective complete, as the lifecycle completes it (none: false). */
+      pronunciation: pronunciationDone(s),
+      /** Every grammar objective complete, as the lifecycle completes it (none: false). */
+      grammar: grammarDone(s)
+    };
+  }
+  function questLanguageTargets(objectives) {
+    const vocabulary = [];
+    const grammar = [];
+    const phrases = [];
+    let vocabularyRequired = 0;
+    let pronunciationRequired = 0;
+    let grammarRequired = 0;
+    objectives.forEach((o, index) => {
+      const p = pronunciationObjective(o, index);
+      if (p !== null) pronunciationRequired += p.required;
+      const g = grammarObjective(o, index);
+      if (g !== null) grammarRequired += g.required;
+      const v = vocabularyObjective(o, index);
+      if (v === null) return;
+      vocabulary.push(...v.targetWords ?? []);
+      vocabularyRequired += v.required;
+    });
+    for (const o of objectives) {
+      if (o.grammarPatterns) grammar.push(...o.grammarPatterns);
+      if (o.pronunciationPhrases) phrases.push(...o.pronunciationPhrases);
+    }
+    return { targetWords: [...new Set(vocabulary)], grammarPatterns: [...new Set(grammar)], pronunciationPhrases: [...new Set(phrases)], vocabularyRequired, pronunciationRequired, grammarRequired };
+  }
+
+  // @insimul/core/src/quest-types/language-learning.ts
+  var languageLearningQuestType = {
+    id: "language-learning",
+    name: "Language Learning",
+    questCategories: [
+      {
+        id: "conversation",
+        name: "Conversation",
+        icon: "\u{1F4AC}",
+        description: "Practice speaking with NPCs"
+      },
+      {
+        id: "vocabulary",
+        name: "Vocabulary",
+        icon: "\u{1F4DA}",
+        description: "Learn and use new words"
+      },
+      {
+        id: "grammar",
+        name: "Grammar",
+        icon: "\u{1F4DD}",
+        description: "Master grammar patterns"
+      },
+      {
+        id: "translation",
+        name: "Translation",
+        icon: "\u{1F504}",
+        description: "Translate text between languages"
+      },
+      {
+        id: "cultural",
+        name: "Cultural",
+        icon: "\u{1F30D}",
+        description: "Learn about culture and customs"
+      },
+      {
+        id: "visual_vocabulary",
+        name: "Visual Vocabulary",
+        icon: "\u{1F441}",
+        description: "Identify objects by their target-language names"
+      },
+      {
+        id: "follow_instructions",
+        name: "Follow Instructions",
+        icon: "\u{1F5FA}",
+        description: "Follow directions given in the target language"
+      },
+      {
+        id: "scavenger_hunt",
+        name: "Scavenger Hunt",
+        icon: "\u{1F50D}",
+        description: "Find objects matching target-language vocabulary"
+      },
+      {
+        id: "listening_comprehension",
+        name: "Listening Comprehension",
+        icon: "\u{1F3A7}",
+        description: "Listen to NPC speech and answer comprehension questions"
+      },
+      {
+        id: "translation_challenge",
+        name: "Translation Challenge",
+        icon: "\u{1F504}",
+        description: "Translate phrases between languages accurately"
+      },
+      {
+        id: "navigation",
+        name: "Language Navigation",
+        icon: "\u{1F9ED}",
+        description: "Navigate the world following target-language directions"
+      },
+      {
+        id: "social",
+        name: "Social",
+        icon: "\u{1F91D}",
+        description: "Build relationships with NPCs through language practice"
+      },
+      {
+        id: "storytelling",
+        name: "Storytelling",
+        icon: "\u{1F4D6}",
+        description: "Practice narrative skills: past tense, sequencing, descriptive and emotional vocabulary"
+      },
+      {
+        id: "teaching",
+        name: "Teaching",
+        icon: "\u{1F393}",
+        description: "Reinforce your knowledge by teaching vocabulary and phrases to NPC learners"
+      }
+    ],
+    objectiveTypes: [
+      {
+        id: "use_vocabulary",
+        name: "Use Vocabulary",
+        trackingLogic: (context) => context.vocabularyUsage?.length || 0,
+        completionCheck: (progress) => {
+          const used = progress.vocabularyUsed || 0;
+          const required2 = progress.vocabularyRequired || 0;
+          return used >= required2;
+        }
+      },
+      {
+        id: "complete_conversation",
+        name: "Complete Conversation",
+        trackingLogic: (context) => context.conversationTurns || 0,
+        completionCheck: (progress) => {
+          const turns = progress.conversationTurns || 0;
+          const required2 = progress.requiredTurns || 0;
+          return turns >= required2;
+        }
+      },
+      {
+        id: "practice_grammar",
+        name: "Practice Grammar",
+        trackingLogic: (context) => context.grammarPatternsUsed?.length || 0,
+        completionCheck: (progress) => {
+          const used = progress.grammarPatternsUsed || 0;
+          const required2 = progress.patternsRequired || 0;
+          return used >= required2;
+        }
+      },
+      {
+        id: "collect_item",
+        name: "Collect Item",
+        trackingLogic: (context) => context.itemsCollected || 0,
+        completionCheck: (progress) => {
+          const collected = progress.collected || 0;
+          const required2 = progress.required || 0;
+          return collected >= required2;
+        },
+        visualIndicator: (scene, objective) => {
+        }
+      },
+      {
+        id: "visit_location",
+        name: "Visit Location",
+        trackingLogic: (context) => context.playerPosition,
+        completionCheck: (progress) => {
+          if (!progress.playerPos || !progress.targetPos) return false;
+          const dx = progress.playerPos.x - progress.targetPos.x;
+          const dz = progress.playerPos.z - progress.targetPos.z;
+          const distance = Math.sqrt(dx * dx + dz * dz);
+          return distance < 5;
+        },
+        visualIndicator: (scene, objective) => {
+        }
+      },
+      {
+        id: "talk_to_npc",
+        name: "Talk to NPC",
+        trackingLogic: (context) => context.npcTalkedTo || false,
+        completionCheck: (progress) => progress.talked === true
+      },
+      {
+        id: "use_vocabulary_category",
+        name: "Use Themed Vocabulary",
+        trackingLogic: (context) => context.vocabularyByCategory,
+        completionCheck: (progress) => {
+          const used = progress.wordsUsed || [];
+          const category = progress.targetCategory;
+          const required2 = progress.requiredCount || 5;
+          const categoryWords = category ? used.filter((w) => w.category === category) : used;
+          return categoryWords.length >= required2;
+        }
+      },
+      {
+        id: "sustained_conversation",
+        name: "Sustained Conversation",
+        trackingLogic: (context) => ({
+          turns: context.conversationTurns,
+          targetLanguageUsage: context.targetLanguagePercentage
+        }),
+        completionCheck: (progress) => {
+          return (progress.turns || 0) >= (progress.requiredTurns || 5) && (progress.targetLanguageUsage || 0) >= (progress.minPercentage || 30);
+        }
+      },
+      {
+        id: "master_words",
+        name: "Master Words",
+        trackingLogic: (context) => context.masteredWords || 0,
+        completionCheck: (progress) => {
+          return (progress.masteredWords || 0) >= (progress.required || 3);
+        }
+      },
+      {
+        id: "learn_new_words",
+        name: "Learn New Words",
+        trackingLogic: (context) => context.newWordsLearned || 0,
+        completionCheck: (progress) => {
+          return (progress.newWordsLearned || 0) >= (progress.required || 5);
+        }
+      },
+      {
+        id: "collect_vocabulary",
+        name: "Collect Vocabulary",
+        trackingLogic: (context) => context.collectedWords || 0,
+        completionCheck: (progress) => {
+          return (progress.collectedWords || 0) >= (progress.required || 5);
+        }
+      },
+      {
+        id: "identify_object",
+        name: "Identify Object",
+        trackingLogic: (context) => context.objectsIdentified || 0,
+        completionCheck: (progress) => {
+          return (progress.objectsIdentified || 0) >= (progress.required || 3);
+        }
+      },
+      {
+        id: "follow_directions",
+        name: "Follow Directions",
+        trackingLogic: (context) => context.stepsCompleted || 0,
+        completionCheck: (progress) => {
+          return (progress.stepsCompleted || 0) >= (progress.required || 1);
+        }
+      },
+      {
+        id: "find_vocabulary_items",
+        name: "Find Vocabulary Items",
+        trackingLogic: (context) => context.vocabularyItemsFound || 0,
+        completionCheck: (progress) => {
+          return (progress.vocabularyItemsFound || 0) >= (progress.required || 5);
+        }
+      },
+      {
+        id: "listening_comprehension",
+        name: "Listening Comprehension",
+        trackingLogic: (context) => context.questionsCorrect || 0,
+        completionCheck: (progress) => {
+          return (progress.questionsCorrect || 0) >= (progress.required || 3);
+        }
+      },
+      {
+        id: "translation_challenge",
+        name: "Translation Challenge",
+        trackingLogic: (context) => context.translationsCorrect || 0,
+        completionCheck: (progress) => {
+          return (progress.translationsCorrect || 0) >= (progress.required || 3);
+        }
+      },
+      {
+        id: "navigate_language",
+        name: "Navigate Using Language",
+        trackingLogic: (context) => context.waypointsReached || 0,
+        completionCheck: (progress) => {
+          return (progress.waypointsReached || 0) >= (progress.required || 1);
+        }
+      },
+      {
+        id: "build_friendship",
+        name: "Build Friendship",
+        trackingLogic: (context) => context.friendshipInteractions || 0,
+        completionCheck: (progress) => {
+          return (progress.friendshipInteractions || 0) >= (progress.required || 3);
+        }
+      },
+      {
+        id: "give_gift",
+        name: "Give Gift",
+        trackingLogic: (context) => context.giftGiven || false,
+        completionCheck: (progress) => progress.giftGiven === true
+      },
+      {
+        id: "teach_vocabulary",
+        name: "Teach Vocabulary",
+        trackingLogic: (context) => context.wordsTaught || 0,
+        completionCheck: (progress) => {
+          return (progress.wordsTaught || 0) >= (progress.required || 3);
+        }
+      },
+      {
+        id: "teach_phrase",
+        name: "Teach Phrase",
+        trackingLogic: (context) => context.phrasesTaught || 0,
+        completionCheck: (progress) => {
+          return (progress.phrasesTaught || 0) >= (progress.required || 1);
+        }
+      }
+    ],
+    rewardTypes: ["experience", "fluency", "items", "unlock"],
+    difficultyScaling: {
+      beginner: {
+        xp: 10,
+        multiplier: 1
+      },
+      intermediate: {
+        xp: 25,
+        multiplier: 1.5
+      },
+      advanced: {
+        xp: 50,
+        multiplier: 2
+      }
+    },
+    generationPrompt: (world2) => {
+      const language = world2.targetLanguage || "the target language";
+      const setting = world2.worldType || "fantasy";
+      return `Generate a language-learning quest for learning ${language} in a ${setting} world.
+
+World Description: ${world2.description || "A language learning environment"}
+
+Create a quest that helps the player practice ${language} through natural interactions. The quest should:
+- Have a clear narrative context that fits the ${setting} setting
+- Include 2-4 objectives from: use_vocabulary, complete_conversation, practice_grammar, collect_item, visit_location, talk_to_npc, use_vocabulary_category, sustained_conversation, master_words, learn_new_words, collect_vocabulary, identify_object, follow_directions, find_vocabulary_items, listening_comprehension, translation_challenge, navigate_language, build_friendship, give_gift
+- Specify vocabulary words or grammar patterns to practice
+- Set appropriate difficulty (beginner/intermediate/advanced)
+- Provide meaningful rewards (XP and fluency points)
+
+Quest category descriptions:
+- visual_vocabulary: NPC asks player to find/identify specific objects by their ${language} name
+- follow_instructions: NPC gives multi-step directions in ${language}; player follows them
+- scavenger_hunt: Player receives a list of ${language} words and finds matching objects in the world
+- listening_comprehension: NPC tells a short story in ${language}; player answers comprehension questions to another NPC
+- translation_challenge: NPC presents phrases in English; player types translations in ${language} (or vice versa)
+- navigation: NPC gives directions in ${language}; player physically navigates the 3D world to the correct location
+
+For listening_comprehension, use completionCriteria:
+{ "type": "listening_comprehension", "storyNpcId": "npc_id", "answerNpcId": "npc_id", "questions": [{ "question": "...", "correctAnswer": "..." }] }
+
+For translation_challenge, use completionCriteria:
+{ "type": "translation_challenge", "phrases": [{ "source": "Hello", "expected": "Bonjour", "language": "target" }] }
+
+For navigate_language, use completionCriteria:
+{ "type": "navigate_language", "instructions": "Full directions in ${language}", "waypoints": [{ "instruction": "Turn left at the fountain", "x": 10, "z": 20 }] }
+
+Return JSON format:
+{
+  "title": "Quest title in English",
+  "description": "Quest description with narrative context",
+  "category": "conversation|vocabulary|grammar|translation|cultural|visual_vocabulary|follow_instructions|scavenger_hunt|listening_comprehension|translation_challenge|navigation|social",
+  "difficulty": "beginner|intermediate|advanced",
+  "objectives": [
+    {
+      "type": "use_vocabulary",
+      "description": "Use 5 food-related words in conversation",
+      "target": "food_vocabulary",
+      "required": 5,
+      "vocabularyWords": ["bread", "water", "apple", "cheese", "wine"]
+    }
+  ],
+  "rewards": {
+    "experience": 25,
+    "fluency": 5
+  }
+}`;
+    }
+  };
+  var LANGUAGE_OBJECTIVE_TYPE_MAP = {
+    use_vocabulary: "apply_knowledge",
+    practice_grammar: "demonstrate_pattern",
+    master_words: "master_knowledge",
+    learn_new_words: "discover_knowledge",
+    collect_vocabulary: "discover_knowledge",
+    identify_object: "apply_knowledge",
+    listening_comprehension: "complete_assessment",
+    translation_challenge: "demonstrate_pattern",
+    teach_vocabulary: "demonstrate_knowledge",
+    teach_phrase: "demonstrate_knowledge"
+  };
+  var LANGUAGE_REWARD_TYPE_MAP = {
+    fluency: "proficiency_gain",
+    experience: "experience",
+    items: "items",
+    unlock: "unlock"
+  };
+
+  // @insimul/core/src/quest-types/rpg.ts
+  var rpgQuestType = {
+    id: "rpg",
+    name: "RPG Quests",
+    questCategories: [
+      {
+        id: "combat",
+        name: "Combat",
+        icon: "\u2694\uFE0F",
+        description: "Defeat enemies and monsters"
+      },
+      {
+        id: "collection",
+        name: "Collection",
+        icon: "\u{1F4E6}",
+        description: "Gather items and resources"
+      },
+      {
+        id: "exploration",
+        name: "Exploration",
+        icon: "\u{1F5FA}\uFE0F",
+        description: "Discover new locations"
+      },
+      {
+        id: "escort",
+        name: "Escort",
+        icon: "\u{1F6E1}\uFE0F",
+        description: "Protect NPCs on their journey"
+      },
+      {
+        id: "delivery",
+        name: "Delivery",
+        icon: "\u{1F4E8}",
+        description: "Transport items between locations"
+      },
+      {
+        id: "crafting",
+        name: "Crafting",
+        icon: "\u{1F528}",
+        description: "Create items and equipment"
+      },
+      {
+        id: "social",
+        name: "Social",
+        icon: "\u{1F91D}",
+        description: "Interact with NPCs and factions"
+      }
+    ],
+    objectiveTypes: [
+      {
+        id: "defeat_enemies",
+        name: "Defeat Enemies",
+        trackingLogic: (context) => context.enemiesDefeated || 0,
+        completionCheck: (progress) => {
+          const defeated = progress.defeated || 0;
+          const required2 = progress.required || 0;
+          return defeated >= required2;
+        },
+        visualIndicator: (scene, objective) => {
+        }
+      },
+      {
+        id: "collect_items",
+        name: "Collect Items",
+        trackingLogic: (context) => context.itemsCollected || 0,
+        completionCheck: (progress) => {
+          const collected = progress.collected || 0;
+          const required2 = progress.required || 0;
+          return collected >= required2;
+        },
+        visualIndicator: (scene, objective) => {
+        }
+      },
+      {
+        id: "reach_location",
+        name: "Reach Location",
+        trackingLogic: (context) => context.playerPosition,
+        completionCheck: (progress) => {
+          if (!progress.playerPos || !progress.targetPos) return false;
+          const dx = progress.playerPos.x - progress.targetPos.x;
+          const dy = progress.playerPos.y - progress.targetPos.y;
+          const dz = progress.playerPos.z - progress.targetPos.z;
+          const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          return distance < 5;
+        },
+        visualIndicator: (scene, objective) => {
+        }
+      },
+      {
+        id: "discover_location",
+        name: "Discover Location",
+        trackingLogic: (context) => context.locationDiscovered || false,
+        completionCheck: (progress) => progress.discovered === true,
+        visualIndicator: (scene, objective) => {
+        }
+      },
+      {
+        id: "talk_to_npc",
+        name: "Talk to NPC",
+        trackingLogic: (context) => context.npcTalkedTo || false,
+        completionCheck: (progress) => progress.talked === true,
+        visualIndicator: (scene, objective) => {
+        }
+      },
+      {
+        id: "escort_npc",
+        name: "Escort NPC",
+        trackingLogic: (context) => context.npcArrived || false,
+        completionCheck: (progress) => progress.arrived === true,
+        visualIndicator: (scene, objective) => {
+        }
+      },
+      {
+        id: "deliver_item",
+        name: "Deliver Item",
+        trackingLogic: (context) => context.itemDelivered || false,
+        completionCheck: (progress) => progress.delivered === true,
+        visualIndicator: (scene, objective) => {
+        }
+      },
+      {
+        id: "craft_item",
+        name: "Craft Item",
+        trackingLogic: (context) => context.itemsCrafted || 0,
+        completionCheck: (progress) => {
+          const crafted = progress.crafted || 0;
+          const required2 = progress.required || 0;
+          return crafted >= required2;
+        }
+      },
+      {
+        id: "gain_reputation",
+        name: "Gain Reputation",
+        trackingLogic: (context) => context.reputationGained || 0,
+        completionCheck: (progress) => {
+          const gained = progress.gained || 0;
+          const required2 = progress.required || 0;
+          return gained >= required2;
+        }
+      },
+      {
+        id: "build_friendship",
+        name: "Build Friendship",
+        trackingLogic: (context) => context.friendshipInteractions || 0,
+        completionCheck: (progress) => {
+          const interactions = progress.friendshipInteractions || 0;
+          const required2 = progress.required || 3;
+          return interactions >= required2;
+        }
+      },
+      {
+        id: "give_gift",
+        name: "Give Gift",
+        trackingLogic: (context) => context.giftGiven || false,
+        completionCheck: (progress) => progress.giftGiven === true
+      }
+    ],
+    rewardTypes: ["experience", "items", "gold", "skills", "reputation", "unlock"],
+    difficultyScaling: {
+      easy: {
+        xp: 50,
+        gold: 100,
+        multiplier: 1
+      },
+      normal: {
+        xp: 100,
+        gold: 250,
+        multiplier: 1.5
+      },
+      hard: {
+        xp: 200,
+        gold: 500,
+        multiplier: 2
+      },
+      legendary: {
+        xp: 500,
+        gold: 1e3,
+        multiplier: 3
+      }
+    },
+    generationPrompt: (world2) => {
+      const setting = world2.worldType || "fantasy";
+      const description = world2.description || "An RPG adventure world";
+      return `Generate an RPG quest for a ${setting} world.
+
+World Description: ${description}
+
+Create a quest appropriate to the ${setting} setting. The quest should:
+- Have an engaging narrative that fits the world's theme and lore
+- Include 2-4 objectives from: defeat_enemies, collect_items, reach_location, discover_location, talk_to_npc, escort_npc, deliver_item, craft_item, gain_reputation
+- Specify clear targets (enemy types, item names, NPC names, locations)
+- Set appropriate difficulty (easy/normal/hard/legendary)
+- Provide meaningful rewards (XP, gold, items, skills, reputation, or unlocks)
+
+For medieval-fantasy: Use knights, dragons, magic items, castles
+For cyberpunk: Use hackers, corporations, data chips, neon districts
+For sci-fi-space: Use aliens, space stations, tech artifacts, planets
+
+Return JSON format:
+{
+  "title": "Quest title",
+  "description": "Engaging narrative description of the quest",
+  "category": "combat|collection|exploration|escort|delivery|crafting|social",
+  "difficulty": "easy|normal|hard|legendary",
+  "objectives": [
+    {
+      "type": "defeat_enemies",
+      "description": "Defeat 5 bandits threatening the village",
+      "target": "bandit",
+      "required": 5
+    },
+    {
+      "type": "collect_items",
+      "description": "Retrieve the stolen amulets",
+      "target": "golden_amulet",
+      "required": 3,
+      "position": { "x": 100, "y": 0, "z": 50 }
+    }
+  ],
+  "rewards": {
+    "experience": 200,
+    "gold": 500,
+    "items": [
+      { "itemId": "iron_sword", "quantity": 1, "name": "Iron Sword" }
+    ],
+    "reputation": { "faction": "village_guard", "amount": 25 }
+  }
+}`;
+    }
+  };
+
+  // @insimul/core/src/quest-types/strategy.ts
+  var strategyQuestType = {
+    id: "strategy",
+    name: "Strategy",
+    questCategories: [
+      { id: "conquest", name: "Conquest", icon: "\u2694\uFE0F", description: "Capture and control territories" },
+      { id: "defense", name: "Defense", icon: "\u{1F6E1}\uFE0F", description: "Protect your holdings from threats" },
+      { id: "economy", name: "Economy", icon: "\u{1F4B0}", description: "Build wealth and manage resources" },
+      { id: "diplomacy", name: "Diplomacy", icon: "\u{1F91D}", description: "Form alliances and negotiate" },
+      { id: "research", name: "Research", icon: "\u{1F52C}", description: "Develop new technologies" },
+      { id: "espionage", name: "Espionage", icon: "\u{1F441}\uFE0F", description: "Gather intelligence and sabotage" }
+    ],
+    objectiveTypes: [
+      {
+        id: "capture_territory",
+        name: "Capture Territory",
+        trackingLogic: (context) => context.territoryCaptured || false,
+        completionCheck: (progress) => progress.territoryCaptured === true
+      },
+      {
+        id: "defend_position",
+        name: "Defend Position",
+        trackingLogic: (context) => ({
+          timeDefended: context.timeDefended || 0,
+          requiredTime: context.requiredTime || 60
+        }),
+        completionCheck: (progress) => (progress.timeDefended || 0) >= (progress.requiredTime || 60)
+      },
+      {
+        id: "gather_resources",
+        name: "Gather Resources",
+        trackingLogic: (context) => ({
+          collected: context.collected || 0,
+          required: context.required || 100
+        }),
+        completionCheck: (progress) => (progress.collected || 0) >= (progress.required || 100)
+      },
+      {
+        id: "build_structure",
+        name: "Build Structure",
+        trackingLogic: (context) => context.built || false,
+        completionCheck: (progress) => progress.built === true
+      },
+      {
+        id: "research_tech",
+        name: "Research Technology",
+        trackingLogic: (context) => ({
+          progress: context.researchProgress || 0,
+          required: context.required || 100
+        }),
+        completionCheck: (progress) => (progress.researchProgress || 0) >= (progress.required || 100)
+      },
+      {
+        id: "form_alliance",
+        name: "Form Alliance",
+        trackingLogic: (context) => context.allianceFormed || false,
+        completionCheck: (progress) => progress.allianceFormed === true
+      },
+      {
+        id: "eliminate_threat",
+        name: "Eliminate Threat",
+        trackingLogic: (context) => context.eliminated || false,
+        completionCheck: (progress) => progress.eliminated === true
+      },
+      {
+        id: "spy_mission",
+        name: "Spy Mission",
+        trackingLogic: (context) => context.intelGathered || false,
+        completionCheck: (progress) => progress.intelGathered === true
+      }
+    ],
+    rewardTypes: ["experience", "gold", "items", "reputation", "unlock"],
+    difficultyScaling: {
+      easy: { multiplier: 0.7, xp: 50, gold: 100 },
+      normal: { multiplier: 1, xp: 100, gold: 200 },
+      hard: { multiplier: 1.5, xp: 200, gold: 400 }
+    },
+    generationPrompt: (world2) => `Generate a strategy quest for the world "${world2.name}".
+Requirements:
+- Quest should involve tactical decision-making
+- Include clear victory conditions
+- Consider resource management aspects
+- May involve multiple stages or phases
+- Should feel meaningful within ${world2.description || "the game world"}`
+  };
+
+  // @insimul/core/src/quest-types/survival.ts
+  var survivalQuestType = {
+    id: "survival",
+    name: "Survival",
+    questCategories: [
+      { id: "gathering", name: "Gathering", icon: "\u{1FA93}", description: "Collect resources from the environment" },
+      { id: "crafting", name: "Crafting", icon: "\u{1F528}", description: "Create tools, weapons, and structures" },
+      { id: "building", name: "Building", icon: "\u{1F3E0}", description: "Construct shelters and bases" },
+      { id: "hunting", name: "Hunting", icon: "\u{1F3AF}", description: "Hunt animals for food and materials" },
+      { id: "exploration", name: "Exploration", icon: "\u{1F5FA}\uFE0F", description: "Discover new areas and resources" },
+      { id: "survival", name: "Survival", icon: "\u2764\uFE0F", description: "Maintain health and survive hazards" }
+    ],
+    objectiveTypes: [
+      {
+        id: "survive_days",
+        name: "Survive Days",
+        trackingLogic: (context) => ({
+          daysSurvived: context.daysSurvived || 0,
+          requiredDays: context.requiredDays || 7
+        }),
+        completionCheck: (progress) => (progress.daysSurvived || 0) >= (progress.requiredDays || 7)
+      },
+      {
+        id: "gather_resource",
+        name: "Gather Resources",
+        trackingLogic: (context) => ({
+          collected: context.collected || 0,
+          required: context.required || 20,
+          resourceType: context.resourceType
+        }),
+        completionCheck: (progress) => (progress.collected || 0) >= (progress.required || 20)
+      },
+      {
+        id: "craft_item",
+        name: "Craft Item",
+        trackingLogic: (context) => ({
+          crafted: context.crafted || false,
+          itemType: context.itemType
+        }),
+        completionCheck: (progress) => progress.crafted === true
+      },
+      {
+        id: "build_shelter",
+        name: "Build Shelter",
+        trackingLogic: (context) => ({
+          built: context.shelterBuilt || false,
+          shelterType: context.shelterType
+        }),
+        completionCheck: (progress) => progress.shelterBuilt === true
+      },
+      {
+        id: "hunt_animal",
+        name: "Hunt Animals",
+        trackingLogic: (context) => ({
+          hunted: context.animalsHunted || 0,
+          required: context.required || 3,
+          animalType: context.animalType
+        }),
+        completionCheck: (progress) => (progress.animalsHunted || 0) >= (progress.required || 3)
+      },
+      {
+        id: "explore_area",
+        name: "Explore Area",
+        trackingLogic: (context) => ({
+          discovered: context.areaDiscovered || false,
+          areaId: context.areaId
+        }),
+        completionCheck: (progress) => progress.areaDiscovered === true
+      },
+      {
+        id: "maintain_health",
+        name: "Maintain Health",
+        trackingLogic: (context) => ({
+          healthAbove: context.health || 0,
+          threshold: context.healthThreshold || 50,
+          duration: context.duration || 0,
+          requiredDuration: context.requiredDuration || 60
+        }),
+        completionCheck: (progress) => (progress.health || 0) >= (progress.healthThreshold || 50) && (progress.duration || 0) >= (progress.requiredDuration || 60)
+      },
+      {
+        id: "find_water",
+        name: "Find Water Source",
+        trackingLogic: (context) => context.waterSourceFound || false,
+        completionCheck: (progress) => progress.waterSourceFound === true
+      }
+    ],
+    rewardTypes: ["experience", "items", "skills", "unlock"],
+    difficultyScaling: {
+      easy: { multiplier: 0.7, xp: 50, gold: 0 },
+      normal: { multiplier: 1, xp: 100, gold: 0 },
+      hard: { multiplier: 1.5, xp: 200, gold: 0 },
+      hardcore: { multiplier: 2, xp: 400, gold: 0 }
+    },
+    generationPrompt: (world2) => `Generate a survival quest for the world "${world2.name}".
+Requirements:
+- Focus on resource gathering, crafting, or shelter building
+- Include survival mechanics (hunger, thirst, health)
+- Create tension through environmental hazards or time pressure
+- Rewards should be practical (tools, materials, blueprints)
+- Should feel urgent and necessary for survival in ${world2.description || "the wilderness"}`
+  };
+
+  // @insimul/core/src/quest-types/platformer.ts
+  var platformerQuestType = {
+    id: "platformer",
+    name: "Platformer",
+    questCategories: [
+      { id: "collection", name: "Collection", icon: "\u2B50", description: "Collect coins, gems, and items" },
+      { id: "speedrun", name: "Speedrun", icon: "\u23F1\uFE0F", description: "Complete levels quickly" },
+      { id: "exploration", name: "Exploration", icon: "\u{1F50D}", description: "Find hidden areas and secrets" },
+      { id: "combat", name: "Combat", icon: "\u{1F44A}", description: "Defeat enemies and bosses" },
+      { id: "puzzle", name: "Puzzle", icon: "\u{1F9E9}", description: "Solve platforming puzzles" }
+    ],
+    objectiveTypes: [
+      {
+        id: "collect_coins",
+        name: "Collect Coins",
+        trackingLogic: (context) => ({
+          collected: context.coinsCollected || 0,
+          required: context.required || 100
+        }),
+        completionCheck: (progress) => (progress.coinsCollected || 0) >= (progress.required || 100)
+      },
+      {
+        id: "reach_goal",
+        name: "Reach Goal",
+        trackingLogic: (context) => context.goalReached || false,
+        completionCheck: (progress) => progress.goalReached === true
+      },
+      {
+        id: "complete_time",
+        name: "Complete in Time",
+        trackingLogic: (context) => ({
+          timeElapsed: context.timeElapsed ?? 0,
+          timeLimit: context.timeLimit ?? 60,
+          completed: context.levelCompleted || false
+        }),
+        // `??`, not `||`: an elapsed time of 0 is a finished run, not an unknown
+        // one, and a limit of 0 is a limit (conformance/quest-types/ pins both).
+        completionCheck: (progress) => progress.levelCompleted === true && (progress.timeElapsed ?? Infinity) <= (progress.timeLimit ?? 60)
+      },
+      {
+        id: "find_secrets",
+        name: "Find Secrets",
+        trackingLogic: (context) => ({
+          secretsFound: context.secretsFound || 0,
+          totalSecrets: context.totalSecrets || 3
+        }),
+        completionCheck: (progress) => (progress.secretsFound || 0) >= (progress.totalSecrets || 3)
+      },
+      {
+        id: "defeat_boss",
+        name: "Defeat Boss",
+        trackingLogic: (context) => context.bossDefeated || false,
+        completionCheck: (progress) => progress.bossDefeated === true
+      },
+      {
+        id: "no_damage",
+        name: "No Damage Run",
+        trackingLogic: (context) => ({
+          damageTaken: context.damageTaken || 0,
+          levelCompleted: context.levelCompleted || false
+        }),
+        completionCheck: (progress) => progress.levelCompleted === true && (progress.damageTaken || 0) === 0
+      },
+      {
+        id: "collect_all",
+        name: "Collect Everything",
+        trackingLogic: (context) => ({
+          itemsCollected: context.itemsCollected || 0,
+          totalItems: context.totalItems || 10
+        }),
+        completionCheck: (progress) => (progress.itemsCollected || 0) >= (progress.totalItems || 10)
+      },
+      {
+        id: "unlock_checkpoint",
+        name: "Unlock Checkpoint",
+        trackingLogic: (context) => context.checkpointUnlocked || false,
+        completionCheck: (progress) => progress.checkpointUnlocked === true
+      }
+    ],
+    rewardTypes: ["experience", "items", "unlock"],
+    difficultyScaling: {
+      easy: { multiplier: 0.7, xp: 30, gold: 50 },
+      normal: { multiplier: 1, xp: 60, gold: 100 },
+      hard: { multiplier: 1.5, xp: 120, gold: 200 }
+    },
+    generationPrompt: (world2) => `Generate a platformer quest for the world "${world2.name}".
+Requirements:
+- Focus on jumping, collecting, or reaching destinations
+- Can include time challenges or collection goals
+- May involve finding hidden areas
+- Simple, clear objectives that test platforming skill
+- Rewards should feel earned through skillful play in ${world2.description || "the level"}`
+  };
+
+  // @insimul/core/src/quest-types/puzzle.ts
+  var puzzleQuestType = {
+    id: "puzzle",
+    name: "Puzzle",
+    questCategories: [
+      { id: "logic", name: "Logic", icon: "\u{1F9E0}", description: "Solve logical challenges" },
+      { id: "spatial", name: "Spatial", icon: "\u{1F4D0}", description: "Navigate spatial puzzles" },
+      { id: "sequence", name: "Sequence", icon: "\u{1F522}", description: "Complete patterns and sequences" },
+      { id: "physics", name: "Physics", icon: "\u2699\uFE0F", description: "Use physics to solve problems" },
+      { id: "mystery", name: "Mystery", icon: "\u{1F50D}", description: "Uncover hidden clues and solutions" }
+    ],
+    objectiveTypes: [
+      {
+        id: "solve_puzzle",
+        name: "Solve Puzzle",
+        trackingLogic: (context) => context.puzzleSolved || false,
+        completionCheck: (progress) => progress.puzzleSolved === true
+      },
+      {
+        id: "unlock_door",
+        name: "Unlock Door",
+        trackingLogic: (context) => context.doorUnlocked || false,
+        completionCheck: (progress) => progress.doorUnlocked === true
+      },
+      {
+        id: "activate_mechanism",
+        name: "Activate Mechanism",
+        trackingLogic: (context) => context.mechanismsActivated || 0,
+        completionCheck: (progress) => (progress.mechanismsActivated || 0) >= (progress.required || 1)
+      },
+      {
+        id: "find_clues",
+        name: "Find Clues",
+        trackingLogic: (context) => context.cluesFound || 0,
+        completionCheck: (progress) => (progress.cluesFound || 0) >= (progress.required || 1)
+      },
+      {
+        id: "complete_pattern",
+        name: "Complete Pattern",
+        trackingLogic: (context) => context.patternCompleted || false,
+        completionCheck: (progress) => progress.patternCompleted === true
+      },
+      {
+        id: "reach_location",
+        name: "Reach Location",
+        trackingLogic: (context) => context.locationReached || false,
+        completionCheck: (progress) => progress.locationReached === true
+      },
+      {
+        id: "collect_pieces",
+        name: "Collect Pieces",
+        trackingLogic: (context) => context.piecesCollected || 0,
+        completionCheck: (progress) => (progress.piecesCollected || 0) >= (progress.required || 1)
+      },
+      {
+        id: "time_challenge",
+        name: "Time Challenge",
+        trackingLogic: (context) => context.completedInTime || false,
+        completionCheck: (progress) => progress.completedInTime === true
+      }
+    ],
+    rewardTypes: ["experience", "items", "unlock"],
+    difficultyScaling: {
+      easy: { xp: 30, multiplier: 0.7 },
+      medium: { xp: 60, multiplier: 1 },
+      hard: { xp: 100, multiplier: 1.5 },
+      expert: { xp: 160, multiplier: 2 }
+    },
+    generationPrompt: (world2) => `Generate a puzzle quest for the world "${world2.name}".
+The quest should involve one or more of these puzzle types: logic, spatial, sequence, physics, or mystery.
+Available objective types: solve_puzzle, unlock_door, activate_mechanism, find_clues, complete_pattern, reach_location, collect_pieces, time_challenge.
+The puzzle should be intellectually engaging and have a clear solution path.
+World description: ${world2.description || "A mysterious puzzle world"}`
+  };
+
+  // @insimul/core/src/quest-types/shooter.ts
+  var shooterQuestType = {
+    id: "shooter",
+    name: "Shooter",
+    questCategories: [
+      { id: "elimination", name: "Elimination", icon: "\u{1F3AF}", description: "Eliminate hostile targets" },
+      { id: "survival", name: "Survival", icon: "\u{1F6E1}\uFE0F", description: "Survive waves of enemies" },
+      { id: "objective", name: "Objective", icon: "\u{1F4CD}", description: "Complete tactical objectives" },
+      { id: "escort", name: "Escort", icon: "\u{1F6B6}", description: "Protect and escort allies" },
+      { id: "defense", name: "Defense", icon: "\u{1F3F0}", description: "Defend positions from attack" }
+    ],
+    objectiveTypes: [
+      {
+        id: "eliminate_targets",
+        name: "Eliminate Targets",
+        trackingLogic: (context) => context.targetsEliminated || 0,
+        completionCheck: (progress) => (progress.targetsEliminated || 0) >= (progress.required || 1)
+      },
+      {
+        id: "survive_waves",
+        name: "Survive Waves",
+        trackingLogic: (context) => context.wavesSurvived || 0,
+        completionCheck: (progress) => (progress.wavesSurvived || 0) >= (progress.required || 1)
+      },
+      {
+        id: "capture_point",
+        name: "Capture Point",
+        trackingLogic: (context) => context.pointCaptured || false,
+        completionCheck: (progress) => progress.pointCaptured === true
+      },
+      {
+        id: "escort_vip",
+        name: "Escort VIP",
+        trackingLogic: (context) => context.vipSafe || false,
+        completionCheck: (progress) => progress.vipSafe === true
+      },
+      {
+        id: "defend_position",
+        name: "Defend Position",
+        trackingLogic: (context) => ({
+          timeDefended: context.timeDefended || 0,
+          required: context.defenseTimeRequired || 60
+        }),
+        completionCheck: (progress) => (progress.timeDefended || 0) >= (progress.required || 60)
+      },
+      {
+        id: "headshot_challenge",
+        name: "Headshot Challenge",
+        trackingLogic: (context) => context.headshots || 0,
+        completionCheck: (progress) => (progress.headshots || 0) >= (progress.required || 1)
+      },
+      {
+        id: "no_damage_clear",
+        name: "No Damage Clear",
+        trackingLogic: (context) => context.clearedWithoutDamage || false,
+        completionCheck: (progress) => progress.clearedWithoutDamage === true
+      },
+      {
+        id: "collect_intel",
+        name: "Collect Intel",
+        trackingLogic: (context) => context.intelCollected || 0,
+        completionCheck: (progress) => (progress.intelCollected || 0) >= (progress.required || 1)
+      }
+    ],
+    rewardTypes: ["experience", "items", "gold", "unlock"],
+    difficultyScaling: {
+      easy: { xp: 40, gold: 20, multiplier: 0.7 },
+      medium: { xp: 80, gold: 40, multiplier: 1 },
+      hard: { xp: 140, gold: 70, multiplier: 1.5 },
+      extreme: { xp: 220, gold: 110, multiplier: 2.2 }
+    },
+    generationPrompt: (world2) => `Generate a shooter quest for the world "${world2.name}".
+The quest should involve tactical combat scenarios from these categories: elimination, survival, objective, escort, or defense.
+Available objective types: eliminate_targets, survive_waves, capture_point, escort_vip, defend_position, headshot_challenge, no_damage_clear, collect_intel.
+The quest should emphasize combat skill, positioning, and weapon mastery.
+World description: ${world2.description || "A combat-focused world"}`
+  };
+
+  // @insimul/core/src/quest-types/business-scavenger-hunt.ts
+  var businessScavengerHuntQuestType = {
+    id: "business-scavenger-hunt",
+    name: "Business Scavenger Hunt",
+    questCategories: [
+      {
+        id: "item_hunt",
+        name: "Item Hunt",
+        icon: "\u{1F50D}",
+        description: "Find and name specific items across businesses"
+      },
+      {
+        id: "shop_tour",
+        name: "Shop Tour",
+        icon: "\u{1F3EA}",
+        description: "Visit multiple businesses and learn their inventory vocabulary"
+      },
+      {
+        id: "clue_trail",
+        name: "Clue Trail",
+        icon: "\u{1F5DD}\uFE0F",
+        description: "Follow clues from business owners to find hidden items"
+      },
+      {
+        id: "timed_hunt",
+        name: "Timed Hunt",
+        icon: "\u23F1\uFE0F",
+        description: "Find all items before time runs out"
+      }
+    ],
+    objectiveTypes: [
+      {
+        id: "visit_business",
+        name: "Visit Business",
+        trackingLogic: (context) => context.businessVisited || false,
+        completionCheck: (progress) => progress.businessVisited === true
+      },
+      {
+        id: "identify_business_item",
+        name: "Identify Business Item",
+        trackingLogic: (context) => ({
+          identified: context.itemsIdentified || 0,
+          required: context.itemsRequired || 1
+        }),
+        completionCheck: (progress) => {
+          const identified = progress.itemsIdentified || 0;
+          const required2 = progress.itemsRequired || 1;
+          return identified >= required2;
+        }
+      },
+      {
+        id: "collect_business_item",
+        name: "Collect Business Item",
+        trackingLogic: (context) => ({
+          collected: context.itemsCollected || 0,
+          required: context.required || 1
+        }),
+        completionCheck: (progress) => {
+          const collected = progress.collected || 0;
+          const required2 = progress.required || 1;
+          return collected >= required2;
+        }
+      },
+      {
+        id: "get_clue_from_owner",
+        name: "Get Clue from Owner",
+        trackingLogic: (context) => context.clueReceived || false,
+        completionCheck: (progress) => progress.clueReceived === true
+      }
+    ],
+    rewardTypes: ["experience", "fluency", "items", "reputation"],
+    difficultyScaling: {
+      beginner: {
+        multiplier: 1,
+        xp: 20,
+        itemCount: 3,
+        cefrLevel: "A1"
+      },
+      intermediate: {
+        multiplier: 1.5,
+        xp: 40,
+        itemCount: 5,
+        cefrLevel: "A2"
+      },
+      advanced: {
+        multiplier: 2,
+        xp: 70,
+        itemCount: 8,
+        cefrLevel: "B1"
+      },
+      expert: {
+        multiplier: 3,
+        xp: 100,
+        itemCount: 10,
+        cefrLevel: "B2"
+      }
+    },
+    generationPrompt: (world2) => {
+      const lang = world2.targetLanguage || "the target language";
+      return `Generate a business scavenger hunt quest for the world "${world2.name}".
+
+This quest sends the player into businesses around town to find and correctly name items in ${lang}.
+
+QUEST STRUCTURE:
+- Give the player a list of items to find across different businesses
+- Each item must be found at a specific business (bread at the bakery, hammer at the blacksmith, herbs at the healer)
+- The player must enter the business, find the item, and name it in ${lang}
+- Business owners can provide clues when spoken to
+
+CEFR DIFFICULTY SCALING:
+- A1 (beginner): Common everyday objects, picture hints provided, 3-4 items
+- A2 (intermediate): Everyday items, text-only clues in ${lang}, 5-6 items
+- B1 (advanced): Items described with riddle clues in ${lang}, 7-8 items
+- B2 (expert): Idiomatic expressions tied to items, 9-10 items
+
+OBJECTIVES must use ONLY these types:
+- "visit_location": Go to a specific business
+- "identify_object": Name an item in ${lang}
+- "talk_to_npc": Talk to a business owner for clues
+- "collect_item": Pick up a quest item
+
+Return JSON format:
+{
+  "title": "Quest title",
+  "description": "Narrative description of the scavenger hunt",
+  "category": "item_hunt|shop_tour|clue_trail|timed_hunt",
+  "difficulty": "beginner|intermediate|advanced|expert",
+  "cefrLevel": "A1|A2|B1|B2",
+  "objectives": [
+    {
+      "type": "visit_location",
+      "description": "Visit the bakery",
+      "target": "Bakery",
+      "required": 1
+    },
+    {
+      "type": "identify_object",
+      "description": "Name the bread in ${lang}",
+      "target": "bread",
+      "required": 1,
+      "businessName": "Bakery",
+      "targetWord": "the ${lang} word for bread"
+    },
+    {
+      "type": "talk_to_npc",
+      "description": "Ask the baker for a clue",
+      "target": "Baker Name",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "experience": 40,
+    "fluency": 10,
+    "items": []
+  }
+}`;
+    }
+  };
+
+  // @insimul/core/src/quest-types/customer-service.ts
+  var customerServiceQuestType = {
+    id: "customer-service",
+    name: "Customer Service",
+    questCategories: [
+      {
+        id: "make_return",
+        name: "Make a Return",
+        icon: "\u{1F504}",
+        description: "Return a wrong item and request a refund or exchange"
+      },
+      {
+        id: "file_complaint",
+        name: "File a Complaint",
+        icon: "\u{1F4CB}",
+        description: "Politely but firmly complain about unsatisfactory service"
+      },
+      {
+        id: "make_reservation",
+        name: "Make a Reservation",
+        icon: "\u{1F4C5}",
+        description: "Reserve a room or table for a specific date and time"
+      },
+      {
+        id: "ask_recommendations",
+        name: "Ask for Recommendations",
+        icon: "\u{1F4AC}",
+        description: "Ask a shopkeeper for recommendations and describe preferences"
+      },
+      {
+        id: "urgent_request",
+        name: "Urgent Request",
+        icon: "\u26A1",
+        description: "Communicate urgency appropriately \u2014 polite but insistent"
+      }
+    ],
+    objectiveTypes: [
+      {
+        id: "request_refund",
+        name: "Request Refund",
+        trackingLogic: (context) => ({
+          conversationTurns: context.conversationTurns || 0,
+          requiredTurns: context.requiredTurns || 3,
+          refundRequested: context.refundRequested || false
+        }),
+        completionCheck: (progress) => progress.refundRequested === true
+      },
+      {
+        id: "explain_problem",
+        name: "Explain Problem",
+        trackingLogic: (context) => ({
+          vocabularyUsed: context.vocabularyUsage?.length || 0,
+          vocabularyRequired: context.vocabularyRequired || 3,
+          problemExplained: context.problemExplained || false
+        }),
+        completionCheck: (progress) => progress.problemExplained === true
+      },
+      {
+        id: "negotiate_resolution",
+        name: "Negotiate Resolution",
+        trackingLogic: (context) => ({
+          conversationTurns: context.conversationTurns || 0,
+          requiredTurns: context.requiredTurns || 4,
+          resolutionReached: context.resolutionReached || false
+        }),
+        completionCheck: (progress) => progress.resolutionReached === true
+      },
+      {
+        id: "reserve_slot",
+        name: "Reserve Slot",
+        trackingLogic: (context) => ({
+          reservationMade: context.reservationMade || false,
+          dateProvided: context.dateProvided || false,
+          timeProvided: context.timeProvided || false
+        }),
+        completionCheck: (progress) => progress.reservationMade === true
+      },
+      {
+        id: "describe_preference",
+        name: "Describe Preference",
+        trackingLogic: (context) => ({
+          vocabularyUsed: context.vocabularyUsage?.length || 0,
+          vocabularyRequired: context.vocabularyRequired || 3,
+          preferenceDescribed: context.preferenceDescribed || false
+        }),
+        completionCheck: (progress) => progress.preferenceDescribed === true
+      },
+      {
+        id: "express_urgency",
+        name: "Express Urgency",
+        trackingLogic: (context) => ({
+          conversationTurns: context.conversationTurns || 0,
+          urgencyExpressed: context.urgencyExpressed || false
+        }),
+        completionCheck: (progress) => progress.urgencyExpressed === true
+      }
+    ],
+    rewardTypes: ["experience", "fluency", "reputation"],
+    difficultyScaling: {
+      beginner: {
+        multiplier: 1,
+        xp: 25,
+        cefrLevel: "A1"
+      },
+      intermediate: {
+        multiplier: 1.5,
+        xp: 50,
+        cefrLevel: "A2"
+      },
+      advanced: {
+        multiplier: 2,
+        xp: 80,
+        cefrLevel: "B1"
+      },
+      expert: {
+        multiplier: 3,
+        xp: 120,
+        cefrLevel: "B2"
+      }
+    },
+    generationPrompt: (world2) => {
+      const lang = world2.targetLanguage || "the target language";
+      return `Generate a customer service quest for the world "${world2.name}".
+
+This quest requires the player to enter a business and complete a transactional conversation in ${lang}.
+
+QUEST CATEGORIES (pick one):
+- "make_return": Player bought a wrong item and must return it, explaining the problem and requesting a refund/exchange
+- "file_complaint": A service was unsatisfactory; player must politely but firmly complain to the business owner
+- "make_reservation": Player contacts an inn or restaurant NPC to reserve a room/table for a specific date and time
+- "ask_recommendations": Player enters a shop unsure of what to buy and must ask for recommendations, describe preferences, and decide
+- "urgent_request": Player needs something done quickly and must communicate urgency appropriately (polite but insistent)
+
+VOCABULARY FOCUS by category:
+- make_return: apology phrases, item descriptions, refund/exchange vocabulary, polite disagreement
+- file_complaint: polite complaint language, problem descriptions, resolution requests, formal register
+- make_reservation: time/date expressions, numbers, party size, confirmation phrases
+- ask_recommendations: preference descriptions, comparison words, decision-making phrases
+- urgent_request: urgency expressions, time pressure phrases, polite insistence, escalation vocabulary
+
+CEFR DIFFICULTY SCALING:
+- A1 (beginner): Simple phrases, yes/no-level exchanges, 2-3 conversation turns
+- A2 (intermediate): Short sentences, basic explanations, 4-5 conversation turns
+- B1 (advanced): Paragraph-level explanations, negotiation, 6-8 conversation turns
+- B2 (expert): Nuanced complaints, diplomatic language, idiomatic expressions, 8+ turns
+
+OBJECTIVES must use ONLY these types:
+- "visit_location": Go to the business
+- "talk_to_npc": Talk to the business owner/staff
+- "complete_conversation": Complete the full service interaction
+- "use_vocabulary": Use specific transactional vocabulary words
+
+Return JSON format:
+{
+  "title": "Quest title",
+  "description": "Narrative description of the customer service scenario",
+  "category": "make_return|file_complaint|make_reservation|ask_recommendations|urgent_request",
+  "difficulty": "beginner|intermediate|advanced|expert",
+  "cefrLevel": "A1|A2|B1|B2",
+  "objectives": [
+    {
+      "type": "visit_location",
+      "description": "Visit the business",
+      "target": "Business Name",
+      "required": 1
+    },
+    {
+      "type": "talk_to_npc",
+      "description": "Talk to the shopkeeper",
+      "target": "NPC Name",
+      "required": 1
+    },
+    {
+      "type": "complete_conversation",
+      "description": "Complete the service interaction",
+      "required": 1
+    },
+    {
+      "type": "use_vocabulary",
+      "description": "Use transactional vocabulary",
+      "required": 3
+    }
+  ],
+  "rewards": {
+    "experience": 50,
+    "fluency": 15,
+    "reputation": 5
+  }
+}`;
+    }
+  };
+
+  // @insimul/core/src/quest-types/genre-quests.ts
+  var GENRE_QUEST_TYPES = Object.freeze({
+    puzzle: puzzleQuestType,
+    platformer: platformerQuestType,
+    strategy: strategyQuestType
+  });
+
+  // @insimul/core/src/quest-types/index.ts
+  var QUEST_TYPE_REGISTRY = {
+    "language-learning": languageLearningQuestType,
+    "rpg": rpgQuestType,
+    "strategy": strategyQuestType,
+    "survival": survivalQuestType,
+    "platformer": platformerQuestType,
+    "puzzle": puzzleQuestType,
+    "shooter": shooterQuestType,
+    "business-scavenger-hunt": businessScavengerHuntQuestType,
+    "customer-service": customerServiceQuestType
+  };
+  function getQuestTypeForWorld(world2) {
+    if (world2.gameType && QUEST_TYPE_REGISTRY[world2.gameType]) {
+      return QUEST_TYPE_REGISTRY[world2.gameType];
+    }
+    const worldType = world2.worldType?.toLowerCase() || "";
+    if (worldType.includes("medieval") || worldType.includes("fantasy") || worldType.includes("cyberpunk") || worldType.includes("sci-fi") || worldType.includes("steampunk") || worldType.includes("post-apocalyptic")) {
+      return QUEST_TYPE_REGISTRY["rpg"];
+    }
+    if (worldType.includes("strategy") || worldType.includes("empire") || worldType.includes("civilization")) {
+      return QUEST_TYPE_REGISTRY["strategy"];
+    }
+    if (worldType.includes("survival") || worldType.includes("wilderness") || worldType.includes("zombie")) {
+      return QUEST_TYPE_REGISTRY["survival"];
+    }
+    if (worldType.includes("platformer") || worldType.includes("mario") || worldType.includes("jump")) {
+      return QUEST_TYPE_REGISTRY["platformer"];
+    }
+    if (worldType.includes("puzzle") || worldType.includes("mystery") || worldType.includes("logic")) {
+      return QUEST_TYPE_REGISTRY["puzzle"];
+    }
+    if (worldType.includes("shooter") || worldType.includes("fps") || worldType.includes("military") || worldType.includes("tactical")) {
+      return QUEST_TYPE_REGISTRY["shooter"];
+    }
+    if (worldType.includes("customer service") || worldType.includes("hospitality") || worldType.includes("service")) {
+      return QUEST_TYPE_REGISTRY["customer-service"];
+    }
+    if (worldType.includes("business") || worldType.includes("commerce") || worldType.includes("market") || worldType.includes("shop")) {
+      return QUEST_TYPE_REGISTRY["business-scavenger-hunt"];
+    }
+    return QUEST_TYPE_REGISTRY["language-learning"];
+  }
+  function getQuestTypesForWorld(world2) {
+    const configQuestTypes = world2.config?.questTypes;
+    if (configQuestTypes && Array.isArray(configQuestTypes) && configQuestTypes.length > 0) {
+      const types = configQuestTypes.map((id4) => QUEST_TYPE_REGISTRY[id4]).filter((def2) => def2 != null);
+      if (types.length > 0) return types;
+    }
+    const enabledModules = world2.enabledModules;
+    if (enabledModules && Array.isArray(enabledModules) && enabledModules.length > 0) {
+      const types = resolveQuestTypesFromModules(enabledModules, world2.gameType);
+      if (types.length > 0) return types;
+    }
+    return [getQuestTypeForWorld(world2)];
+  }
+  function resolveQuestTypesFromModules(enabledModules, primaryGameType) {
+    const questTypeIds = /* @__PURE__ */ new Set();
+    if (primaryGameType && QUEST_TYPE_REGISTRY[primaryGameType]) {
+      questTypeIds.add(primaryGameType);
+    }
+    const MODULE_QUEST_TYPE_MAP = {
+      "knowledge-acquisition": ["language-learning"],
+      // vocab quests
+      "pattern-recognition": ["language-learning", "puzzle"],
+      // grammar/pattern quests
+      "npc-exams": ["language-learning"],
+      // refused (port-later): skipped below until it lands
+      "conversation-analytics": ["language-learning", "rpg"],
+      "customer-service": ["customer-service", "language-learning"]
+    };
+    for (const moduleId of enabledModules) {
+      if (featureModuleRefusal(moduleId)) continue;
+      const mapped = MODULE_QUEST_TYPE_MAP[moduleId];
+      if (mapped) {
+        for (const qtId of mapped) {
+          if (QUEST_TYPE_REGISTRY[qtId]) questTypeIds.add(qtId);
+        }
+      }
+    }
+    return Array.from(questTypeIds).map((id4) => QUEST_TYPE_REGISTRY[id4]).filter((def2) => def2 != null);
+  }
+  function getQuestTypeById(questTypeId) {
+    return QUEST_TYPE_REGISTRY[questTypeId];
+  }
+  function getAllQuestTypes() {
+    return Object.values(QUEST_TYPE_REGISTRY);
+  }
+  function hasQuestType(questTypeId) {
+    return questTypeId in QUEST_TYPE_REGISTRY;
+  }
+  function getQuestTypesForMixing(questTypeIds) {
+    return questTypeIds.map((id4) => QUEST_TYPE_REGISTRY[id4]).filter((def2) => def2 != null);
+  }
+  function mergeQuestTypes(definitions) {
+    const seenCategories = /* @__PURE__ */ new Set();
+    const seenObjectives = /* @__PURE__ */ new Set();
+    const seenRewards = /* @__PURE__ */ new Set();
+    const questCategories = [];
+    const objectiveTypes = [];
+    const rewardTypes = [];
+    for (const def2 of definitions) {
+      for (const cat of def2.questCategories) {
+        if (!seenCategories.has(cat.id)) {
+          seenCategories.add(cat.id);
+          questCategories.push(cat);
+        }
+      }
+      for (const obj3 of def2.objectiveTypes) {
+        if (!seenObjectives.has(obj3.id)) {
+          seenObjectives.add(obj3.id);
+          objectiveTypes.push(obj3);
+        }
+      }
+      for (const rew of def2.rewardTypes) {
+        if (!seenRewards.has(rew)) {
+          seenRewards.add(rew);
+          rewardTypes.push(rew);
+        }
+      }
+    }
+    return { questCategories, objectiveTypes, rewardTypes };
+  }
+
+  // @insimul/core/src/language/quest-templates.ts
+  var QUEST_TEMPLATES = [
+    // --- Conversation Quests ---
+    {
+      id: "greet_the_locals",
+      name: "Greet the Locals",
+      category: "conversation",
+      description: "Practice basic greetings by talking to {{npcCount}} villagers.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Talk to {{npcCount}} different NPCs using greeting words",
+          requiredCount: 3
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use at least {{wordCount}} greeting words",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 15, fluency: 2 },
+      parameters: [
+        { name: "npcCount", type: "number", description: "Number of NPCs to greet" },
+        { name: "wordCount", type: "number", description: "Greeting words to use" }
+      ]
+    },
+    {
+      id: "sustained_chat",
+      name: "Deep Conversation",
+      category: "conversation",
+      description: "Have a sustained conversation with {{npcName}} using at least 50% target language.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Hold a {{turns}}-turn conversation with {{npcName}}",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC to converse with" },
+        { name: "turns", type: "number", description: "Minimum turns required" }
+      ]
+    },
+    // --- Vocabulary Quests ---
+    {
+      id: "food_vocabulary",
+      name: "The Market Run",
+      category: "vocabulary",
+      description: "Visit the market and learn {{wordCount}} food-related words.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Collect {{wordCount}} food words by interacting with market items",
+          requiredCount: 5
+        },
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit the market",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 20, fluency: 3 },
+      parameters: [
+        { name: "wordCount", type: "number", description: "Words to learn" },
+        { name: "vocabularyCategory", type: "category", description: "food" }
+      ]
+    },
+    {
+      id: "profession_vocabulary",
+      name: "Meet the Workers",
+      category: "vocabulary",
+      description: "Talk to NPCs about their jobs and learn profession-related vocabulary.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} profession words in conversations",
+          requiredCount: 5
+        },
+        {
+          type: "talk_to_npc",
+          descriptionTemplate: "Talk to {{npcCount}} workers about their professions",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 25, fluency: 3 },
+      parameters: [
+        { name: "wordCount", type: "number", description: "Profession words to use" },
+        { name: "npcCount", type: "number", description: "Workers to interview" }
+      ]
+    },
+    {
+      id: "master_words",
+      name: "Word Master",
+      category: "vocabulary",
+      description: "Master {{wordCount}} words by using them correctly multiple times.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} vocabulary words correctly multiple times to master them",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 5 },
+      parameters: [
+        { name: "wordCount", type: "number", description: "Words to master" }
+      ]
+    },
+    // --- Vocabulary Bank Collection Quests ---
+    {
+      id: "word_explorer_nouns",
+      name: "Word Explorer: Nouns",
+      category: "vocabulary",
+      description: "Explore the area and collect {{wordCount}} noun words for your vocabulary bank.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Collect {{wordCount}} nouns by interacting with objects",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 20, fluency: 3 },
+      parameters: [
+        { name: "wordCount", type: "number", description: "Nouns to collect" },
+        { name: "vocabularyCategory", type: "category", description: "Target vocabulary category (e.g. food, household, animals)" }
+      ]
+    },
+    {
+      id: "color_hunter",
+      name: "Color Hunter",
+      category: "vocabulary",
+      description: "Find {{wordCount}} objects and learn their color words in the target language.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Find {{wordCount}} objects and learn their color adjectives",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 15, fluency: 2 },
+      parameters: [
+        { name: "wordCount", type: "number", description: "Color words to collect" }
+      ]
+    },
+    {
+      id: "action_spotter",
+      name: "Action Spotter",
+      category: "vocabulary",
+      description: "Observe {{npcCount}} NPCs and learn the verbs for what they are doing.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Observe NPCs and collect {{wordCount}} action verbs",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 15, fluency: 2 },
+      parameters: [
+        { name: "npcCount", type: "number", description: "NPCs to observe" },
+        { name: "wordCount", type: "number", description: "Action verbs to collect" }
+      ]
+    },
+    // --- Grammar Quests ---
+    {
+      id: "grammar_practice",
+      name: "Grammar Drill",
+      category: "grammar",
+      description: "Practice the {{pattern}} grammar pattern in conversation.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use the {{pattern}} grammar pattern correctly {{count}} times in conversation",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 25, fluency: 3 },
+      parameters: [
+        { name: "pattern", type: "grammar_pattern", description: "Grammar pattern to practice" },
+        { name: "count", type: "number", description: "Correct uses required" }
+      ]
+    },
+    {
+      id: "past_tense_tales",
+      name: "Past Tense Tales",
+      category: "grammar",
+      description: "Tell {{npcName}} about what you did yesterday, using past tense verbs throughout.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Have a conversation with {{npcName}} about yesterday using past tense",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{count}} past tense verb forms correctly",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC to tell your story to" },
+        { name: "count", type: "number", description: "Past tense verbs to use correctly" }
+      ]
+    },
+    {
+      id: "question_master",
+      name: "Question Master",
+      category: "grammar",
+      description: "Ask {{count}} questions to NPCs using correct question formation in {{language}}.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Ask NPCs {{count}} questions using correct question grammar",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "count", type: "number", description: "Questions to ask with correct formation" },
+        { name: "language", type: "category", description: "Target language name" }
+      ]
+    },
+    {
+      id: "polite_requests",
+      name: "Polite Requests",
+      category: "grammar",
+      description: "Visit {{shopCount}} different shops and make formal requests using polite grammar forms.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Make polite requests at {{shopCount}} different shops",
+          requiredCount: 3
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use formal/polite grammar forms correctly",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 4 },
+      parameters: [
+        { name: "shopCount", type: "number", description: "Number of shops to visit" }
+      ]
+    },
+    // --- Visual / Exploration Quests ---
+    {
+      id: "scavenger_hunt",
+      name: "Word Scavenger Hunt",
+      category: "scavenger_hunt",
+      description: "Find {{itemCount}} objects in the world that match their target-language names.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "identify_object",
+          descriptionTemplate: "Find {{itemCount}} objects and identify them by their {{language}} names",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 20, fluency: 2 },
+      parameters: [
+        { name: "itemCount", type: "number", description: "Objects to find" },
+        { name: "language", type: "category", description: "Target language name" }
+      ]
+    },
+    {
+      id: "identify_objects",
+      name: "Name That Thing",
+      category: "visual_vocabulary",
+      description: "An NPC points to objects and asks you to name them in the target language.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "identify_object",
+          descriptionTemplate: "Correctly identify {{count}} objects by their target-language names",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 15, fluency: 2 },
+      parameters: [
+        { name: "count", type: "number", description: "Objects to identify" }
+      ]
+    },
+    {
+      id: "find_by_description",
+      name: "Find Something...",
+      category: "visual_vocabulary",
+      description: "An NPC describes an object by color or property in the target language. Find and click the matching object.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "identify_object",
+          descriptionTemplate: 'Find {{count}} objects matching the description: "{{vocabulary_set}}"',
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 20, fluency: 2.5 },
+      parameters: [
+        { name: "count", type: "number", description: "Objects to find" },
+        { name: "vocabulary_set", type: "vocabulary_set", description: 'Description in target language (e.g., "something blue", "a red fruit")' }
+      ]
+    },
+    // --- Navigation Quests ---
+    {
+      id: "follow_directions",
+      name: "Follow the Path",
+      category: "follow_instructions",
+      description: "An NPC gives you directions in the target language. Follow them!",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "follow_directions",
+          descriptionTemplate: "Follow {{stepCount}} steps of directions given in the target language",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "stepCount", type: "number", description: "Direction steps to follow" }
+      ]
+    },
+    {
+      id: "navigate_to",
+      name: "Language Navigator",
+      category: "navigation",
+      description: "Navigate the world following target-language directions to reach {{destination}}.",
+      difficulty: "advanced",
+      objectiveTemplates: [
+        {
+          type: "navigate_language",
+          descriptionTemplate: "Reach {{destination}} following {{language}} directions",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 40, fluency: 5 },
+      parameters: [
+        { name: "destination", type: "location", description: "Destination to reach" },
+        { name: "language", type: "category", description: "Target language" }
+      ]
+    },
+    // --- Translation Quests ---
+    {
+      id: "translation_test",
+      name: "Translation Challenge",
+      category: "translation_challenge",
+      description: "Translate {{phraseCount}} phrases between English and the target language.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "translation_challenge",
+          descriptionTemplate: "Correctly translate {{phraseCount}} phrases",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "phraseCount", type: "number", description: "Phrases to translate" }
+      ]
+    },
+    // --- Listening Quests ---
+    {
+      id: "listen_and_learn",
+      name: "Story Time",
+      category: "listening_comprehension",
+      description: "Listen to {{npcName}} tell a story and answer comprehension questions.",
+      difficulty: "advanced",
+      objectiveTemplates: [
+        {
+          type: "listening_comprehension",
+          descriptionTemplate: "Answer {{questionCount}} comprehension questions about the story",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 40, fluency: 5 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "Storyteller NPC" },
+        { name: "questionCount", type: "number", description: "Questions to answer" }
+      ]
+    },
+    // --- Cultural Immersion Quests ---
+    {
+      id: "cultural_exploration",
+      name: "Cultural Explorer",
+      category: "cultural",
+      description: "Learn about the local culture by talking to {{npcCount}} NPCs and learning cultural vocabulary.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Talk to {{npcCount}} NPCs about local culture",
+          requiredCount: 3
+        },
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Collect {{wordCount}} cultural vocabulary words",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "npcCount", type: "number", description: "NPCs to talk to" },
+        { name: "wordCount", type: "number", description: "Cultural words to learn" }
+      ]
+    },
+    {
+      id: "festival_day",
+      name: "Festival Day",
+      category: "cultural",
+      description: "The village is celebrating! Join the festivities by talking to {{npcCount}} villagers and learning {{wordCount}} celebration-related words.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Talk to {{npcCount}} villagers about the festival",
+          requiredCount: 3
+        },
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Learn {{wordCount}} celebration vocabulary words",
+          requiredCount: 5
+        },
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit the festival at {{location}}",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 25, fluency: 3 },
+      parameters: [
+        { name: "npcCount", type: "number", description: "Villagers to talk to" },
+        { name: "wordCount", type: "number", description: "Celebration words to learn" },
+        { name: "location", type: "location", description: "Festival location" }
+      ]
+    },
+    {
+      id: "recipe_quest",
+      name: "Traditional Recipe",
+      category: "cultural",
+      description: "Visit {{npcName}} to learn a traditional recipe. Follow cooking instructions given in the target language.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Learn the recipe from {{npcName}}",
+          requiredCount: 1
+        },
+        {
+          type: "follow_directions",
+          descriptionTemplate: "Follow {{stepCount}} cooking instructions in the target language",
+          requiredCount: 4
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} cooking vocabulary words",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 5 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "Chef or baker NPC" },
+        { name: "stepCount", type: "number", description: "Cooking steps to follow" },
+        { name: "wordCount", type: "number", description: "Cooking words to use" }
+      ]
+    },
+    {
+      id: "cultural_exchange",
+      name: "Cultural Exchange",
+      category: "cultural",
+      description: "Share aspects of your own culture with {{npcName}} while learning about theirs. Use both formal and informal registers.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Have a cultural exchange conversation with {{npcName}}",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} cultural comparison words and phrases",
+          requiredCount: 6
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 5 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC interested in cultural exchange" },
+        { name: "wordCount", type: "number", description: "Cultural vocabulary to use" }
+      ]
+    },
+    {
+      id: "proverb_hunter",
+      name: "Proverb Hunter",
+      category: "cultural",
+      description: "Seek out {{npcCount}} elders to collect local proverbs and explain their meanings.",
+      difficulty: "advanced",
+      objectiveTemplates: [
+        {
+          type: "talk_to_npc",
+          descriptionTemplate: "Visit {{npcCount}} elders to collect proverbs",
+          requiredCount: 3
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} idiomatic expressions in conversation",
+          requiredCount: 5
+        },
+        {
+          type: "listening_comprehension",
+          descriptionTemplate: "Explain the meaning of {{proverbCount}} proverbs",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 45, fluency: 6 },
+      parameters: [
+        { name: "npcCount", type: "number", description: "Elders to visit" },
+        { name: "wordCount", type: "number", description: "Idiomatic expressions to use" },
+        { name: "proverbCount", type: "number", description: "Proverbs to explain" }
+      ]
+    },
+    {
+      id: "traditional_craft",
+      name: "Traditional Craft",
+      category: "cultural",
+      description: "Visit {{npcName}} at their workshop to learn about a traditional craft. Describe the process in the target language.",
+      difficulty: "advanced",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit the workshop at {{location}}",
+          requiredCount: 1
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Learn about the craft from {{npcName}}",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} craft-related vocabulary words",
+          requiredCount: 6
+        },
+        {
+          type: "identify_object",
+          descriptionTemplate: "Identify {{objectCount}} tools or materials by their target-language names",
+          requiredCount: 4
+        }
+      ],
+      rewardScale: { xp: 45, fluency: 6 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "Artisan NPC (blacksmith, tailor, potter)" },
+        { name: "location", type: "location", description: "Workshop location" },
+        { name: "wordCount", type: "number", description: "Craft vocabulary to use" },
+        { name: "objectCount", type: "number", description: "Tools/materials to identify" }
+      ]
+    },
+    // --- Pronunciation Quests ---
+    {
+      id: "pronunciation_challenge",
+      name: "Pronunciation Challenge",
+      category: "pronunciation",
+      description: "Correctly pronounce {{phraseCount}} phrases with at least 70% accuracy.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "pronunciation_check",
+          descriptionTemplate: "Pronounce {{phraseCount}} phrases with >70% accuracy",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "phraseCount", type: "number", description: "Number of phrases to pronounce" }
+      ]
+    },
+    // --- Shopping & Economic Vocabulary ---
+    {
+      id: "shop_vocabulary",
+      name: "Shopping Basics",
+      category: "shopping",
+      description: "Visit {{businessName}} and learn {{wordCount}} shopping vocabulary words.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit {{businessName}}",
+          requiredCount: 1
+        },
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Learn {{wordCount}} shopping words (money, price, to buy, etc.)",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 20, fluency: 3 },
+      parameters: [
+        { name: "businessName", type: "location", description: "Name of the business to visit" },
+        { name: "wordCount", type: "number", description: "Shopping words to learn" }
+      ]
+    },
+    {
+      id: "bakery_order",
+      name: "At the Bakery",
+      category: "shopping",
+      description: "Visit the bakery and practice ordering food using target-language vocabulary.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit {{businessName}}",
+          requiredCount: 1
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Order from the baker at {{businessName}} using {{wordCount}} food words",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} food and shopping vocabulary words",
+          requiredCount: 4
+        }
+      ],
+      rewardScale: { xp: 25, fluency: 3 },
+      parameters: [
+        { name: "businessName", type: "location", description: "Name of the bakery" },
+        { name: "wordCount", type: "number", description: "Food and shopping words to use" }
+      ]
+    },
+    {
+      id: "price_haggling",
+      name: "How Much Is That?",
+      category: "shopping",
+      description: "Ask about prices at {{businessName}} using numbers and shopping vocabulary.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit {{businessName}}",
+          requiredCount: 1
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Ask about prices and negotiate at {{businessName}}",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} number and shopping words (how much, expensive, cheap, etc.)",
+          requiredCount: 6
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "businessName", type: "location", description: "Name of the shop" },
+        { name: "wordCount", type: "number", description: "Number/shopping words to use" }
+      ]
+    },
+    {
+      id: "shopping_list",
+      name: "The Shopping List",
+      category: "shopping",
+      description: "An NPC gives you a shopping list in the target language. Visit {{businessCount}} shops to collect everything.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "collect_item",
+          descriptionTemplate: "Collect {{itemCount}} items from shops around town",
+          requiredCount: 3
+        },
+        {
+          type: "deliver_item",
+          descriptionTemplate: "Deliver the shopping to {{npcName}}",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use shopping vocabulary while buying items",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC who gave the list" },
+        { name: "itemCount", type: "number", description: "Items to collect" },
+        { name: "businessCount", type: "number", description: "Number of shops to visit" }
+      ]
+    },
+    {
+      id: "merchant_interview",
+      name: "Meet the Merchants",
+      category: "shopping",
+      description: "Interview {{npcCount}} business owners about their shops and learn economic vocabulary.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "talk_to_npc",
+          descriptionTemplate: "Talk to {{npcCount}} business owners about their trade",
+          requiredCount: 3
+        },
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Collect {{wordCount}} economic and profession vocabulary words",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "npcCount", type: "number", description: "Business owners to interview" },
+        { name: "wordCount", type: "number", description: "Economic words to learn" }
+      ]
+    },
+    // --- Social / Relationship Quests ---
+    {
+      id: "make_a_friend",
+      name: "Make a Friend",
+      category: "social",
+      description: "Build a friendship with {{npcName}} by having {{conversationCount}} conversations.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "build_friendship",
+          descriptionTemplate: "Have {{conversationCount}} conversations with {{npcName}}",
+          requiredCount: 3
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} greeting or social words during your conversations",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 25, fluency: 3 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC to befriend" },
+        { name: "conversationCount", type: "number", description: "Number of conversations" },
+        { name: "wordCount", type: "number", description: "Social vocabulary to use" }
+      ]
+    },
+    {
+      id: "gift_of_friendship",
+      name: "Gift of Friendship",
+      category: "social",
+      description: "Show {{npcName}} you care by finding a gift and presenting it to them.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "collect_item",
+          descriptionTemplate: "Find a gift for {{npcName}}",
+          requiredCount: 1
+        },
+        {
+          type: "give_gift",
+          descriptionTemplate: "Present the gift to {{npcName}}",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC to give the gift to" }
+      ]
+    },
+    {
+      id: "community_builder",
+      name: "Community Builder",
+      category: "social",
+      description: "Get to know the community by talking to {{npcCount}} different people.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "talk_to_npc",
+          descriptionTemplate: "Talk to {{npcCount}} different community members",
+          requiredCount: 5
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} social vocabulary words across your conversations",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 3 },
+      parameters: [
+        { name: "npcCount", type: "number", description: "Number of NPCs to talk to" },
+        { name: "wordCount", type: "number", description: "Social words to use" }
+      ]
+    },
+    {
+      id: "language_exchange",
+      name: "Language Exchange Partner",
+      category: "social",
+      description: "Practice {{language}} with {{npcName}} through a sustained conversation.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "build_friendship",
+          descriptionTemplate: "Build rapport with {{npcName}} through {{conversationCount}} conversations",
+          requiredCount: 2
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Have a sustained {{turns}}-turn conversation with {{npcName}}",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} {{language}} words while chatting",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 40, fluency: 5 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "Language exchange partner NPC" },
+        { name: "conversationCount", type: "number", description: "Conversations to have" },
+        { name: "turns", type: "number", description: "Minimum conversation turns" },
+        { name: "wordCount", type: "number", description: "Target language words to use" },
+        { name: "language", type: "category", description: "Target language name" }
+      ]
+    },
+    {
+      id: "the_helpful_stranger",
+      name: "The Helpful Stranger",
+      category: "social",
+      description: "Help {{npcName}} by delivering an item they need, then talk to build your bond.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "collect_item",
+          descriptionTemplate: "Find the item {{npcName}} needs",
+          requiredCount: 1
+        },
+        {
+          type: "deliver_item",
+          descriptionTemplate: "Deliver the item to {{npcName}}",
+          requiredCount: 1
+        },
+        {
+          type: "build_friendship",
+          descriptionTemplate: "Talk to {{npcName}} to strengthen your bond",
+          requiredCount: 2
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC who needs help" }
+      ]
+    },
+    // --- Storytelling & Narrative Quests ---
+    {
+      id: "story_circle",
+      name: "Story Circle",
+      category: "storytelling",
+      description: "Join a group of NPCs and contribute to a collaborative story in the target language using past tense and sequencing words.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Contribute to a collaborative story with {{npcCount}} NPCs, adding at least {{turns}} story segments",
+          requiredCount: 3
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} sequencing and descriptive words (first, then, finally, beautiful, etc.)",
+          requiredCount: 6
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 5 },
+      parameters: [
+        { name: "npcCount", type: "number", description: "Number of NPCs in the story circle" },
+        { name: "turns", type: "number", description: "Story segments to contribute" },
+        { name: "wordCount", type: "number", description: "Sequencing/descriptive words to use" }
+      ]
+    },
+    {
+      id: "local_legend",
+      name: "Local Legend",
+      category: "storytelling",
+      description: "Listen to {{storytellerName}} tell a folk tale, then retell it to {{listenerName}} in the target language.",
+      difficulty: "advanced",
+      objectiveTemplates: [
+        {
+          type: "listening_comprehension",
+          descriptionTemplate: "Listen to {{storytellerName}} tell a folk tale and answer {{questionCount}} comprehension questions",
+          requiredCount: 3
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Retell the folk tale to {{listenerName}} using past tense and narrative vocabulary",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} past tense verbs and emotional vocabulary in your retelling",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 45, fluency: 6 },
+      parameters: [
+        { name: "storytellerName", type: "npc", description: "NPC who tells the folk tale" },
+        { name: "listenerName", type: "npc", description: "NPC to retell the story to" },
+        { name: "questionCount", type: "number", description: "Comprehension questions to answer" },
+        { name: "wordCount", type: "number", description: "Past tense and emotional words to use" }
+      ]
+    },
+    {
+      id: "my_adventure",
+      name: "My Adventure",
+      category: "storytelling",
+      description: "Describe your in-game experiences to {{npcName}} the scribe using past tense and descriptive vocabulary.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Tell {{npcName}} about your adventures in a {{turns}}-turn conversation",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} past tense verbs and descriptive adjectives",
+          requiredCount: 8
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC journalist/scribe to narrate to" },
+        { name: "turns", type: "number", description: "Minimum conversation turns" },
+        { name: "wordCount", type: "number", description: "Past tense and descriptive words to use" }
+      ]
+    },
+    {
+      id: "picture_this",
+      name: "Picture This",
+      category: "storytelling",
+      description: "Visit {{location}} and describe the scene to {{npcName}}, who cannot see it, using vivid descriptive language.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit {{location}} to observe the scene",
+          requiredCount: 1
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Describe the scene at {{location}} to {{npcName}} in a {{turns}}-turn conversation",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} descriptive adjectives and spatial vocabulary (big, small, near, far, etc.)",
+          requiredCount: 6
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "location", type: "location", description: "Location to visit and describe" },
+        { name: "npcName", type: "npc", description: "NPC who cannot see the scene" },
+        { name: "turns", type: "number", description: "Minimum conversation turns" },
+        { name: "wordCount", type: "number", description: "Descriptive and spatial words to use" }
+      ]
+    },
+    // --- Teaching-Back Quests (player teaches NPC) ---
+    {
+      id: "vocabulary_tutor",
+      name: "Vocabulary Tutor",
+      category: "teaching",
+      description: "Teach {{npcName}} {{wordCount}} new vocabulary words by using them in conversation.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "teach_vocabulary",
+          descriptionTemplate: "Teach {{npcName}} {{wordCount}} vocabulary words",
+          requiredCount: 5
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use each word in a sentence to demonstrate meaning",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 40, fluency: 5 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC learner to teach" },
+        { name: "wordCount", type: "number", description: "Words to teach" }
+      ]
+    },
+    {
+      id: "phrase_coach",
+      name: "Phrase Coach",
+      category: "teaching",
+      description: "Teach {{npcName}} {{phraseCount}} useful phrases by modeling them in conversation.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "teach_phrase",
+          descriptionTemplate: "Model {{phraseCount}} phrases for {{npcName}} to learn",
+          requiredCount: 3
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Have a practice conversation with {{npcName}} using the taught phrases",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 5 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC learner to teach" },
+        { name: "phraseCount", type: "number", description: "Phrases to teach" }
+      ]
+    },
+    {
+      id: "newcomer_welcome",
+      name: "Welcome the Newcomer",
+      category: "teaching",
+      description: "A newcomer has arrived in town. Teach them basic greetings and help them learn {{wordCount}} essential words.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "talk_to_npc",
+          descriptionTemplate: "Meet the newcomer {{npcName}}",
+          requiredCount: 1
+        },
+        {
+          type: "teach_vocabulary",
+          descriptionTemplate: "Teach {{npcName}} {{wordCount}} greeting and essential words",
+          requiredCount: 4
+        },
+        {
+          type: "teach_phrase",
+          descriptionTemplate: "Teach {{npcName}} a basic introduction phrase",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 40, fluency: 5 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "Newcomer NPC to help" },
+        { name: "wordCount", type: "number", description: "Essential words to teach" }
+      ]
+    },
+    {
+      id: "advanced_tutor",
+      name: "The Advanced Lesson",
+      category: "teaching",
+      description: "Prepare and deliver an advanced lesson to {{npcName}} covering {{wordCount}} words and {{phraseCount}} complex phrases.",
+      difficulty: "advanced",
+      objectiveTemplates: [
+        {
+          type: "teach_vocabulary",
+          descriptionTemplate: "Teach {{npcName}} {{wordCount}} advanced vocabulary words",
+          requiredCount: 8
+        },
+        {
+          type: "teach_phrase",
+          descriptionTemplate: "Model {{phraseCount}} complex phrases for {{npcName}}",
+          requiredCount: 4
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Have an advanced practice conversation with {{npcName}}",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 50, fluency: 7 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC student" },
+        { name: "wordCount", type: "number", description: "Advanced words to teach" },
+        { name: "phraseCount", type: "number", description: "Complex phrases to model" }
+      ]
+    },
+    // --- Time-Based Activities ---
+    {
+      id: "time_appointment",
+      name: "Keep the Appointment",
+      category: "time_activity",
+      description: "An NPC tells you a time to meet in the target language. Arrive at {{location}} at the right time.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Arrive at {{location}} when the NPC told you to meet",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{count}} time-related words in conversation",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "location", type: "location", description: "Meeting location" },
+        { name: "count", type: "number", description: "Time vocabulary to use" }
+      ]
+    },
+    {
+      id: "daily_schedule",
+      name: "A Day in the Life",
+      category: "time_activity",
+      description: "Follow a daily schedule described in the target language. Visit {{count}} locations at the right times.",
+      difficulty: "advanced",
+      objectiveTemplates: [
+        {
+          type: "follow_directions",
+          descriptionTemplate: "Follow the schedule and visit {{count}} locations in order",
+          requiredCount: 4
+        }
+      ],
+      rewardScale: { xp: 45, fluency: 6 },
+      parameters: [
+        { name: "count", type: "number", description: "Locations to visit in order" }
+      ]
+    },
+    // --- Error Correction / Remediation Quests ---
+    {
+      id: "grammar_correction_drill",
+      name: "Grammar Correction Drill",
+      category: "error_correction",
+      description: `Practice the "{{pattern}}" pattern you've been struggling with by using it correctly in conversation.`,
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "practice_grammar",
+          descriptionTemplate: 'Use the "{{pattern}}" pattern correctly {{count}} times in conversation',
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 20, fluency: 3 },
+      parameters: [
+        { name: "pattern", type: "grammar_pattern", description: "Grammar pattern to practice" },
+        { name: "count", type: "number", description: "Correct uses required" }
+      ]
+    },
+    {
+      id: "grammar_correction_conversation",
+      name: "Grammar Review Chat",
+      category: "error_correction",
+      description: 'Have a conversation with {{npcName}} focusing on the "{{pattern}}" pattern. The NPC will gently correct mistakes.',
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: 'Have a conversation with {{npcName}} practicing "{{pattern}}"',
+          requiredCount: 1
+        },
+        {
+          type: "practice_grammar",
+          descriptionTemplate: 'Use "{{pattern}}" correctly at least {{count}} times',
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC to practice with" },
+        { name: "pattern", type: "grammar_pattern", description: "Grammar pattern to correct" },
+        { name: "count", type: "number", description: "Correct uses required" }
+      ]
+    },
+    {
+      id: "vocabulary_correction_practice",
+      name: "Word Correction Practice",
+      category: "error_correction",
+      description: "You've been mixing up some words. Practice using {{wordList}} correctly in context.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use the words {{wordList}} correctly in conversation",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 20, fluency: 3 },
+      parameters: [
+        { name: "wordList", type: "vocabulary_set", description: "Words to practice" }
+      ]
+    },
+    {
+      id: "vocabulary_correction_conversation",
+      name: "Word Review Chat",
+      category: "error_correction",
+      description: "Chat with {{npcName}} and practice using tricky words you've been getting wrong.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Have a conversation with {{npcName}} using problem vocabulary",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{count}} previously-missed words correctly",
+          requiredCount: 4
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC to practice with" },
+        { name: "count", type: "number", description: "Words to use correctly" }
+      ]
+    },
+    {
+      id: "mixed_error_review",
+      name: "Error Review Session",
+      category: "error_correction",
+      description: "A comprehensive review session targeting your most common mistakes in grammar and vocabulary.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Complete a review conversation practicing problem areas",
+          requiredCount: 1
+        },
+        {
+          type: "practice_grammar",
+          descriptionTemplate: "Use problem grammar patterns correctly {{grammarCount}} times",
+          requiredCount: 3
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{vocabCount}} problem vocabulary words correctly",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 40, fluency: 5 },
+      parameters: [
+        { name: "grammarCount", type: "number", description: "Grammar corrections needed" },
+        { name: "vocabCount", type: "number", description: "Vocabulary corrections needed" }
+      ]
+    },
+    // --- Weather & Time-of-Day Vocabulary Quests ---
+    {
+      id: "morning_weather_chat",
+      name: "Morning Weather Chat",
+      category: "weather_time",
+      description: "Greet {{npcName}} in the morning and discuss the weather using weather and time vocabulary.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Talk to {{npcName}} about the weather during the morning",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} weather words (rain, sun, cloud, etc.)",
+          requiredCount: 4
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{timeWordCount}} time-of-day words (morning, today, etc.)",
+          requiredCount: 2
+        }
+      ],
+      rewardScale: { xp: 20, fluency: 3 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC available in the morning" },
+        { name: "wordCount", type: "number", description: "Weather words to use" },
+        { name: "timeWordCount", type: "number", description: "Time words to use" }
+      ]
+    },
+    {
+      id: "weather_watcher",
+      name: "Weather Watcher",
+      category: "weather_time",
+      description: "Observe the sky and describe the current weather to {{npcName}} using weather vocabulary.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "describe_scene",
+          descriptionTemplate: "Describe the current weather and sky to {{npcName}}",
+          requiredCount: 1
+        },
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Collect {{wordCount}} weather words by observing the environment",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 15, fluency: 2 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC to describe weather to" },
+        { name: "wordCount", type: "number", description: "Weather words to collect" }
+      ]
+    },
+    {
+      id: "evening_routine_report",
+      name: "Evening Routine",
+      category: "weather_time",
+      description: "Find {{npcName}} in the evening and tell them about your day, using time-of-day vocabulary.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "talk_to_npc",
+          descriptionTemplate: "Find and talk to {{npcName}} during the evening",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} time words (morning, afternoon, evening, night)",
+          requiredCount: 4
+        }
+      ],
+      rewardScale: { xp: 20, fluency: 3 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC available in the evening" },
+        { name: "wordCount", type: "number", description: "Time-of-day words to use" }
+      ]
+    },
+    {
+      id: "weather_and_plans",
+      name: "Weather and Plans",
+      category: "weather_time",
+      description: "Ask {{npcName}} about their plans for different weather conditions. Use weather and time vocabulary together.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Discuss weather-dependent plans with {{npcName}}",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{weatherWordCount}} weather words in conversation",
+          requiredCount: 5
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{timeWordCount}} time words (tomorrow, later, soon, always)",
+          requiredCount: 4
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC to discuss plans with" },
+        { name: "weatherWordCount", type: "number", description: "Weather vocabulary to use" },
+        { name: "timeWordCount", type: "number", description: "Time vocabulary to use" }
+      ]
+    },
+    {
+      id: "npc_schedule_tracker",
+      name: "Where Are They Now?",
+      category: "weather_time",
+      description: "Track {{npcName}} through their daily routine. Visit them at {{locationCount}} different locations during different times of day.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "talk_to_npc",
+          descriptionTemplate: "Find and talk to {{npcName}} at {{locationCount}} different locations",
+          requiredCount: 3
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} time-of-day words to describe when you found them",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC to track through their schedule" },
+        { name: "locationCount", type: "number", description: "Different locations to visit" },
+        { name: "wordCount", type: "number", description: "Time words to use" }
+      ]
+    },
+    {
+      id: "storm_story",
+      name: "Storm Stories",
+      category: "weather_time",
+      description: "Visit {{npcName}} and listen to a story about a past storm. Retell it using weather vocabulary and past tense.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "listening_comprehension",
+          descriptionTemplate: "Listen to {{npcName}} tell a weather story and answer {{questionCount}} questions",
+          requiredCount: 3
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} weather words (storm, wind, rain, cold) in your retelling",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC storyteller" },
+        { name: "questionCount", type: "number", description: "Comprehension questions" },
+        { name: "wordCount", type: "number", description: "Weather words to use" }
+      ]
+    },
+    {
+      id: "seasonal_scene",
+      name: "Seasonal Scene",
+      category: "weather_time",
+      description: "Describe the current season and weather at {{location}} to {{npcName}} using advanced weather and nature vocabulary.",
+      difficulty: "advanced",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit {{location}} to observe the seasonal scene",
+          requiredCount: 1
+        },
+        {
+          type: "describe_scene",
+          descriptionTemplate: "Describe the seasonal weather scene at {{location}}",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} weather and nature vocabulary words",
+          requiredCount: 8
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Discuss the seasons with {{npcName}} using time expressions",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 45, fluency: 6 },
+      parameters: [
+        { name: "location", type: "location", description: "Location to observe" },
+        { name: "npcName", type: "npc", description: "NPC to discuss seasons with" },
+        { name: "wordCount", type: "number", description: "Weather and nature words to use" }
+      ]
+    },
+    {
+      id: "day_night_vocabulary",
+      name: "Day and Night",
+      category: "weather_time",
+      description: "Talk to NPCs during both day and night. Collect {{wordCount}} time-of-day words by observing how activities change.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Collect {{wordCount}} time-of-day words (morning, night, early, late)",
+          requiredCount: 5
+        },
+        {
+          type: "talk_to_npc",
+          descriptionTemplate: "Talk to {{npcCount}} NPCs about their daily activities",
+          requiredCount: 2
+        }
+      ],
+      rewardScale: { xp: 15, fluency: 2 },
+      parameters: [
+        { name: "wordCount", type: "number", description: "Time words to collect" },
+        { name: "npcCount", type: "number", description: "NPCs to talk to" }
+      ]
+    },
+    // --- Crafting & Item Interaction Quests ---
+    {
+      id: "material_identification",
+      name: "Know Your Materials",
+      category: "crafting",
+      description: "Visit the {{station}} and identify {{materialCount}} crafting materials by their names in the target language.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "examine_object",
+          descriptionTemplate: "Examine {{materialCount}} materials at the {{station}}",
+          requiredCount: 4
+        },
+        {
+          type: "identify_object",
+          descriptionTemplate: "Identify each material by its target-language name",
+          requiredCount: 4
+        }
+      ],
+      rewardScale: { xp: 20, fluency: 2 },
+      parameters: [
+        { name: "station", type: "location", description: "Crafting station (forge, workbench, loom, kitchen)" },
+        { name: "materialCount", type: "number", description: "Materials to identify" }
+      ]
+    },
+    {
+      id: "tool_naming",
+      name: "Tools of the Trade",
+      category: "crafting",
+      description: "Learn the names of {{toolCount}} tools at the {{station}} in the target language.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "point_and_name",
+          descriptionTemplate: "Point at {{toolCount}} tools and name them in the target language",
+          requiredCount: 4
+        },
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Add {{toolCount}} tool words to your vocabulary bank",
+          requiredCount: 4
+        }
+      ],
+      rewardScale: { xp: 20, fluency: 2 },
+      parameters: [
+        { name: "station", type: "location", description: "Crafting station" },
+        { name: "toolCount", type: "number", description: "Tools to name" }
+      ]
+    },
+    {
+      id: "simple_craft",
+      name: "First Craft",
+      category: "crafting",
+      description: "Collect {{materialCount}} materials and craft your first item. Use material names in the target language.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "collect_item",
+          descriptionTemplate: "Collect {{materialCount}} crafting materials",
+          requiredCount: 2
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{materialCount}} material names in the target language",
+          requiredCount: 2
+        },
+        {
+          type: "craft_item",
+          descriptionTemplate: "Craft an item at the {{station}}",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 30, fluency: 3 },
+      parameters: [
+        { name: "station", type: "location", description: "Crafting station" },
+        { name: "materialCount", type: "number", description: "Materials to collect" }
+      ]
+    },
+    {
+      id: "apprentice_lesson",
+      name: "Apprentice Lesson",
+      category: "crafting",
+      description: "{{npcName}} teaches you crafting at the {{station}}. Follow instructions in the target language and learn {{actionCount}} action verbs.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "talk_to_npc",
+          descriptionTemplate: "Talk to {{npcName}} to begin the crafting lesson",
+          requiredCount: 1
+        },
+        {
+          type: "collect_vocabulary",
+          descriptionTemplate: "Learn {{actionCount}} crafting action words",
+          requiredCount: 3
+        },
+        {
+          type: "follow_directions",
+          descriptionTemplate: "Follow {{actionCount}} crafting steps in the target language",
+          requiredCount: 3
+        },
+        {
+          type: "craft_item",
+          descriptionTemplate: "Complete the craft under {{npcName}}'s guidance",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 40, fluency: 4 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "Mentor NPC" },
+        { name: "station", type: "location", description: "Crafting station" },
+        { name: "actionCount", type: "number", description: "Action words to learn" }
+      ]
+    },
+    {
+      id: "recipe_translation",
+      name: "The Ancient Recipe",
+      category: "crafting",
+      description: "Translate a crafting recipe written in the target language, gather ingredients, and craft the described item.",
+      difficulty: "advanced",
+      objectiveTemplates: [
+        {
+          type: "read_sign",
+          descriptionTemplate: "Read the recipe written in the target language",
+          requiredCount: 1
+        },
+        {
+          type: "translation_challenge",
+          descriptionTemplate: "Translate {{phraseCount}} recipe instructions",
+          requiredCount: 3
+        },
+        {
+          type: "collect_item",
+          descriptionTemplate: "Gather the ingredients described in the recipe",
+          requiredCount: 3
+        },
+        {
+          type: "craft_item",
+          descriptionTemplate: "Follow the translated recipe to craft the item",
+          requiredCount: 1
+        }
+      ],
+      rewardScale: { xp: 55, fluency: 6 },
+      parameters: [
+        { name: "npcName", type: "npc", description: "NPC who provides the recipe" },
+        { name: "phraseCount", type: "number", description: "Instructions to translate" }
+      ]
+    },
+    // --- Customer Service Quests ---
+    {
+      id: "make_return",
+      name: "I Need to Return This",
+      category: "customer_service",
+      description: "Return a wrong item to {{businessName}} and request a refund in the target language.",
+      difficulty: "beginner",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit {{businessName}}",
+          requiredCount: 1
+        },
+        {
+          type: "talk_to_npc",
+          descriptionTemplate: "Talk to {{ownerName}} about the return",
+          requiredCount: 1
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Explain the problem and request a refund from {{ownerName}}",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} return/exchange vocabulary words",
+          requiredCount: 3
+        }
+      ],
+      rewardScale: { xp: 25, fluency: 4 },
+      parameters: [
+        { name: "businessName", type: "location", description: "Business to return item to" },
+        { name: "ownerName", type: "npc", description: "Shop owner NPC" },
+        { name: "wordCount", type: "number", description: "Vocabulary words to use" }
+      ]
+    },
+    {
+      id: "file_complaint",
+      name: "A Polite Complaint",
+      category: "customer_service",
+      description: "Politely complain to {{ownerName}} at {{businessName}} about unsatisfactory service.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit {{businessName}}",
+          requiredCount: 1
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Politely explain your complaint to {{ownerName}}",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} polite complaint phrases",
+          requiredCount: 4
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 5 },
+      parameters: [
+        { name: "businessName", type: "location", description: "Business to complain at" },
+        { name: "ownerName", type: "npc", description: "Owner to speak to" },
+        { name: "wordCount", type: "number", description: "Complaint phrases to use" }
+      ]
+    },
+    {
+      id: "make_reservation",
+      name: "Table for Two",
+      category: "customer_service",
+      description: "Reserve a table or room at {{businessName}} for a specific date and time.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit {{businessName}}",
+          requiredCount: 1
+        },
+        {
+          type: "talk_to_npc",
+          descriptionTemplate: "Speak to {{ownerName}} about a reservation",
+          requiredCount: 1
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Make a reservation specifying date, time, and party size",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} time/date expressions",
+          requiredCount: 4
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 5 },
+      parameters: [
+        { name: "businessName", type: "location", description: "Inn or restaurant" },
+        { name: "ownerName", type: "npc", description: "Staff NPC" },
+        { name: "wordCount", type: "number", description: "Time/date words to use" }
+      ]
+    },
+    {
+      id: "ask_recommendations",
+      name: "What Do You Recommend?",
+      category: "customer_service",
+      description: "Ask {{ownerName}} at {{businessName}} for recommendations and describe your preferences.",
+      difficulty: "intermediate",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit {{businessName}}",
+          requiredCount: 1
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Ask for recommendations and describe your preferences to {{ownerName}}",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} preference and comparison words",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 35, fluency: 5 },
+      parameters: [
+        { name: "businessName", type: "location", description: "Shop to visit" },
+        { name: "ownerName", type: "npc", description: "Shopkeeper NPC" },
+        { name: "wordCount", type: "number", description: "Preference words to use" }
+      ]
+    },
+    {
+      id: "urgent_request",
+      name: "I Need This Now!",
+      category: "customer_service",
+      description: "Communicate an urgent request to {{ownerName}} at {{businessName}} \u2014 polite but insistent.",
+      difficulty: "advanced",
+      objectiveTemplates: [
+        {
+          type: "visit_location",
+          descriptionTemplate: "Visit {{businessName}}",
+          requiredCount: 1
+        },
+        {
+          type: "complete_conversation",
+          descriptionTemplate: "Explain the urgency to {{ownerName}} while staying polite",
+          requiredCount: 1
+        },
+        {
+          type: "use_vocabulary",
+          descriptionTemplate: "Use {{wordCount}} urgency and polite insistence phrases",
+          requiredCount: 5
+        }
+      ],
+      rewardScale: { xp: 50, fluency: 7 },
+      parameters: [
+        { name: "businessName", type: "location", description: "Business to visit" },
+        { name: "ownerName", type: "npc", description: "Staff NPC" },
+        { name: "wordCount", type: "number", description: "Urgency phrases to use" }
+      ]
+    }
+  ];
+  function getTemplatesByDifficulty(difficulty) {
+    return QUEST_TEMPLATES.filter((t) => t.difficulty === difficulty);
+  }
+  function getTemplatesByCategory(category) {
+    return QUEST_TEMPLATES.filter((t) => t.category === category);
+  }
+
   // @insimul/core/src/system-packs/composer.ts
   var WORLD_DEFAULT_VARIANT = "world-default";
   function preset(p) {
@@ -41150,33 +44879,33 @@ After asking each question, wait for the player's response before moving to the 
     const h = PLANT_TRUNK_HALF_M;
     return [[x - h, z - h], [x + h, z - h], [x + h, z + h], [x - h, z + h]];
   }
-  function clearanceBodyOf(item) {
-    const outline = item.outline.map((c) => [c[0], c[1]]);
-    if (item.kind === "building") {
-      return { entityId: item.entityId, lotId: "", outline, mass: 0, maxShift: 0, obstacleGap: -1, class: CLEARANCE_BUILDING, gap: 0 };
+  function clearanceBodyOf(item2) {
+    const outline = item2.outline.map((c) => [c[0], c[1]]);
+    if (item2.kind === "building") {
+      return { entityId: item2.entityId, lotId: "", outline, mass: 0, maxShift: 0, obstacleGap: -1, class: CLEARANCE_BUILDING, gap: 0 };
     }
-    if (item.kind === "plant") {
+    if (item2.kind === "plant") {
       return {
-        entityId: item.entityId,
+        entityId: item2.entityId,
         lotId: "",
         outline,
         mass: 1e-3,
         maxShift: PLANT_CLEARANCE_MAX_SHIFT_M,
         obstacleGap: PLANT_PAVING_CLEARANCE_M,
         class: CLEARANCE_PLANT,
-        gap: plantWallClearanceM(item.crownRadius ?? 1)
+        gap: plantWallClearanceM(item2.crownRadius ?? 1)
       };
     }
     return {
-      entityId: item.entityId,
+      entityId: item2.entityId,
       lotId: "",
       outline,
-      mass: Math.max(0.01, item.area ?? 0),
+      mass: Math.max(0.01, item2.area ?? 0),
       maxShift: PROP_CLEARANCE_MAX_SHIFT_M,
       obstacleGap: -1,
       // a prop may stand on paving (a market's barrels on the square)
       class: CLEARANCE_PROP,
-      gap: markerClearanceM(item.archetype ?? "", item.height ?? 0, item.longestPlan ?? 0)
+      gap: markerClearanceM(item2.archetype ?? "", item2.height ?? 0, item2.longestPlan ?? 0)
     };
   }
   function startClearOutline(x, z, radius = START_CLEAR_RADIUS_M) {
@@ -42991,17 +46720,17 @@ After asking each question, wait for the player's response before moving to the 
         const items = arr(i.items, "items").map((x) => {
           const o = obj(x, "a clearance item");
           const kind = str9(o, "kind");
-          const item = {
+          const item2 = {
             entityId: str9(o, "entityId"),
             kind: kind === "building" ? "building" : kind === "plant" ? "plant" : "prop",
             outline: points(o.outline)
           };
-          item.area = numOr2(o, "area", 0);
-          item.archetype = str9(o, "archetype");
-          item.height = numOr2(o, "height", 0);
-          item.longestPlan = numOr2(o, "longestPlan", 0);
-          item.crownRadius = numOr2(o, "crownRadius", 1);
-          return item;
+          item2.area = numOr2(o, "area", 0);
+          item2.archetype = str9(o, "archetype");
+          item2.height = numOr2(o, "height", 0);
+          item2.longestPlan = numOr2(o, "longestPlan", 0);
+          item2.crownRadius = numOr2(o, "crownRadius", 1);
+          return item2;
         });
         const start = present(i, "playerStart") ? vec2(i.playerStart) : null;
         const r = settleClearance(items, obstacles(i.obstacles), SETTLE_DEFAULT_ITERATIONS, start);
@@ -45461,8 +49190,8 @@ After asking each question, wait for the player's response before moving to the 
   }
   function optArray(method, input, name, objects) {
     if (input[name] === void 0 || input[name] === null) return;
-    needArray(method, input[name], name).forEach((item, i) => {
-      if (objects) needObject(method, item, `${name}[${i}]`);
+    needArray(method, input[name], name).forEach((item2, i) => {
+      if (objects) needObject(method, item2, `${name}[${i}]`);
     });
   }
   var RULES_PANEL_INPUTS = {
@@ -45803,7 +49532,7 @@ After asking each question, wait for the player's response before moving to the 
     if (args.panel !== void 0 && args.panel !== null) needString(method, args.panel, "panel");
     optObject(method, args.aboard, "aboard");
     for (const key of ["vehicles", "nodes", "hotspots"]) {
-      (optArrayValue(method, args[key], key) ?? []).forEach((item, i) => needObject(method, item, `${key}[${i}]`));
+      (optArrayValue(method, args[key], key) ?? []).forEach((item2, i) => needObject(method, item2, `${key}[${i}]`));
     }
     if (optObject(method, args.actionTable, "actionTable") !== void 0) {
       optionalArg(args.actionTable.actions, (v) => objectList(method, v, "actionTable.actions"));
@@ -45898,11 +49627,11 @@ After asking each question, wait for the player's response before moving to the 
     return value === void 0 || value === null ? void 0 : check(value);
   }
   function objectList(method, value, name) {
-    needArray(method, value, name).forEach((item, i) => needObject(method, item, `${name}[${i}]`));
+    needArray(method, value, name).forEach((item2, i) => needObject(method, item2, `${name}[${i}]`));
     return value;
   }
   function stringList(method, value, name) {
-    needArray(method, value, name).forEach((item, i) => needString(method, item, `${name}[${i}]`));
+    needArray(method, value, name).forEach((item2, i) => needString(method, item2, `${name}[${i}]`));
     return value;
   }
   function traversalTuningArg(method, value, name) {
@@ -46149,7 +49878,7 @@ After asking each question, wait for the player's response before moving to the 
         return rest;
       }),
       equipment: Object.fromEntries(
-        Object.entries(equipment).map(([slot, item]) => [slot, item ? item.id ?? item.itemId : null])
+        Object.entries(equipment).map(([slot, item2]) => [slot, item2 ? item2.id ?? item2.itemId : null])
       ),
       save: model.toSaveState()
     });
@@ -46181,15 +49910,15 @@ After asking each question, wait for the player's response before moving to the 
       equip_flag: ({ model }, op) => {
         const id4 = needString(m, op.item, "item");
         if (typeof op.equipped !== "boolean") throw refuse2(m, "`equipped` must be a boolean");
-        const item = model.getItem(id4);
-        if (item) item.equipped = op.equipped;
-        return !!item;
+        const item2 = model.getItem(id4);
+        if (item2) item2.equipped = op.equipped;
+        return !!item2;
       },
       get: ({ model }, op) => plain(model.getItem(needString(m, op.item, "item")) ?? null),
       // Every stored item in insertion order, with core's id and display name for
       // it (`inventoryEntryId`, `inventoryItemName`): what a host lists when it
       // needs the whole pack, which `rows` (filtered, folded) is not.
-      items: ({ model }) => plain(model.allItems().map((item) => ({ id: inventoryEntryId(item), name: inventoryItemName(item), item }))),
+      items: ({ model }) => plain(model.allItems().map((item2) => ({ id: inventoryEntryId(item2), name: inventoryItemName(item2), item: item2 }))),
       load: ({ model }, op) => {
         model.loadFromSaveState(inventorySliceOf(m, op.player, "player"));
       },
@@ -46663,6 +50392,167 @@ After asking each question, wait for the player's response before moving to the 
       return value;
     });
   }
+  function numberList(method, value, name) {
+    needArray(method, value, name).forEach((x, i) => needNumber(method, x, `${name}[${i}]`));
+    return value;
+  }
+  function needBoolean(method, value, name) {
+    if (typeof value !== "boolean") throw refuse2(method, `\`${name}\` must be a boolean`);
+    return value;
+  }
+  var QUEST_OBJECTIVE_STRINGS = ["id", "description", "target", "difficulty", "grammarFocus", "category"];
+  var QUEST_OBJECTIVE_NUMBERS = ["requiredCount", "maxAttempts", "minAverageScore", "currentCount", "attempts"];
+  var QUEST_OBJECTIVE_STRING_LISTS = ["dependsOn", "targetWords", "wordsUsed", "grammarPatterns", "pronunciationPhrases"];
+  var QUEST_OBJECTIVE_BOOLEANS = ["completed", "failed"];
+  function questObjectiveArg(method, value, name) {
+    needObject(method, value, name);
+    needString(method, value.type, `${name}.type`);
+    for (const k of QUEST_OBJECTIVE_STRINGS) if (value[k] !== void 0) needString(method, value[k], `${name}.${k}`);
+    for (const k of QUEST_OBJECTIVE_NUMBERS) if (value[k] !== void 0) needNumber(method, value[k], `${name}.${k}`);
+    for (const k of QUEST_OBJECTIVE_STRING_LISTS) if (value[k] !== void 0) stringList(method, value[k], `${name}.${k}`);
+    for (const k of QUEST_OBJECTIVE_BOOLEANS) if (value[k] !== void 0) needBoolean(method, value[k], `${name}.${k}`);
+    if (value.order !== void 0 && value.order !== null) needNumber(method, value.order, `${name}.order`);
+    if (value.pronunciationScores !== void 0) numberList(method, value.pronunciationScores, `${name}.pronunciationScores`);
+    return value;
+  }
+  function questObjectivesArg(method, value, name = "objectives") {
+    return coded("invalid-input", () => {
+      needArray(method, value, name).forEach((o, i) => questObjectiveArg(method, o, `${name}[${i}]`));
+      return value;
+    });
+  }
+  var FEEDBACK_STATE_NUMBERS = [
+    "vocabularyUsed",
+    "vocabularyRequired",
+    "vocabularyProgress",
+    "grammarCorrect",
+    "grammarErrors",
+    "grammarAccuracy",
+    "pronunciationAttempts",
+    "pronunciationPassed",
+    "pronunciationRequired",
+    "pronunciationAverage",
+    "pronunciationProgress",
+    "grammarUsed",
+    "grammarRequired",
+    "grammarProgress",
+    "nextId"
+  ];
+  function questFeedbackStateArg(method, value, name = "state") {
+    return coded("invalid-input", () => {
+      needObject(method, value, name);
+      needString(method, value.questId, `${name}.questId`);
+      const each = (list2, at, check) => needArray(method, list2, at).forEach((x, i) => {
+        needObject(method, x, `${at}[${i}]`);
+        check(x, `${at}[${i}]`);
+      });
+      const nums = (x, at, keys) => keys.forEach((k) => needNumber(method, x[k], `${at}.${k}`));
+      const bools = (x, at, keys) => keys.forEach((k) => needBoolean(method, x[k], `${at}.${k}`));
+      const strs = (x, at, keys) => keys.forEach((k) => needString(method, x[k], `${at}.${k}`));
+      const strsOrNull = (x, at, keys) => keys.forEach((k) => x[k] !== null && needString(method, x[k], `${at}.${k}`));
+      const numsOrNull = (x, at, keys) => keys.forEach((k) => x[k] !== null && needNumber(method, x[k], `${at}.${k}`));
+      each(value.objectiveLocks, `${name}.objectiveLocks`, (x, at) => {
+        strsOrNull(x, at, ["id"]);
+        numsOrNull(x, at, ["order"]);
+        stringList(method, x.dependsOn, `${at}.dependsOn`);
+        bools(x, at, ["completed"]);
+      });
+      const locks = value.objectiveLocks.length;
+      const indexed = (x, at) => {
+        needNumber(method, x.index, `${at}.index`);
+        if (!Number.isInteger(x.index) || x.index < 0 || x.index >= locks) throw refuse2(method, `\`${at}.index\` must name one of \`${name}.objectiveLocks\``);
+        strs(x, at, ["type"]);
+        nums(x, at, ["required", "current"]);
+        bools(x, at, ["completed"]);
+      };
+      each(value.vocabulary, `${name}.vocabulary`, (x, at) => {
+        strs(x, at, ["word", "meaning"]);
+        strsOrNull(x, at, ["category"]);
+        bools(x, at, ["used", "usedCorrectly"]);
+        nums(x, at, ["uses"]);
+      });
+      each(value.vocabularyObjectives, `${name}.vocabularyObjectives`, (x, at) => {
+        indexed(x, at);
+        if (x.targetWords !== null) stringList(method, x.targetWords, `${at}.targetWords`);
+        stringList(method, x.wordsUsed, `${at}.wordsUsed`);
+      });
+      each(value.grammar, `${name}.grammar`, (x, at) => {
+        strs(x, at, ["pattern"]);
+        strsOrNull(x, at, ["description", "lastFeedback"]);
+        nums(x, at, ["correct", "incorrect"]);
+      });
+      each(value.pronunciation, `${name}.pronunciation`, (x, at) => {
+        strs(x, at, ["phrase"]);
+        nums(x, at, ["bestScore", "attempts"]);
+        bools(x, at, ["passed"]);
+      });
+      each(value.pronunciationObjectives, `${name}.pronunciationObjectives`, (x, at) => {
+        indexed(x, at);
+        nums(x, at, ["attempts"]);
+        numberList(method, x.scores, `${at}.scores`);
+        strsOrNull(x, at, ["difficulty"]);
+        numsOrNull(x, at, ["maxAttempts", "minAverageScore"]);
+        bools(x, at, ["failed"]);
+      });
+      each(value.grammarObjectives, `${name}.grammarObjectives`, indexed);
+      if (value.objectives !== null) {
+        each(value.objectives, `${name}.objectives`, (x, at) => {
+          nums(x, at, ["index", "correct", "errors", "accuracy"]);
+          strs(x, at, ["focus"]);
+          bools(x, at, ["completed"]);
+          each(x.patterns, `${at}.patterns`, (p, pat) => {
+            strs(p, pat, ["pattern"]);
+            nums(p, pat, ["correct", "incorrect"]);
+            strsOrNull(p, pat, ["lastFeedback"]);
+            needObject(method, p.examples, `${pat}.examples`);
+            stringList(method, p.examples.correct, `${pat}.examples.correct`);
+            stringList(method, p.examples.incorrect, `${pat}.examples.incorrect`);
+          });
+        });
+      }
+      each(value.recent, `${name}.recent`, (x, at) => {
+        strs(x, at, ["id", "message"]);
+        oneOf(method, x.type, FEEDBACK_TYPES, `${at}.type`);
+        if (x.detail !== void 0) needString(method, x.detail, `${at}.detail`);
+      });
+      nums(value, name, FEEDBACK_STATE_NUMBERS);
+      return value;
+    });
+  }
+  function questWorldArg(method, value, name = "world") {
+    return coded("invalid-input", () => {
+      needObject(method, value, name);
+      needString(method, value.id, `${name}.id`);
+      needString(method, value.name, `${name}.name`);
+      for (const k of ["worldType", "gameType", "description", "targetLanguage"]) if (value[k] !== void 0) needString(method, value[k], `${name}.${k}`);
+      if (value.config !== void 0 && value.config !== null) {
+        needObject(method, value.config, `${name}.config`);
+        if (value.config.questTypes !== void 0) stringList(method, value.config.questTypes, `${name}.config.questTypes`);
+      }
+      if (value.enabledModules !== void 0) stringList(method, value.enabledModules, `${name}.enabledModules`);
+      return value;
+    });
+  }
+  var QUEST_REWARD_TYPES = ["experience", "fluency", "items", "gold", "skills", "reputation", "unlock"];
+  function questTypeDataArg(method, value, name) {
+    needObject(method, value, name);
+    needArray(method, value.questCategories, `${name}.questCategories`).forEach((c, i) => {
+      const at = `${name}.questCategories[${i}]`;
+      needObject(method, c, at);
+      for (const k of ["id", "name", "icon", "description"]) needString(method, c[k], `${at}.${k}`);
+    });
+    needArray(method, value.objectiveTypes, `${name}.objectiveTypes`).forEach((o, i) => {
+      const at = `${name}.objectiveTypes[${i}]`;
+      needObject(method, o, at);
+      for (const k of ["id", "name"]) needString(method, o[k], `${at}.${k}`);
+    });
+    needArray(method, value.rewardTypes, `${name}.rewardTypes`).forEach((r, i) => oneOf(method, r, QUEST_REWARD_TYPES, `${name}.rewardTypes[${i}]`));
+    return value;
+  }
+  function jsonData(value) {
+    const text4 = JSON.stringify(value);
+    return text4 === void 0 ? null : JSON.parse(text4);
+  }
   var QUEST_STATUSES = ["available", "active", "completed"];
   var QUEST_FILTERS = ["all", "active", "completed", "available"];
   function questEntry(method, entry) {
@@ -47063,11 +50953,12 @@ After asking each question, wait for the player's response before moving to the 
     "save.village.conversations.timestamp": (args) => ({ timestamp: conversationTimestampOf(args.epochMs) }),
     /** `save.village.conversations.epochMs { timestamp }` → `{ epochMs }`: core's `epochMsOfConversationTimestamp`, the round trip back, or null. */
     "save.village.conversations.epochMs": (args) => ({ epochMs: epochMsOfConversationTimestamp(args.timestamp) }),
-    // ── language learning (PL.native-language-rows, slices 1 to 3) ─────────────
+    // ── language learning (PL.native-language-rows, slices 1 to 4) ─────────────
     // One core function per row, state in and out as JSON (README "The language
     // rows"). Core's corpus runner composes them per op; tests/language_corpus.cpp
     // replays conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,
-    // pronunciation,collection,objects,writing}.json the same way.
+    // pronunciation,collection,objects,writing,quest-feedback,quest-types}.json the
+    // same way.
     /**
      * `language.contract` → the constants a binding must not hard-code: the CEFR
      * bands, the encounter kinds and their weights in halves, the grammar and
@@ -47083,7 +50974,10 @@ After asking each question, wait for the player's response before moving to the 
      * close threshold, phonetic weight, pass score and base XP; and (slice 3) the
      * world words' refusals and sign roles, the composition refusals, the common
      * English words hover passes over, listening's pass score and a story's
-     * minimum length.
+     * minimum length; and (slice 4) quest feedback's item types, the lifecycle's
+     * pronunciation, vocabulary and grammar objective types with their default
+     * required counts, the recent feedback's and a pattern's examples' caps, and the
+     * language objective and reward type maps.
      */
     "language.contract": () => ({
       cefrOrder: [...CEFR_ORDER],
@@ -47151,7 +51045,19 @@ After asking each question, wait for the player's response before moving to the 
       compositionRefusals: [...COMPOSITION_REFUSALS],
       commonEnglishWords: [...COMMON_ENGLISH_WORDS],
       listeningPass: LISTENING_PASS,
-      storyMinLength: STORY_MIN_LENGTH
+      storyMinLength: STORY_MIN_LENGTH,
+      // Slice 4: quest feedback (quest-feedback.ts) and the language quest types' maps (quest-types/language-learning.ts).
+      feedbackTypes: [...FEEDBACK_TYPES],
+      pronunciationObjectives: [...PRONUNCIATION_OBJECTIVES],
+      pronunciationDefaultRequired: PRONUNCIATION_DEFAULT_REQUIRED,
+      vocabularyObjectives: [...VOCABULARY_OBJECTIVES],
+      vocabularyDefaultRequired: VOCABULARY_DEFAULT_REQUIRED,
+      grammarObjectives: [...GRAMMAR_OBJECTIVES],
+      grammarDefaultRequired: GRAMMAR_DEFAULT_REQUIRED,
+      recentFeedbackMax: RECENT_FEEDBACK_MAX,
+      patternExamplesMax: PATTERN_EXAMPLES_MAX,
+      languageObjectiveTypeMap: { ...LANGUAGE_OBJECTIVE_TYPE_MAP },
+      languageRewardTypeMap: { ...LANGUAGE_REWARD_TYPE_MAP }
     }),
     // The language book (progress.ts) and the player's CEFR facts (prolog/player-language-state.ts).
     /** `language.book.empty { language? }` → `{ book }`: core's `emptyBook` (absent: core's default, 'target'). */
@@ -48022,6 +51928,174 @@ After asking each question, wait for the player's response before moving to the 
       });
       return plain(gradeListening(state, questId, score));
     },
+    // Slice 4: real-time quest language feedback (quest-feedback.ts). The strip is
+    // STATELESS here too: `language.questFeedback.initial` answers the state, every
+    // other row takes it and answers the next one. The quest lifecycle governs
+    // (U118(10)): a host feeds the lifecycle's records back with `.syncLifecycle`.
+    // Core states no refusal in this module.
+    /** `language.questFeedback.initial { questId, objectives, meanings? }` → `{ state }`: core's `questFeedback`, the targets read from the objectives as the lifecycle reads them (meanings absent or null: none). */
+    "language.questFeedback.initial": (args) => {
+      const m = "language.questFeedback.initial";
+      const questId = coded("invalid-input", () => needString(m, args.questId, "questId"));
+      const objectives = questObjectivesArg(m, args.objectives);
+      const meanings = coded("invalid-input", () => {
+        if (args.meanings === void 0 || args.meanings === null) return void 0;
+        needObject(m, args.meanings, "meanings");
+        for (const [k, v] of Object.entries(args.meanings)) needString(m, v, `meanings.${k}`);
+        return args.meanings;
+      });
+      return { state: plain(meanings === void 0 ? questFeedback(questId, objectives) : questFeedback(questId, objectives, meanings)) };
+    },
+    /** `language.questFeedback.targets { objectives }` → `{ targetWords, grammarPatterns, pronunciationPhrases, vocabularyRequired, pronunciationRequired, grammarRequired }`: core's `questLanguageTargets`. */
+    "language.questFeedback.targets": (args) => plain(questLanguageTargets(questObjectivesArg("language.questFeedback.targets", args.objectives))),
+    /** `language.questFeedback.useVocabulary { state, usages }` → `{ state, items }`: core's `useVocabulary`, each correct use counted as the lifecycle counts it (`usages`: `{ word, usedCorrectly }`). */
+    "language.questFeedback.useVocabulary": (args) => {
+      const m = "language.questFeedback.useVocabulary";
+      const state = questFeedbackStateArg(m, args.state);
+      const usages = coded("invalid-input", () => needArray(m, args.usages, "usages").map((u, i) => {
+        needObject(m, u, `usages[${i}]`);
+        needString(m, u.word, `usages[${i}].word`);
+        needBoolean(m, u.usedCorrectly, `usages[${i}].usedCorrectly`);
+        return u;
+      }));
+      return plain(useVocabulary(state, usages));
+    },
+    /** `language.questFeedback.syncLifecycle { state, objectives }` → `{ state, items }`: core's `syncLifecycle`, the lifecycle's records of the same quest (by index) taken again, with the milestones the change earns. */
+    "language.questFeedback.syncLifecycle": (args) => {
+      const m = "language.questFeedback.syncLifecycle";
+      const state = questFeedbackStateArg(m, args.state);
+      return plain(syncLifecycle(state, questObjectivesArg(m, args.objectives)));
+    },
+    /** `language.questFeedback.lockedVocabulary { state }` → `{ locked }`: core's `lockedVocabulary`, the vocabulary objectives locked now, by index. */
+    "language.questFeedback.lockedVocabulary": (args) => ({ locked: plain(lockedVocabulary(questFeedbackStateArg("language.questFeedback.lockedVocabulary", args.state))) }),
+    /** `language.questFeedback.lockedPronunciation { state }` → `{ locked }`: core's `lockedPronunciation`. */
+    "language.questFeedback.lockedPronunciation": (args) => ({ locked: plain(lockedPronunciation(questFeedbackStateArg("language.questFeedback.lockedPronunciation", args.state))) }),
+    /** `language.questFeedback.lockedGrammar { state }` → `{ locked }`: core's `lockedGrammar`. */
+    "language.questFeedback.lockedGrammar": (args) => ({ locked: plain(lockedGrammar(questFeedbackStateArg("language.questFeedback.lockedGrammar", args.state))) }),
+    /**
+     * `language.questFeedback.grammar { state, feedback }` → `{ state, items,
+     * objectivesUpdated }`: core's `grammarFeedback` (`feedback`: `{ status, errorCount?,
+     * errors? }`, status one of correct, corrected, no_target_language; each error's four
+     * members strings).
+     */
+    "language.questFeedback.grammar": (args) => {
+      const m = "language.questFeedback.grammar";
+      const state = questFeedbackStateArg(m, args.state);
+      const feedback = coded("invalid-input", () => {
+        const fb = needObject(m, args.feedback, "feedback");
+        oneOf(m, fb.status, ["correct", "corrected", "no_target_language"], "feedback.status");
+        if (fb.errorCount !== void 0) needNumber(m, fb.errorCount, "feedback.errorCount");
+        if (fb.errors !== void 0) {
+          needArray(m, fb.errors, "feedback.errors").forEach((e, i) => {
+            needObject(m, e, `feedback.errors[${i}]`);
+            for (const k of ["pattern", "incorrect", "corrected", "explanation"]) needString(m, e[k], `feedback.errors[${i}].${k}`);
+          });
+        }
+        return fb;
+      });
+      return plain(grammarFeedback(state, feedback));
+    },
+    /** `language.questFeedback.correctUsage { state, pattern, example? }` → `{ state, objectivesUpdated }`: core's `correctUsage`, a correct use of one pattern named by the grader. */
+    "language.questFeedback.correctUsage": (args) => {
+      const m = "language.questFeedback.correctUsage";
+      const state = questFeedbackStateArg(m, args.state);
+      const [pattern, example] = coded("invalid-input", () => [
+        needString(m, args.pattern, "pattern"),
+        args.example === void 0 ? void 0 : needString(m, args.example, "example")
+      ]);
+      return plain(example === void 0 ? correctUsage(state, pattern) : correctUsage(state, pattern, example));
+    },
+    /** `language.questFeedback.grammarObjectiveComplete { state, index, accuracy?, correct? }` → `{ complete }`: core's `grammarObjectiveComplete` (accuracy and correct absent or null: core's 60 and 3). */
+    "language.questFeedback.grammarObjectiveComplete": (args) => {
+      const m = "language.questFeedback.grammarObjectiveComplete";
+      const state = questFeedbackStateArg(m, args.state);
+      const [index, accuracy, correct] = coded("invalid-input", () => [needNumber(m, args.index, "index"), optNumber(m, args.accuracy, "accuracy"), optNumber(m, args.correct, "correct")]);
+      return { complete: grammarObjectiveComplete(state, index, accuracy, correct) };
+    },
+    /** `language.questFeedback.pronunciation { state, result }` → `{ state, items }`: core's `pronunciationFeedback` (`result`: `{ phrase, score, passed, words? }`, each word `{ word, status }`). */
+    "language.questFeedback.pronunciation": (args) => {
+      const m = "language.questFeedback.pronunciation";
+      const state = questFeedbackStateArg(m, args.state);
+      const result2 = coded("invalid-input", () => {
+        const r = needObject(m, args.result, "result");
+        needString(m, r.phrase, "result.phrase");
+        needNumber(m, r.score, "result.score");
+        needBoolean(m, r.passed, "result.passed");
+        if (r.words !== void 0) {
+          needArray(m, r.words, "result.words").forEach((w, i) => {
+            needObject(m, w, `result.words[${i}]`);
+            needString(m, w.word, `result.words[${i}].word`);
+            needString(m, w.status, `result.words[${i}].status`);
+          });
+        }
+        return r;
+      });
+      return plain(pronunciationFeedback(state, result2));
+    },
+    /** `language.questFeedback.hints { state, max? }` → `{ state, items }`: core's `vocabularyHints`, the first unused quest words (max absent or null: core's 3). */
+    "language.questFeedback.hints": (args) => {
+      const m = "language.questFeedback.hints";
+      const state = questFeedbackStateArg(m, args.state);
+      const max = coded("invalid-input", () => optNumber(m, args.max, "max"));
+      return plain(max === void 0 ? vocabularyHints(state) : vocabularyHints(state, max));
+    },
+    /** `language.questFeedback.done { state }` → `{ vocabulary, pronunciation, grammar }`: core's `questFeedbackDone`, each kind complete as the lifecycle completes it (none of a kind: false). */
+    "language.questFeedback.done": (args) => plain(questFeedbackDone(questFeedbackStateArg("language.questFeedback.done", args.state))),
+    // Slice 4: the language quest types (quest-types/index.ts's registry,
+    // language-learning.ts, business-scavenger-hunt.ts, customer-service.ts) and the
+    // quest templates (language/quest-templates.ts). A definition is answered as data:
+    // JSON drops its tracking and completion functions and its generation prompt.
+    /** `language.questTypes.forWorld { world }` → `{ types }`: core's `getQuestTypesForWorld`, the ids of every quest type a world gets (its config's, its modules', else one). */
+    "language.questTypes.forWorld": (args) => ({ types: plain(getQuestTypesForWorld(questWorldArg("language.questTypes.forWorld", args.world)).map((t) => t.id)) }),
+    /** `language.questTypes.primary { world }` → `{ type }`: core's `getQuestTypeForWorld`, the one quest type of a world's game type or setting (language-learning when none matches). */
+    "language.questTypes.primary": (args) => ({ type: plain(getQuestTypeForWorld(questWorldArg("language.questTypes.primary", args.world)).id) }),
+    /** `language.questTypes.definition { id }` → `{ definition }`: core's `getQuestTypeById`, as data, or null. */
+    "language.questTypes.definition": (args) => ({ definition: jsonData(getQuestTypeById(coded("invalid-input", () => needString("language.questTypes.definition", args.id, "id")))) }),
+    /** `language.questTypes.has { id }` → `{ has }`: core's `hasQuestType`. */
+    "language.questTypes.has": (args) => ({ has: hasQuestType(coded("invalid-input", () => needString("language.questTypes.has", args.id, "id"))) }),
+    /** `language.questTypes.all {}` → `{ definitions }`: core's `getAllQuestTypes`, every registered definition as data, in the registry's order. */
+    "language.questTypes.all": () => ({ definitions: jsonData(getAllQuestTypes()) }),
+    /** `language.questTypes.mixing { ids }` → `{ definitions }`: core's `getQuestTypesForMixing`, the definitions of the ids the registry holds, in the ids' order, as data. */
+    "language.questTypes.mixing": (args) => ({
+      definitions: jsonData(getQuestTypesForMixing(coded("invalid-input", () => stringList("language.questTypes.mixing", args.ids, "ids"))))
+    }),
+    /** `language.questTypes.merge { definitions }` → `{ questCategories, objectiveTypes, rewardTypes }`: core's `mergeQuestTypes` over definitions as data (each category, objective and reward kept once, first seen first). */
+    "language.questTypes.merge": (args) => {
+      const m = "language.questTypes.merge";
+      const definitions = coded("invalid-input", () => needArray(m, args.definitions, "definitions").map((d, i) => questTypeDataArg(m, d, `definitions[${i}]`)));
+      return plain(mergeQuestTypes(definitions));
+    },
+    /**
+     * `language.questTypes.objectiveComplete { questType, objective, progress }` → `{
+     * complete }`: the registered quest type's objective type's `completionCheck(progress)`.
+     * A quest type the registry does not hold, or an objective type it does not define, is
+     * `[invalid-input]` (core's runner throws there).
+     */
+    "language.questTypes.objectiveComplete": (args) => {
+      const m = "language.questTypes.objectiveComplete";
+      const [objective, progress] = coded("invalid-input", () => {
+        const t = oneOf(m, args.questType, Object.keys(QUEST_TYPE_REGISTRY), "questType");
+        const ids = QUEST_TYPE_REGISTRY[t].objectiveTypes.map((o2) => o2.id);
+        const o = QUEST_TYPE_REGISTRY[t].objectiveTypes[ids.indexOf(oneOf(m, args.objective, ids, "objective"))];
+        const p = needObject(m, args.progress, "progress");
+        if (o.id === "use_vocabulary_category" && p.wordsUsed) {
+          needArray(m, p.wordsUsed, "progress.wordsUsed");
+          if (p.targetCategory) p.wordsUsed.forEach((w, i) => needObject(m, w, `progress.wordsUsed[${i}]`));
+        }
+        return [o, p];
+      });
+      return { complete: plain(objective.completionCheck(progress)) };
+    },
+    /** `language.questTypes.templates {}` → `{ templates }`: core's `QUEST_TEMPLATES`, every quest template, in core's order. */
+    "language.questTypes.templates": () => ({ templates: plain(QUEST_TEMPLATES) }),
+    /** `language.questTypes.templatesByDifficulty { difficulty }` → `{ templates }`: core's `getTemplatesByDifficulty`. */
+    "language.questTypes.templatesByDifficulty": (args) => ({
+      templates: plain(getTemplatesByDifficulty(coded("invalid-input", () => needString("language.questTypes.templatesByDifficulty", args.difficulty, "difficulty"))))
+    }),
+    /** `language.questTypes.templatesByCategory { category }` → `{ templates }`: core's `getTemplatesByCategory`. */
+    "language.questTypes.templatesByCategory": (args) => ({
+      templates: plain(getTemplatesByCategory(coded("invalid-input", () => needString("language.questTypes.templatesByCategory", args.category, "category"))))
+    }),
     // ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
     /** `ui.notifications.create {}` → `{ session, view }` — core's `Notifications` toast queue. */
     "ui.notifications.create": () => {
@@ -49534,8 +53608,8 @@ After asking each question, wait for the player's response before moving to the 
      */
     "survival.needs.useItem": (args) => {
       const m = "survival.needs.useItem";
-      const [state, item] = coded("invalid-input", () => [needObject(m, args.state, "state"), needObject(m, args.item, "item")]);
-      return plain(useItemForNeeds(state, survivalTuningOf(args), item, args.at));
+      const [state, item2] = coded("invalid-input", () => [needObject(m, args.state, "state"), needObject(m, args.item, "item")]);
+      return plain(useItemForNeeds(state, survivalTuningOf(args), item2, args.at));
     },
     /**
      * `survival.needs.setTemperature { survival?, params?, state, value, at }` → core's
