@@ -934,7 +934,7 @@
   `movementView` of its movement, so the transcription holds the movement as a subset and the
   guard reads the view back. Slice 3 adds the strategy game the same way
   (`strategy/{campaign,run,save}.json`, 27 cases, transcribed as
-  `core-genre-strategy-<file>.json`; `core_vendor_genre_negative` then names twenty-six
+  `core-genre-strategy-<file>.json`; `core_vendor_genre_negative` then names twenty-seven
   perturbations): the campaign rows are stateless, `strategy.director.*` is a session whose KB is
   its own (`GamePrologEngine` genre `strategy`; nothing published until `.start` or `.restore`),
   and core's `IAgentActionHost` is only told, so no host crosses the ABI: `.endTurn` answers the

@@ -639,17 +639,18 @@ set_tests_properties(core_vendor_language_negative PROPERTIES
 # cases/core-genre-platformer-*.json and eight more (a step call dropped, a step's movement
 # weakened, its probed links changed, its outcome weakened to a subset, its host orders stated
 # non-empty, two runs' stars swapped, a course case put on the C leg only, a restored run put on
-# both legs); slice 3 (the strategy game) adds cases/core-genre-strategy-*.json and nine more (a
+# both legs); slice 3 (the strategy game) adds cases/core-genre-strategy-*.json and ten more (a
 # run's endTurn call dropped, a turn report's orders stated empty, a turn report weakened to a
-# subset, a victory answer flipped, a controls answer stated under another key, two businesses'
-# prices swapped, a controlled call asked for another faction, a campaign case put on the C leg
-# only, a restored run put on both legs). It passes only when all twenty-six are named.
+# subset, a victory answer flipped, a stockpile and a controls answer stated under another key,
+# two businesses' prices swapped, a controlled call asked for another faction, a campaign case
+# put on the C leg only, a restored run put on both legs). It passes only when all twenty-seven
+# are named.
 add_test(NAME core_vendor_genre_negative COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
        --check-genre-transcription-negative)
 set_tests_properties(core_vendor_genre_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "genre transcription negative [^ ]* 26 of 26 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_genre_negative")
+  PASS_REGULAR_EXPRESSION "genre transcription negative [^ ]* 27 of 27 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_genre_negative")
 
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus

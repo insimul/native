@@ -2505,7 +2505,7 @@ each op as core's runner composes it (a step's faction is the campaign's `player
 unless named). `emit-bridge-cases.mjs` transcribes them into
 `cases/core-genre-strategy-{campaign,run,save}.json`, every answer stated exactly; `core_vendor`
 holds each answer as its step row's whole expectation and a campaign's books, prices and
-controlled settlements in place, and `core_vendor_genre_negative` names twenty-six
+controlled settlements in place, and `core_vendor_genre_negative` names twenty-seven
 perturbations. Hand cases: `tests/cases/bridge-strategy.json` (the contract, the campaign over
 a world's own section and the row's over it, the tunables absent, null, partial and whole,
 facts, world facts and neighbours alone, books, prices and control at their edges, the save

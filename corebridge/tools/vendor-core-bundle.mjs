@@ -95,7 +95,8 @@
 //       two runs' stars swapped, a course
 //       case put on the C leg only, a restored platformer run put on both legs; a strategy
 //       run's endTurn call dropped, a turn report's orders stated empty, a turn report weakened
-//       to a subset, a victory answer flipped, a controls answer stated under another key, two
+//       to a subset, a victory answer flipped, a stockpile and a controls answer stated under
+//       another key, two
 //       businesses' prices swapped, a controlled call asked for another faction, a campaign
 //       case put on the C leg only, a restored strategy run put on both legs) and requires
 //       the guard to name each one.
@@ -1342,6 +1343,10 @@ function genreTranscriptionNegative() {
     ['a victory answer flipped', 'strategy/run', (d) => {
       const st = steps(d).find((x) => x.call === 'strategy.director.victory');
       st.expect = { victory: !st.expect.victory };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a stockpile answer stated under another key', 'strategy/run', (d) => {
+      const st = steps(d).find((x) => x.call === 'strategy.director.stockpile');
+      st.expect = { pile: st.expect.stockpile };
     }, 'answer(s) of the corpus expected nowhere'],
     ['a controls answer stated under another key', 'strategy/run', (d) => {
       const st = steps(d).find((x) => x.call === 'strategy.director.controls' && x.expect.settlements.length > 0);
