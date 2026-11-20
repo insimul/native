@@ -3,15 +3,15 @@
   "rules": "scripts/open-boundary.rules.json",
   "rulesVersion": 1,
   "repository": {
-    "root": "native-native-language-rows-s3-objects-collection-writing",
-    "gitHead": "fad81a05da912b4236c77e6bc0fa048e75f0368d"
+    "root": "native-native-language-rows-s4-quest-feedback-quest-types",
+    "gitHead": "b1771b34718ae842193f4da62361023ee13ee993"
   },
   "coverage": {
-    "files": 497,
-    "packScanned": 245,
+    "files": 501,
+    "packScanned": 249,
     "packDocuments": [],
     "importFiles": 21,
-    "importSpecifiers": 193,
+    "importSpecifiers": 197,
     "cargoManifests": 3,
     "cargoDependencies": 3,
     "cFiles": 152,
@@ -2209,7 +2209,59 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 838,
+      "line": 863,
+      "specifier": "@insimul/core/language-learning/quest-feedback",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the language.questFeedback.* rows (core's real-time quest language feedback strip, which the quest lifecycle governs: its targets, quest words, grammar corrections and objective accuracy, pronunciation, milestones and the lifecycle sync) (PL.native-language-rows slice 4, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s4-quest-feedback-quest-types (Features Gauntlet PL.native-language-rows slice 4)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 873,
+      "specifier": "@insimul/core/quest-types/index",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the language.questTypes.* rows (core's quest type registry: which quest types a world gets, their definitions as data, mixing and merging, and each objective type's completion check) (PL.native-language-rows slice 4, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s4-quest-feedback-quest-types (Features Gauntlet PL.native-language-rows slice 4)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 874,
+      "specifier": "@insimul/core/quest-types/language-learning",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of language.contract's languageObjectiveTypeMap and languageRewardTypeMap (core's language objective and reward type maps to the generic modules' types) (PL.native-language-rows slice 4, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s4-quest-feedback-quest-types (Features Gauntlet PL.native-language-rows slice 4)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 875,
+      "specifier": "@insimul/core/language/quest-templates",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the language.questTypes.templates* rows (core's language quest templates, whole, by difficulty and by category) (PL.native-language-rows slice 4, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s4-quest-feedback-quest-types (Features Gauntlet PL.native-language-rows slice 4)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 880,
       "specifier": "@insimul/core/system-packs/composer",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2222,7 +2274,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 847,
+      "line": 889,
       "specifier": "@insimul/core/editor/layout/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2235,7 +2287,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 848,
+      "line": 890,
       "specifier": "@insimul/core/editor/layout/composition/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2420,7 +2472,7 @@
       "unresolved": 0
     },
     "dependency": {
-      "findings": 112,
+      "findings": 116,
       "unresolved": 0
     },
     "unusedAllowances": 0
