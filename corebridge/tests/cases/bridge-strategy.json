@@ -13827,7 +13827,7 @@
    ]
   },
   {
-   "name": "a director over its own KB: before the start, a second start and a late restore refused (schema); holders, stockpiles (a faction with none, an Object.prototype name), claims (an unkept stall taken, a shut mill, a business named constructor, an unknown faction, a business named toString, out of reach), hands assigned (a resident, one too many, a stranger), a keeper's release refused, two turns' books and orders, control, victory, progress, the boundary, the KB released",
+   "name": "a director over its own KB: before the start, a second start and a late restore refused (schema); holders, stockpiles (a faction with none, an Object.prototype name), claims (an unkept stall taken, a shut mill, a business named constructor, an unknown faction, a business named toString, out of reach), hands assigned (a resident, one too many, a stranger; a keeper's own hand where the player is refused), a keeper's release refused, two turns' books and orders, control, victory, progress, the boundary, the KB released",
    "legs": [
     "c"
    ],
@@ -14307,6 +14307,41 @@
      }
     },
     {
+     "call": "strategy.director.assign",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "faction": "crown",
+      "worker": "pim",
+      "business": "wex_smithy"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "cannot_assign",
+      "reason": "pim cannot work wex_smithy for crown",
+      "applied": []
+     }
+    },
+    {
+     "call": "strategy.director.assign",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "faction": "tam_smith",
+      "worker": "pim",
+      "business": "wex_smithy"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "strategy_worker(wex_smithy, pim)."
+      ]
+     }
+    },
+    {
      "call": "strategy.director.release",
      "args": {
       "session": {
@@ -14374,6 +14409,7 @@
       "ok": true,
       "reason": null,
       "applied": [
+       "strategy_worker(wex_smithy, pim).",
        "strategy_turn(0).",
        "strategy_stock(crown, coin, 9).",
        "strategy_stock(crown, food, 6).",
@@ -14431,7 +14467,13 @@
         "tools": 0
        }
       },
-      "released": [],
+      "released": [
+       {
+        "faction": "tam_smith",
+        "worker": "pim",
+        "business": "wex_smithy"
+       }
+      ],
       "orders": [
        {
         "agent": "rue",
@@ -15917,7 +15959,7 @@
    ]
   },
   {
-   "name": "a director's kb carries the world facts: the unkept stall is claimed, a Yarrow resident is put to work there, the player controls Yarrow and the hand is told to work",
+   "name": "a director's kb carries the world facts: the unkept stall is claimed, a Yarrow resident is put to work there, the player holds one of Yarrow's two trading businesses (no strict majority, so it controls nothing) and the hand is told to work",
    "legs": [
     "c"
    ],

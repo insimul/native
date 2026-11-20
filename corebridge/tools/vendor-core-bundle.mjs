@@ -86,7 +86,7 @@
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --check-genre-transcription-negative
 //       The genre systems transcription guard's negative control (PL.native-genre-rows):
-//       perturbs the vendored cases/core-genre-{puzzle,platformer,strategy}-*.json in memory (a
+//       perturbs the vendored cases/core-genre-{puzzle,platformer,strategy,genre-pieces}-*.json in memory (a
 //       dropped case, a case no corpus case names, a run's answer dropped, a read's first
 //       call changed, a riddle's choices dropped, an answer key expected nowhere, an unlock
 //       outcome weakened to a subset, a restored run's states expected nowhere, a KB run put
@@ -98,7 +98,11 @@
 //       to a subset, a victory answer flipped, a stockpile and a controls answer stated under
 //       another key, two
 //       businesses' prices swapped, a controlled call asked for another faction, a campaign
-//       case put on the C leg only, a restored strategy run put on both legs) and requires
+//       case put on the C leg only, a restored strategy run put on both legs; and over
+//       cases/core-genre-genre-pieces-{kinds,build-plan}.json a key call asked without its
+//       variant, a binding walk weakened to a subset, a pieces case put on the C leg only, a
+//       build-plan fixture named at another path, a write's ground call dropped, a settle
+//       offset stated under another key, a written world's ground stated empty) and requires
 //       the guard to name each one.
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --check-language-transcription-negative
@@ -330,7 +334,7 @@ const LANGUAGE_CORPUS_FILES = [
   'conformance/language/writing.json',
 ];
 
-// core's P9j genre systems corpora that the genre.*, puzzle.*, platformer.* and strategy.* rows answer
+// core's P9j genre systems corpora that the genre.*, puzzle.*, platformer.*, strategy.* and genrePieces.* rows answer
 // (PL.native-genre-rows, U128, U115; core's P9j.core), copied verbatim the same way and
 // driven through the rows by tests/genre_systems_corpus.cpp, each op composed as core's
 // reference runner (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes it;
@@ -338,12 +342,14 @@ const LANGUAGE_CORPUS_FILES = [
 // The committed world slice (conformance/genre-mechanics/thistlecombe.world-slice.json) is
 // the corpora's `"thistlecombe"` world, which the runner hands core's `worldOf` as its
 // slices. Slice 1 copies the puzzle's three files (definition, run, save), slice 2 the
-// platformer's (course, run, save) and slice 3 the strategy game's (campaign, run, save); the
-// genre pieces (conformance/genre-pieces/) are a later slice of the row. conformance/prolog/
+// platformer's (course, run, save), slice 3 the strategy game's (campaign, run, save) and slice 4
+// the genre pieces' (conformance/genre-pieces/{kinds,build-plan}.json, the rows' last). conformance/prolog/
 // mechanic-{puzzle,platformer,strategy}.json stay with PL.native-prolog-mirror-full (U120(9)). Each
 // directory is this set's alone, so a file an earlier pin left there is seen, hashed and removed.
 const GENRE_SYSTEMS_CORPUS_FILES = [
   'conformance/genre-mechanics/thistlecombe.world-slice.json',
+  'conformance/genre-pieces/build-plan.json',
+  'conformance/genre-pieces/kinds.json',
   'conformance/platformer/course.json',
   'conformance/platformer/run.json',
   'conformance/platformer/save.json',
@@ -998,8 +1004,12 @@ function languageTranscriptionProblems(load = (base) => {
 // answer is the step row's whole expectation (a `{ victory }`, a `{ settlements }`, never a
 // bare `true` or `[]` that any other step could state), and a campaign's books, prices and
 // controlled settlements are held in place, call k taking the k-th business or faction and
-// expecting its answer. `--check-genre-transcription-negative` proves each kind of drift is
-// named.
+// expecting its answer. The genre pieces (conformance/genre-pieces/{kinds,build-plan}.json, core's
+// runners genre-pieces-corpus.ts and build-plan-corpus.ts) are one row call per case, a write two
+// (the ground plan over `world ?? {}`, then the writer), and every call is held in place: its args
+// exactly the input members core's runner passes (a build-plan `{"$fixture": name}` named by `$file`
+// in the vendored corpus) and its whole answer stated. `--check-genre-transcription-negative`
+// proves each kind of drift is named.
 const GENRE_GUARD_FILES = [
   'puzzle/definition',
   'puzzle/run',
@@ -1010,6 +1020,8 @@ const GENRE_GUARD_FILES = [
   'strategy/campaign',
   'strategy/run',
   'strategy/save',
+  'genre-pieces/kinds',
+  'genre-pieces/build-plan',
 ];
 const PLATFORMER_STEP_CALL = {
   restore: 'platformer.director.restore',
@@ -1219,6 +1231,48 @@ function genreCallsOf(file, c) {
     if (c.op === 'restore' && held) return { calls: [...calls, ...sRunCalls(c.input, true)], answers: [...answers, ...sRunAnswers(e.run)] };
     return { calls, answers };
   }
+  // The genre pieces: one row call per case (a write: the ground plan, then the writer), held
+  // in place: call k takes exactly the args core's runner passes (each input member when the
+  // input has it; a build-plan fixture named by `$file` in the vendored corpus) and states the
+  // whole answer.
+  if (file === 'genre-pieces/kinds' || file === 'genre-pieces/build-plan') {
+    const fixtureRef = (v) => {
+      if (Array.isArray(v)) return v.map(fixtureRef);
+      if (v === null || typeof v !== 'object') return v;
+      const keys = Object.keys(v);
+      if (keys.length === 1 && keys[0] === '$fixture') return { $file: '../conformance/genre-pieces/build-plan.json', $path: `fixtures.${v.$fixture}` };
+      return Object.fromEntries(keys.map((k) => [k, fixtureRef(v[k])]));
+    };
+    const i = file === 'genre-pieces/build-plan' ? fixtureRef(c.input) : c.input;
+    const pick = (keys) => Object.fromEntries(keys.filter((k) => Object.prototype.hasOwnProperty.call(i, k)).map((k) => [k, i[k]]));
+    const D = ['course', 'puzzle', 'campaign'];
+    const one = {
+      kinds: ['genrePieces.kinds', ['genre'], (x) => x],
+      key: ['genrePieces.key', ['genre', 'kind', 'variant'], (x) => x],
+      pieces: ['genrePieces.for', ['genre', ...D], (x) => x],
+      collect: ['genrePieces.collect', ['genrePieces'], (x) => ({ entities: x })],
+      stamp: ['genrePieces.stamp', ['genrePieces'], (x) => x],
+      anchors: ['genrePieces.anchors', ['world', 'course', 'puzzle'], (x) => ({ anchors: x })],
+      place: ['genrePieces.place', ['genre', 'pieces', 'anchors'], (x) => x],
+      plan: ['genrePieces.plan', ['genre', 'world', ...D], (x) => x],
+      settle: ['genrePieces.settleOffset', ['n'], (x) => ({ offset: x })],
+      ground: ['genrePieces.ground', ['genre', 'world', ...D], (x) => x],
+    }[c.op];
+    const ops = file === 'genre-pieces/kinds' ? ['kinds', 'key', 'pieces', 'collect', 'stamp'] : ['anchors', 'place', 'plan', 'settle', 'ground', 'write'];
+    if (!ops.includes(c.op)) return { calls: [`(no op ${c.op} for ${file})`], answers: [] };
+    if (one) return { calls: [one[0]], answers: [one[2](e)], positional: [[0, pick(one[1]), one[2](e)]] };
+    const world = i.world ?? {};
+    const groundArgs = { ...pick(['genre', ...D]), world };
+    if ('refused' in e) return { calls: ['genrePieces.ground'], answers: [e], positional: [[0, groundArgs, e]] };
+    return {
+      calls: ['genrePieces.ground', 'genrePieces.write'],
+      answers: [e],
+      positional: [
+        [0, groundArgs, { $type: 'object' }],
+        [1, { world, plan: { $ref: 'g' } }, { world: { $subset: { entities: { $subset: { genrePieces: e.genrePieces, genreGround: e.genreGround } } } } }],
+      ],
+    };
+  }
   return { calls: [`(no op ${c.op} for ${file})`], answers: [] };
 }
 
@@ -1367,6 +1421,30 @@ function genreTranscriptionNegative() {
     ['a restored strategy run put on both legs', 'strategy/save', (d) => {
       delete d.cases.find((c) => c.legs).legs;
     }, 'C-only when they do not reach the KB'],
+    ['a key call asked without its variant', 'genre-pieces/kinds', (d) => {
+      delete steps(d).find((x) => x.call === 'genrePieces.key' && 'variant' in x.args).args.variant;
+    }, "not transcribed as core's runner calls their op"],
+    ['a binding walk weakened to a subset (the first entity alone)', 'genre-pieces/kinds', (d) => {
+      const st = steps(d).find((x) => x.call === 'genrePieces.collect' && x.expect.entities.length > 1);
+      st.expect = { $subset: { entities: { $len: st.expect.entities.length } } };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a pieces case put on the C leg only', 'genre-pieces/kinds', (d) => {
+      Object.assign(d.cases.find((c) => c.steps[0].call === 'genrePieces.for'), { legs: ['c'], why: 'perturbed' });
+    }, 'C-only when they do not reach the KB'],
+    ['a build-plan fixture named at another path', 'genre-pieces/build-plan', (d) => {
+      steps(d).find((x) => x.args.world?.$path === 'fixtures.thistlecombe-world').args.world.$path = 'fixtures.thistlecombe-course';
+    }, "not transcribed as core's runner calls their op"],
+    ['a write\'s ground call dropped', 'genre-pieces/build-plan', (d) => {
+      const kase = d.cases.find((c) => c.steps.some((st) => st.call === 'genrePieces.write'));
+      kase.steps.splice(kase.steps.findIndex((st) => st.call === 'genrePieces.ground'), 1);
+    }, "not transcribed as core's runner calls their op"],
+    ['a settle offset stated under another key', 'genre-pieces/build-plan', (d) => {
+      const st = steps(d).find((x) => x.call === 'genrePieces.settleOffset' && x.args.n > 0);
+      st.expect = { at: st.expect.offset };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a written world\'s ground stated empty', 'genre-pieces/build-plan', (d) => {
+      steps(d).find((x) => x.call === 'genrePieces.write').expect.world.$subset.entities.$subset.genreGround = [];
+    }, 'answer(s) of the corpus expected nowhere'],
   ];
   let named = 0;
   for (const [what, file, perturb, want] of perturbations) {
@@ -1828,7 +1906,7 @@ function genreFilesOnDisk() {
 
 /** core's P9j genre systems corpora and world slice at the pin, as { 'vendor/core/<path>': Buffer }. */
 function genreFilesAtPin(src) {
-  return filesAtPin(src, GENRE_SYSTEMS_CORPUS_FILES, 'the genre.*, puzzle.* and platformer.* rows');
+  return filesAtPin(src, GENRE_SYSTEMS_CORPUS_FILES, 'the genre.*, puzzle.*, platformer.*, strategy.* and genrePieces.* rows');
 }
 
 /** The vendored headless build corpus on disk: the camera set's rule (no other set copies into `conformance/build/`). */
@@ -2535,9 +2613,9 @@ async function check(coreDir) {
   const genreGuard = genreTranscriptionProblems();
   if (genreGuard.problems.length) fail(`the genre transcription does not hold the vendored genre systems corpora: ${genreGuard.problems.join('; ')}`);
   console.log(
-    `vendor-core-bundle: genre systems — cases/core-genre-{puzzle-{definition,run,save},platformer-{course,run,save},strategy-{campaign,run,save}}.json transcribe all ${genreGuard.count} case(s) of ` +
-      "the vendored conformance/{puzzle,platformer,strategy}/ files, by name, by the calls core's runner makes, C-only exactly where they reach the KB, " +
-      'and with every answer stated',
+    `vendor-core-bundle: genre systems — cases/core-genre-{puzzle-{definition,run,save},platformer-{course,run,save},strategy-{campaign,run,save},genre-pieces-{kinds,build-plan}}.json transcribe all ${genreGuard.count} case(s) of ` +
+      "the vendored conformance/{puzzle,platformer,strategy,genre-pieces}/ files, by name, by the calls core's runner makes, C-only exactly where they reach the KB, " +
+      'and with every answer stated (the genre pieces each call held in place, args and answer)',
   );
 
   if (coreDir) {

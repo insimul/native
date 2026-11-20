@@ -940,8 +940,22 @@
   and core's `IAgentActionHost` is only told, so no host crosses the ABI: `.endTurn` answers the
   whole `TurnReport`, its `orders` included. The guard holds each strategy answer as its step
   row's WHOLE expectation (`{ victory }`, `{ settlements }`), never a bare scalar any step could
-  state, and a campaign's books, prices and control in place. The genre pieces are a later
-  slice; `conformance/prolog/mechanic-{puzzle,platformer,strategy}.json` stay with
+  state, and a campaign's books, prices and control in place. Slice 4, the row's last, adds the
+  genre pieces (`genre-pieces/{kinds,build-plan}.json`, 79 + 56 cases, transcribed as
+  `core-genre-genre-pieces-<file>.json`; `core_vendor_genre_negative` then names thirty-four
+  perturbations): the `genrePieces.*` rows are all stateless (the taxonomy's piece kinds, a
+  genre's pieces, the binding walk's genre piece leg, the build plan, its ground and the
+  writer), the corpora carry their OWN schemas (`insimul.conformance.genre-pieces/1`,
+  `.genre-build-plan/1`), a build-plan input's `{"$fixture": name}` is resolved by the runner
+  (and named by `$file` in the transcription, never copied), and the file's `placement`,
+  `settle` and `ground` tables are held to `genrePieces.contract`. The guard holds every genre
+  piece call in place, args and answer. **Where core's own corpus replays a value outside a
+  declared type, the corpus governs**: the boundary is widened at exactly that member and each
+  one is named in entry.js and ENGINE_BINDINGS.md (a build world's settlement `id`, a course
+  place's `position`, a level's `goalKind`, a walked piece's `module`, `place`'s `anchors`), never
+  silently. Core's writer calls `structuredClone`, which QuickJS lacks:
+  `js/host-structured-clone.js` installs it only when absent, imported first with the text
+  codec. `conformance/prolog/mechanic-{puzzle,platformer,strategy}.json` stay with
   PL.native-prolog-mirror-full (U120(9)).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that

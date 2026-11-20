@@ -1,5 +1,5 @@
 // genre_systems_corpus.cpp — core's P9j genre systems corpora, driven through
-// libinsimulcore's `genre.*`, `puzzle.*`, `platformer.*` and `strategy.*` rows.
+// libinsimulcore's `genre.*`, `puzzle.*`, `platformer.*`, `strategy.*` and `genrePieces.*` rows.
 //
 // PL.native-genre-rows, slice 1: the puzzle (rulings U128, U115, U101(1), U49(3),
 // U36). Core's puzzle module (src/puzzle/puzzle.ts: the definition a world gives,
@@ -84,6 +84,29 @@
 //   strategy/save     block, read, restore as puzzle/save, over the strategy.save.* rows and
 //                              the strategy run
 //
+// PL.native-genre-rows, slice 4, the row's last: the genre pieces. Core's
+// src/genre-systems/genre-pieces.ts (which kinds a genre places, the key of one, a
+// definition's pieces), the taxonomy's piece kinds (src/archetypes/taxonomy.ts), the binding
+// walk's genre piece leg (src/editor/binding/archetypes.ts) and src/genre-systems/build-plan.ts
+// (the anchors, the placement, the settle offset, the plan, its ground and the writer), held to
+// conformance/genre-pieces/{kinds,build-plan}.json (their own schemas and runners,
+// src/editor/binding/genre-pieces-corpus.ts and src/genre-systems/build-plan-corpus.ts), every
+// input member passed when the input has it:
+//
+//   genre-pieces/kinds    kinds    genrePieces.kinds        key      genrePieces.key
+//                         pieces   genrePieces.for          collect  genrePieces.collect (entities)
+//                         stamp    genrePieces.stamp
+//   genre-pieces/build-plan anchors genrePieces.anchors (anchors)  place genrePieces.place
+//                         plan     genrePieces.plan         settle   genrePieces.settleOffset (offset)
+//                         ground   genrePieces.ground
+//                         write    genrePieces.ground over `world ?? {}`, then (unless refused)
+//                                  genrePieces.write with that plan: the written world's
+//                                  entities.genrePieces and entities.genreGround
+//
+// A build-plan input's `{"$fixture": name}` is the file's fixture (core's
+// resolveGenreBuildPlanFixtures; an unknown name fails the case), and the file's `placement`,
+// `settle` and `ground` tables must be what genrePieces.contract states.
+//
 // A puzzle step's actor is `player` unless the step names one; a platformer step's runner
 // likewise; a strategy step's faction is the campaign's `playerFaction` unless it names one. Comparison is the corpora's
 // own rule: exact, object key sets included. Each file's declared `ops` (and the run
@@ -148,7 +171,17 @@ const std::vector<FileSpec> kFiles = {
     {"strategy/campaign", {"generate", "books", "claimCost", "controlled", "adjacency"}, {}},
     {"strategy/run", {"run"}, kStrategySteps},
     {"strategy/save", {"block", "read", "restore"}, kStrategySteps},
+    {"genre-pieces/kinds", {"kinds", "key", "pieces", "collect", "stamp"}, {}},
+    {"genre-pieces/build-plan", {"anchors", "place", "plan", "settle", "ground", "write"}, {}},
 };
+
+// The schema each corpus file declares: the genre systems' runs, and the genre pieces' two
+// (core's runners src/editor/binding/genre-pieces-corpus.ts and src/genre-systems/build-plan-corpus.ts).
+std::string schema_of(const std::string &file) {
+	if (file == "genre-pieces/kinds") return "insimul.conformance.genre-pieces/1";
+	if (file == "genre-pieces/build-plan") return "insimul.conformance.genre-build-plan/1";
+	return "insimul.conformance.genre-systems/1";
+}
 
 // Every row this runner calls.
 const char *const kRows[] = {
@@ -167,6 +200,9 @@ const char *const kRows[] = {
     "strategy.director.assign", "strategy.director.release", "strategy.director.endTurn", "strategy.director.stockpile",
     "strategy.director.holderOf", "strategy.director.controls", "strategy.director.victory", "strategy.director.progress",
     "strategy.director.serialize", "strategy.save.read",   "strategy.save.block",     "strategy.save.blockOf",
+    "genrePieces.kinds",       "genrePieces.key",        "genrePieces.for",         "genrePieces.collect",
+    "genrePieces.stamp",       "genrePieces.anchors",    "genrePieces.place",       "genrePieces.plan",
+    "genrePieces.settleOffset", "genrePieces.ground",    "genrePieces.write",       "genrePieces.contract",
     "session.dispose"};
 
 std::string read_file(const std::string &path, bool &ok) {
@@ -967,6 +1003,88 @@ JsonValuePtr strategy_save(Run &r, const std::string &op, const JsonValue &input
 	return Obj().put("read", shown).put("run", strategy_run(r, input, value)).v;
 }
 
+
+// ── the genre pieces ──────────────────────────────────────────────────────────
+
+// core's `resolveGenreBuildPlanFixtures(value, fixtures)`: every `{"$fixture": name}` (an
+// object with that one key) replaced by the file's fixture of that name, which may name
+// another; an unknown name fails the case.
+JsonValuePtr resolve_fixtures(const JsonValue &v, const JsonValue *fixtures, int depth = 0) {
+	if (depth > 64) throw DriveError("genre corpus: fixtures nest too deep");
+	if (v.is_array()) {
+		std::vector<JsonValuePtr> out;
+		for (const auto &x : v.array_items) out.push_back(resolve_fixtures(*x, fixtures, depth + 1));
+		return make_array(out);
+	}
+	if (!v.is_object()) return deep_copy(v);
+	if (v.object_items.size() == 1 && v.object_items[0].first == "$fixture") {
+		const JsonValue &name = *v.object_items[0].second;
+		const JsonValue *f = fixtures && fixtures->is_object() && name.is_string() ? fixtures->find(name.string_value) : nullptr;
+		if (!f) throw DriveError("genre corpus: unknown fixture '" + (name.is_string() ? name.string_value : json_of(name)) + "'");
+		return resolve_fixtures(*f, fixtures, depth + 1);
+	}
+	Obj out;
+	for (const auto &kv : v.object_items) out.put(kv.first, resolve_fixtures(*kv.second, fixtures, depth + 1));
+	return out.v;
+}
+
+// core's `runGenrePiecesOp` (src/editor/binding/genre-pieces-corpus.ts): each member passed
+// when the input has it, as core's runner passes `input.<key>`.
+JsonValuePtr genre_pieces_kinds(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "kinds") return c.call("genrePieces.kinds", Obj().copy(input, "genre"));
+	if (op == "key") return c.call("genrePieces.key", Obj().copy(input, "genre").copy(input, "kind").copy(input, "variant"));
+	if (op == "pieces") {
+		return c.call("genrePieces.for", Obj().copy(input, "genre").copy(input, "course").copy(input, "puzzle").copy(input, "campaign"));
+	}
+	if (op == "collect") return member(c.call("genrePieces.collect", Obj().copy(input, "genrePieces")), "entities", "genrePieces.collect");
+	if (op == "stamp") return c.call("genrePieces.stamp", Obj().copy(input, "genrePieces"));
+	throw DriveError("genre corpus: unknown op " + op + " for genre-pieces/kinds");
+}
+
+// core's `runGenreBuildPlanOp` (src/genre-systems/build-plan-corpus.ts), over an input whose
+// fixtures are already resolved.
+JsonValuePtr genre_build_plan(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	auto defs = [&](Obj a) { return a.copy(input, "course").copy(input, "puzzle").copy(input, "campaign"); };
+	if (op == "anchors") {
+		return member(c.call("genrePieces.anchors", Obj().copy(input, "world").copy(input, "course").copy(input, "puzzle")), "anchors", "genrePieces.anchors");
+	}
+	if (op == "place") return c.call("genrePieces.place", Obj().copy(input, "genre").copy(input, "pieces").copy(input, "anchors"));
+	if (op == "plan") return c.call("genrePieces.plan", defs(Obj().copy(input, "genre").copy(input, "world")));
+	if (op == "settle") return member(c.call("genrePieces.settleOffset", Obj().put("n", need(input, "n", "the input"))), "offset", "genrePieces.settleOffset");
+	if (op == "ground") return c.call("genrePieces.ground", defs(Obj().copy(input, "genre").copy(input, "world")));
+	if (op == "write") {
+		// `input.world ?? {}`, grounded (genreBuildGround), then written; the answer is what the
+		// writer leaves in `entities`: genrePieces and genreGround (a key the writer leaves unset is absent).
+		const JsonValue *w = input.find("world");
+		JsonValuePtr world = w && !w->is_null() ? deep_copy(*w) : Obj().v;
+		JsonValuePtr plan = c.call("genrePieces.ground", defs(Obj().copy(input, "genre").put("world", world)));
+		if (plan->find("refused")) return plan;
+		JsonValuePtr written = member(c.call("genrePieces.write", Obj().put("world", world).put("plan", plan)), "world", "genrePieces.write");
+		const JsonValue *entities = written->find("entities");
+		if (!entities || !entities->is_object()) throw DriveError("genrePieces.write answered a world with no entities");
+		return Obj().copy(*entities, "genrePieces").copy(*entities, "genreGround").v;
+	}
+	throw DriveError("genre corpus: unknown op " + op + " for genre-pieces/build-plan");
+}
+
+// build-plan.json's own tables (`placement`, `settle`, `ground`) are core's constants at the
+// commit that wrote it: each must be what genrePieces.contract states.
+std::string build_plan_tables(Caller &c, const JsonValue &doc) {
+	JsonValuePtr k = c.call("genrePieces.contract", Obj());
+	JsonValuePtr settle = Obj().put("stepM", member(k, "settleStepM", "genrePieces.contract")).put("directions", member(k, "settleDirections", "genrePieces.contract")).v;
+	JsonValuePtr ground = Obj().put("modules", member(k, "groundModules", "genrePieces.contract")).put("marginM", member(k, "groundMarginM", "genrePieces.contract")).v;
+	std::string diff;
+	for (auto &[key, stated] : std::vector<std::pair<const char *, JsonValuePtr>>{
+	         {"placement", member(k, "placement", "genrePieces.contract")}, {"settle", settle}, {"ground", ground}}) {
+		const JsonValue *x = doc.find(key);
+		const std::string d = x ? compare(*x, *stated, std::string("$.") + key) : std::string("the file has no ") + key;
+		if (!d.empty()) diff += (diff.empty() ? "" : "; ") + d;
+	}
+	return diff;
+}
+
 JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	bool known = false;
 	for (const auto &o : r.spec.ops) known = known || o == op;
@@ -981,6 +1099,8 @@ JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	if (file == "strategy/campaign") return strategy_campaign(r, op, input);
 	if (file == "strategy/run") return strategy_run(r, input, nullptr);
 	if (file == "strategy/save") return strategy_save(r, op, input);
+	if (file == "genre-pieces/kinds") return genre_pieces_kinds(r, op, input);
+	if (file == "genre-pieces/build-plan") return genre_build_plan(r, op, input);
 	throw DriveError("genre corpus: unknown file " + file);
 }
 
@@ -1152,6 +1272,34 @@ void refusal_probes(Caller &c, const JsonValuePtr &slices, std::map<std::string,
 	probe(p, fails_as(c, "strategy.director.create", "{\"campaign\":{\"resources\":[]}}", "[invalid-input]"), "a campaign missing its members is not [invalid-input]");
 	probe(p, fails_as(c, "strategy.books", ("{\"campaign\":" + campaign + ",\"board\":{\"holders\":{}}}").c_str(), "[invalid-input]"), "a board with no workers is not [invalid-input]");
 	probe(p, fails_as(c, "strategy.save.blockOf", "{\"block\":{\"turn\":0,\"holders\":[[\"farm1\"]],\"stock\":[],\"workers\":[]}}", "[invalid-input]"), "a holder row that is not a pair is not [invalid-input]");
+	// The genre pieces: an unknown op of either file and an unknown fixture fail their case; core's
+	// refusals and a piece left out are VALUES; an argument outside core's declared types is the error.
+	probe(p, fails_drive(kFiles[9], "nope", "{}"), "an unknown genre-pieces op is driven");
+	probe(p, fails_drive(kFiles[10], "nope", "{}"), "an unknown build-plan op is driven");
+	{
+		bool fails = false;
+		try {
+			resolve_fixtures(*insimul::parse_json("{\"world\":{\"$fixture\":\"nowhere\"}}").root, insimul::parse_json("{\"somewhere\":{}}").root.get());
+		} catch (const DriveError &) {
+			fails = true;
+		}
+		probe(p, fails, "an input naming a fixture the file does not have is driven");
+	}
+	{
+		auto k = c.try_call("genrePieces.key", "{\"genre\":\"mystery\",\"kind\":\"lock\"}");
+		probe(p, k && k->get_string("refused") == "unknown-genre", "an unknown genre's key is not the value refusal unknown-genre");
+		auto f = c.try_call("genrePieces.for", "{\"genre\":\"platformer\"}");
+		probe(p, f && f->get_string("refused") == "missing-definition" && f->get_string("module") == "platformer",
+		      "a platformer with no course is not the value refusal missing-definition (module platformer)");
+		auto pl = c.try_call("genrePieces.place", "{\"genre\":\"puzzle\",\"pieces\":[null]}");
+		const JsonValue *u = pl ? pl->find("unplaced") : nullptr;
+		probe(p, u && json_of(*u) == "[{\"id\":null,\"reason\":\"invalid-piece\"}]", "a null piece is not left out as the value invalid-piece");
+	}
+	probe(p, fails_as(c, "genrePieces.for", "{\"genre\":\"platformer\",\"course\":{\"places\":[],\"links\":[]}}", "[invalid-input]"), "a course missing its levels is not [invalid-input]");
+	probe(p, fails_as(c, "genrePieces.anchors", "{\"world\":5}", "[invalid-input]"), "a build world that is not an object is not [invalid-input]");
+	probe(p, fails_as(c, "genrePieces.place", "{\"genre\":\"puzzle\",\"pieces\":[],\"anchors\":{\"places\":{}}}", "[invalid-input]"), "anchors missing their tables are not [invalid-input]");
+	probe(p, fails_as(c, "genrePieces.write", "{\"world\":{},\"plan\":{\"genre\":\"puzzle\",\"pieces\":[]}}", "[invalid-input]"), "a plan with no unplaced list is not [invalid-input]");
+	probe(p, fails_as(c, "genrePieces.collect", "{\"genrePieces\":null}", "[invalid-input]"), "a null genrePieces list is not [invalid-input]");
 }
 
 } // namespace
@@ -1220,9 +1368,10 @@ int main(int argc, char **argv) {
 	std::printf("refusals: %d of %d probe(s) as core answers (an unknown op, an unknown step and a nameless step fail their case, "
 	            "for the puzzle, the platformer and the strategy game; values: unknown_riddle, unknown_lock, unknown_clue, "
 	            "unknown_level, locked, not_running, movement with the probed link, schema, unknown_faction, unknown_business, "
-	            "cannot_claim, cannot_assign, not_assigned, an unreadable block's keys (all three), a strategy step acting for the campaign's playerFaction; errors: [invalid-input] for a "
-	            "world that is not an object (all three), a slice name that is no own key, a definition, a course, a link, a "
-	            "campaign, a board and a state row missing members; an unknown row)\n",
+	            "cannot_claim, cannot_assign, not_assigned, an unreadable block's keys (all three), a strategy step acting for the campaign's playerFaction, "
+	            "unknown-genre, missing-definition, invalid-piece; an unknown genre-pieces and build-plan op and an unknown fixture fail their case; "
+	            "errors: [invalid-input] for a world that is not an object (all four), a slice name that is no own key, a definition, a course, a link, a "
+	            "campaign, a board, a state row, a piece course, anchors and a plan missing members, a null genrePieces list; an unknown row)\n",
 	            probes.passed, probes.total);
 
 	int total_cases = 0, total_driven = 0, refused = 0, accepted = 0;
@@ -1244,7 +1393,7 @@ int main(int argc, char **argv) {
 			if (file == s.file) spec = &s;
 		}
 		const JsonValue *case_list = doc.find("cases");
-		if (doc.get_string("schema") != "insimul.conformance.genre-systems/1" || !spec || !case_list || !case_list->is_array() || case_list->size() == 0) {
+		if (!spec || doc.get_string("schema") != schema_of(file) || !case_list || !case_list->is_array() || case_list->size() == 0) {
 			std::printf("  [FAIL] %s is not a genre systems corpus this runner drives, or holds no case\n", path.c_str());
 			failed++;
 			continue;
@@ -1261,6 +1410,20 @@ int main(int argc, char **argv) {
 			if (ops != spec->ops || steps != spec->steps) {
 				std::printf("  [FAIL] %s: its ops or steps are not the ones this runner drives (core's GENRE_SYSTEMS_CORPUS_OPS/_STEPS)\n", file.c_str());
 				failed++;
+			}
+		}
+		if (file == "genre-pieces/build-plan") {
+			std::string diff;
+			try {
+				diff = build_plan_tables(c, doc);
+			} catch (const std::exception &e) {
+				diff = e.what();
+			}
+			if (!diff.empty()) {
+				std::printf("  [FAIL] %s: its placement, settle and ground tables are not genrePieces.contract's: %s\n", file.c_str(), diff.c_str());
+				failed++;
+			} else {
+				std::printf("%s: placement, settle and ground tables as genrePieces.contract states them\n", file.c_str());
 			}
 		}
 		std::map<std::string, int> driven;
@@ -1281,7 +1444,9 @@ int main(int argc, char **argv) {
 			JsonValuePtr actual;
 			try {
 				Run r{c, steps_driven, *spec, slices.v};
-				actual = drive(r, op, *input);
+				// The build plan's inputs name the file's fixtures (core's resolveGenreBuildPlanFixtures).
+				JsonValuePtr resolved = file == "genre-pieces/build-plan" ? resolve_fixtures(*input, doc.find("fixtures")) : nullptr;
+				actual = drive(r, op, resolved ? *resolved : *input);
 			} catch (const std::exception &e) {
 				std::printf("  [FAIL] %s — not driven: %s\n", name.c_str(), e.what());
 				file_failed++;

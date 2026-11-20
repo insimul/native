@@ -361,6 +361,29 @@ game; **meta** = about the bridge itself.
 | `strategy.save.read` | `{ block? }` → `{ ok: true, value }` (null: no block) or `{ ok: false, keys }` | `strategy/strategy-save` `readStrategyBlock` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
 | `strategy.save.block` | `{ state? }` → `{ block }` (null for no state) | `strategy/strategy-save` `strategySaveBlock` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
 | `strategy.save.blockOf` | `{ block }` → `{ block }` (holders by business, stock by faction then resource, workers by worker) | `strategy/strategy-save` `strategyBlockOf` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `genrePieces.contract` | `{}` → `{ modules, kinds, definitions, placement, anchorTables, settleStepM, settleDirections, groundModules, groundMarginM }` | `archetypes/taxonomy`, `genre-systems/genre-pieces`, `genre-systems/build-plan` constants | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.kind` | `{ kind?, module? }` → `{ kind }` (null: none; `module` absent is any module, null none) | `archetypes/taxonomy` `genrePieceKind` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.isVariant` | `{ spec, variant? }` → `{ allowed }` | `archetypes/taxonomy` `isGenrePieceVariant` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.archetype` | `{ module?, kind?, variant? }` → `{ archetype }` (`''` when refused) | `archetypes/taxonomy` `genrePieceArchetype` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.artSlots` | `{ module }` → `{ artSlots }` | `archetypes/taxonomy` `genrePieceArtSlots` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.deriveArchetype` | `{ piece }` → `{ archetype }` (stamped, else derived, else `''`) | `editor/binding/archetypes` `deriveGenrePieceArchetype` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.modules` | `{ genre? }` → `{ modules }` (null: a genre the registry does not know) | `genre-systems/genre-pieces` `genrePieceModulesFor` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.kinds` | `{ genre? }` → `{ genre, modules, kinds, artSlots }` or `{ refused }` | `genre-systems/genre-pieces` `genrePieceKindsFor` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.key` | `{ genre?, kind?, variant? }` → `{ module, archetype }` or `{ refused }` | `genre-systems/genre-pieces` `genrePieceKeyFor` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.idSegment` | `{ ref }` → `{ segment }` | `genre-systems/genre-pieces` `genrePieceIdSegment` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.id` | `{ module, kind, refs }` → `{ id }` | `genre-systems/genre-pieces` `genrePieceId` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.course` | `{ course }` → `{ pieces }` | `genre-systems/genre-pieces` `coursePieces` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.puzzle` | `{ puzzle }` → `{ pieces }` | `genre-systems/genre-pieces` `puzzlePieces` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.campaign` | `{ campaign }` → `{ pieces }` | `genre-systems/genre-pieces` `campaignPieces` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.for` | `{ genre?, course?, puzzle?, campaign? }` → `{ pieces }` or `{ refused, module? }` (a definition is given when its key is present) | `genre-systems/genre-pieces` `genrePiecesFor` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.collect` | `{ genrePieces? }` → `{ entities }` (the binding walk over a world holding only that list) | `editor/binding/archetypes` `collectPlaceableEntities` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.stamp` | `{ genrePieces? }` → `{ entityLists, genrePieces }` (the stamped list; null when absent) | `editor/binding/archetypes` `stampWorldArchetypes` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.anchors` | `{ world?, course?, puzzle?, campaign? }` → `{ anchors }` (eight tables, atom → value, null ambiguous) | `genre-systems/build-plan` `genreBuildAnchors` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.place` | `{ genre?, pieces?, anchors? }` → `{ genre, pieces, unplaced }` or `{ refused }` (`anchors` absent or null: no tables) | `genre-systems/build-plan` `placeGenrePieces` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.plan` | `{ genre?, world?, course?, puzzle?, campaign? }` → `{ genre, pieces, unplaced }` or `{ refused, module? }` | `genre-systems/build-plan` `genreBuildPlan` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.settleOffset` | `{ n }` → `{ offset }` | `genre-systems/build-plan` `genreBuildSettleOffset` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.ground` | `{ genre?, world?, course?, puzzle?, campaign? }` → `{ genre, ground, pieces, unplaced }` or `{ refused, module? }` | `genre-systems/build-plan` `genreBuildGround` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
+| `genrePieces.write` | `{ world, plan }` → `{ world }` (`entities.genrePieces` the plan's; `genreGround` written by a grounded plan, removed by an ungrounded one) | `genre-systems/build-plan` `writeGenreBuildPlan` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `ui.loadRefusal` | `{ refusal }` → `{ outcome, message }`: every string `invalid_format` with its message; any other value `{ outcome: null, message: '' }` | `ui/save-slot-model` `slotOutcomeOfLoadRefusal`, `loadRefusalMessage` | P1 refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1), U126(2)) |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
@@ -2512,6 +2535,73 @@ facts, world facts and neighbours alone, books, prices and control at their edge
 block's defaults, duplicates and refusals, ids naming `Object.prototype` members, the
 `[invalid-input]` boundary of every declared member, directors over their own KB, a restore
 mid-game, and a director's `kb` carrying the facts its verdicts read), every expectation
+computed by core's own functions at the pin.
+
+### The genre systems rows: the genre pieces (PL.native-genre-rows, slice 4)
+
+Slice 4, the row's last, binds what a recipe-plan genre places (core's P9j.core-asset-kinds and
+P9j.core-build-plan, operator ruling U103), so Unreal's interim
+`Portable/InsimulGenrePieces.{h,cpp}` can go (`P9j.unreal.retire-genre-pieces-copy`). Every row
+is stateless; which genre places which module is core's module activation
+(`resolveActiveModules`), so a row takes the genre id.
+
+- **The kinds** (`archetypes/taxonomy.ts`): `genrePieces.contract` states core's tables (the
+  piece modules, every kind with its key, variants and source, the definition each module's
+  pieces come from, the placement rules, the anchor tables, the settle step and directions, the
+  grounded modules and their margin); `genrePieces.kind` (`genrePieceKind`: `module` absent is
+  any module, a `module` of null none, as core's `undefined` and `null` differ),
+  `genrePieces.isVariant`, `genrePieces.archetype` and `genrePieces.artSlots` read them.
+- **The pieces** (`genre-systems/genre-pieces.ts`): `genrePieces.modules`, `genrePieces.kinds`
+  and `genrePieces.key` (the refusals `unknown-genre`, `unknown-kind`, `kind-not-placed`,
+  `invalid-variant` are VALUES), `genrePieces.idSegment` and `genrePieces.id`,
+  `genrePieces.course`, `.puzzle` and `.campaign` (one definition's pieces), and
+  `genrePieces.for` (`genrePiecesFor`: a definition is given when its key is present;
+  `definition-not-placed` and `missing-definition` are values).
+- **The binding walk** (`editor/binding/archetypes.ts`): `genrePieces.deriveArchetype`, and
+  `genrePieces.collect` / `genrePieces.stamp` — core's `collectPlaceableEntities` and
+  `stampWorldArchetypes` over a world holding only `entities.genrePieces`, which is the genre
+  piece leg Unreal's copy carries (the other entity kinds are the exporter's and the binding
+  resolver's).
+- **The build plan** (`genre-systems/build-plan.ts`): `genrePieces.anchors`,
+  `genrePieces.place` (a piece left out is a value in `unplaced`), `genrePieces.plan`,
+  `genrePieces.settleOffset`, `genrePieces.ground` (the plan standing on the ground it states,
+  PL.core-recipe-plan-ground) and `genrePieces.write` (`writeGenreBuildPlan`: a grounded plan
+  writes `entities.genreGround`, an ungrounded one removes it).
+- **`structuredClone`.** Core's writer copies each piece with it, which QuickJS (and a fresh
+  Node `vm` context) does not have: `js/host-structured-clone.js` installs the structured clone
+  algorithm over plain data, `Date`, `Map` and `Set`, only when the engine has none, beside
+  `host-text-codec.js`.
+- **The bundle** grows 2,634,628 → 2,686,625 bytes (core modules 247 → 253:
+  `archetypes/taxonomy`, `genre-systems/genre-pieces` and `build-plan`,
+  `editor/binding/archetypes` with `roles`, and `identity/entity-ids`).
+- **The boundary.** As slices 1-3, member for member: `GenrePieceKind`, `Partial<GenrePieceIR>`
+  (the binding walk's), `GenrePieceIR`, `GenreGroundIR`, `GenreBuildPlan |
+  GenreGroundedBuildPlan` (with its `GenrePieceUnplaced` rows), `GenreBuildAnchors`,
+  `GenreBuildWorld`, and the three definitions' `Pick`s of `Course`, `PuzzleDefinition` and
+  `Campaign`. A genre, a kind, a variant and a module asked about are core's `unknown`, and so
+  are `placeGenrePieces`' pieces: core answers every value. Where core's own corpora replay a
+  value outside a declared type and pin core's answer to it, the corpus governs and the boundary
+  is wider at exactly that member: a build world's settlement may omit `id`, a course place its
+  `position`, a course level's `goalKind` may be any string, a walked piece's `module` any
+  string, and `genrePieces.place`'s `anchors` may be absent. Anything else is
+  `[invalid-input]`.
+
+Gates: `genre_systems_corpus` (+ `_negative`) also drives every case of core's
+`conformance/genre-pieces/kinds.json` (79: key 39, kinds 20, pieces 16, collect 2, stamp 2) and
+`build-plan.json` (56: anchors 6, place 9, plan 12, settle 12, ground 11, write 6), copied byte
+for byte at the pin, each op as core's runners compose it (a build-plan input's
+`{"$fixture": name}` resolved as `resolveGenreBuildPlanFixtures` resolves it), and holds the
+file's `placement`, `settle` and `ground` tables to `genrePieces.contract`.
+`emit-bridge-cases.mjs` transcribes them into `cases/core-genre-genre-pieces-{kinds,build-plan}.json`
+(a fixture named by `$file`, never copied), every answer stated exactly; `core_vendor` holds
+every call in place, args and answer, and `core_vendor_genre_negative` names thirty-four
+perturbations. Hand cases: `tests/cases/bridge-genre-pieces.json` (the contract, the taxonomy
+readers with a module named, null or absent, the derive alone, modules, kinds and keys at their
+edges, ids with dots and percents, each definition's pieces alone, the walk over placed pieces
+and an empty list, the anchors with a campaign and a null world, placement with null pieces
+and anchors, the settle offset below 1 and between whole numbers, the writer's grounded and
+ungrounded plans over a world with other sections and a stale ground, and the
+`[invalid-input]` boundary of every declared member of every argument), every expectation
 computed by core's own functions at the pin.
 
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)

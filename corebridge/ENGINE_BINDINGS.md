@@ -893,8 +893,13 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `cannot_claim` and every hand `cannot_assign`; a `kb` that adds
   `business_out_of_business(<b>).` takes that business off the board for the KB (the hand
   cases in `tests/cases/bridge-strategy.json` pin all three). A binding whose game rules must
-  see the campaign mirrors each outcome's `applied` facts into the game's KB, as the scoped KB
-  did. Core's `IAgentActionHost` is only told (`perform` returns nothing), so no host crosses
+  see the campaign mirrors it into the game's KB as the scoped KB did: first the campaign's own
+  facts, `strategy.facts { campaign }` (`strategy_resource/1`, `strategy_trade_output/3`,
+  `strategy_adjacent/2`, `strategy_faction/1`, …), and the world facts it is decided over
+  (`strategy.worldFacts { world }`, unless the game's KB already holds them), which core's
+  director publishes at `.start`/`.restore` but no outcome's `applied` lists; then each
+  outcome's `applied` facts (`.start`'s and `.restore`'s carry only the turn, the holds and the
+  stock). Core's `IAgentActionHost` is only told (`perform` returns nothing), so no host crosses
   the ABI and none is stated: `.endTurn`'s report carries every `work` order, which the
   binding performs (the copy takes no host either).
 
@@ -928,6 +933,71 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   the strategy run. Exact comparison, key sets included; an unknown op or step is an error.
   `conformance/prolog/mechanic-strategy.json` stays with PL.native-prolog-mirror-full
   (U120(9)).
+- **The genre pieces, slice 4 of PL.native-genre-rows, the row's last (Unreal's
+  `P9j.unreal.retire-genre-pieces-copy`; U115, U128, U103).** Core's P9j genre pieces
+  (`src/genre-systems/genre-pieces.ts`), the taxonomy's piece kinds (`src/archetypes/taxonomy.ts`),
+  the binding walk's genre piece leg (`src/editor/binding/archetypes.ts`) and the build plan
+  (`src/genre-systems/build-plan.ts`) are the `genrePieces.*` rows (`README.md`, "The genre
+  systems rows: the genre pieces"). The retirement row binds them in place of the interim copy on
+  unreal main (`9dac49f4`, read only; unchanged at `a8fa0b0b`): `Portable/InsimulGenrePieces.{h,cpp}`
+  (96 + 1,158 lines), held to core's two corpora by its `genre_pieces_corpus` (+ `_negative`).
+  Every row is stateless. Which genre places which module is the rows' own module activation
+  (core's `resolveActiveModules`, the same table `modules.table` answers), so the copy's
+  `FModulesOf` resolver has no counterpart to pass: a binding sends the genre id.
+
+  | Unreal's interim copy (`insimul::genrepieces`) | Row |
+  |---|---|
+  | `ModulesFromActivation(ActivationTable)` (the resolver over `genre-activation.json`) | none needed: every row takes `genre` and resolves it through core's `resolveActiveModules`; `modules.table` answers the table and `modules.activate { genre }` one genre's bundle, for a binding that still shows them |
+  | `PieceKinds()`, `kModules` | `genrePieces.contract {}` → `kinds` (each `{ module, kind, archetype, variants, source }`, `variants` a list or `"segment"`), `modules`; also `definitions`, `placement`, `anchorTables`, `settleStepM`, `settleDirections`, `groundModules`, `groundMarginM` |
+  | `PieceKind(Kind, Module)` (Module nullptr: any) | `genrePieces.kind { kind, module? }` → `{ kind }` (null: none). Omit `module` for any module; a `module` of null matches none, as core's `undefined`/`null` differ |
+  | `IsVariant(Spec, Variant)` | `genrePieces.isVariant { spec, variant? }` → `{ allowed }` (`spec` one of the contract's `kinds`) |
+  | `Archetype(Module, Kind, Variant)` | `genrePieces.archetype { module?, kind?, variant? }` → `{ archetype }` (`""` when refused) |
+  | `ArtSlots(Module)` (in `KindsFor`) | `genrePieces.artSlots { module }` → `{ artSlots }` |
+  | `DeriveArchetype(Piece)` (also `InsimulGenrePieceRoute`'s `Route` and `InsimulGenreBuildPath`'s `PlacedPieces`) | `genrePieces.deriveArchetype { piece }` → `{ archetype }` |
+  | `ModulesFor(Resolve, Genre, Out)` (false: unknown) | `genrePieces.modules { genre }` → `{ modules }` (null: unknown) |
+  | `KindsFor`, `KeyFor`, `PiecesFor` | `genrePieces.kinds { genre }`, `genrePieces.key { genre, kind, variant? }`, `genrePieces.for { genre, course?, puzzle?, campaign? }`: each answers core's whole value, its refusal a value (`{ refused }`, `{ refused, module }`). A definition is given when its key is present; send none for a module the genre does not place |
+  | `IdSegment`, `PieceId`, `CoursePieces`, `PuzzlePieces`, `CampaignPieces` (internal) | `genrePieces.idSegment { ref }`, `genrePieces.id { module, kind, refs }`, `genrePieces.course { course }`, `genrePieces.puzzle { puzzle }`, `genrePieces.campaign { campaign }` |
+  | `Collect(GenrePieces)` | `genrePieces.collect { genrePieces? }` → `{ entities }` (omit `genrePieces` for a world with none) |
+  | `Stamp(GenrePieces)` | `genrePieces.stamp { genrePieces? }` → `{ entityLists, genrePieces }` (`genrePieces` null when absent: the world does not gain one) |
+  | `BuildAnchors(World, Course, Puzzle)` | `genrePieces.anchors { world?, course?, puzzle? }` → `{ anchors }` |
+  | `PlacePieces(Resolve, Genre, Pieces, Anchors)` | `genrePieces.place { genre, pieces?, anchors? }` → core's plan or `{ refused }` |
+  | `BuildPlan(Resolve, Genre, World, Course, Puzzle, Campaign)` | `genrePieces.plan { genre, world?, course?, puzzle?, campaign? }` |
+  | `SettleOffset(N)` | `genrePieces.settleOffset { n }` → `{ offset }` |
+  | `BuildGround(...)` | `genrePieces.ground { genre, world?, course?, puzzle?, campaign? }` → `{ genre, ground, pieces, unplaced }` or the refusal |
+  | `WriteBuildPlan(World, Plan)` | `genrePieces.write { world, plan }` → `{ world }` (`plan` a `.plan` or `.ground` answer as given: a grounded plan writes `entities.genreGround`, an ungrounded one removes it) |
+
+  **`InsimulGenreBuildPath.cpp`** (95 lines) composes ports and keeps no rule: its `Plan` builds
+  the definitions the genre's modules need (`puzzle.forWorld`, `platformer.forWorld`,
+  `strategy.forWorld` over the world's own sections, slices 1–3), then `genrePieces.plan` (or
+  `genrePieces.ground`, which the build should prefer since PL.core-recipe-plan-ground: it states
+  the ground the pieces stand on and reports every piece off it), then `genrePieces.write`; its
+  `PlacedPieces` reads the written world's `entities.genrePieces` with a position, keyed by
+  `genrePieces.deriveArchetype`. Its `ModulesFor` is `genrePieces.modules`, and its
+  "a course needs libinsimulcore" error goes away: every step is now a row.
+  **`InsimulGenrePieceRoute.cpp`** (363 lines) is ATELIER's route (`P9j.unreal.retire-genre-piece-route-copy`),
+  not core's: only its `DeriveArchetype` is a genre piece rule, and it is `genrePieces.deriveArchetype`
+  above. Its other core helpers (`parseArchetypeKey`, `matchArchetypeKey`, `archetypeSpecificity`
+  from `src/archetypes/taxonomy.ts`) have no row here; atelier's kit profiles, licences and
+  entries are atelier's to state.
+
+  Re-vendor `conformance/genre-pieces/{kinds,build-plan}.json` from core at this library's pin
+  and drive each case as `tests/genre_systems_corpus.cpp` does, every input member passed when
+  the input has it (an absent member stays absent): kinds as `genrePieces.kinds`, key as
+  `genrePieces.key`, pieces as `genrePieces.for`, collect as `genrePieces.collect` (its
+  `entities`), stamp as `genrePieces.stamp`; anchors as `genrePieces.anchors` (its `anchors`),
+  place as `genrePieces.place`, plan as `genrePieces.plan`, settle as `genrePieces.settleOffset`
+  (its `offset`), ground as `genrePieces.ground`, write as `genrePieces.ground` over `world ??
+  {}` then (unless refused) `genrePieces.write` with that plan, answering the written world's
+  `entities.genrePieces` and `entities.genreGround`. A build-plan input's `{"$fixture": name}` is
+  the file's `fixtures[name]` (core's `resolveGenreBuildPlanFixtures`), and the file's
+  `placement`, `settle` and `ground` tables must be what `genrePieces.contract` states. Exact
+  comparison, key sets included; an unknown op is an error.
+  **The boundary reads four members wider than core declares, and one argument as optional**, because core's own corpora
+  replay values outside the declared types and pin core's answers to them: a world's settlement
+  may omit `id` (the build plan reads settlements by name; every build-plan world, Thistlecombe's
+  fixture included, gives none), a course place may omit `position` (no anchor), a course level's
+  `goalKind` may be any string (keys the bare goal), and the binding walk's piece `module` may be
+  any string (unbound); `genrePieces.place`'s `anchors` may be absent (no tables).
 - **Run 22's cases, from the 45409ed pin** (PL.native-bundle-core-r2; U124, U126). What
   each Unreal cell binds, and what it does not get here:
   - **One E press, one object** (`P6.unreal.interact-press`; core's

@@ -1778,7 +1778,15 @@ export const GENRE_CASE_FILES = [
 	'strategy/campaign',
 	'strategy/run',
 	'strategy/save',
+	'genre-pieces/kinds',
+	'genre-pieces/build-plan',
 ];
+
+/** The schema each genre corpus file declares (the genre pieces' two are their own runners'). */
+export const GENRE_CASE_SCHEMAS = {
+	'genre-pieces/kinds': 'insimul.conformance.genre-pieces/1',
+	'genre-pieces/build-plan': 'insimul.conformance.genre-build-plan/1',
+};
 
 /** The committed world slices core's runner is handed, as the case reads them: `$file`s beside the case files. */
 export const GENRE_SLICES = { thistlecombe: 'conformance/genre-mechanics/thistlecombe.world-slice.json' };
@@ -2163,11 +2171,90 @@ function strategyCase(file, c, where) {
 	throw new Error(`emit-bridge-cases: ${where}: ${file} op ${c.op} has no transcription`);
 }
 
+
+// ── the genre pieces (slice 4): conformance/genre-pieces/ ──
+// Every op is one row call (core's runners, src/editor/binding/genre-pieces-corpus.ts and
+// src/genre-systems/build-plan-corpus.ts), each input member passed when the input has it, except
+// `write`: the ground plan over `world ?? {}`, then the writer, whose world's `entities` must hold
+// the corpus's genrePieces and genreGround. None reaches the KB. A build-plan input's
+// `{"$fixture": name}` is the file's fixture: here a `$file` naming it in the vendored corpus.
+
+/** `{ $file, $path }` naming build-plan.json's fixture `name`. */
+export const genreFixtureRef = (name) => ({ $file: '../conformance/genre-pieces/build-plan.json', $path: `fixtures.${name}` });
+
+/** A build-plan input with each fixture named by `$file` (core's fixtures do not name one another). */
+export function genreFixtureArgs(value, fixtures, where) {
+	if (Array.isArray(value)) return value.map((v) => genreFixtureArgs(v, fixtures, where));
+	if (value !== null && typeof value === 'object') {
+		const keys = Object.keys(value);
+		if (keys.length === 1 && keys[0] === '$fixture') {
+			genreCheck(Object.prototype.hasOwnProperty.call(fixtures ?? {}, value.$fixture), where, `unknown fixture ${value.$fixture}`);
+			genreCheck(!JSON.stringify(fixtures[value.$fixture]).includes('"$fixture"'), where, `fixture ${value.$fixture} names another`);
+			return genreFixtureRef(value.$fixture);
+		}
+		return Object.fromEntries(keys.map((k) => [k, genreFixtureArgs(value[k], fixtures, where)]));
+	}
+	return value;
+}
+
+/** `input`'s own `keys`, in that order (core's runner passes `input.<key>`; an absent key stays absent). */
+export const genrePick = (input, keys) => Object.fromEntries(keys.filter((k) => Object.prototype.hasOwnProperty.call(input, k)).map((k) => [k, input[k]]));
+
+/** The row, args and expectation of a single-call genre-pieces op (null: write, which takes two). */
+export function genrePiecesCall(file, op, input, expected) {
+	const D = ['course', 'puzzle', 'campaign'];
+	if (file === 'genre-pieces/kinds') {
+		if (op === 'kinds') return ['genrePieces.kinds', genrePick(input, ['genre']), expected];
+		if (op === 'key') return ['genrePieces.key', genrePick(input, ['genre', 'kind', 'variant']), expected];
+		if (op === 'pieces') return ['genrePieces.for', genrePick(input, ['genre', ...D]), expected];
+		if (op === 'collect') return ['genrePieces.collect', genrePick(input, ['genrePieces']), { entities: expected }];
+		if (op === 'stamp') return ['genrePieces.stamp', genrePick(input, ['genrePieces']), expected];
+	}
+	if (file === 'genre-pieces/build-plan') {
+		if (op === 'anchors') return ['genrePieces.anchors', genrePick(input, ['world', 'course', 'puzzle']), { anchors: expected }];
+		if (op === 'place') return ['genrePieces.place', genrePick(input, ['genre', 'pieces', 'anchors']), expected];
+		if (op === 'plan') return ['genrePieces.plan', genrePick(input, ['genre', 'world', ...D]), expected];
+		if (op === 'settle') return ['genrePieces.settleOffset', { n: input.n }, { offset: expected }];
+		if (op === 'ground') return ['genrePieces.ground', genrePick(input, ['genre', 'world', ...D]), expected];
+		if (op === 'write') return null;
+	}
+	throw new Error(`emit-bridge-cases: ${file} op ${op} has no transcription`);
+}
+
+/** The two calls of a write case: the grounded plan over `world ?? {}`, then the writer (none when the plan is refused). */
+export function genreWriteCalls(input, expected) {
+	const world = input.world ?? {};
+	const ground = { call: 'genrePieces.ground', args: { ...genrePick(input, ['genre', 'course', 'puzzle', 'campaign']), world } };
+	if ('refused' in expected) return [{ ...ground, expect: expected }];
+	return [
+		{ ...ground, expect: { $type: 'object' }, bind: 'g' },
+		{
+			call: 'genrePieces.write',
+			args: { world, plan: { $ref: 'g' } },
+			expect: { world: { $subset: { entities: { $subset: { genrePieces: expected.genrePieces, genreGround: expected.genreGround } } } } },
+		},
+	];
+}
+
+/** One case of conformance/genre-pieces/<file>.json as bridge steps (never reaching the KB). */
+function genrePiecesCase(file, c, where, doc) {
+	const input = file === 'genre-pieces/build-plan' ? genreFixtureArgs(c.input, doc.fixtures, where) : c.input;
+	const one = genrePiecesCall(file, c.op, input, c.expected);
+	if (one) return [[{ call: one[0], args: one[1], expect: one[2] }], false];
+	genreCheck(
+		'refused' in c.expected || (Object.keys(c.expected).sort().join() === 'genreGround,genrePieces'),
+		where,
+		'a write answers its refusal, or exactly genrePieces and genreGround',
+	);
+	return [genreWriteCalls(input, c.expected), false];
+}
+
 /** Each genre's transcription and the legs a case that reaches the KB runs on. */
 const GENRE_TRANSCRIPTIONS = {
 	puzzle: [(...a) => puzzleCase(...a), GENRE_KB_LEGS],
 	platformer: [(...a) => platformerCase(...a), PLATFORMER_KB_LEGS],
 	strategy: [(...a) => strategyCase(...a), STRATEGY_KB_LEGS],
+	'genre-pieces': [(...a) => genrePiecesCase(...a), null],
 };
 
 /** One case file per genre corpus file: `core-genre-<genre>-<file>.json`. */
@@ -2177,17 +2264,20 @@ function genreSystems(root, coreCommit) {
 		const r = reader(root);
 		const doc = r.json(`conformance/${file}.json`);
 		for (const rel of Object.values(GENRE_SLICES)) r.json(rel);
-		if (doc.schema !== 'insimul.conformance.genre-systems/1' || doc.file !== file) throw new Error(`emit-bridge-cases: conformance/${file}.json is not core's ${file} corpus`);
+		if (doc.schema !== (GENRE_CASE_SCHEMAS[file] ?? 'insimul.conformance.genre-systems/1') || doc.file !== file) throw new Error(`emit-bridge-cases: conformance/${file}.json is not core's ${file} corpus`);
 		const cases = doc.cases.map((c) => {
 			const name = `${file} ${c.op}: ${c.name}`;
 			const [transcribe, kbLegs] = GENRE_TRANSCRIPTIONS[file.split('/')[0]];
-			const [steps, kb] = transcribe(file, c, name);
+			const [steps, kb] = transcribe(file, c, name, doc);
 			return { name, ...(kb ? kbLegs : {}), steps };
 		});
 		out[`core-genre-${file.replace('/', '-')}.json`] = caseFile(
 			`genre-${file.replace('/', '-')}`,
-			`core's genre systems corpus conformance/${file}.json (P9j.core) through the genre.world.of and ${file.split('/')[0]}.* rows, each op as ` +
-				"core's reference runner (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes it.",
+			file.startsWith('genre-pieces/')
+				? `core's genre pieces corpus conformance/${file}.json (P9j.core-asset-kinds, P9j.core-build-plan) through the genrePieces.* rows, each op as ` +
+					`core's reference runner (${file === 'genre-pieces/kinds' ? 'src/editor/binding/genre-pieces-corpus.ts, runGenrePiecesOp' : 'src/genre-systems/build-plan-corpus.ts, runGenreBuildPlanOp'}) composes it.`
+				: `core's genre systems corpus conformance/${file}.json (P9j.core) through the genre.world.of and ${file.split('/')[0]}.* rows, each op as ` +
+					"core's reference runner (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes it.",
 			coreCommit,
 			r.files,
 			cases,

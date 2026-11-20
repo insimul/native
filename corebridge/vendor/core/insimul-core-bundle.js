@@ -116,6 +116,51 @@
   if (typeof globalThis.TextEncoder === "undefined") globalThis.TextEncoder = PolyfillTextEncoder;
   if (typeof globalThis.TextDecoder === "undefined") globalThis.TextDecoder = PolyfillTextDecoder;
 
+  // corebridge/js/host-structured-clone.js
+  function dataCloneError(what) {
+    const err = new Error(`${what} could not be cloned`);
+    err.name = "DataCloneError";
+    return err;
+  }
+  function polyfillStructuredClone(value) {
+    const seen = /* @__PURE__ */ new Map();
+    const clone4 = (v) => {
+      if (typeof v === "function") throw dataCloneError("a function");
+      if (typeof v === "symbol") throw dataCloneError("a symbol");
+      if (v === null || typeof v !== "object") return v;
+      if (seen.has(v)) return seen.get(v);
+      if (v instanceof Date) {
+        const out2 = new Date(v.getTime());
+        seen.set(v, out2);
+        return out2;
+      }
+      if (v instanceof Map) {
+        const out2 = /* @__PURE__ */ new Map();
+        seen.set(v, out2);
+        for (const [k, x] of v) out2.set(clone4(k), clone4(x));
+        return out2;
+      }
+      if (v instanceof Set) {
+        const out2 = /* @__PURE__ */ new Set();
+        seen.set(v, out2);
+        for (const x of v) out2.add(clone4(x));
+        return out2;
+      }
+      if (Array.isArray(v)) {
+        const out2 = new Array(v.length);
+        seen.set(v, out2);
+        for (const k of Object.keys(v)) out2[k] = clone4(v[k]);
+        return out2;
+      }
+      const out = {};
+      seen.set(v, out);
+      for (const k of Object.keys(v)) out[k] = clone4(v[k]);
+      return out;
+    };
+    return clone4(value);
+  }
+  if (typeof globalThis.structuredClone !== "function") globalThis.structuredClone = polyfillStructuredClone;
+
   // corebridge/js/host-console.js
   var MAX_DIAGNOSTICS = 200;
   var lines = [];
@@ -6566,13 +6611,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
   function turnOverlap(stored, fresh) {
     for (let k = Math.min(stored.length, fresh.length); k > 0; k--) {
-      let same = true;
-      for (let i = 0; i < k && same; i++) {
+      let same2 = true;
+      for (let i = 0; i < k && same2; i++) {
         const a = stored[stored.length - k + i];
         const b = fresh[i];
-        same = a.role === b.role && a.content === b.content && a.timestamp === b.timestamp;
+        same2 = a.role === b.role && a.content === b.content && a.timestamp === b.timestamp;
       }
-      if (same) return k;
+      if (same2) return k;
     }
     return 0;
   }
@@ -26308,9 +26353,9 @@ words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C),
   function union(before, after) {
     return [.../* @__PURE__ */ new Set([...Object.keys(before ?? {}), ...Object.keys(after)])].sort(compareIds);
   }
-  function sortedRecord(record) {
+  function sortedRecord(record2) {
     const out = {};
-    for (const key of Object.keys(record).sort(compareIds)) out[key] = record[key];
+    for (const key of Object.keys(record2).sort(compareIds)) out[key] = record2[key];
     return out;
   }
 
@@ -34569,7 +34614,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
         urgency: intent.urgency,
         stance: intent.stance
       });
-      const ordered = {
+      const ordered2 = {
         from: leg.from,
         to: leg.to,
         mode: leg.mode,
@@ -34583,7 +34628,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
           intent,
           location: report.location,
           arrived: false,
-          leg: ordered,
+          leg: ordered2,
           failure: "refused",
           ...report.refusal === void 0 ? {} : { refusal: report.refusal },
           failures: 0,
@@ -34597,7 +34642,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
           intent,
           location: report.location,
           arrived: false,
-          leg: ordered,
+          leg: ordered2,
           report: report.arrival,
           failure: "not_arrived",
           failures: 0,
@@ -34611,7 +34656,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
         intent,
         location: report.location,
         arrived: report.location === intent.destination,
-        leg: ordered,
+        leg: ordered2,
         ...report.arrival === void 0 ? {} : { report: report.arrival },
         failures: 0,
         replanned: false
@@ -34957,8 +35002,8 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
      */
     async publishRoutines(engine = this.engine) {
       if (!engine) return 0;
-      const ordered = [...this.routines.values()].sort((a, b) => compareIds(a.id, b.id));
-      const facts = routineGraphFacts(ordered, this.tuning);
+      const ordered2 = [...this.routines.values()].sort((a, b) => compareIds(a.id, b.id));
+      const facts = routineGraphFacts(ordered2, this.tuning);
       for (const fact of facts) await engine.assertFact(stripPeriod7(fact));
       return facts.length;
     }
@@ -37827,7 +37872,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
         const collapsed = this.collapsed.has(label);
         rows.push({ kind: "group", label, count: items.length, collapsed });
         if (collapsed) continue;
-        const ordered = [...items].sort((a, b) => {
+        const ordered2 = [...items].sort((a, b) => {
           if (!!a.equipped !== !!b.equipped) return a.equipped ? -1 : 1;
           const ra = rarityRank(a);
           const rb = rarityRank(b);
@@ -37836,7 +37881,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
           if (byName !== 0) return byName;
           return compareInventoryNames(inventoryEntryId(a) ?? "", inventoryEntryId(b) ?? "");
         });
-        for (const item2 of ordered) rows.push(this.itemRow(item2, label));
+        for (const item2 of ordered2) rows.push(this.itemRow(item2, label));
       }
       return rows;
     }
@@ -38539,8 +38584,8 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     const t = target && nonEmpty3(target.id) ? target : null;
     const p = pickRef(examine);
     if (t !== null) {
-      const same = p !== null && p.id === t.id;
-      return { source: "interactables", id: t.id, target: t, pick: same ? p : null, shadowed: same ? null : p };
+      const same2 = p !== null && p.id === t.id;
+      return { source: "interactables", id: t.id, target: t, pick: same2 ? p : null, shadowed: same2 ? null : p };
     }
     if (p !== null) return { source: "examine", id: p.id, target: null, pick: p, shadowed: null };
     return { source: null, id: null, target: null, pick: null, shadowed: null };
@@ -38806,29 +38851,29 @@ Do NOT mention that you are increasing difficulty. Be natural.
     const category = q.category ?? "all";
     const rows = book.words.filter((w) => category === "all" || categoryOf(w) === category);
     const m = (w) => masteryOf(w.encountered, w.halves);
-    const ordered = [...rows];
+    const ordered2 = [...rows];
     switch (sort) {
       case "mastery":
-        ordered.sort((a, b) => MASTERY_RANK[m(a)] - MASTERY_RANK[m(b)]);
+        ordered2.sort((a, b) => MASTERY_RANK[m(a)] - MASTERY_RANK[m(b)]);
         break;
       case "alpha":
-        ordered.sort((a, b) => compareIds(a.word, b.word));
+        ordered2.sort((a, b) => compareIds(a.word, b.word));
         break;
       case "recent":
-        ordered.sort((a, b) => b.last - a.last);
+        ordered2.sort((a, b) => b.last - a.last);
         break;
       case "used":
-        ordered.sort((a, b) => b.correct + b.encountered - (a.correct + a.encountered));
+        ordered2.sort((a, b) => b.correct + b.encountered - (a.correct + a.encountered));
         break;
       case "review":
-        ordered.sort((a, b) => {
+        ordered2.sort((a, b) => {
           const ad = due.has(a.word) ? 0 : 1;
           const bd = due.has(b.word) ? 0 : 1;
           return ad !== bd ? ad - bd : a.last - b.last;
         });
         break;
     }
-    const capped = q.limit !== void 0 && q.limit >= 0 ? ordered.slice(0, q.limit) : ordered;
+    const capped = q.limit !== void 0 && q.limit >= 0 ? ordered2.slice(0, q.limit) : ordered2;
     const reveal = hintBehavior(q.cefr ?? "A1").translationMode;
     return capped.map((w) => {
       const isDue = due.has(w.word);
@@ -39072,10 +39117,10 @@ Do NOT mention that you are increasing difficulty. Be natural.
     let k = 0;
     const draw = () => quizDraw(s.seed, objectId, ordinal, k++);
     const needed = t.options - 1;
-    const same = (s.pool.find(([c]) => c === tag.category)?.[1] ?? []).filter((w) => w !== tag.answer);
+    const same2 = (s.pool.find(([c]) => c === tag.category)?.[1] ?? []).filter((w) => w !== tag.answer);
     const other = s.pool.filter(([c]) => c !== tag.category).flatMap(([, w]) => w.filter((x) => x !== tag.answer));
     const picked = [];
-    for (const w of shuffle(same, draw)) if (picked.length < needed && !picked.includes(w)) picked.push(w);
+    for (const w of shuffle(same2, draw)) if (picked.length < needed && !picked.includes(w)) picked.push(w);
     for (const w of shuffle(other, draw)) if (picked.length < needed && !picked.includes(w)) picked.push(w);
     const options = shuffle([{ text: tag.answer, isCorrect: true }, ...picked.map((d) => ({ text: d, isCorrect: false }))], draw);
     return { state: s, quiz: { objectId, label: tag.label, category: tag.category, difficulty: tag.difficulty, prompt: `What does "${tag.label}" mean?`, options } };
@@ -40297,20 +40342,20 @@ After asking each question, wait for the player's response before moving to the 
     const wasGrammar = grammarDone(s);
     const beforeGrammar = s.grammarProgress;
     s.objectiveLocks.forEach((l, index) => {
-      const record = objectives[index];
-      if (record) l.completed = record.completed === true;
+      const record2 = objectives[index];
+      if (record2) l.completed = record2.completed === true;
     });
     for (const o of s.vocabularyObjectives) {
-      const record = objectives[o.index];
-      if (record) takeProgress(o, record);
+      const record2 = objectives[o.index];
+      if (record2) takeProgress(o, record2);
     }
     for (const o of s.pronunciationObjectives) {
-      const record = objectives[o.index];
-      if (record) takePronunciation(o, record);
+      const record2 = objectives[o.index];
+      if (record2) takePronunciation(o, record2);
     }
     for (const o of s.grammarObjectives) {
-      const record = objectives[o.index];
-      if (record) takeGrammar(o, record);
+      const record2 = objectives[o.index];
+      if (record2) takeGrammar(o, record2);
     }
     markCounted(s);
     tallyVocabulary(s);
@@ -45795,6 +45840,841 @@ Return JSON format:
     };
   }
 
+  // @insimul/core/src/archetypes/taxonomy.ts
+  var ARCHETYPE_ROOTS = [
+    "building",
+    "npc",
+    "item",
+    "prop",
+    "terrain"
+  ];
+  var SEGMENT_RE = /^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$/;
+  function parseArchetypeKey(key) {
+    if (typeof key !== "string" || key.length === 0) return null;
+    if (key.startsWith(".") || key.endsWith(".") || key.includes("..")) return null;
+    const parts = key.split(".");
+    let isWildcard = false;
+    if (parts.length > 1 && parts[parts.length - 1] === "*") {
+      isWildcard = true;
+      parts.pop();
+    }
+    if (parts.length === 0) return null;
+    for (const seg of parts) {
+      if (!SEGMENT_RE.test(seg)) return null;
+    }
+    return { raw: key, segments: parts, isWildcard, root: parts[0] };
+  }
+  function isValidArchetypeKey(key) {
+    const parsed = parseArchetypeKey(key);
+    return parsed !== null && !parsed.isWildcard && ARCHETYPE_ROOTS.includes(parsed.root);
+  }
+  var GENRE_PIECE_MODULES = ["platformer", "puzzle", "strategy"];
+  var pieceKind = (root, module, kind, variants, source) => Object.freeze({
+    module,
+    kind,
+    archetype: `${root}.${module}.${kind}`,
+    variants: Array.isArray(variants) ? Object.freeze([...variants]) : variants,
+    source
+  });
+  var GENRE_PIECE_KINDS = Object.freeze([
+    pieceKind("prop", "platformer", "platform", [], "Course.places of kind 'junction' (a street junction the runner stands on)"),
+    pieceKind("prop", "platformer", "ledge", [], "Course.places of kind 'lot' (the doorstep a jump lands on)"),
+    pieceKind("prop", "platformer", "hazard", ["gap"], "Course.links of mode 'jump' (variant gap: the gap the jump crosses)"),
+    pieceKind("item", "platformer", "collectible", [], null),
+    pieceKind("prop", "platformer", "checkpoint", [], "CourseLevel.checkpoints (one per level and junction)"),
+    pieceKind("prop", "platformer", "goal", ["home", "work", "place"], "CourseLevel.goal (variant: CourseLevel.goalKind)"),
+    pieceKind("prop", "puzzle", "lock", ["final"], "PuzzleDefinition.locks, on PuzzleLock.target (variant final: PuzzleDefinition.finalLock)"),
+    pieceKind("item", "puzzle", "key", [], "PuzzleLock.holds items some lock needs ({kind: 'item'}), and needed items no lock holds"),
+    pieceKind("item", "puzzle", "clue", [], "PuzzleDefinition.clueTexts (a text to find and read)"),
+    pieceKind("prop", "puzzle", "block", [], null),
+    pieceKind("prop", "puzzle", "switch", [], null),
+    pieceKind("building", "strategy", "holding", "segment", "Campaign.holdings (variant: CampaignHolding.trade when it is a legal segment)"),
+    pieceKind("building", "strategy", "settlement", [], "Campaign.settlements"),
+    pieceKind("npc", "strategy", "worker", [], "Campaign.residents (one per settlement and resident)")
+  ]);
+  function isGenrePieceModule(value) {
+    return typeof value === "string" && GENRE_PIECE_MODULES.includes(value);
+  }
+  function genrePieceKind(kind, module) {
+    if (typeof kind !== "string") return null;
+    return GENRE_PIECE_KINDS.find((k) => k.kind === kind && (module === void 0 || k.module === module)) ?? null;
+  }
+  function isGenrePieceVariant(spec, variant) {
+    if (variant === void 0 || variant === null || variant === "") return true;
+    if (typeof variant !== "string") return false;
+    return spec.variants === "segment" ? SEGMENT_RE.test(variant) : spec.variants.includes(variant);
+  }
+  function genrePieceArchetype(module, kind, variant) {
+    if (!isGenrePieceModule(module)) return "";
+    const spec = genrePieceKind(kind, module);
+    if (!spec || !isGenrePieceVariant(spec, variant)) return "";
+    return typeof variant === "string" && variant ? `${spec.archetype}.${variant}` : spec.archetype;
+  }
+  function genrePieceArtSlots(module) {
+    const roots = new Set(GENRE_PIECE_KINDS.filter((k) => k.module === module).map((k) => k.archetype.split(".")[0]));
+    return [...roots].map((root) => `${root}.${module}.*`).sort();
+  }
+
+  // @insimul/core/src/genre-systems/genre-pieces.ts
+  var GENRE_PIECE_DEFINITIONS = Object.freeze({
+    platformer: "course",
+    puzzle: "puzzle",
+    strategy: "campaign"
+  });
+  function genrePieceModulesFor(genre) {
+    if (typeof genre !== "string") return null;
+    const set = resolveActiveModules(genre);
+    if (!set.known) return null;
+    const active = new Set(set.modules.map((m) => m.id));
+    return GENRE_PIECE_MODULES.filter((m) => active.has(m));
+  }
+  function genrePieceKindsFor(genre) {
+    const modules = genrePieceModulesFor(genre);
+    if (!modules) return { refused: "unknown-genre" };
+    return {
+      genre,
+      modules,
+      kinds: GENRE_PIECE_KINDS.filter((k) => modules.includes(k.module)),
+      artSlots: modules.flatMap((m) => genrePieceArtSlots(m))
+    };
+  }
+  function genrePieceKeyFor(genre, kind, variant) {
+    const modules = genrePieceModulesFor(genre);
+    if (!modules) return { refused: "unknown-genre" };
+    const spec = genrePieceKind(kind);
+    if (!spec) return { refused: "unknown-kind" };
+    if (!modules.includes(spec.module)) return { refused: "kind-not-placed" };
+    if (!isGenrePieceVariant(spec, variant)) return { refused: "invalid-variant" };
+    return { module: spec.module, archetype: genrePieceArchetype(spec.module, spec.kind, variant) };
+  }
+  function genrePieceIdSegment(ref) {
+    return ref.replace(/%/g, "%25").replace(/\./g, "%2E");
+  }
+  function genrePieceId(module, kind, refs) {
+    return [module, kind, ...refs.map(genrePieceIdSegment)].join(".");
+  }
+  function piece(module, kind, refs, fields) {
+    const spec = genrePieceKind(kind, module);
+    const variant = fields.variant && isGenrePieceVariant(spec, fields.variant) ? fields.variant : void 0;
+    const out = { id: genrePieceId(module, kind, refs), module, kind, ref: fields.ref };
+    if (variant !== void 0) out.variant = variant;
+    if (fields.at !== void 0) out.at = fields.at;
+    if (fields.level !== void 0) out.level = fields.level;
+    out.archetype = genrePieceArchetype(module, kind, variant);
+    return out;
+  }
+  function ordered(module, pieces) {
+    const seen = /* @__PURE__ */ new Set();
+    const out = [];
+    for (const spec of GENRE_PIECE_KINDS) {
+      if (spec.module !== module) continue;
+      for (const p of pieces) {
+        if (p.kind !== spec.kind || seen.has(p.id)) continue;
+        seen.add(p.id);
+        out.push(p);
+      }
+    }
+    return out;
+  }
+  function coursePieces(course) {
+    const out = [];
+    for (const place of course.places ?? []) {
+      if (place.kind === "junction") out.push(piece("platformer", "platform", [place.id], { ref: place.id }));
+      else if (place.kind === "lot") out.push(piece("platformer", "ledge", [place.id], { ref: place.id }));
+    }
+    for (const link of course.links ?? []) {
+      if (link.mode !== "jump") continue;
+      const id4 = traversalLinkId(link);
+      out.push(piece("platformer", "hazard", [id4], { ref: id4, variant: "gap" }));
+    }
+    for (const level of course.levels ?? []) {
+      for (const junction of level.checkpoints ?? []) {
+        out.push(piece("platformer", "checkpoint", [level.id, junction], { ref: junction, level: level.id }));
+      }
+      out.push(piece("platformer", "goal", [level.id], { ref: level.goal, level: level.id, variant: level.goalKind }));
+    }
+    return ordered("platformer", out);
+  }
+  function puzzlePieces(definition) {
+    const out = [];
+    const locks = definition.locks ?? [];
+    const needed = /* @__PURE__ */ new Set();
+    for (const lock of locks) for (const need of lock.needs ?? []) if (need.kind === "item") needed.add(need.ref);
+    const held = /* @__PURE__ */ new Set();
+    for (const lock of locks) {
+      out.push(
+        piece("puzzle", "lock", [lock.id], {
+          ref: lock.id,
+          at: lock.target,
+          ...definition.finalLock === lock.id ? { variant: "final" } : {}
+        })
+      );
+      for (const item2 of lock.holds ?? []) {
+        held.add(item2);
+        if (needed.has(item2)) out.push(piece("puzzle", "key", [lock.id, item2], { ref: item2, at: lock.id }));
+      }
+    }
+    for (const lock of locks) {
+      for (const need of lock.needs ?? []) {
+        if (need.kind === "item" && !held.has(need.ref)) out.push(piece("puzzle", "key", [need.ref], { ref: need.ref }));
+      }
+    }
+    for (const text4 of definition.clueTexts ?? []) out.push(piece("puzzle", "clue", [text4.id], { ref: text4.id }));
+    return ordered("puzzle", out);
+  }
+  function campaignPieces(campaign) {
+    const out = [];
+    for (const h of campaign.holdings ?? []) {
+      out.push(piece("strategy", "holding", [h.business], { ref: h.business, at: h.settlement, variant: h.trade }));
+    }
+    for (const s of campaign.settlements ?? []) out.push(piece("strategy", "settlement", [s], { ref: s }));
+    const residents = campaign.residents ?? {};
+    for (const s of Object.keys(residents).sort()) {
+      for (const r of residents[s] ?? []) out.push(piece("strategy", "worker", [s, r], { ref: r, at: s }));
+    }
+    return ordered("strategy", out);
+  }
+  function genrePiecesFor(genre, definitions) {
+    const modules = genrePieceModulesFor(genre);
+    if (!modules) return { refused: "unknown-genre" };
+    for (const module of GENRE_PIECE_MODULES) {
+      const given = definitions[GENRE_PIECE_DEFINITIONS[module]] !== void 0;
+      if (given && !modules.includes(module)) return { refused: "definition-not-placed", module };
+      if (!given && modules.includes(module)) return { refused: "missing-definition", module };
+    }
+    const pieces = [];
+    for (const module of modules) {
+      if (module === "platformer") pieces.push(...coursePieces(definitions.course));
+      else if (module === "puzzle") pieces.push(...puzzlePieces(definitions.puzzle));
+      else pieces.push(...campaignPieces(definitions.campaign));
+    }
+    return { pieces };
+  }
+
+  // @insimul/core/src/genre-systems/build-plan.ts
+  var GENRE_BUILD_ANCHOR_TABLES = [
+    "places",
+    "links",
+    "containers",
+    "locks",
+    "clues",
+    "businesses",
+    "settlements",
+    "people"
+  ];
+  var isNum2 = (v) => typeof v === "number" && Number.isFinite(v);
+  function pointOf2(p) {
+    if (!p || typeof p !== "object") return null;
+    const { x, z } = p;
+    return isNum2(x) && isNum2(z) ? { x, z } : null;
+  }
+  var same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  var Table = class {
+    constructor() {
+      __publicField(this, "values", /* @__PURE__ */ new Map());
+    }
+    put(atom4, value) {
+      if (!this.values.has(atom4)) this.values.set(atom4, value);
+      else if (!same(this.values.get(atom4), value)) this.values.set(atom4, null);
+    }
+    /** Keep the first value given (a rule, not an ambiguity: the clue's first lock). */
+    first(atom4, value) {
+      if (!this.values.has(atom4)) this.values.set(atom4, value);
+    }
+    done() {
+      const out = {};
+      for (const k of [...this.values.keys()].sort((a, b) => a === b ? 0 : a < b ? -1 : 1)) out[k] = this.values.get(k);
+      return out;
+    }
+  };
+  function genreBuildAnchors(world2, definitions = {}) {
+    const places = new Table();
+    const links = new Table();
+    const containers = new Table();
+    const locks = new Table();
+    const clues = new Table();
+    const businesses = new Table();
+    const settlements = new Table();
+    const people = new Table();
+    for (const place of definitions.course?.places ?? []) {
+      const p = pointOf2(place.position);
+      if (typeof place.id === "string" && p) places.put(place.id, p);
+    }
+    for (const link of definitions.course?.links ?? []) {
+      if (typeof link.from !== "string" || typeof link.to !== "string") continue;
+      links.put(traversalLinkId(link), { from: link.from, to: link.to });
+    }
+    for (const lock of definitions.puzzle?.locks ?? []) {
+      if (typeof lock.id !== "string" || typeof lock.target !== "string") continue;
+      locks.put(lock.id, lock.target);
+      for (const need of lock.needs ?? []) if (need.kind === "clue" && typeof need.ref === "string") clues.first(need.ref, lock.id);
+    }
+    const lotPoint = /* @__PURE__ */ new Map();
+    for (const s of world2?.geography?.settlements ?? []) {
+      const p = pointOf2(s.position);
+      if (typeof s.name === "string" && p) settlements.put(worldAtom(s.name), p);
+      for (const lot of s.lots ?? []) {
+        const lp = pointOf2(lot.position);
+        if (typeof lot.id === "string" && lp && !lotPoint.has(lot.id)) lotPoint.set(lot.id, lp);
+      }
+    }
+    const buildings = world2?.entities?.buildings ?? [];
+    const buildingPoint = /* @__PURE__ */ new Map();
+    for (const b of buildings) {
+      const p = b.lotId ? lotPoint.get(b.lotId) : void 0;
+      if (p && !buildingPoint.has(b.id)) buildingPoint.set(b.id, p);
+    }
+    for (const c of world2?.entities?.containers ?? []) {
+      if (typeof c.id !== "string") continue;
+      const p = pointOf2(c.position) ?? (c.buildingId ? buildingPoint.get(c.buildingId) : void 0);
+      if (p) containers.put(worldAtom(c.id), p);
+    }
+    for (const biz of world2?.entities?.businesses ?? []) {
+      if (typeof biz.name !== "string") continue;
+      let p = biz.lotId ? lotPoint.get(biz.lotId) : void 0;
+      if (!p) {
+        const b = buildings.find((x) => x.businessId === biz.id && buildingPoint.has(x.id));
+        p = b ? buildingPoint.get(b.id) : void 0;
+      }
+      if (p) businesses.put(worldAtom(biz.name), p);
+    }
+    const homeOf = /* @__PURE__ */ new Map();
+    for (const npc of world2?.entities?.npcs ?? []) {
+      const home = npc.schedule?.homeBuildingId;
+      if (typeof npc.characterId === "string" && home && !homeOf.has(npc.characterId)) homeOf.set(npc.characterId, home);
+    }
+    for (const c of world2?.entities?.characters ?? []) {
+      const name = [c.firstName, c.lastName].filter((p2) => !!p2).join(" ");
+      if (!name) continue;
+      let p = homeOf.has(c.id) ? buildingPoint.get(homeOf.get(c.id)) : void 0;
+      if (!p) {
+        const b = buildings.find((x) => (x.occupantIds ?? []).includes(c.id) && buildingPoint.has(x.id));
+        p = b ? buildingPoint.get(b.id) : void 0;
+      }
+      if (p) people.put(worldAtom(name), p);
+    }
+    return {
+      places: places.done(),
+      links: links.done(),
+      containers: containers.done(),
+      locks: locks.done(),
+      clues: clues.done(),
+      businesses: businesses.done(),
+      settlements: settlements.done(),
+      people: people.done()
+    };
+  }
+  var GENRE_PIECE_PLACEMENT = Object.freeze({
+    platform: [{ field: "ref", table: "places" }],
+    ledge: [{ field: "ref", table: "places" }],
+    hazard: [{ field: "ref", table: "links" }],
+    collectible: [{ field: "at", table: "places" }],
+    checkpoint: [{ field: "ref", table: "places" }],
+    goal: [{ field: "ref", table: "places" }],
+    lock: [{ field: "at", table: "containers" }],
+    key: [{ field: "at", table: "locks" }],
+    clue: [
+      { field: "at", table: "containers" },
+      { field: "ref", table: "clues" }
+    ],
+    block: [{ field: "at", table: "containers" }],
+    switch: [{ field: "at", table: "containers" }],
+    holding: [
+      { field: "ref", table: "businesses" },
+      { field: "at", table: "settlements" }
+    ],
+    settlement: [{ field: "ref", table: "settlements" }],
+    worker: [
+      { field: "ref", table: "people" },
+      { field: "at", table: "settlements" }
+    ]
+  });
+  var GENRE_BUILD_SETTLE_STEP_M = 1;
+  var GENRE_BUILD_SETTLE_DIRECTIONS = Object.freeze([
+    [1, 0],
+    [0, 1],
+    [-1, 0],
+    [0, -1],
+    [1, 1],
+    [-1, 1],
+    [-1, -1],
+    [1, -1]
+  ]);
+  function genreBuildSettleOffset(n) {
+    if (!Number.isInteger(n) || n < 1) return { x: 0, z: 0 };
+    const ring = Math.floor((n - 1) / GENRE_BUILD_SETTLE_DIRECTIONS.length) + 1;
+    const [dx, dz] = GENRE_BUILD_SETTLE_DIRECTIONS[(n - 1) % GENRE_BUILD_SETTLE_DIRECTIONS.length];
+    return { x: dx * ring * GENRE_BUILD_SETTLE_STEP_M, z: dz * ring * GENRE_BUILD_SETTLE_STEP_M };
+  }
+  function lookup2(anchors, table2, atom4) {
+    const t = anchors?.[table2] ?? {};
+    if (!Object.prototype.hasOwnProperty.call(t, atom4)) return { fail: "missing-anchor", table: table2, atom: atom4 };
+    const v = t[atom4];
+    if (v === null) return { fail: "ambiguous-anchor", table: table2, atom: atom4 };
+    return { value: v };
+  }
+  function resolveStep(anchors, table2, atom4) {
+    if (table2 === "links") {
+      const ends = lookup2(anchors, "links", atom4);
+      if (!("value" in ends)) return ends;
+      const from = lookup2(anchors, "places", ends.value.from);
+      if (!("value" in from)) return from;
+      const to = lookup2(anchors, "places", ends.value.to);
+      if (!("value" in to)) return to;
+      const a = pointOf2(from.value);
+      const b = pointOf2(to.value);
+      if (!a || !b) return { fail: "missing-anchor", table: "places", atom: !a ? ends.value.from : ends.value.to };
+      return { point: { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 }, span: { from: a, to: b } };
+    }
+    if (table2 === "clues") {
+      const lock = lookup2(anchors, "clues", atom4);
+      if (!("value" in lock)) return lock;
+      return resolveStep(anchors, "locks", lock.value);
+    }
+    if (table2 === "locks") {
+      const target = lookup2(anchors, "locks", atom4);
+      if (!("value" in target)) return target;
+      return resolveStep(anchors, "containers", target.value);
+    }
+    const p = lookup2(anchors, table2, atom4);
+    if (!("value" in p)) return p;
+    const point4 = pointOf2(p.value);
+    return point4 ? { point: point4 } : { fail: "missing-anchor", table: table2, atom: atom4 };
+  }
+  function resolvePiece(piece2, anchors) {
+    let first = null;
+    for (const step of GENRE_PIECE_PLACEMENT[piece2.kind] ?? []) {
+      const atom4 = piece2[step.field];
+      if (typeof atom4 !== "string" || atom4 === "") continue;
+      const r = resolveStep(anchors, step.table, atom4);
+      if (!("fail" in r) || r.fail === "ambiguous-anchor") return r;
+      first ?? (first = r);
+    }
+    return first ?? { fail: "no-anchor" };
+  }
+  function placed(p, archetype, position, span) {
+    const out = { id: p.id, module: p.module, kind: p.kind, ref: p.ref };
+    if (typeof p.variant === "string" && p.variant !== "") out.variant = p.variant;
+    if (typeof p.at === "string") out.at = p.at;
+    if (typeof p.level === "string") out.level = p.level;
+    out.archetype = archetype;
+    out.position = { x: position.x, z: position.z };
+    if (span) out.span = { from: { ...span.from }, to: { ...span.to } };
+    return out;
+  }
+  function placeGenrePieces(genre, pieces, anchors) {
+    const r = placeTracked(genre, pieces, anchors);
+    return "refused" in r ? r : r.plan;
+  }
+  function placeTracked(genre, pieces, anchors) {
+    if (!genrePieceModulesFor(genre)) return { refused: "unknown-genre" };
+    const out = [];
+    const anchored = [];
+    const unplaced = [];
+    const settles = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const raw of pieces ?? []) {
+      const p = raw && typeof raw === "object" ? raw : {};
+      const id4 = typeof p.id === "string" && p.id !== "" ? p.id : null;
+      if (!id4 || typeof p.module !== "string" || typeof p.kind !== "string" || typeof p.ref !== "string") {
+        unplaced.push({ id: id4, reason: "invalid-piece" });
+        continue;
+      }
+      if (seen.has(id4)) {
+        unplaced.push({ id: id4, reason: "duplicate-id" });
+        continue;
+      }
+      seen.add(id4);
+      const piece2 = p;
+      if (!genrePieceKind(piece2.kind, piece2.module)) {
+        unplaced.push({ id: id4, reason: "unknown-kind" });
+        continue;
+      }
+      const key = genrePieceKeyFor(genre, piece2.kind, piece2.variant);
+      if ("refused" in key) {
+        unplaced.push({ id: id4, reason: key.refused });
+        continue;
+      }
+      const archetype = typeof piece2.archetype === "string" && piece2.archetype !== "" ? piece2.archetype : key.archetype;
+      if (piece2.position !== void 0) {
+        const point4 = pointOf2(piece2.position);
+        if (!point4) {
+          unplaced.push({ id: id4, reason: "invalid-position" });
+          continue;
+        }
+        out.push(placed(piece2, archetype, point4));
+        settles.push(false);
+        anchored.push(false);
+        continue;
+      }
+      const r = resolvePiece(piece2, anchors);
+      if ("fail" in r) {
+        const u = { id: id4, reason: r.fail };
+        if (r.table) u.table = r.table;
+        if (r.atom !== void 0) u.atom = r.atom;
+        unplaced.push(u);
+        continue;
+      }
+      out.push(placed(piece2, archetype, r.point, r.span));
+      settles.push(!r.span);
+      anchored.push(true);
+    }
+    const onPoint = /* @__PURE__ */ new Map();
+    out.forEach((p, i) => {
+      if (!settles[i]) return;
+      const k = `${p.position.x}|${p.position.z}`;
+      const n = onPoint.get(k) ?? 0;
+      onPoint.set(k, n + 1);
+      if (n === 0) return;
+      const d = genreBuildSettleOffset(n);
+      p.position = { x: p.position.x + d.x, z: p.position.z + d.z };
+    });
+    return { plan: { genre, pieces: out, unplaced }, anchored };
+  }
+  function worldGenrePieces(world2) {
+    const list3 = world2?.entities?.genrePieces;
+    return Array.isArray(list3) ? list3 : [];
+  }
+  function authoredKind(p) {
+    const spec = genrePieceKind(p.kind, p.module);
+    return spec && spec.source === null ? spec : null;
+  }
+  function genreBuildPlan(genre, world2, definitions) {
+    const r = planTracked(genre, world2, definitions);
+    return "refused" in r ? r : r.plan;
+  }
+  function planTracked(genre, world2, definitions) {
+    const derived = genrePiecesFor(genre, definitions);
+    if ("refused" in derived) return derived;
+    const modules = genrePieceModulesFor(genre) ?? [];
+    const derivedIds = new Set(derived.pieces.map((p) => p.id));
+    const authored = [];
+    const stale = [];
+    for (const raw of worldGenrePieces(world2)) {
+      const p = raw && typeof raw === "object" ? raw : {};
+      const spec = genrePieceKind(p.kind, p.module);
+      const id4 = typeof p.id === "string" && p.id !== "" ? p.id : null;
+      if (id4 && spec && spec.source !== null && modules.includes(spec.module)) {
+        if (!derivedIds.has(id4)) stale.push({ id: id4, reason: "not-derived" });
+        continue;
+      }
+      if (typeof p.at === "string" && p.at !== "" && "position" in p) {
+        const { position: _written, ...rest } = p;
+        authored.push(rest);
+      } else authored.push(raw);
+    }
+    const placedAll = placeTracked(genre, [...derived.pieces, ...authored], genreBuildAnchors(world2, definitions));
+    placedAll.plan.unplaced.push(...stale);
+    return placedAll;
+  }
+  var GENRE_GROUND_MODULES = Object.freeze(["platformer", "puzzle"]);
+  var GENRE_BUILD_GROUND_MARGIN_M = 2;
+  function onGround(g, p) {
+    return p.x >= g.extent.min.x && p.x <= g.extent.max.x && p.z >= g.extent.min.z && p.z <= g.extent.max.z;
+  }
+  function groundOf2(module, plan2, anchored) {
+    let box = null;
+    const take = (p) => {
+      if (!box) box = { min: { x: p.x, z: p.z }, max: { x: p.x, z: p.z } };
+      else {
+        box.min = { x: Math.min(box.min.x, p.x), z: Math.min(box.min.z, p.z) };
+        box.max = { x: Math.max(box.max.x, p.x), z: Math.max(box.max.z, p.z) };
+      }
+    };
+    plan2.pieces.forEach((p, i) => {
+      if (anchored[i] && p.module === module) take(p.position);
+    });
+    if (!box) return null;
+    const m = GENRE_BUILD_GROUND_MARGIN_M;
+    const { min, max } = box;
+    const extent = { min: { x: min.x - m, z: min.z - m }, max: { x: max.x + m, z: max.z + m } };
+    const ref = GENRE_PIECE_DEFINITIONS[module];
+    return {
+      id: genrePieceId(module, "ground", [ref]),
+      module,
+      kind: "ground",
+      ref,
+      archetype: `prop.${module}.ground`,
+      position: { x: (extent.min.x + extent.max.x) / 2, z: (extent.min.z + extent.max.z) / 2 },
+      extent
+    };
+  }
+  function genreBuildGround(genre, world2, definitions) {
+    const r = planTracked(genre, world2, definitions);
+    if ("refused" in r) return r;
+    const { plan: plan2, anchored } = r;
+    const placedModules = genrePieceModulesFor(genre) ?? [];
+    const grounds = /* @__PURE__ */ new Map();
+    for (const m of GENRE_GROUND_MODULES) if (placedModules.includes(m)) grounds.set(m, groundOf2(m, plan2, anchored));
+    const pieces = [];
+    const off = [];
+    for (const p of plan2.pieces) {
+      if (!grounds.has(p.module)) pieces.push(p);
+      else {
+        const g = grounds.get(p.module);
+        if (g && onGround(g, p.position)) pieces.push(p);
+        else off.push({ id: p.id, reason: "off-ground" });
+      }
+    }
+    const ground = [...grounds.values()].filter((g) => g !== null);
+    return { genre: plan2.genre, ground, pieces, unplaced: [...plan2.unplaced, ...off] };
+  }
+  function writeGenreBuildPlan(world2, plan2) {
+    const pieces = plan2.pieces.map((p) => structuredClone(p));
+    const written = new Set(pieces.map((p) => p.id));
+    for (const raw of worldGenrePieces(world2)) {
+      const p = raw && typeof raw === "object" ? raw : {};
+      if (typeof p.id !== "string" || p.id === "" || written.has(p.id) || typeof p.ref !== "string" || !authoredKind(p)) continue;
+      const opt = [p.variant, p.at, p.level, p.archetype];
+      if (opt.some((v) => v !== void 0 && typeof v !== "string")) continue;
+      const kept = { id: p.id, module: p.module, kind: p.kind, ref: p.ref };
+      if (p.variant !== void 0) kept.variant = p.variant;
+      if (p.at !== void 0) kept.at = p.at;
+      if (p.level !== void 0) kept.level = p.level;
+      if (p.archetype !== void 0) kept.archetype = p.archetype;
+      pieces.push(kept);
+      written.add(p.id);
+    }
+    const entities = { ...world2.entities ?? {}, genrePieces: pieces };
+    if ("ground" in plan2) entities.genreGround = plan2.ground.map((g) => structuredClone(g));
+    else delete entities.genreGround;
+    return { ...world2, entities };
+  }
+
+  // @insimul/core/src/identity/entity-ids.ts
+  function stopgapEntityId(prefix, ...parts) {
+    return [prefix, ...parts].join(".");
+  }
+  var POSITIONAL_ID_PREFIXES = ["nature.", "foliage."];
+  function isPositionalEntityId(entityId) {
+    return POSITIONAL_ID_PREFIXES.some((prefix) => entityId.startsWith(prefix));
+  }
+
+  // @insimul/core/src/editor/binding/roles.ts
+  function toSegment(value) {
+    if (typeof value !== "string") return "";
+    const seg = value.trim().toLowerCase();
+    if (!seg) return "";
+    const parsed = parseArchetypeKey(seg);
+    return parsed !== null && parsed.segments.length === 1 && !parsed.isWildcard ? seg : "";
+  }
+  function buildArchetypeKey(root, ...segments) {
+    if (!ARCHETYPE_ROOTS.includes(root)) return "";
+    const parts = [root];
+    for (const raw of segments) {
+      const seg = toSegment(raw);
+      if (!seg) {
+        if (raw === void 0 || raw === null || raw === "") break;
+        return "";
+      }
+      parts.push(seg);
+    }
+    const key = parts.join(".");
+    return isValidArchetypeKey(key) ? key : "";
+  }
+
+  // @insimul/core/src/editor/binding/archetypes.ts
+  var ROAD_ARCHETYPE = "terrain.texture.road";
+  var PLAYER_ARCHETYPE = "npc.player";
+  var PLAYER_ENTITY_ID = "player";
+  function roadEntityId(road) {
+    return stopgapEntityId("road", road.fromId ?? "", road.toId ?? "");
+  }
+  function stamped(entity) {
+    return typeof entity?.archetype === "string" && entity.archetype ? entity.archetype : "";
+  }
+  function deriveBuildingArchetype(building) {
+    return stamped(building) || buildArchetypeKey("building", building.spec?.buildingRole);
+  }
+  function deriveNpcArchetype(npc) {
+    return stamped(npc) || buildArchetypeKey("npc", npc.role);
+  }
+  function deriveAnimalArchetype(animal) {
+    return stamped(animal) || buildArchetypeKey("npc", "animal", animal.species);
+  }
+  function deriveNatureObjectArchetype(nature) {
+    const existing = stamped(nature);
+    if (existing) return existing;
+    if (nature.type === "rock") return buildArchetypeKey("prop", "rock", nature.subType);
+    return buildArchetypeKey("prop", "vegetation", nature.type, nature.subType);
+  }
+  function deriveContainerArchetype(container) {
+    return stamped(container) || buildArchetypeKey("prop", "container", container.containerType);
+  }
+  function deriveQuestObjectArchetype(quest) {
+    const existing = stamped(quest);
+    if (existing) return existing;
+    const root = quest.interactionType === "pickup" ? "item" : "prop";
+    return buildArchetypeKey(root, "quest", quest.objectType);
+  }
+  function deriveWaterFeatureArchetype(water) {
+    return stamped(water) || buildArchetypeKey("terrain", "water", water.type);
+  }
+  function deriveRoadArchetype(road) {
+    return stamped(road) || ROAD_ARCHETYPE;
+  }
+  function derivePlayerArchetype(player) {
+    return stamped(player) || PLAYER_ARCHETYPE;
+  }
+  function deriveFoliageLayerArchetype(layer) {
+    return stamped(layer) || buildArchetypeKey("prop", "vegetation", layer.type);
+  }
+  function deriveGenrePieceArchetype(piece2) {
+    return stamped(piece2) || genrePieceArchetype(piece2.module, piece2.kind, piece2.variant);
+  }
+  function keyOf(value) {
+    return typeof value === "string" && value ? value : "";
+  }
+  function record(entityId, kind, archetype, assetKey, wasStamped) {
+    return {
+      entityId,
+      kind,
+      archetype,
+      assetKey: keyOf(assetKey),
+      stamped: wasStamped,
+      positionalId: isPositionalEntityId(entityId)
+    };
+  }
+  function collectPlaceableEntities(ir) {
+    const out = [];
+    const entities = ir.entities;
+    const geography = ir.geography;
+    for (const building of entities?.buildings ?? []) {
+      out.push(
+        record(
+          keyOf(building?.id),
+          "building",
+          deriveBuildingArchetype(building ?? {}),
+          building?.modelAssetKey,
+          !!stamped(building)
+        )
+      );
+    }
+    for (const npc of entities?.npcs ?? []) {
+      out.push(record(keyOf(npc?.characterId), "npc", deriveNpcArchetype(npc ?? {}), "", !!stamped(npc)));
+    }
+    for (const animal of entities?.animals ?? []) {
+      out.push(
+        record(keyOf(animal?.id), "animal", deriveAnimalArchetype(animal ?? {}), "", !!stamped(animal))
+      );
+    }
+    (entities?.natureObjects ?? []).forEach((nature, index) => {
+      out.push(
+        record(
+          stopgapEntityId("nature", index),
+          "natureObject",
+          deriveNatureObjectArchetype(nature ?? {}),
+          nature?.modelAssetKey,
+          !!stamped(nature)
+        )
+      );
+    });
+    for (const container of entities?.containers ?? []) {
+      out.push(
+        record(
+          keyOf(container?.id),
+          "container",
+          deriveContainerArchetype(container ?? {}),
+          "",
+          !!stamped(container)
+        )
+      );
+    }
+    for (const quest of entities?.questObjects ?? []) {
+      out.push(
+        record(
+          keyOf(quest?.id),
+          "questObject",
+          deriveQuestObjectArchetype(quest ?? {}),
+          quest?.modelAssetKey,
+          !!stamped(quest)
+        )
+      );
+    }
+    for (const road of entities?.roads ?? []) {
+      if (!road) continue;
+      out.push(
+        record(roadEntityId(road), "road", deriveRoadArchetype(road), road.materialKey, !!stamped(road))
+      );
+    }
+    for (const piece2 of entities?.genrePieces ?? []) {
+      out.push(
+        record(keyOf(piece2?.id), "genrePiece", deriveGenrePieceArchetype(piece2 ?? {}), "", !!stamped(piece2))
+      );
+    }
+    for (const water of geography?.waterFeatures ?? []) {
+      out.push(
+        record(
+          keyOf(water?.id),
+          "waterFeature",
+          deriveWaterFeatureArchetype(water ?? {}),
+          water?.modelAssetKey,
+          !!stamped(water)
+        )
+      );
+    }
+    (geography?.foliageLayers ?? []).forEach((layer, index) => {
+      out.push(
+        record(
+          stopgapEntityId("foliage", index),
+          "foliageLayer",
+          deriveFoliageLayerArchetype(layer ?? {}),
+          "",
+          !!stamped(layer)
+        )
+      );
+    });
+    if (ir.player) {
+      out.push(
+        record(
+          PLAYER_ENTITY_ID,
+          "player",
+          derivePlayerArchetype(ir.player),
+          ir.player.modelAssetKey,
+          !!stamped(ir.player)
+        )
+      );
+    }
+    return out;
+  }
+  function stampWorldArchetypes(ir) {
+    const stampList = (list3, derive) => {
+      if (!Array.isArray(list3)) return list3;
+      return list3.map((entity) => {
+        if (!entity || stamped(entity)) return entity;
+        const archetype = derive(entity);
+        return archetype ? { ...entity, archetype } : entity;
+      });
+    };
+    const out = { ...ir };
+    if (ir.entities) {
+      out.entities = {
+        ...ir.entities,
+        buildings: stampList(ir.entities.buildings, deriveBuildingArchetype),
+        npcs: stampList(ir.entities.npcs, deriveNpcArchetype),
+        animals: stampList(ir.entities.animals, deriveAnimalArchetype),
+        natureObjects: stampList(ir.entities.natureObjects, deriveNatureObjectArchetype),
+        containers: stampList(ir.entities.containers, deriveContainerArchetype),
+        questObjects: stampList(ir.entities.questObjects, deriveQuestObjectArchetype),
+        roads: stampList(ir.entities.roads, deriveRoadArchetype),
+        // Only a world that has the list gains it: a village world stays key-for-key what it was.
+        ...ir.entities.genrePieces !== void 0 ? { genrePieces: stampList(ir.entities.genrePieces, deriveGenrePieceArchetype) } : {}
+      };
+    }
+    if (ir.geography) {
+      out.geography = {
+        ...ir.geography,
+        waterFeatures: stampList(ir.geography.waterFeatures, deriveWaterFeatureArchetype),
+        foliageLayers: stampList(ir.geography.foliageLayers, deriveFoliageLayerArchetype)
+      };
+    }
+    if (ir.player && !stamped(ir.player)) {
+      const archetype = derivePlayerArchetype(ir.player);
+      if (archetype) out.player = { ...ir.player, archetype };
+    }
+    return out;
+  }
+
   // @insimul/core/src/system-packs/composer.ts
   var WORLD_DEFAULT_VARIANT = "world-default";
   function preset(p) {
@@ -46091,15 +46971,15 @@ Return JSON format:
       else refuse3("not-installed", id4, `'${id4}' is not installed, so its variant, style and parameters do nothing; switch it on first`);
     }
     const sorted = [];
-    const placed = /* @__PURE__ */ new Set();
+    const placed2 = /* @__PURE__ */ new Set();
     const place = (id4, stack) => {
-      if (placed.has(id4) || stack.has(id4)) return;
+      if (placed2.has(id4) || stack.has(id4)) return;
       stack.add(id4);
       for (const dep of [...requiresOf(id4)].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) {
         if (installed.has(dep)) place(dep, stack);
       }
       stack.delete(id4);
-      placed.add(id4);
+      placed2.add(id4);
       sorted.push(id4);
     };
     for (const id4 of [...installed].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) place(id4, /* @__PURE__ */ new Set());
@@ -48153,7 +49033,7 @@ Return JSON format:
   function inLayerArea(area, x, z) {
     return area.cells.has(cellKey(Math.floor(x / area.cell), Math.floor(z / area.cell)));
   }
-  function onGround(hit) {
+  function onGround2(hit) {
     return hit.surface === "road" ? "on-road" : hit.surface === "plaza" ? "on-plaza" : hit.surface === "path" ? "on-path" : "on-lot";
   }
   function atObstacle(obstacles2, x, z, margin) {
@@ -48164,13 +49044,13 @@ Return JSON format:
   function trimGeneratedPoint(plan2, area, x, z, radius, obstacles2 = null) {
     if (!inLayerArea(area, x, z)) return { trim: "off-area", what: "" };
     const hit = groundKeepOff(plan2, x, z, keepOffMarginFor(radius));
-    if (hit !== null) return { trim: onGround(hit), what: hit.entityId };
+    if (hit !== null) return { trim: onGround2(hit), what: hit.entityId };
     return atObstacle(obstacles2, x, z, obstacleMarginFor(radius));
   }
   function keepLookNeighbour(plan2, obstacles2, x, z, radius) {
     if (plan2 !== null) {
       const hit = groundKeepOff(plan2, x, z, keepOffMarginFor(radius));
-      if (hit !== null) return { trim: onGround(hit), what: hit.entityId };
+      if (hit !== null) return { trim: onGround2(hit), what: hit.entityId };
     }
     return atObstacle(obstacles2, x, z, obstacleMarginFor(radius));
   }
@@ -49684,8 +50564,8 @@ Return JSON format:
         o.moved = Math.hypot(o.x - p.x, o.z - p.z);
       }
     }
-    const placed = input.props.map((p, k) => ({ ...p, x: out[k].x, z: out[k].z })).filter((_, k) => out[k].verdict !== "set-aside");
-    const after = auditPropGroups({ ...input, props: placed }, rules);
+    const placed2 = input.props.map((p, k) => ({ ...p, x: out[k].x, z: out[k].z })).filter((_, k) => out[k].verdict !== "set-aside");
+    const after = auditPropGroups({ ...input, props: placed2 }, rules);
     stated2.props.forEach((p, k) => {
       if (p.middle === void 0) return;
       out[k].x -= p.middle[0];
@@ -50073,7 +50953,7 @@ Return JSON format:
       if (Math.abs(ea - eb) > COMPOSITION_SLACK) return ea - eb;
       return compareIds2(a.l.entityId, b.l.entityId);
     });
-    const placed = [];
+    const placed2 = [];
     for (const { l, near, k } of order2) {
       const o = out[k];
       if (near.length === 0) continue;
@@ -50095,11 +50975,11 @@ Return JSON format:
       }
       o.route = spot.s.entityId;
       const [x, z] = spot.at;
-      if (placed.some((p) => Math.hypot(p[0] - x, p[1] - z) < r.minSpacingM - COMPOSITION_SLACK)) {
+      if (placed2.some((p) => Math.hypot(p[0] - x, p[1] - z) < r.minSpacingM - COMPOSITION_SLACK)) {
         o.verdict = "crowded";
         continue;
       }
-      placed.push([x, z]);
+      placed2.push([x, z]);
       o.verdict = "on-route";
       o.x = x;
       o.z = z;
@@ -52752,50 +53632,52 @@ Return JSON format:
     ["nodes", tList(tObj([["id", tStr, REQ], ["position", tObj(GENRE_XZ), OPT_NULL]])), OPT_NULL],
     ["segments", tList(tObj([["id", tStr, REQ], ["name", tStr, OPT_NULL], ["nodeIds", tList(tStr), OPT_NULL]])), OPT_NULL]
   ];
+  var GENRE_WORLD_SETTLEMENT = [
+    ["id", tStr, REQ],
+    ["name", tStr, REQ],
+    ["position", tObj(GENRE_VEC3), OPT_NULL],
+    ["radius", tNum, OPT_NULL],
+    ["lots", tList(tObj([
+      ["id", tStr, REQ],
+      ["address", tStr, OPT_NULL],
+      ["streetName", tStr, OPT_NULL],
+      ["districtName", tStr, OPT_NULL],
+      ["position", tObj(GENRE_VEC3), OPT_NULL],
+      ["streetEdgeId", tStr, OPT_NULL]
+    ])), OPT_NULL],
+    ["streetNetwork", tObj(GENRE_STREET_NETWORK), OPT_NULL]
+  ];
+  var GENRE_WORLD_SOURCE_ENTITIES = [
+    ["characters", tList(tObj([["id", tStr, REQ], ["firstName", tStr, OPT_NULL], ["lastName", tStr, OPT_NULL], ["isAlive", tBool, OPT_NULL]])), OPT_NULL],
+    ["npcs", tList(tObj([
+      ["characterId", tStr, REQ],
+      ["schedule", tObj([["homeBuildingId", tStr, OPT_NULL], ["workBuildingId", tStr, OPT_NULL]]), OPT_NULL]
+    ])), OPT_NULL],
+    ["buildings", tList(tObj([
+      ["id", tStr, REQ],
+      ["settlementId", tStr, OPT_NULL],
+      ["lotId", tStr, OPT_NULL],
+      ["businessId", tStr, OPT_NULL],
+      ["occupantIds", tList(tStr), OPT_NULL]
+    ])), OPT_NULL],
+    ["businesses", tList(tObj([
+      ["id", tStr, REQ],
+      ["settlementId", tStr, OPT_NULL],
+      ["name", tStr, REQ],
+      ["businessType", tStr, OPT_NULL],
+      ["ownerId", tStr, OPT_NULL],
+      ["isOutOfBusiness", tBool, OPT_NULL],
+      ["lotId", tStr, OPT_NULL]
+    ])), OPT_NULL],
+    ["containers", tList(tObj([["id", tStr, REQ], ["buildingId", tStr, OPT_NULL], ["containerType", tStr, OPT_NULL]])), OPT_NULL]
+  ];
   var GENRE_WORLD_SOURCE = [
     ["meta", tObj([["worldId", tStr, OPT], ["worldName", tStr, OPT], ["genreConfig", tObj([["id", tStr, OPT]]), OPT_NULL]]), OPT_NULL],
     ["geography", tObj([
       ["georeference", tObj([["rotationRad", tNum, OPT_NULL]]), OPT_NULL],
-      ["settlements", tList(tObj([
-        ["id", tStr, REQ],
-        ["name", tStr, REQ],
-        ["position", tObj(GENRE_VEC3), OPT_NULL],
-        ["radius", tNum, OPT_NULL],
-        ["lots", tList(tObj([
-          ["id", tStr, REQ],
-          ["address", tStr, OPT_NULL],
-          ["streetName", tStr, OPT_NULL],
-          ["districtName", tStr, OPT_NULL],
-          ["position", tObj(GENRE_VEC3), OPT_NULL],
-          ["streetEdgeId", tStr, OPT_NULL]
-        ])), OPT_NULL],
-        ["streetNetwork", tObj(GENRE_STREET_NETWORK), OPT_NULL]
-      ])), OPT_NULL]
+      ["settlements", tList(tObj(GENRE_WORLD_SETTLEMENT)), OPT_NULL]
     ]), OPT_NULL],
-    ["entities", tObj([
-      ["characters", tList(tObj([["id", tStr, REQ], ["firstName", tStr, OPT_NULL], ["lastName", tStr, OPT_NULL], ["isAlive", tBool, OPT_NULL]])), OPT_NULL],
-      ["npcs", tList(tObj([
-        ["characterId", tStr, REQ],
-        ["schedule", tObj([["homeBuildingId", tStr, OPT_NULL], ["workBuildingId", tStr, OPT_NULL]]), OPT_NULL]
-      ])), OPT_NULL],
-      ["buildings", tList(tObj([
-        ["id", tStr, REQ],
-        ["settlementId", tStr, OPT_NULL],
-        ["lotId", tStr, OPT_NULL],
-        ["businessId", tStr, OPT_NULL],
-        ["occupantIds", tList(tStr), OPT_NULL]
-      ])), OPT_NULL],
-      ["businesses", tList(tObj([
-        ["id", tStr, REQ],
-        ["settlementId", tStr, OPT_NULL],
-        ["name", tStr, REQ],
-        ["businessType", tStr, OPT_NULL],
-        ["ownerId", tStr, OPT_NULL],
-        ["isOutOfBusiness", tBool, OPT_NULL],
-        ["lotId", tStr, OPT_NULL]
-      ])), OPT_NULL],
-      ["containers", tList(tObj([["id", tStr, REQ], ["buildingId", tStr, OPT_NULL], ["containerType", tStr, OPT_NULL]])), OPT_NULL]
-    ]), OPT_NULL],
+    ["entities", tObj(GENRE_WORLD_SOURCE_ENTITIES), OPT_NULL],
     ["systems", tObj([["knowledgeBase", tStr, OPT_NULL]]), OPT_NULL],
     ["player", tObj(GENRE_PLAYER), OPT_NULL]
   ];
@@ -53036,6 +53918,115 @@ Return JSON format:
     coded("invalid-input", () => {
       for (const key of keys) needString(method, args[key], key);
     });
+  }
+  var tOrNull = (check) => (m, v, n) => {
+    if (v !== null) check(m, v, n);
+  };
+  var GENRE_PIECE_MODULE = tOneOf([...GENRE_PIECE_MODULES]);
+  var GENRE_PIECE_KIND = [
+    ["module", GENRE_PIECE_MODULE, REQ],
+    ["kind", tStr, REQ],
+    ["archetype", tStr, REQ],
+    ["variants", (m, v, n) => v === "segment" ? v : tList(tStr)(m, v, n), REQ],
+    ["source", tStr, REQ_NULL]
+  ];
+  var GENRE_PIECE_POINT = [["x", tNum, REQ], ["z", tNum, REQ]];
+  var GENRE_PIECE_SPAN = [["from", tObj(GENRE_PIECE_POINT), REQ], ["to", tObj(GENRE_PIECE_POINT), REQ]];
+  var GENRE_PIECE_IR_OPTIONAL = [
+    ["variant", tStr, OPT],
+    ["at", tStr, OPT],
+    ["level", tStr, OPT],
+    ["archetype", tStr, OPT],
+    ["position", tObj(GENRE_PIECE_POINT), OPT],
+    ["span", tObj(GENRE_PIECE_SPAN), OPT]
+  ];
+  var GENRE_PIECE_IR = [["id", tStr, REQ], ["module", GENRE_PIECE_MODULE, REQ], ["kind", tStr, REQ], ["ref", tStr, REQ], ...GENRE_PIECE_IR_OPTIONAL];
+  var GENRE_WALK_PIECE = [["id", tStr, OPT], ["module", tStr, OPT], ["kind", tStr, OPT], ["ref", tStr, OPT], ...GENRE_PIECE_IR_OPTIONAL];
+  var GENRE_GROUND_IR = [
+    ["id", tStr, REQ],
+    ["module", tOneOf([...GENRE_GROUND_MODULES]), REQ],
+    ["kind", tOneOf(["ground"]), REQ],
+    ["ref", tStr, REQ],
+    ["archetype", tStr, REQ],
+    ["position", tObj(GENRE_PIECE_POINT), REQ],
+    ["extent", tObj([["min", tObj(GENRE_PIECE_POINT), REQ], ["max", tObj(GENRE_PIECE_POINT), REQ]]), REQ],
+    ...GENRE_PIECE_IR_OPTIONAL.filter(([k]) => k !== "archetype" && k !== "position")
+  ];
+  var GENRE_UNPLACED_REASONS = [
+    "invalid-piece",
+    "duplicate-id",
+    "unknown-kind",
+    "kind-not-placed",
+    "invalid-variant",
+    "invalid-position",
+    "no-anchor",
+    "missing-anchor",
+    "ambiguous-anchor",
+    "not-derived",
+    "off-ground"
+  ];
+  var GENRE_BUILD_PLAN = [
+    ["genre", tStr, REQ],
+    ["ground", tList(tObj(GENRE_GROUND_IR)), OPT],
+    ["pieces", tList(tObj(GENRE_PIECE_IR)), REQ],
+    ["unplaced", tList(tObj([
+      ["id", tStr, REQ_NULL],
+      ["reason", tOneOf(GENRE_UNPLACED_REASONS), REQ],
+      ["table", tOneOf([...GENRE_BUILD_ANCHOR_TABLES]), OPT],
+      ["atom", tStr, OPT]
+    ])), REQ]
+  ];
+  var GENRE_BUILD_ANCHORS = [
+    ["places", tRecord(tOrNull(tObj(GENRE_PIECE_POINT))), REQ],
+    ["links", tRecord(tOrNull(tObj([["from", tStr, REQ], ["to", tStr, REQ]]))), REQ],
+    ["containers", tRecord(tOrNull(tObj(GENRE_PIECE_POINT))), REQ],
+    ["locks", tRecord(tOrNull(tStr)), REQ],
+    ["clues", tRecord(tOrNull(tStr)), REQ],
+    ["businesses", tRecord(tOrNull(tObj(GENRE_PIECE_POINT))), REQ],
+    ["settlements", tRecord(tOrNull(tObj(GENRE_PIECE_POINT))), REQ],
+    ["people", tRecord(tOrNull(tObj(GENRE_PIECE_POINT))), REQ]
+  ];
+  var GENRE_PIECE_COURSE = PLATFORMER_COURSE.filter(([k]) => ["places", "links", "levels"].includes(k)).map(
+    ([k, check, how]) => k === "links" ? [k, check, how] : k === "places" ? [k, tList(tObj([
+      ["id", tStr, REQ],
+      ["kind", tOneOf(PLATFORMER_PLACE_KINDS), REQ],
+      ["label", tStr, REQ],
+      ["position", tObj(GENRE_XZ), OPT]
+    ])), how] : [k, tList(tObj([
+      ["id", tStr, REQ],
+      ["order", tNum, REQ],
+      ["start", tStr, REQ],
+      ["goal", tStr, REQ],
+      ["goalKind", tStr, REQ],
+      ["subject", tStr, REQ_NULL],
+      ["checkpoints", tList(tStr), REQ],
+      ["par", tNum, REQ]
+    ])), how]
+  );
+  var GENRE_PIECE_PUZZLE = PUZZLE_DEFINITION.filter(([k]) => ["locks", "finalLock", "clueTexts"].includes(k));
+  var GENRE_PIECE_CAMPAIGN = STRATEGY_CAMPAIGN.filter(([k]) => ["holdings", "settlements", "residents"].includes(k));
+  function genrePieceDefinitionsArg(method, args) {
+    const definitions = {};
+    for (const [key, spec] of [["course", GENRE_PIECE_COURSE], ["puzzle", GENRE_PIECE_PUZZLE], ["campaign", GENRE_PIECE_CAMPAIGN]]) {
+      if (!hasOwn3(args, key)) continue;
+      definitions[key] = declared(method, args[key], key, spec);
+    }
+    return definitions;
+  }
+  var GENRE_BUILD_WORLD = GENRE_WORLD_SOURCE.map(([k, check, how]) => {
+    if (k === "geography") {
+      return [k, tObj([
+        ["georeference", tObj([["rotationRad", tNum, OPT_NULL]]), OPT_NULL],
+        ["settlements", tList(tObj(GENRE_WORLD_SETTLEMENT.map(([sk, scheck, show]) => [sk, scheck, sk === "id" ? OPT : show]))), OPT_NULL]
+      ]), how];
+    }
+    if (k !== "entities") return [k, check, how];
+    return [k, tObj(GENRE_WORLD_SOURCE_ENTITIES.map(
+      ([ek, echeck, ehow]) => ek !== "containers" ? [ek, echeck, ehow] : [ek, tList(tObj([["id", tStr, REQ], ["buildingId", tStr, OPT_NULL], ["containerType", tStr, OPT_NULL], ["position", tObj(GENRE_XZ), OPT_NULL]])), ehow]
+    )), how];
+  });
+  function genreBuildWorldArg(method, args) {
+    return optionalArg(args.world, (v) => declared(method, v, "world", GENRE_BUILD_WORLD));
   }
   var QUEST_STATUSES = ["available", "active", "completed"];
   var QUEST_FILTERS = ["all", "active", "completed", "available"];
@@ -55304,6 +56295,186 @@ Return JSON format:
     "strategy.save.blockOf": (args) => {
       coded("invalid-input", () => declared("strategy.save.blockOf", args.block, "block", STRATEGY_DIRECTOR_STATE));
       return { block: plain(strategyBlockOf(args.block)) };
+    },
+    // ── the genre pieces (PL.native-genre-rows slice 4; U103) ──
+    /**
+     * `genrePieces.contract {}` → core's genre piece tables: the piece modules
+     * (`GENRE_PIECE_MODULES`), every kind (`GENRE_PIECE_KINDS`: module, kind, archetype,
+     * variants, source), the definition each module's pieces come from
+     * (`GENRE_PIECE_DEFINITIONS`), the placement rules (`GENRE_PIECE_PLACEMENT`), the anchor
+     * tables, the settle step and directions, and the grounded modules and their margin.
+     */
+    "genrePieces.contract": () => ({
+      modules: [...GENRE_PIECE_MODULES],
+      kinds: plain(GENRE_PIECE_KINDS),
+      definitions: plain(GENRE_PIECE_DEFINITIONS),
+      placement: plain(GENRE_PIECE_PLACEMENT),
+      anchorTables: [...GENRE_BUILD_ANCHOR_TABLES],
+      settleStepM: GENRE_BUILD_SETTLE_STEP_M,
+      settleDirections: plain(GENRE_BUILD_SETTLE_DIRECTIONS),
+      groundModules: [...GENRE_GROUND_MODULES],
+      groundMarginM: GENRE_BUILD_GROUND_MARGIN_M
+    }),
+    /** `genrePieces.kind { kind?, module? }` → `{ kind }` — core's `genrePieceKind` (the kind called `kind`, in `module` when the row names one, null included; null: none). Both are core's `unknown`. */
+    "genrePieces.kind": (args) => ({ kind: plain(hasOwn3(args, "module") ? genrePieceKind(args.kind, args.module) : genrePieceKind(args.kind)) }),
+    /** `genrePieces.isVariant { spec, variant? }` → `{ allowed }` — core's `isGenrePieceVariant` (`spec` a `GenrePieceKind`; no variant, null or `''` is always allowed). */
+    "genrePieces.isVariant": (args) => {
+      coded("invalid-input", () => declared("genrePieces.isVariant", args.spec, "spec", GENRE_PIECE_KIND));
+      return { allowed: isGenrePieceVariant(args.spec, args.variant) };
+    },
+    /** `genrePieces.archetype { module?, kind?, variant? }` → `{ archetype }` — core's `genrePieceArchetype` (`''` for an unknown module or kind, a kind of another module, or a variant the kind does not allow). */
+    "genrePieces.archetype": (args) => ({ archetype: genrePieceArchetype(args.module, args.kind, args.variant) }),
+    /** `genrePieces.artSlots { module }` → `{ artSlots }` — core's `genrePieceArtSlots` (one `<root>.<module>.*` per root its kinds use, sorted). */
+    "genrePieces.artSlots": (args) => {
+      coded("invalid-input", () => GENRE_PIECE_MODULE("genrePieces.artSlots", args.module, "module"));
+      return { artSlots: genrePieceArtSlots(args.module) };
+    },
+    /** `genrePieces.deriveArchetype { piece }` → `{ archetype }` — core's `deriveGenrePieceArchetype` (the binding walk's: a stamped key kept, else the derived one, `''` when none). */
+    "genrePieces.deriveArchetype": (args) => {
+      coded("invalid-input", () => declared("genrePieces.deriveArchetype", args.piece, "piece", GENRE_WALK_PIECE));
+      return { archetype: deriveGenrePieceArchetype(args.piece) };
+    },
+    /** `genrePieces.modules { genre? }` → `{ modules }` — core's `genrePieceModulesFor` (the piece modules the genre's bundle activates, in core's order; null for a genre the registry does not know). */
+    "genrePieces.modules": (args) => ({ modules: genrePieceModulesFor(args.genre) }),
+    /** `genrePieces.kinds { genre? }` → core's `genrePieceKindsFor` answer (`{ genre, modules, kinds, artSlots }`, or `{ refused }`). */
+    "genrePieces.kinds": (args) => plain(genrePieceKindsFor(args.genre)),
+    /** `genrePieces.key { genre?, kind?, variant? }` → core's `genrePieceKeyFor` answer (`{ module, archetype }`, or `{ refused }`: unknown-genre, unknown-kind, kind-not-placed, invalid-variant, in that order). */
+    "genrePieces.key": (args) => plain(genrePieceKeyFor(args.genre, args.kind, args.variant)),
+    /** `genrePieces.idSegment { ref }` → `{ segment }` — core's `genrePieceIdSegment` (`%` → `%25`, `.` → `%2E`). */
+    "genrePieces.idSegment": (args) => {
+      coded("invalid-input", () => needString("genrePieces.idSegment", args.ref, "ref"));
+      return { segment: genrePieceIdSegment(args.ref) };
+    },
+    /** `genrePieces.id { module, kind, refs }` → `{ id }` — core's `genrePieceId` (`<module>.<kind>.<ref…>`, each ref escaped). */
+    "genrePieces.id": (args) => {
+      const m = "genrePieces.id";
+      coded("invalid-input", () => {
+        GENRE_PIECE_MODULE(m, args.module, "module");
+        needString(m, args.kind, "kind");
+        stringList(m, args.refs, "refs");
+      });
+      return { id: genrePieceId(args.module, args.kind, args.refs) };
+    },
+    /** `genrePieces.course { course }` → `{ pieces }` — core's `coursePieces` (platforms, ledges, gaps, checkpoints and goals, in kind-table order). */
+    "genrePieces.course": (args) => {
+      coded("invalid-input", () => declared("genrePieces.course", args.course, "course", GENRE_PIECE_COURSE));
+      return { pieces: plain(coursePieces(args.course)) };
+    },
+    /** `genrePieces.puzzle { puzzle }` → `{ pieces }` — core's `puzzlePieces` (locks, the keys some lock needs, clues). */
+    "genrePieces.puzzle": (args) => {
+      coded("invalid-input", () => declared("genrePieces.puzzle", args.puzzle, "puzzle", GENRE_PIECE_PUZZLE));
+      return { pieces: plain(puzzlePieces(args.puzzle)) };
+    },
+    /** `genrePieces.campaign { campaign }` → `{ pieces }` — core's `campaignPieces` (holdings by trade, settlements, a worker per settlement and resident). */
+    "genrePieces.campaign": (args) => {
+      coded("invalid-input", () => declared("genrePieces.campaign", args.campaign, "campaign", GENRE_PIECE_CAMPAIGN));
+      return { pieces: plain(campaignPieces(args.campaign)) };
+    },
+    /**
+     * `genrePieces.for { genre?, course?, puzzle?, campaign? }` → core's `genrePiecesFor`
+     * answer (`{ pieces }`, or `{ refused, module? }`: an unknown genre first, then by module
+     * a definition the genre does not place or one it needs and was not given). A definition
+     * is given when its key is present.
+     */
+    "genrePieces.for": (args) => {
+      const definitions = coded("invalid-input", () => genrePieceDefinitionsArg("genrePieces.for", args));
+      return plain(genrePiecesFor(args.genre, definitions));
+    },
+    /**
+     * `genrePieces.collect { genrePieces? }` → `{ entities }` — core's
+     * `collectPlaceableEntities` over a world holding only `entities.genrePieces` (the binding
+     * walk's genre piece leg: each piece an entity of kind `genrePiece`, its archetype derived
+     * or stamped, `''` when none). Absent: no list.
+     */
+    "genrePieces.collect": (args) => {
+      const m = "genrePieces.collect";
+      coded("invalid-input", () => {
+        if (hasOwn3(args, "genrePieces")) tList(tObj(GENRE_WALK_PIECE))(m, args.genrePieces, "genrePieces");
+      });
+      return { entities: plain(collectPlaceableEntities({ entities: hasOwn3(args, "genrePieces") ? { genrePieces: args.genrePieces } : {} })) };
+    },
+    /**
+     * `genrePieces.stamp { genrePieces? }` → `{ entityLists, genrePieces }` — core's
+     * `stampWorldArchetypes` over a world holding only `entities.genrePieces` (the exporter's
+     * genre piece leg: every piece with a legal key stamped, a stamped one kept, an unbound one
+     * left alone): the entity lists it returns with a value, and the stamped list (null when
+     * the world has none, which it does not gain).
+     */
+    "genrePieces.stamp": (args) => {
+      const m = "genrePieces.stamp";
+      coded("invalid-input", () => {
+        if (hasOwn3(args, "genrePieces")) tList(tObj(GENRE_WALK_PIECE))(m, args.genrePieces, "genrePieces");
+      });
+      const entities = stampWorldArchetypes({ entities: hasOwn3(args, "genrePieces") ? { genrePieces: args.genrePieces } : {} }).entities ?? {};
+      const entityLists = Object.keys(entities).filter((k) => entities[k] !== void 0);
+      return { entityLists, genrePieces: plain(entities.genrePieces ?? null) };
+    },
+    /**
+     * `genrePieces.anchors { world?, course?, puzzle?, campaign? }` → `{ anchors }` — core's
+     * `genreBuildAnchors(world, definitions)`: the eight tables (places, links, containers,
+     * locks, clues, businesses, settlements, people), atom → value, null for an atom two
+     * entries give different values; keys in code-unit order. `world` absent or null: none.
+     */
+    "genrePieces.anchors": (args) => {
+      const m = "genrePieces.anchors";
+      const input = coded("invalid-input", () => ({ world: genreBuildWorldArg(m, args), definitions: genrePieceDefinitionsArg(m, args) }));
+      return { anchors: plain(genreBuildAnchors(input.world, input.definitions)) };
+    },
+    /**
+     * `genrePieces.place { genre?, pieces?, anchors? }` → core's `placeGenrePieces` answer
+     * (`{ genre, pieces, unplaced }`, or `{ refused: 'unknown-genre' }`). `pieces` is core's
+     * `unknown[] | null` (each item checked by core: `invalid-piece`); `anchors` is core's
+     * `GenreBuildAnchors`, absent or null read as no tables (core's corpus pins an absent
+     * `anchors` as every anchored piece missing its anchor).
+     */
+    "genrePieces.place": (args) => {
+      const m = "genrePieces.place";
+      coded("invalid-input", () => {
+        optionalArg(args.pieces, (v) => needArray(m, v, "pieces"));
+        optionalArg(args.anchors, (v) => declared(m, v, "anchors", GENRE_BUILD_ANCHORS));
+      });
+      return plain(placeGenrePieces(args.genre, args.pieces, orUndefined(args.anchors)));
+    },
+    /**
+     * `genrePieces.plan { genre?, world?, course?, puzzle?, campaign? }` → core's
+     * `genreBuildPlan` answer (`{ genre, pieces, unplaced }`, or `genrePiecesFor`'s refusal):
+     * the definitions' pieces and the world's own `entities.genrePieces`, placed together.
+     */
+    "genrePieces.plan": (args) => {
+      const m = "genrePieces.plan";
+      const input = coded("invalid-input", () => ({ world: genreBuildWorldArg(m, args), definitions: genrePieceDefinitionsArg(m, args) }));
+      return plain(genreBuildPlan(args.genre, input.world, input.definitions));
+    },
+    /** `genrePieces.settleOffset { n }` → `{ offset }` — core's `genreBuildSettleOffset` (the n-th piece after the first on one point; `{0, 0}` for n below 1 or not whole). */
+    "genrePieces.settleOffset": (args) => {
+      coded("invalid-input", () => needNumber("genrePieces.settleOffset", args.n, "n"));
+      return { offset: plain(genreBuildSettleOffset(args.n)) };
+    },
+    /**
+     * `genrePieces.ground { genre?, world?, course?, puzzle?, campaign? }` → core's
+     * `genreBuildGround` answer (`{ genre, ground, pieces, unplaced }`, or the plan's
+     * refusal): the plan standing on the ground it states for the platformer and the puzzle,
+     * every piece off it reported `off-ground`.
+     */
+    "genrePieces.ground": (args) => {
+      const m = "genrePieces.ground";
+      const input = coded("invalid-input", () => ({ world: genreBuildWorldArg(m, args), definitions: genrePieceDefinitionsArg(m, args) }));
+      return plain(genreBuildGround(args.genre, input.world, input.definitions));
+    },
+    /**
+     * `genrePieces.write { world, plan }` → `{ world }` — core's `writeGenreBuildPlan`: a copy
+     * of `world` whose `entities.genrePieces` is the plan's placed pieces, then the assistant's
+     * it left out (less any position); a grounded plan (one carrying `ground`) also writes
+     * `entities.genreGround`, an ungrounded one removes it. `plan` is a `genrePieces.plan` or
+     * `genrePieces.ground` answer.
+     */
+    "genrePieces.write": (args) => {
+      const m = "genrePieces.write";
+      coded("invalid-input", () => {
+        declared(m, args.world, "world", [["entities", tObj([]), OPT_NULL]]);
+        declared(m, args.plan, "plan", GENRE_BUILD_PLAN);
+      });
+      return { world: plain(writeGenreBuildPlan(args.world, args.plan)) };
     },
     // ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
     /** `ui.notifications.create {}` → `{ session, view }` — core's `Notifications` toast queue. */

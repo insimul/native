@@ -1,0 +1,6720 @@
+{
+ "area": "genre-genre-pieces-kinds",
+ "description": "core's genre pieces corpus conformance/genre-pieces/kinds.json (P9j.core-asset-kinds, P9j.core-build-plan) through the genrePieces.* rows, each op as core's reference runner (src/editor/binding/genre-pieces-corpus.ts, runGenrePiecesOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/genre-mechanics/thistlecombe.world-slice.json": "2dccd06611aa6325c6a7ea9d3c4ae18135252f039a8cb3ba61173d95608376cb",
+   "conformance/genre-pieces/kinds.json": "698940a36627fd226460608387a38e16fa4d96a3794e07f031d94d94e63164a4"
+  }
+ },
+ "cases": [
+  {
+   "name": "genre-pieces/kinds kinds: registry genre rpg",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "rpg"
+     },
+     "expect": {
+      "genre": "rpg",
+      "modules": [],
+      "kinds": [],
+      "artSlots": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre action",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "action"
+     },
+     "expect": {
+      "genre": "action",
+      "modules": [],
+      "kinds": [],
+      "artSlots": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre fighting",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "fighting"
+     },
+     "expect": {
+      "genre": "fighting",
+      "modules": [],
+      "kinds": [],
+      "artSlots": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre platformer",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "platformer"
+     },
+     "expect": {
+      "genre": "platformer",
+      "modules": [
+       "platformer"
+      ],
+      "kinds": [
+       {
+        "module": "platformer",
+        "kind": "platform",
+        "archetype": "prop.platformer.platform",
+        "variants": [],
+        "source": "Course.places of kind 'junction' (a street junction the runner stands on)"
+       },
+       {
+        "module": "platformer",
+        "kind": "ledge",
+        "archetype": "prop.platformer.ledge",
+        "variants": [],
+        "source": "Course.places of kind 'lot' (the doorstep a jump lands on)"
+       },
+       {
+        "module": "platformer",
+        "kind": "hazard",
+        "archetype": "prop.platformer.hazard",
+        "variants": [
+         "gap"
+        ],
+        "source": "Course.links of mode 'jump' (variant gap: the gap the jump crosses)"
+       },
+       {
+        "module": "platformer",
+        "kind": "collectible",
+        "archetype": "item.platformer.collectible",
+        "variants": [],
+        "source": null
+       },
+       {
+        "module": "platformer",
+        "kind": "checkpoint",
+        "archetype": "prop.platformer.checkpoint",
+        "variants": [],
+        "source": "CourseLevel.checkpoints (one per level and junction)"
+       },
+       {
+        "module": "platformer",
+        "kind": "goal",
+        "archetype": "prop.platformer.goal",
+        "variants": [
+         "home",
+         "work",
+         "place"
+        ],
+        "source": "CourseLevel.goal (variant: CourseLevel.goalKind)"
+       }
+      ],
+      "artSlots": [
+       "item.platformer.*",
+       "prop.platformer.*"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre strategy",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "strategy"
+     },
+     "expect": {
+      "genre": "strategy",
+      "modules": [
+       "strategy"
+      ],
+      "kinds": [
+       {
+        "module": "strategy",
+        "kind": "holding",
+        "archetype": "building.strategy.holding",
+        "variants": "segment",
+        "source": "Campaign.holdings (variant: CampaignHolding.trade when it is a legal segment)"
+       },
+       {
+        "module": "strategy",
+        "kind": "settlement",
+        "archetype": "building.strategy.settlement",
+        "variants": [],
+        "source": "Campaign.settlements"
+       },
+       {
+        "module": "strategy",
+        "kind": "worker",
+        "archetype": "npc.strategy.worker",
+        "variants": [],
+        "source": "Campaign.residents (one per settlement and resident)"
+       }
+      ],
+      "artSlots": [
+       "building.strategy.*",
+       "npc.strategy.*"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre survival",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "survival"
+     },
+     "expect": {
+      "genre": "survival",
+      "modules": [],
+      "kinds": [],
+      "artSlots": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre shooter",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "shooter"
+     },
+     "expect": {
+      "genre": "shooter",
+      "modules": [],
+      "kinds": [],
+      "artSlots": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre sandbox",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "sandbox"
+     },
+     "expect": {
+      "genre": "sandbox",
+      "modules": [],
+      "kinds": [],
+      "artSlots": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre city-building",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "city-building"
+     },
+     "expect": {
+      "genre": "city-building",
+      "modules": [
+       "strategy"
+      ],
+      "kinds": [
+       {
+        "module": "strategy",
+        "kind": "holding",
+        "archetype": "building.strategy.holding",
+        "variants": "segment",
+        "source": "Campaign.holdings (variant: CampaignHolding.trade when it is a legal segment)"
+       },
+       {
+        "module": "strategy",
+        "kind": "settlement",
+        "archetype": "building.strategy.settlement",
+        "variants": [],
+        "source": "Campaign.settlements"
+       },
+       {
+        "module": "strategy",
+        "kind": "worker",
+        "archetype": "npc.strategy.worker",
+        "variants": [],
+        "source": "Campaign.residents (one per settlement and resident)"
+       }
+      ],
+      "artSlots": [
+       "building.strategy.*",
+       "npc.strategy.*"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre simulation",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "simulation"
+     },
+     "expect": {
+      "genre": "simulation",
+      "modules": [],
+      "kinds": [],
+      "artSlots": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre puzzle",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "puzzle"
+     },
+     "expect": {
+      "genre": "puzzle",
+      "modules": [
+       "puzzle"
+      ],
+      "kinds": [
+       {
+        "module": "puzzle",
+        "kind": "lock",
+        "archetype": "prop.puzzle.lock",
+        "variants": [
+         "final"
+        ],
+        "source": "PuzzleDefinition.locks, on PuzzleLock.target (variant final: PuzzleDefinition.finalLock)"
+       },
+       {
+        "module": "puzzle",
+        "kind": "key",
+        "archetype": "item.puzzle.key",
+        "variants": [],
+        "source": "PuzzleLock.holds items some lock needs ({kind: 'item'}), and needed items no lock holds"
+       },
+       {
+        "module": "puzzle",
+        "kind": "clue",
+        "archetype": "item.puzzle.clue",
+        "variants": [],
+        "source": "PuzzleDefinition.clueTexts (a text to find and read)"
+       },
+       {
+        "module": "puzzle",
+        "kind": "block",
+        "archetype": "prop.puzzle.block",
+        "variants": [],
+        "source": null
+       },
+       {
+        "module": "puzzle",
+        "kind": "switch",
+        "archetype": "prop.puzzle.switch",
+        "variants": [],
+        "source": null
+       }
+      ],
+      "artSlots": [
+       "item.puzzle.*",
+       "prop.puzzle.*"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre language-learning",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "language-learning"
+     },
+     "expect": {
+      "genre": "language-learning",
+      "modules": [],
+      "kinds": [],
+      "artSlots": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre educational",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "educational"
+     },
+     "expect": {
+      "genre": "educational",
+      "modules": [],
+      "kinds": [],
+      "artSlots": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre adventure",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "adventure"
+     },
+     "expect": {
+      "genre": "adventure",
+      "modules": [],
+      "kinds": [],
+      "artSlots": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: registry genre roguelike",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "roguelike"
+     },
+     "expect": {
+      "genre": "roguelike",
+      "modules": [],
+      "kinds": [],
+      "artSlots": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: a genre the registry does not know is refused",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "mystery"
+     },
+     "expect": {
+      "refused": "unknown-genre"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: genre ids are exact: Platformer is refused",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "Platformer"
+     },
+     "expect": {
+      "refused": "unknown-genre"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: genre ids are exact: city_building is refused",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": "city_building"
+     },
+     "expect": {
+      "refused": "unknown-genre"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: an empty genre is refused",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": ""
+     },
+     "expect": {
+      "refused": "unknown-genre"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds kinds: no genre at all is refused",
+   "steps": [
+    {
+     "call": "genrePieces.kinds",
+     "args": {
+      "genre": null
+     },
+     "expect": {
+      "refused": "unknown-genre"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: platformer: a platform",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "platform"
+     },
+     "expect": {
+      "module": "platformer",
+      "archetype": "prop.platformer.platform"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: platformer: a ledge",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "ledge"
+     },
+     "expect": {
+      "module": "platformer",
+      "archetype": "prop.platformer.ledge"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: platformer: a gap",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "hazard",
+      "variant": "gap"
+     },
+     "expect": {
+      "module": "platformer",
+      "archetype": "prop.platformer.hazard.gap"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: platformer: a hazard with no variant is the kind itself",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "hazard"
+     },
+     "expect": {
+      "module": "platformer",
+      "archetype": "prop.platformer.hazard"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: platformer: a collectible (no fact names one; the build plan or the assistant places it)",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "collectible"
+     },
+     "expect": {
+      "module": "platformer",
+      "archetype": "item.platformer.collectible"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: platformer: a checkpoint",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "checkpoint"
+     },
+     "expect": {
+      "module": "platformer",
+      "archetype": "prop.platformer.checkpoint"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: platformer: a goal at a home",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "goal",
+      "variant": "home"
+     },
+     "expect": {
+      "module": "platformer",
+      "archetype": "prop.platformer.goal.home"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: platformer: a goal at a workplace",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "goal",
+      "variant": "work"
+     },
+     "expect": {
+      "module": "platformer",
+      "archetype": "prop.platformer.goal.work"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: platformer: a goal at a place",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "goal",
+      "variant": "place"
+     },
+     "expect": {
+      "module": "platformer",
+      "archetype": "prop.platformer.goal.place"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: puzzle: a lock",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "puzzle",
+      "kind": "lock"
+     },
+     "expect": {
+      "module": "puzzle",
+      "archetype": "prop.puzzle.lock"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: puzzle: the final lock",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "puzzle",
+      "kind": "lock",
+      "variant": "final"
+     },
+     "expect": {
+      "module": "puzzle",
+      "archetype": "prop.puzzle.lock.final"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: puzzle: a key",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "puzzle",
+      "kind": "key"
+     },
+     "expect": {
+      "module": "puzzle",
+      "archetype": "item.puzzle.key"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: puzzle: a clue",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "puzzle",
+      "kind": "clue"
+     },
+     "expect": {
+      "module": "puzzle",
+      "archetype": "item.puzzle.clue"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: puzzle: a block",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "puzzle",
+      "kind": "block"
+     },
+     "expect": {
+      "module": "puzzle",
+      "archetype": "prop.puzzle.block"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: puzzle: a switch",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "puzzle",
+      "kind": "switch"
+     },
+     "expect": {
+      "module": "puzzle",
+      "archetype": "prop.puzzle.switch"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: strategy: a holding by its trade",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "strategy",
+      "kind": "holding",
+      "variant": "blacksmith"
+     },
+     "expect": {
+      "module": "strategy",
+      "archetype": "building.strategy.holding.blacksmith"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: strategy: a holding of a trade core's table does not know",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "strategy",
+      "kind": "holding",
+      "variant": "pottery"
+     },
+     "expect": {
+      "module": "strategy",
+      "archetype": "building.strategy.holding.pottery"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: strategy: a settlement",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "strategy",
+      "kind": "settlement"
+     },
+     "expect": {
+      "module": "strategy",
+      "archetype": "building.strategy.settlement"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: strategy: a worker",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "strategy",
+      "kind": "worker"
+     },
+     "expect": {
+      "module": "strategy",
+      "archetype": "npc.strategy.worker"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: city-building places the strategy pieces",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "city-building",
+      "kind": "holding"
+     },
+     "expect": {
+      "module": "strategy",
+      "archetype": "building.strategy.holding"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: an empty variant is no variant",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "puzzle",
+      "kind": "lock",
+      "variant": ""
+     },
+     "expect": {
+      "module": "puzzle",
+      "archetype": "prop.puzzle.lock"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: a null variant is no variant",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "goal",
+      "variant": null
+     },
+     "expect": {
+      "module": "platformer",
+      "archetype": "prop.platformer.goal"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: unknown genre: refused before the kind is looked at",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "mystery",
+      "kind": "trampoline"
+     },
+     "expect": {
+      "refused": "unknown-genre"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: unknown genre: refused even for a real kind",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "Puzzle",
+      "kind": "lock"
+     },
+     "expect": {
+      "refused": "unknown-genre"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: unknown kind: refused",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "trampoline"
+     },
+     "expect": {
+      "refused": "unknown-kind"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: unknown kind: refused on a genre that places nothing",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "rpg",
+      "kind": "trampoline"
+     },
+     "expect": {
+      "refused": "unknown-kind"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: kinds are exact: Ledge is unknown",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "Ledge"
+     },
+     "expect": {
+      "refused": "unknown-kind"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: a kind that is not a string is unknown",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": 7
+     },
+     "expect": {
+      "refused": "unknown-kind"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: a puzzle does not place a ledge",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "puzzle",
+      "kind": "ledge"
+     },
+     "expect": {
+      "refused": "kind-not-placed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: a platformer does not place a lock",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "lock"
+     },
+     "expect": {
+      "refused": "kind-not-placed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: strategy does not place a collectible",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "strategy",
+      "kind": "collectible"
+     },
+     "expect": {
+      "refused": "kind-not-placed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: rpg places no genre piece",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "rpg",
+      "kind": "lock"
+     },
+     "expect": {
+      "refused": "kind-not-placed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: adventure places no genre piece (its bundle has no puzzle module)",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "adventure",
+      "kind": "clue"
+     },
+     "expect": {
+      "refused": "kind-not-placed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: a goal kind the course does not have",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "goal",
+      "variant": "castle"
+     },
+     "expect": {
+      "refused": "invalid-variant"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: a variant on a kind that has none",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "platformer",
+      "kind": "ledge",
+      "variant": "high"
+     },
+     "expect": {
+      "refused": "invalid-variant"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: variants are exact: Final is not final",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "puzzle",
+      "kind": "lock",
+      "variant": "Final"
+     },
+     "expect": {
+      "refused": "invalid-variant"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: a holding's trade must be a legal segment",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "strategy",
+      "kind": "holding",
+      "variant": "General Store"
+     },
+     "expect": {
+      "refused": "invalid-variant"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: a variant is one segment, not a path",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "strategy",
+      "kind": "holding",
+      "variant": "smithy.large"
+     },
+     "expect": {
+      "refused": "invalid-variant"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds key: a variant that is not a string",
+   "steps": [
+    {
+     "call": "genrePieces.key",
+     "args": {
+      "genre": "puzzle",
+      "kind": "lock",
+      "variant": 1
+     },
+     "expect": {
+      "refused": "invalid-variant"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: thistlecombe puzzle: three locks (the last final), the two keys they pass along, two clue texts",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "puzzle",
+      "puzzle": {
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "avis_de_disparition"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key1"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key2"
+         ]
+        },
+        {
+         "id": "lock_3",
+         "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key2"
+          },
+          {
+           "kind": "lock",
+           "ref": "lock_2"
+          },
+          {
+           "kind": "clue",
+           "ref": "carnet_mouille_notes_de_recherche"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_3"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "lock_3",
+       "clueTexts": [
+        {
+         "id": "avis_de_disparition",
+         "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+        },
+        {
+         "id": "carnet_mouille_notes_de_recherche",
+         "clue": "Research notes about the founding families, found in a cave."
+        }
+       ]
+      }
+     },
+     "expect": {
+      "pieces": [
+       {
+        "id": "puzzle.lock.lock_1",
+        "module": "puzzle",
+        "kind": "lock",
+        "ref": "lock_1",
+        "at": "container_bld_6abb8ff3078b40088ad4dea8_0",
+        "archetype": "prop.puzzle.lock"
+       },
+       {
+        "id": "puzzle.lock.lock_2",
+        "module": "puzzle",
+        "kind": "lock",
+        "ref": "lock_2",
+        "at": "container_bld_6abb8fae078b40088ad4da66_12_0",
+        "archetype": "prop.puzzle.lock"
+       },
+       {
+        "id": "puzzle.lock.lock_3",
+        "module": "puzzle",
+        "kind": "lock",
+        "ref": "lock_3",
+        "variant": "final",
+        "at": "container_bld_6abb8ff3078b40088ad4dea9_0",
+        "archetype": "prop.puzzle.lock.final"
+       },
+       {
+        "id": "puzzle.key.lock_1.key1",
+        "module": "puzzle",
+        "kind": "key",
+        "ref": "key1",
+        "at": "lock_1",
+        "archetype": "item.puzzle.key"
+       },
+       {
+        "id": "puzzle.key.lock_2.key2",
+        "module": "puzzle",
+        "kind": "key",
+        "ref": "key2",
+        "at": "lock_2",
+        "archetype": "item.puzzle.key"
+       },
+       {
+        "id": "puzzle.clue.avis_de_disparition",
+        "module": "puzzle",
+        "kind": "clue",
+        "ref": "avis_de_disparition",
+        "archetype": "item.puzzle.clue"
+       },
+       {
+        "id": "puzzle.clue.carnet_mouille_notes_de_recherche",
+        "module": "puzzle",
+        "kind": "clue",
+        "ref": "carnet_mouille_notes_de_recherche",
+        "archetype": "item.puzzle.clue"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: thistlecombe platformer: every junction a platform, every doorstep a ledge and its jump a gap, five levels' checkpoints and goals",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "platformer",
+      "course": {
+       "places": [
+        {
+         "id": "n10_mill_road",
+         "kind": "lot",
+         "label": "10 Mill Road",
+         "position": {
+          "x": -83.57866941015088,
+          "z": -63.614437585733896
+         }
+        },
+        {
+         "id": "n11_mill_road",
+         "kind": "lot",
+         "label": "11 Mill Road",
+         "position": {
+          "x": -70.24533607681755,
+          "z": -63.614437585733896
+         }
+        },
+        {
+         "id": "n12_mill_road",
+         "kind": "lot",
+         "label": "12 Mill Road",
+         "position": {
+          "x": -56.912002743484216,
+          "z": -63.614437585733896
+         }
+        },
+        {
+         "id": "n13_mill_road",
+         "kind": "lot",
+         "label": "13 Mill Road",
+         "position": {
+          "x": -83.57866941015088,
+          "z": -33.614437585733896
+         }
+        },
+        {
+         "id": "n14_mill_road",
+         "kind": "lot",
+         "label": "14 Mill Road",
+         "position": {
+          "x": -70.24533607681755,
+          "z": -33.614437585733896
+         }
+        },
+        {
+         "id": "n15_mill_road",
+         "kind": "lot",
+         "label": "15 Mill Road",
+         "position": {
+          "x": -56.912002743484216,
+          "z": -33.614437585733896
+         }
+        },
+        {
+         "id": "n16_castle_road",
+         "kind": "lot",
+         "label": "16 Castle Road",
+         "position": {
+          "x": -83.57866941015088,
+          "z": -13.614437585733896
+         }
+        },
+        {
+         "id": "n17_castle_road",
+         "kind": "lot",
+         "label": "17 Castle Road",
+         "position": {
+          "x": -70.24533607681755,
+          "z": -13.614437585733896
+         }
+        },
+        {
+         "id": "n18_castle_road",
+         "kind": "lot",
+         "label": "18 Castle Road",
+         "position": {
+          "x": -56.912002743484216,
+          "z": -13.614437585733896
+         }
+        },
+        {
+         "id": "n19_queen_street",
+         "kind": "lot",
+         "label": "19 Queen Street",
+         "position": {
+          "x": -33.57866941015089,
+          "z": -133.6144375857339
+         }
+        },
+        {
+         "id": "n1_queen_street",
+         "kind": "lot",
+         "label": "1 Queen Street",
+         "position": {
+          "x": -83.57866941015088,
+          "z": -133.6144375857339
+         }
+        },
+        {
+         "id": "n20_queen_street",
+         "kind": "lot",
+         "label": "20 Queen Street",
+         "position": {
+          "x": -20.24533607681755,
+          "z": -133.6144375857339
+         }
+        },
+        {
+         "id": "n21_queen_street",
+         "kind": "lot",
+         "label": "21 Queen Street",
+         "position": {
+          "x": -6.912002743484216,
+          "z": -133.6144375857339
+         }
+        },
+        {
+         "id": "n22_forge_lane",
+         "kind": "lot",
+         "label": "22 Forge Lane",
+         "position": {
+          "x": -33.57866941015089,
+          "z": -113.6144375857339
+         }
+        },
+        {
+         "id": "n23_forge_lane",
+         "kind": "lot",
+         "label": "23 Forge Lane",
+         "position": {
+          "x": -20.24533607681755,
+          "z": -113.6144375857339
+         }
+        },
+        {
+         "id": "n24_forge_lane",
+         "kind": "lot",
+         "label": "24 Forge Lane",
+         "position": {
+          "x": -6.912002743484216,
+          "z": -113.6144375857339
+         }
+        },
+        {
+         "id": "n25_mill_road",
+         "kind": "lot",
+         "label": "25 Mill Road",
+         "position": {
+          "x": -33.57866941015089,
+          "z": -33.614437585733896
+         }
+        },
+        {
+         "id": "n26_mill_road",
+         "kind": "lot",
+         "label": "26 Mill Road",
+         "position": {
+          "x": -20.24533607681755,
+          "z": -33.614437585733896
+         }
+        },
+        {
+         "id": "n27_mill_road",
+         "kind": "lot",
+         "label": "27 Mill Road",
+         "position": {
+          "x": -6.912002743484216,
+          "z": -33.614437585733896
+         }
+        },
+        {
+         "id": "n2_queen_street",
+         "kind": "lot",
+         "label": "2 Queen Street",
+         "position": {
+          "x": -70.24533607681755,
+          "z": -133.6144375857339
+         }
+        },
+        {
+         "id": "n34_forge_lane",
+         "kind": "lot",
+         "label": "34 Forge Lane",
+         "position": {
+          "x": 16.421330589849116,
+          "z": -113.6144375857339
+         }
+        },
+        {
+         "id": "n37_forge_lane",
+         "kind": "lot",
+         "label": "37 Forge Lane",
+         "position": {
+          "x": 16.421330589849116,
+          "z": -83.6144375857339
+         }
+        },
+        {
+         "id": "n3_queen_street",
+         "kind": "lot",
+         "label": "3 Queen Street",
+         "position": {
+          "x": -56.912002743484216,
+          "z": -133.6144375857339
+         }
+        },
+        {
+         "id": "n40_mill_road",
+         "kind": "lot",
+         "label": "40 Mill Road",
+         "position": {
+          "x": 16.421330589849116,
+          "z": -63.614437585733896
+         }
+        },
+        {
+         "id": "n43_mill_road",
+         "kind": "lot",
+         "label": "43 Mill Road",
+         "position": {
+          "x": 16.421330589849116,
+          "z": -33.614437585733896
+         }
+        },
+        {
+         "id": "n49_forge_lane",
+         "kind": "lot",
+         "label": "49 Forge Lane",
+         "position": {
+          "x": -8.578669410150884,
+          "z": -88.6144375857339
+         }
+        },
+        {
+         "id": "n4_forge_lane",
+         "kind": "lot",
+         "label": "4 Forge Lane",
+         "position": {
+          "x": -83.57866941015088,
+          "z": -113.6144375857339
+         }
+        },
+        {
+         "id": "n50_forge_lane",
+         "kind": "lot",
+         "label": "50 Forge Lane",
+         "position": {
+          "x": -8.578669410150884,
+          "z": -78.6144375857339
+         }
+        },
+        {
+         "id": "n51_forge_lane",
+         "kind": "lot",
+         "label": "51 Forge Lane",
+         "position": {
+          "x": -33.57866941015089,
+          "z": -68.6144375857339
+         }
+        },
+        {
+         "id": "n52_forge_lane",
+         "kind": "lot",
+         "label": "52 Forge Lane",
+         "position": {
+          "x": -20.24533607681755,
+          "z": -68.6144375857339
+         }
+        },
+        {
+         "id": "n5_forge_lane",
+         "kind": "lot",
+         "label": "5 Forge Lane",
+         "position": {
+          "x": -70.24533607681755,
+          "z": -113.6144375857339
+         }
+        },
+        {
+         "id": "n6_forge_lane",
+         "kind": "lot",
+         "label": "6 Forge Lane",
+         "position": {
+          "x": -56.912002743484216,
+          "z": -113.6144375857339
+         }
+        },
+        {
+         "id": "n7_forge_lane",
+         "kind": "lot",
+         "label": "7 Forge Lane",
+         "position": {
+          "x": -83.57866941015088,
+          "z": -83.6144375857339
+         }
+        },
+        {
+         "id": "n8_forge_lane",
+         "kind": "lot",
+         "label": "8 Forge Lane",
+         "position": {
+          "x": -70.24533607681755,
+          "z": -83.6144375857339
+         }
+        },
+        {
+         "id": "n9_forge_lane",
+         "kind": "lot",
+         "label": "9 Forge Lane",
+         "position": {
+          "x": -56.912002743484216,
+          "z": -83.6144375857339
+         }
+        },
+        {
+         "id": "thistlecombe_node_0_0",
+         "kind": "junction",
+         "label": "Corner of High Street and Queen Street",
+         "position": {
+          "x": -95.24533607681755,
+          "z": -148.6144375857339
+         }
+        },
+        {
+         "id": "thistlecombe_node_0_1",
+         "kind": "junction",
+         "label": "Corner of Church Lane and Queen Street",
+         "position": {
+          "x": -45.24533607681755,
+          "z": -148.6144375857339
+         }
+        },
+        {
+         "id": "thistlecombe_node_0_2",
+         "kind": "junction",
+         "label": "Corner of Market Street and Queen Street",
+         "position": {
+          "x": 4.754663923182449,
+          "z": -148.6144375857339
+         }
+        },
+        {
+         "id": "thistlecombe_node_0_3",
+         "kind": "junction",
+         "label": "Corner of King Street and Queen Street",
+         "position": {
+          "x": 54.75466392318245,
+          "z": -148.6144375857339
+         }
+        },
+        {
+         "id": "thistlecombe_node_1_0",
+         "kind": "junction",
+         "label": "Corner of Forge Lane and High Street",
+         "position": {
+          "x": -95.24533607681755,
+          "z": -98.6144375857339
+         }
+        },
+        {
+         "id": "thistlecombe_node_1_1",
+         "kind": "junction",
+         "label": "Corner of Church Lane and Forge Lane",
+         "position": {
+          "x": -45.24533607681755,
+          "z": -98.6144375857339
+         }
+        },
+        {
+         "id": "thistlecombe_node_1_2",
+         "kind": "junction",
+         "label": "Corner of Forge Lane and Market Street",
+         "position": {
+          "x": 4.754663923182449,
+          "z": -98.6144375857339
+         }
+        },
+        {
+         "id": "thistlecombe_node_1_3",
+         "kind": "junction",
+         "label": "Corner of Forge Lane and King Street",
+         "position": {
+          "x": 54.75466392318245,
+          "z": -98.6144375857339
+         }
+        },
+        {
+         "id": "thistlecombe_node_2_0",
+         "kind": "junction",
+         "label": "Corner of High Street and Mill Road",
+         "position": {
+          "x": -95.24533607681755,
+          "z": -48.614437585733896
+         }
+        },
+        {
+         "id": "thistlecombe_node_2_1",
+         "kind": "junction",
+         "label": "Corner of Church Lane and Mill Road",
+         "position": {
+          "x": -45.24533607681755,
+          "z": -48.614437585733896
+         }
+        },
+        {
+         "id": "thistlecombe_node_2_2",
+         "kind": "junction",
+         "label": "Corner of Market Street and Mill Road",
+         "position": {
+          "x": 4.754663923182449,
+          "z": -48.614437585733896
+         }
+        },
+        {
+         "id": "thistlecombe_node_2_3",
+         "kind": "junction",
+         "label": "Corner of King Street and Mill Road",
+         "position": {
+          "x": 54.75466392318245,
+          "z": -48.614437585733896
+         }
+        },
+        {
+         "id": "thistlecombe_node_3_0",
+         "kind": "junction",
+         "label": "Corner of Castle Road and High Street",
+         "position": {
+          "x": -95.24533607681755,
+          "z": 1.3855624142661043
+         }
+        },
+        {
+         "id": "thistlecombe_node_3_1",
+         "kind": "junction",
+         "label": "Corner of Castle Road and Church Lane",
+         "position": {
+          "x": -45.24533607681755,
+          "z": 1.3855624142661043
+         }
+        },
+        {
+         "id": "thistlecombe_node_3_2",
+         "kind": "junction",
+         "label": "Corner of Castle Road and Market Street",
+         "position": {
+          "x": 4.754663923182449,
+          "z": 1.3855624142661043
+         }
+        },
+        {
+         "id": "thistlecombe_node_3_3",
+         "kind": "junction",
+         "label": "Corner of Castle Road and King Street",
+         "position": {
+          "x": 54.75466392318245,
+          "z": 1.3855624142661043
+         }
+        }
+       ],
+       "links": [
+        {
+         "from": "thistlecombe_node_0_0",
+         "to": "thistlecombe_node_1_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_0",
+         "to": "thistlecombe_node_0_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_0",
+         "to": "thistlecombe_node_2_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_0",
+         "to": "thistlecombe_node_1_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_0",
+         "to": "thistlecombe_node_3_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_3_0",
+         "to": "thistlecombe_node_2_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_0_1",
+         "to": "thistlecombe_node_1_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_1",
+         "to": "thistlecombe_node_0_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_1",
+         "to": "thistlecombe_node_2_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_1",
+         "to": "thistlecombe_node_1_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_1",
+         "to": "thistlecombe_node_3_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_3_1",
+         "to": "thistlecombe_node_2_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_0_2",
+         "to": "thistlecombe_node_1_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_2",
+         "to": "thistlecombe_node_0_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_2",
+         "to": "thistlecombe_node_2_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_2",
+         "to": "thistlecombe_node_1_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_2",
+         "to": "thistlecombe_node_3_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_3_2",
+         "to": "thistlecombe_node_2_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_0_3",
+         "to": "thistlecombe_node_1_3",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_3",
+         "to": "thistlecombe_node_0_3",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_3",
+         "to": "thistlecombe_node_2_3",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_3",
+         "to": "thistlecombe_node_1_3",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_3",
+         "to": "thistlecombe_node_3_3",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_3_3",
+         "to": "thistlecombe_node_2_3",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_0_0",
+         "to": "thistlecombe_node_0_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_0_1",
+         "to": "thistlecombe_node_0_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_0_1",
+         "to": "thistlecombe_node_0_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_0_2",
+         "to": "thistlecombe_node_0_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_0_2",
+         "to": "thistlecombe_node_0_3",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_0_3",
+         "to": "thistlecombe_node_0_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_0",
+         "to": "thistlecombe_node_1_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_1",
+         "to": "thistlecombe_node_1_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_1",
+         "to": "thistlecombe_node_1_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_2",
+         "to": "thistlecombe_node_1_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_2",
+         "to": "thistlecombe_node_1_3",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_1_3",
+         "to": "thistlecombe_node_1_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_0",
+         "to": "thistlecombe_node_2_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_1",
+         "to": "thistlecombe_node_2_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_1",
+         "to": "thistlecombe_node_2_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_2",
+         "to": "thistlecombe_node_2_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_2",
+         "to": "thistlecombe_node_2_3",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_2_3",
+         "to": "thistlecombe_node_2_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_3_0",
+         "to": "thistlecombe_node_3_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_3_1",
+         "to": "thistlecombe_node_3_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_3_1",
+         "to": "thistlecombe_node_3_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_3_2",
+         "to": "thistlecombe_node_3_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_3_2",
+         "to": "thistlecombe_node_3_3",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_3_3",
+         "to": "thistlecombe_node_3_2",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "thistlecombe_node_0_0",
+         "to": "n1_queen_street",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n1_queen_street",
+         "to": "thistlecombe_node_0_0",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_0_0",
+         "to": "n2_queen_street",
+         "mode": "jump",
+         "cost": 29,
+         "geometric": true
+        },
+        {
+         "from": "n2_queen_street",
+         "to": "thistlecombe_node_0_0",
+         "mode": "walk",
+         "cost": 29
+        },
+        {
+         "from": "thistlecombe_node_0_1",
+         "to": "n3_queen_street",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n3_queen_street",
+         "to": "thistlecombe_node_0_1",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_1_0",
+         "to": "n4_forge_lane",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n4_forge_lane",
+         "to": "thistlecombe_node_1_0",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_1_0",
+         "to": "n5_forge_lane",
+         "mode": "jump",
+         "cost": 29,
+         "geometric": true
+        },
+        {
+         "from": "n5_forge_lane",
+         "to": "thistlecombe_node_1_0",
+         "mode": "walk",
+         "cost": 29
+        },
+        {
+         "from": "thistlecombe_node_1_1",
+         "to": "n6_forge_lane",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n6_forge_lane",
+         "to": "thistlecombe_node_1_1",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_1_0",
+         "to": "n7_forge_lane",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n7_forge_lane",
+         "to": "thistlecombe_node_1_0",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_1_0",
+         "to": "n8_forge_lane",
+         "mode": "jump",
+         "cost": 29,
+         "geometric": true
+        },
+        {
+         "from": "n8_forge_lane",
+         "to": "thistlecombe_node_1_0",
+         "mode": "walk",
+         "cost": 29
+        },
+        {
+         "from": "thistlecombe_node_1_1",
+         "to": "n9_forge_lane",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n9_forge_lane",
+         "to": "thistlecombe_node_1_1",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_2_0",
+         "to": "n10_mill_road",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n10_mill_road",
+         "to": "thistlecombe_node_2_0",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_2_0",
+         "to": "n11_mill_road",
+         "mode": "jump",
+         "cost": 29,
+         "geometric": true
+        },
+        {
+         "from": "n11_mill_road",
+         "to": "thistlecombe_node_2_0",
+         "mode": "walk",
+         "cost": 29
+        },
+        {
+         "from": "thistlecombe_node_2_1",
+         "to": "n12_mill_road",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n12_mill_road",
+         "to": "thistlecombe_node_2_1",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_2_0",
+         "to": "n13_mill_road",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n13_mill_road",
+         "to": "thistlecombe_node_2_0",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_2_0",
+         "to": "n14_mill_road",
+         "mode": "jump",
+         "cost": 29,
+         "geometric": true
+        },
+        {
+         "from": "n14_mill_road",
+         "to": "thistlecombe_node_2_0",
+         "mode": "walk",
+         "cost": 29
+        },
+        {
+         "from": "thistlecombe_node_2_1",
+         "to": "n15_mill_road",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n15_mill_road",
+         "to": "thistlecombe_node_2_1",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_3_0",
+         "to": "n16_castle_road",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n16_castle_road",
+         "to": "thistlecombe_node_3_0",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_3_0",
+         "to": "n17_castle_road",
+         "mode": "jump",
+         "cost": 29,
+         "geometric": true
+        },
+        {
+         "from": "n17_castle_road",
+         "to": "thistlecombe_node_3_0",
+         "mode": "walk",
+         "cost": 29
+        },
+        {
+         "from": "thistlecombe_node_3_1",
+         "to": "n18_castle_road",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n18_castle_road",
+         "to": "thistlecombe_node_3_1",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_0_1",
+         "to": "n19_queen_street",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n19_queen_street",
+         "to": "thistlecombe_node_0_1",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_0_1",
+         "to": "n20_queen_street",
+         "mode": "jump",
+         "cost": 29,
+         "geometric": true
+        },
+        {
+         "from": "n20_queen_street",
+         "to": "thistlecombe_node_0_1",
+         "mode": "walk",
+         "cost": 29
+        },
+        {
+         "from": "thistlecombe_node_0_2",
+         "to": "n21_queen_street",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n21_queen_street",
+         "to": "thistlecombe_node_0_2",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_1_1",
+         "to": "n22_forge_lane",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n22_forge_lane",
+         "to": "thistlecombe_node_1_1",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_1_1",
+         "to": "n23_forge_lane",
+         "mode": "jump",
+         "cost": 29,
+         "geometric": true
+        },
+        {
+         "from": "n23_forge_lane",
+         "to": "thistlecombe_node_1_1",
+         "mode": "walk",
+         "cost": 29
+        },
+        {
+         "from": "thistlecombe_node_1_2",
+         "to": "n24_forge_lane",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n24_forge_lane",
+         "to": "thistlecombe_node_1_2",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_2_1",
+         "to": "n25_mill_road",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n25_mill_road",
+         "to": "thistlecombe_node_2_1",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_2_1",
+         "to": "n26_mill_road",
+         "mode": "jump",
+         "cost": 29,
+         "geometric": true
+        },
+        {
+         "from": "n26_mill_road",
+         "to": "thistlecombe_node_2_1",
+         "mode": "walk",
+         "cost": 29
+        },
+        {
+         "from": "thistlecombe_node_2_2",
+         "to": "n27_mill_road",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n27_mill_road",
+         "to": "thistlecombe_node_2_2",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_1_2",
+         "to": "n34_forge_lane",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n34_forge_lane",
+         "to": "thistlecombe_node_1_2",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_1_2",
+         "to": "n37_forge_lane",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n37_forge_lane",
+         "to": "thistlecombe_node_1_2",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_2_2",
+         "to": "n40_mill_road",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n40_mill_road",
+         "to": "thistlecombe_node_2_2",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_2_2",
+         "to": "n43_mill_road",
+         "mode": "jump",
+         "cost": 19,
+         "geometric": true
+        },
+        {
+         "from": "n43_mill_road",
+         "to": "thistlecombe_node_2_2",
+         "mode": "walk",
+         "cost": 19
+        },
+        {
+         "from": "thistlecombe_node_1_2",
+         "to": "n49_forge_lane",
+         "mode": "jump",
+         "cost": 17,
+         "geometric": true
+        },
+        {
+         "from": "n49_forge_lane",
+         "to": "thistlecombe_node_1_2",
+         "mode": "walk",
+         "cost": 17
+        },
+        {
+         "from": "thistlecombe_node_1_2",
+         "to": "n50_forge_lane",
+         "mode": "jump",
+         "cost": 24,
+         "geometric": true
+        },
+        {
+         "from": "n50_forge_lane",
+         "to": "thistlecombe_node_1_2",
+         "mode": "walk",
+         "cost": 24
+        },
+        {
+         "from": "thistlecombe_node_1_1",
+         "to": "n51_forge_lane",
+         "mode": "jump",
+         "cost": 32,
+         "geometric": true
+        },
+        {
+         "from": "n51_forge_lane",
+         "to": "thistlecombe_node_1_1",
+         "mode": "walk",
+         "cost": 32
+        },
+        {
+         "from": "thistlecombe_node_1_1",
+         "to": "n52_forge_lane",
+         "mode": "jump",
+         "cost": 39,
+         "geometric": true
+        },
+        {
+         "from": "n52_forge_lane",
+         "to": "thistlecombe_node_1_1",
+         "mode": "walk",
+         "cost": 39
+        }
+       ],
+       "levels": [
+        {
+         "id": "level_1",
+         "order": 1,
+         "start": "thistlecombe_node_1_1",
+         "goal": "n22_forge_lane",
+         "goalKind": "home",
+         "subject": "linn_oakfield",
+         "checkpoints": [],
+         "par": 38
+        },
+        {
+         "id": "level_2",
+         "order": 2,
+         "start": "n22_forge_lane",
+         "goal": "n15_mill_road",
+         "goalKind": "home",
+         "subject": "ophelia_quincy",
+         "checkpoints": [
+          "thistlecombe_node_1_1",
+          "thistlecombe_node_2_1"
+         ],
+         "par": 107
+        },
+        {
+         "id": "level_3",
+         "order": 3,
+         "start": "n15_mill_road",
+         "goal": "n5_forge_lane",
+         "goalKind": "work",
+         "subject": "niclas_ironwood",
+         "checkpoints": [
+          "thistlecombe_node_2_1",
+          "thistlecombe_node_1_1",
+          "thistlecombe_node_1_0"
+         ],
+         "par": 177
+        },
+        {
+         "id": "level_4",
+         "order": 4,
+         "start": "n5_forge_lane",
+         "goal": "n1_queen_street",
+         "goalKind": "work",
+         "subject": "magnus_ironwood",
+         "checkpoints": [
+          "thistlecombe_node_1_0",
+          "thistlecombe_node_0_0"
+         ],
+         "par": 117
+        },
+        {
+         "id": "level_5",
+         "order": 5,
+         "start": "n1_queen_street",
+         "goal": "n17_castle_road",
+         "goalKind": "home",
+         "subject": "galen_ashford",
+         "checkpoints": [
+          "thistlecombe_node_0_0",
+          "thistlecombe_node_1_0",
+          "thistlecombe_node_2_0",
+          "thistlecombe_node_3_0"
+         ],
+         "par": 227
+        }
+       ]
+      }
+     },
+     "expect": {
+      "pieces": [
+       {
+        "id": "platformer.platform.thistlecombe_node_0_0",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_0_0",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_0_1",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_0_1",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_0_2",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_0_2",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_0_3",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_0_3",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_1_0",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_1_0",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_1_1",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_1_1",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_1_2",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_1_2",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_1_3",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_1_3",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_2_0",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_2_0",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_2_1",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_2_1",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_2_2",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_2_2",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_2_3",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_2_3",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_3_0",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_3_0",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_3_1",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_3_1",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_3_2",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_3_2",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thistlecombe_node_3_3",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thistlecombe_node_3_3",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.ledge.n10_mill_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n10_mill_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n11_mill_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n11_mill_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n12_mill_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n12_mill_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n13_mill_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n13_mill_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n14_mill_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n14_mill_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n15_mill_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n15_mill_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n16_castle_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n16_castle_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n17_castle_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n17_castle_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n18_castle_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n18_castle_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n19_queen_street",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n19_queen_street",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n1_queen_street",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n1_queen_street",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n20_queen_street",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n20_queen_street",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n21_queen_street",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n21_queen_street",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n22_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n22_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n23_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n23_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n24_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n24_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n25_mill_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n25_mill_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n26_mill_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n26_mill_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n27_mill_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n27_mill_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n2_queen_street",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n2_queen_street",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n34_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n34_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n37_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n37_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n3_queen_street",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n3_queen_street",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n40_mill_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n40_mill_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n43_mill_road",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n43_mill_road",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n49_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n49_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n4_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n4_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n50_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n50_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n51_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n51_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n52_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n52_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n5_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n5_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n6_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n6_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n7_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n7_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n8_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n8_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.n9_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n9_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_0_0>n1_queen_street:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_0_0>n1_queen_street:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_0_0>n2_queen_street:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_0_0>n2_queen_street:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_0_1>n3_queen_street:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_0_1>n3_queen_street:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_0>n4_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_0>n4_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_0>n5_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_0>n5_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_1>n6_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_1>n6_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_0>n7_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_0>n7_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_0>n8_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_0>n8_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_1>n9_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_1>n9_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_2_0>n10_mill_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_2_0>n10_mill_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_2_0>n11_mill_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_2_0>n11_mill_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_2_1>n12_mill_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_2_1>n12_mill_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_2_0>n13_mill_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_2_0>n13_mill_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_2_0>n14_mill_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_2_0>n14_mill_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_2_1>n15_mill_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_2_1>n15_mill_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_3_0>n16_castle_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_3_0>n16_castle_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_3_0>n17_castle_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_3_0>n17_castle_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_3_1>n18_castle_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_3_1>n18_castle_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_0_1>n19_queen_street:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_0_1>n19_queen_street:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_0_1>n20_queen_street:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_0_1>n20_queen_street:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_0_2>n21_queen_street:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_0_2>n21_queen_street:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_1>n22_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_1>n22_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_1>n23_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_1>n23_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_2>n24_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_2>n24_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_2_1>n25_mill_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_2_1>n25_mill_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_2_1>n26_mill_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_2_1>n26_mill_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_2_2>n27_mill_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_2_2>n27_mill_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_2>n34_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_2>n34_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_2>n37_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_2>n37_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_2_2>n40_mill_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_2_2>n40_mill_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_2_2>n43_mill_road:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_2_2>n43_mill_road:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_2>n49_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_2>n49_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_2>n50_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_2>n50_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_1>n51_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_1>n51_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.thistlecombe_node_1_1>n52_forge_lane:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "thistlecombe_node_1_1>n52_forge_lane:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.checkpoint.level_2.thistlecombe_node_1_1",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "thistlecombe_node_1_1",
+        "level": "level_2",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.checkpoint.level_2.thistlecombe_node_2_1",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "thistlecombe_node_2_1",
+        "level": "level_2",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.checkpoint.level_3.thistlecombe_node_2_1",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "thistlecombe_node_2_1",
+        "level": "level_3",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.checkpoint.level_3.thistlecombe_node_1_1",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "thistlecombe_node_1_1",
+        "level": "level_3",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.checkpoint.level_3.thistlecombe_node_1_0",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "thistlecombe_node_1_0",
+        "level": "level_3",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.checkpoint.level_4.thistlecombe_node_1_0",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "thistlecombe_node_1_0",
+        "level": "level_4",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.checkpoint.level_4.thistlecombe_node_0_0",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "thistlecombe_node_0_0",
+        "level": "level_4",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.checkpoint.level_5.thistlecombe_node_0_0",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "thistlecombe_node_0_0",
+        "level": "level_5",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.checkpoint.level_5.thistlecombe_node_1_0",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "thistlecombe_node_1_0",
+        "level": "level_5",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.checkpoint.level_5.thistlecombe_node_2_0",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "thistlecombe_node_2_0",
+        "level": "level_5",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.checkpoint.level_5.thistlecombe_node_3_0",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "thistlecombe_node_3_0",
+        "level": "level_5",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.goal.level_1",
+        "module": "platformer",
+        "kind": "goal",
+        "ref": "n22_forge_lane",
+        "variant": "home",
+        "level": "level_1",
+        "archetype": "prop.platformer.goal.home"
+       },
+       {
+        "id": "platformer.goal.level_2",
+        "module": "platformer",
+        "kind": "goal",
+        "ref": "n15_mill_road",
+        "variant": "home",
+        "level": "level_2",
+        "archetype": "prop.platformer.goal.home"
+       },
+       {
+        "id": "platformer.goal.level_3",
+        "module": "platformer",
+        "kind": "goal",
+        "ref": "n5_forge_lane",
+        "variant": "work",
+        "level": "level_3",
+        "archetype": "prop.platformer.goal.work"
+       },
+       {
+        "id": "platformer.goal.level_4",
+        "module": "platformer",
+        "kind": "goal",
+        "ref": "n1_queen_street",
+        "variant": "work",
+        "level": "level_4",
+        "archetype": "prop.platformer.goal.work"
+       },
+       {
+        "id": "platformer.goal.level_5",
+        "module": "platformer",
+        "kind": "goal",
+        "ref": "n17_castle_road",
+        "variant": "home",
+        "level": "level_5",
+        "archetype": "prop.platformer.goal.home"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: thistlecombe strategy: five holdings by trade, the settlement, every resident a worker",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "strategy",
+      "campaign": {
+       "holdings": [
+        {
+         "business": "ironwood_s_builders",
+         "trade": "carpenter",
+         "settlement": "thistlecombe",
+         "holder": "rowena_ironwood"
+        },
+        {
+         "business": "ironwood_s_church",
+         "trade": "church",
+         "settlement": "thistlecombe",
+         "holder": "niclas_ironwood"
+        },
+        {
+         "business": "merriweather_s_ironworks",
+         "trade": "blacksmith",
+         "settlement": "thistlecombe",
+         "holder": "xenia_merriweather"
+        },
+        {
+         "business": "oakfield_s_bakery",
+         "trade": "bakery",
+         "settlement": "thistlecombe",
+         "holder": "maeve_oakfield"
+        },
+        {
+         "business": "oakfield_s_farmstead",
+         "trade": "farm",
+         "settlement": "thistlecombe",
+         "holder": "xanthe_oakfield"
+        }
+       ],
+       "settlements": [
+        "thistlecombe"
+       ],
+       "residents": {
+        "thistlecombe": [
+         "adrienne_xanthis",
+         "aldric_underwood",
+         "blythe_zephyrus",
+         "brennon_oakfield",
+         "briony_ashford",
+         "bronwen_oakfield",
+         "carrick_ashford",
+         "caspian_oakfield",
+         "cora_oakfield",
+         "dalton_ashford",
+         "delphine_oakfield",
+         "dorian_ashford",
+         "eadwin_ashford",
+         "fawn_underwood",
+         "fenwick_ashford",
+         "galen_ashford",
+         "gilda_underwood",
+         "hailey_underwood",
+         "harald_oakfield",
+         "indigo_greystone",
+         "isak_ashford",
+         "jericho_ashford",
+         "jessamine_ironwood",
+         "kalista_greystone",
+         "kestrel_greystone",
+         "kestrel_merriweather",
+         "leda_ashford",
+         "leif_ironwood",
+         "linn_oakfield",
+         "maeve_oakfield",
+         "magnus_ironwood",
+         "marcas_oakfield",
+         "matthew_ashford",
+         "melissa_ashford",
+         "nerida_ashford",
+         "niclas_ironwood",
+         "nora_oakfield",
+         "olive_ashford",
+         "ophelia_quincy",
+         "oswin_greystone",
+         "owen_quincy",
+         "percival_quincy",
+         "phoebe_ashford",
+         "quill_westwood",
+         "quinley_quincy",
+         "quinn_ironwood",
+         "quinton_greystone",
+         "ronan_ironwood",
+         "rosalind_oakfield",
+         "rothgar_yarrow",
+         "rowena_ironwood",
+         "sage_yarrow",
+         "soren_merriweather",
+         "tamsin_greystone",
+         "thomas_quincy",
+         "undine_greystone",
+         "ursula_greystone",
+         "vale_ironwood",
+         "valen_oakfield",
+         "vanessa_greystone",
+         "willa_greystone",
+         "wren_oakfield",
+         "wren_quincy",
+         "xander_oakfield",
+         "xanthe_oakfield",
+         "xenia_merriweather",
+         "yael_quincy",
+         "yara_ashford",
+         "zara_greystone",
+         "zella_oakfield",
+         "zephyr_shadowmere"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "pieces": [
+       {
+        "id": "strategy.holding.ironwood_s_builders",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "ironwood_s_builders",
+        "variant": "carpenter",
+        "at": "thistlecombe",
+        "archetype": "building.strategy.holding.carpenter"
+       },
+       {
+        "id": "strategy.holding.ironwood_s_church",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "ironwood_s_church",
+        "variant": "church",
+        "at": "thistlecombe",
+        "archetype": "building.strategy.holding.church"
+       },
+       {
+        "id": "strategy.holding.merriweather_s_ironworks",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "merriweather_s_ironworks",
+        "variant": "blacksmith",
+        "at": "thistlecombe",
+        "archetype": "building.strategy.holding.blacksmith"
+       },
+       {
+        "id": "strategy.holding.oakfield_s_bakery",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "oakfield_s_bakery",
+        "variant": "bakery",
+        "at": "thistlecombe",
+        "archetype": "building.strategy.holding.bakery"
+       },
+       {
+        "id": "strategy.holding.oakfield_s_farmstead",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "oakfield_s_farmstead",
+        "variant": "farm",
+        "at": "thistlecombe",
+        "archetype": "building.strategy.holding.farm"
+       },
+       {
+        "id": "strategy.settlement.thistlecombe",
+        "module": "strategy",
+        "kind": "settlement",
+        "ref": "thistlecombe",
+        "archetype": "building.strategy.settlement"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.adrienne_xanthis",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "adrienne_xanthis",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.aldric_underwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "aldric_underwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.blythe_zephyrus",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "blythe_zephyrus",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.brennon_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "brennon_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.briony_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "briony_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.bronwen_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "bronwen_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.carrick_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "carrick_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.caspian_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "caspian_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.cora_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "cora_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.dalton_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "dalton_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.delphine_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "delphine_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.dorian_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "dorian_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.eadwin_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "eadwin_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.fawn_underwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "fawn_underwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.fenwick_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "fenwick_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.galen_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "galen_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.gilda_underwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "gilda_underwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.hailey_underwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "hailey_underwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.harald_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "harald_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.indigo_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "indigo_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.isak_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "isak_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.jericho_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "jericho_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.jessamine_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "jessamine_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.kalista_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "kalista_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.kestrel_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "kestrel_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.kestrel_merriweather",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "kestrel_merriweather",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.leda_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "leda_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.leif_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "leif_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.linn_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "linn_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.maeve_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "maeve_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.magnus_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "magnus_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.marcas_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "marcas_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.matthew_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "matthew_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.melissa_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "melissa_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.nerida_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "nerida_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.niclas_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "niclas_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.nora_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "nora_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.olive_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "olive_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.ophelia_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "ophelia_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.oswin_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "oswin_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.owen_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "owen_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.percival_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "percival_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.phoebe_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "phoebe_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.quill_westwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "quill_westwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.quinley_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "quinley_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.quinn_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "quinn_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.quinton_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "quinton_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.ronan_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "ronan_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.rosalind_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "rosalind_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.rothgar_yarrow",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "rothgar_yarrow",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.rowena_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "rowena_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.sage_yarrow",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "sage_yarrow",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.soren_merriweather",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "soren_merriweather",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.tamsin_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "tamsin_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.thomas_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "thomas_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.undine_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "undine_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.ursula_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "ursula_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.vale_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "vale_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.valen_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "valen_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.vanessa_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "vanessa_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.willa_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "willa_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.wren_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "wren_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.wren_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "wren_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.xander_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "xander_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.xanthe_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "xanthe_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.xenia_merriweather",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "xenia_merriweather",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.yael_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "yael_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.yara_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "yara_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.zara_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "zara_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.zella_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "zella_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.zephyr_shadowmere",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "zephyr_shadowmere",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: thistlecombe city-building: the strategy pieces",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "city-building",
+      "campaign": {
+       "holdings": [
+        {
+         "business": "ironwood_s_builders",
+         "trade": "carpenter",
+         "settlement": "thistlecombe",
+         "holder": "rowena_ironwood"
+        },
+        {
+         "business": "ironwood_s_church",
+         "trade": "church",
+         "settlement": "thistlecombe",
+         "holder": "niclas_ironwood"
+        },
+        {
+         "business": "merriweather_s_ironworks",
+         "trade": "blacksmith",
+         "settlement": "thistlecombe",
+         "holder": "xenia_merriweather"
+        },
+        {
+         "business": "oakfield_s_bakery",
+         "trade": "bakery",
+         "settlement": "thistlecombe",
+         "holder": "maeve_oakfield"
+        },
+        {
+         "business": "oakfield_s_farmstead",
+         "trade": "farm",
+         "settlement": "thistlecombe",
+         "holder": "xanthe_oakfield"
+        }
+       ],
+       "settlements": [
+        "thistlecombe"
+       ],
+       "residents": {
+        "thistlecombe": [
+         "adrienne_xanthis",
+         "aldric_underwood",
+         "blythe_zephyrus",
+         "brennon_oakfield",
+         "briony_ashford",
+         "bronwen_oakfield",
+         "carrick_ashford",
+         "caspian_oakfield",
+         "cora_oakfield",
+         "dalton_ashford",
+         "delphine_oakfield",
+         "dorian_ashford",
+         "eadwin_ashford",
+         "fawn_underwood",
+         "fenwick_ashford",
+         "galen_ashford",
+         "gilda_underwood",
+         "hailey_underwood",
+         "harald_oakfield",
+         "indigo_greystone",
+         "isak_ashford",
+         "jericho_ashford",
+         "jessamine_ironwood",
+         "kalista_greystone",
+         "kestrel_greystone",
+         "kestrel_merriweather",
+         "leda_ashford",
+         "leif_ironwood",
+         "linn_oakfield",
+         "maeve_oakfield",
+         "magnus_ironwood",
+         "marcas_oakfield",
+         "matthew_ashford",
+         "melissa_ashford",
+         "nerida_ashford",
+         "niclas_ironwood",
+         "nora_oakfield",
+         "olive_ashford",
+         "ophelia_quincy",
+         "oswin_greystone",
+         "owen_quincy",
+         "percival_quincy",
+         "phoebe_ashford",
+         "quill_westwood",
+         "quinley_quincy",
+         "quinn_ironwood",
+         "quinton_greystone",
+         "ronan_ironwood",
+         "rosalind_oakfield",
+         "rothgar_yarrow",
+         "rowena_ironwood",
+         "sage_yarrow",
+         "soren_merriweather",
+         "tamsin_greystone",
+         "thomas_quincy",
+         "undine_greystone",
+         "ursula_greystone",
+         "vale_ironwood",
+         "valen_oakfield",
+         "vanessa_greystone",
+         "willa_greystone",
+         "wren_oakfield",
+         "wren_quincy",
+         "xander_oakfield",
+         "xanthe_oakfield",
+         "xenia_merriweather",
+         "yael_quincy",
+         "yara_ashford",
+         "zara_greystone",
+         "zella_oakfield",
+         "zephyr_shadowmere"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "pieces": [
+       {
+        "id": "strategy.holding.ironwood_s_builders",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "ironwood_s_builders",
+        "variant": "carpenter",
+        "at": "thistlecombe",
+        "archetype": "building.strategy.holding.carpenter"
+       },
+       {
+        "id": "strategy.holding.ironwood_s_church",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "ironwood_s_church",
+        "variant": "church",
+        "at": "thistlecombe",
+        "archetype": "building.strategy.holding.church"
+       },
+       {
+        "id": "strategy.holding.merriweather_s_ironworks",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "merriweather_s_ironworks",
+        "variant": "blacksmith",
+        "at": "thistlecombe",
+        "archetype": "building.strategy.holding.blacksmith"
+       },
+       {
+        "id": "strategy.holding.oakfield_s_bakery",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "oakfield_s_bakery",
+        "variant": "bakery",
+        "at": "thistlecombe",
+        "archetype": "building.strategy.holding.bakery"
+       },
+       {
+        "id": "strategy.holding.oakfield_s_farmstead",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "oakfield_s_farmstead",
+        "variant": "farm",
+        "at": "thistlecombe",
+        "archetype": "building.strategy.holding.farm"
+       },
+       {
+        "id": "strategy.settlement.thistlecombe",
+        "module": "strategy",
+        "kind": "settlement",
+        "ref": "thistlecombe",
+        "archetype": "building.strategy.settlement"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.adrienne_xanthis",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "adrienne_xanthis",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.aldric_underwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "aldric_underwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.blythe_zephyrus",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "blythe_zephyrus",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.brennon_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "brennon_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.briony_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "briony_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.bronwen_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "bronwen_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.carrick_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "carrick_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.caspian_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "caspian_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.cora_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "cora_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.dalton_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "dalton_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.delphine_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "delphine_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.dorian_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "dorian_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.eadwin_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "eadwin_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.fawn_underwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "fawn_underwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.fenwick_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "fenwick_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.galen_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "galen_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.gilda_underwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "gilda_underwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.hailey_underwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "hailey_underwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.harald_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "harald_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.indigo_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "indigo_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.isak_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "isak_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.jericho_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "jericho_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.jessamine_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "jessamine_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.kalista_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "kalista_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.kestrel_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "kestrel_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.kestrel_merriweather",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "kestrel_merriweather",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.leda_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "leda_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.leif_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "leif_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.linn_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "linn_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.maeve_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "maeve_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.magnus_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "magnus_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.marcas_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "marcas_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.matthew_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "matthew_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.melissa_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "melissa_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.nerida_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "nerida_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.niclas_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "niclas_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.nora_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "nora_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.olive_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "olive_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.ophelia_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "ophelia_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.oswin_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "oswin_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.owen_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "owen_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.percival_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "percival_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.phoebe_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "phoebe_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.quill_westwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "quill_westwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.quinley_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "quinley_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.quinn_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "quinn_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.quinton_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "quinton_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.ronan_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "ronan_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.rosalind_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "rosalind_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.rothgar_yarrow",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "rothgar_yarrow",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.rowena_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "rowena_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.sage_yarrow",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "sage_yarrow",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.soren_merriweather",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "soren_merriweather",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.tamsin_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "tamsin_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.thomas_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "thomas_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.undine_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "undine_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.ursula_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "ursula_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.vale_ironwood",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "vale_ironwood",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.valen_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "valen_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.vanessa_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "vanessa_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.willa_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "willa_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.wren_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "wren_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.wren_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "wren_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.xander_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "xander_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.xanthe_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "xanthe_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.xenia_merriweather",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "xenia_merriweather",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.yael_quincy",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "yael_quincy",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.yara_ashford",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "yara_ashford",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.zara_greystone",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "zara_greystone",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.zella_oakfield",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "zella_oakfield",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.thistlecombe.zephyr_shadowmere",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "zephyr_shadowmere",
+        "at": "thistlecombe",
+        "archetype": "npc.strategy.worker"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: yard: a climb link is no piece, a jump authored twice is one gap, an authored link id is kept, checkpoints per level",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "platformer",
+      "course": {
+       "places": [
+        {
+         "id": "gate",
+         "kind": "junction",
+         "label": "gate",
+         "position": {
+          "x": 0,
+          "z": 0
+         }
+        },
+        {
+         "id": "yard",
+         "kind": "junction",
+         "label": "yard",
+         "position": {
+          "x": 10,
+          "z": 0
+         }
+        },
+        {
+         "id": "ledge",
+         "kind": "lot",
+         "label": "1 Yard Lane",
+         "position": {
+          "x": 14,
+          "z": 3
+         }
+        },
+        {
+         "id": "tower",
+         "kind": "lot",
+         "label": "2 Yard Lane",
+         "position": {
+          "x": 20,
+          "z": 0
+         }
+        }
+       ],
+       "links": [
+        {
+         "from": "gate",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 10
+        },
+        {
+         "from": "yard",
+         "to": "ledge",
+         "mode": "jump",
+         "cost": 6,
+         "geometric": true
+        },
+        {
+         "from": "yard",
+         "to": "ledge",
+         "mode": "jump",
+         "cost": 6,
+         "geometric": true
+        },
+        {
+         "from": "ledge",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 4
+        },
+        {
+         "id": "tower_leap",
+         "from": "ledge",
+         "to": "tower",
+         "mode": "jump",
+         "cost": 8
+        },
+        {
+         "from": "yard",
+         "to": "tower",
+         "mode": "climb",
+         "cost": 30
+        }
+       ],
+       "levels": [
+        {
+         "id": "climb",
+         "order": 1,
+         "start": "gate",
+         "goal": "tower",
+         "goalKind": "home",
+         "subject": "ada",
+         "checkpoints": [
+          "yard"
+         ],
+         "par": 38
+        },
+        {
+         "id": "errand",
+         "order": 2,
+         "start": "tower",
+         "goal": "ledge",
+         "goalKind": "work",
+         "subject": "bram",
+         "checkpoints": [
+          "yard",
+          "yard"
+         ],
+         "par": 18
+        }
+       ]
+      }
+     },
+     "expect": {
+      "pieces": [
+       {
+        "id": "platformer.platform.gate",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "gate",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.yard",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "yard",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.ledge.ledge",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "ledge",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.ledge.tower",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "tower",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.hazard.yard>ledge:jump",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "yard>ledge:jump",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.hazard.tower_leap",
+        "module": "platformer",
+        "kind": "hazard",
+        "ref": "tower_leap",
+        "variant": "gap",
+        "archetype": "prop.platformer.hazard.gap"
+       },
+       {
+        "id": "platformer.checkpoint.climb.yard",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "yard",
+        "level": "climb",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.checkpoint.errand.yard",
+        "module": "platformer",
+        "kind": "checkpoint",
+        "ref": "yard",
+        "level": "errand",
+        "archetype": "prop.platformer.checkpoint"
+       },
+       {
+        "id": "platformer.goal.climb",
+        "module": "platformer",
+        "kind": "goal",
+        "ref": "tower",
+        "variant": "home",
+        "level": "climb",
+        "archetype": "prop.platformer.goal.home"
+       },
+       {
+        "id": "platformer.goal.errand",
+        "module": "platformer",
+        "kind": "goal",
+        "ref": "ledge",
+        "variant": "work",
+        "level": "errand",
+        "archetype": "prop.platformer.goal.work"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: an authored goal kind the course does not have keys the bare goal",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "platformer",
+      "course": {
+       "places": [],
+       "links": [],
+       "levels": [
+        {
+         "id": "keep",
+         "order": 1,
+         "start": "gate",
+         "goal": "keep",
+         "goalKind": "castle",
+         "subject": null,
+         "checkpoints": [],
+         "par": 1
+        }
+       ]
+      }
+     },
+     "expect": {
+      "pieces": [
+       {
+        "id": "platformer.goal.keep",
+        "module": "platformer",
+        "kind": "goal",
+        "ref": "keep",
+        "level": "keep",
+        "archetype": "prop.platformer.goal"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: mill: a held item no lock needs is no piece; a needed key no lock holds is a key at nowhere",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "puzzle",
+      "puzzle": {
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "mill_chest",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "brass_key",
+          "flour"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "loft_chest",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "brass_key"
+          },
+          {
+           "kind": "item",
+           "ref": "iron_key"
+          },
+          {
+           "kind": "clue",
+           "ref": "ledger"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "clueTexts": [
+        {
+         "id": "ledger",
+         "clue": "The mill ledger, signed by its keeper."
+        },
+        {
+         "id": "notice",
+         "clue": "A notice pinned to the mill door."
+        }
+       ]
+      }
+     },
+     "expect": {
+      "pieces": [
+       {
+        "id": "puzzle.lock.hatch",
+        "module": "puzzle",
+        "kind": "lock",
+        "ref": "hatch",
+        "at": "mill_chest",
+        "archetype": "prop.puzzle.lock"
+       },
+       {
+        "id": "puzzle.lock.loft",
+        "module": "puzzle",
+        "kind": "lock",
+        "ref": "loft",
+        "variant": "final",
+        "at": "loft_chest",
+        "archetype": "prop.puzzle.lock.final"
+       },
+       {
+        "id": "puzzle.key.hatch.brass_key",
+        "module": "puzzle",
+        "kind": "key",
+        "ref": "brass_key",
+        "at": "hatch",
+        "archetype": "item.puzzle.key"
+       },
+       {
+        "id": "puzzle.key.iron_key",
+        "module": "puzzle",
+        "kind": "key",
+        "ref": "iron_key",
+        "archetype": "item.puzzle.key"
+       },
+       {
+        "id": "puzzle.clue.ledger",
+        "module": "puzzle",
+        "kind": "clue",
+        "ref": "ledger",
+        "archetype": "item.puzzle.clue"
+       },
+       {
+        "id": "puzzle.clue.notice",
+        "module": "puzzle",
+        "kind": "clue",
+        "ref": "notice",
+        "archetype": "item.puzzle.clue"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: three villages: a trade the yield table does not know still keys its holding",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "strategy",
+      "campaign": {
+       "holdings": [
+        {
+         "business": "ashby_forge",
+         "trade": "blacksmith",
+         "settlement": "ashby",
+         "holder": "bram_smith"
+        },
+        {
+         "business": "ashby_mill",
+         "trade": "mill",
+         "settlement": "ashby",
+         "holder": "ada_miller"
+        },
+        {
+         "business": "brook_farm",
+         "trade": "farm",
+         "settlement": "brook",
+         "holder": "cora_field"
+        },
+        {
+         "business": "brook_pottery",
+         "trade": "pottery",
+         "settlement": "brook",
+         "holder": "dell_potter"
+        },
+        {
+         "business": "carr_chapel",
+         "trade": "church",
+         "settlement": "carr",
+         "holder": "eve_priest"
+        }
+       ],
+       "settlements": [
+        "ashby",
+        "brook",
+        "carr"
+       ],
+       "residents": {
+        "ashby": [
+         "finn",
+         "gwen",
+         "hugh"
+        ],
+        "brook": [
+         "iris"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "pieces": [
+       {
+        "id": "strategy.holding.ashby_forge",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "ashby_forge",
+        "variant": "blacksmith",
+        "at": "ashby",
+        "archetype": "building.strategy.holding.blacksmith"
+       },
+       {
+        "id": "strategy.holding.ashby_mill",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "ashby_mill",
+        "variant": "mill",
+        "at": "ashby",
+        "archetype": "building.strategy.holding.mill"
+       },
+       {
+        "id": "strategy.holding.brook_farm",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "brook_farm",
+        "variant": "farm",
+        "at": "brook",
+        "archetype": "building.strategy.holding.farm"
+       },
+       {
+        "id": "strategy.holding.brook_pottery",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "brook_pottery",
+        "variant": "pottery",
+        "at": "brook",
+        "archetype": "building.strategy.holding.pottery"
+       },
+       {
+        "id": "strategy.holding.carr_chapel",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "carr_chapel",
+        "variant": "church",
+        "at": "carr",
+        "archetype": "building.strategy.holding.church"
+       },
+       {
+        "id": "strategy.settlement.ashby",
+        "module": "strategy",
+        "kind": "settlement",
+        "ref": "ashby",
+        "archetype": "building.strategy.settlement"
+       },
+       {
+        "id": "strategy.settlement.brook",
+        "module": "strategy",
+        "kind": "settlement",
+        "ref": "brook",
+        "archetype": "building.strategy.settlement"
+       },
+       {
+        "id": "strategy.settlement.carr",
+        "module": "strategy",
+        "kind": "settlement",
+        "ref": "carr",
+        "archetype": "building.strategy.settlement"
+       },
+       {
+        "id": "strategy.worker.ashby.finn",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "finn",
+        "at": "ashby",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.ashby.gwen",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "gwen",
+        "at": "ashby",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.ashby.hugh",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "hugh",
+        "at": "ashby",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.brook.iris",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "iris",
+        "at": "brook",
+        "archetype": "npc.strategy.worker"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: a trade that is not a legal segment keys the bare holding; residents by settlement in code-unit order",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "strategy",
+      "campaign": {
+       "holdings": [
+        {
+         "business": "ashby_forge",
+         "trade": "blacksmith",
+         "settlement": "ashby",
+         "holder": "bram_smith"
+        },
+        {
+         "business": "ashby_store",
+         "trade": "General Store",
+         "settlement": "ashby",
+         "holder": "ada_miller"
+        },
+        {
+         "business": "brook_hut",
+         "trade": "",
+         "settlement": "brook",
+         "holder": "cora_field"
+        }
+       ],
+       "settlements": [
+        "ashby",
+        "brook"
+       ],
+       "residents": {
+        "brook": [
+         "iris"
+        ],
+        "ashby": [
+         "finn",
+         "gwen"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "pieces": [
+       {
+        "id": "strategy.holding.ashby_forge",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "ashby_forge",
+        "variant": "blacksmith",
+        "at": "ashby",
+        "archetype": "building.strategy.holding.blacksmith"
+       },
+       {
+        "id": "strategy.holding.ashby_store",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "ashby_store",
+        "at": "ashby",
+        "archetype": "building.strategy.holding"
+       },
+       {
+        "id": "strategy.holding.brook_hut",
+        "module": "strategy",
+        "kind": "holding",
+        "ref": "brook_hut",
+        "at": "brook",
+        "archetype": "building.strategy.holding"
+       },
+       {
+        "id": "strategy.settlement.ashby",
+        "module": "strategy",
+        "kind": "settlement",
+        "ref": "ashby",
+        "archetype": "building.strategy.settlement"
+       },
+       {
+        "id": "strategy.settlement.brook",
+        "module": "strategy",
+        "kind": "settlement",
+        "ref": "brook",
+        "archetype": "building.strategy.settlement"
+       },
+       {
+        "id": "strategy.worker.ashby.finn",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "finn",
+        "at": "ashby",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.ashby.gwen",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "gwen",
+        "at": "ashby",
+        "archetype": "npc.strategy.worker"
+       },
+       {
+        "id": "strategy.worker.brook.iris",
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "iris",
+        "at": "brook",
+        "archetype": "npc.strategy.worker"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: an empty puzzle has no pieces",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "puzzle",
+      "puzzle": {
+       "locks": [],
+       "finalLock": null,
+       "clueTexts": []
+      }
+     },
+     "expect": {
+      "pieces": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: rpg places nothing and needs no definition",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "rpg"
+     },
+     "expect": {
+      "pieces": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: unknown genre: refused, whatever definition it brings",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "mystery",
+      "puzzle": {
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "mill_chest",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "brass_key",
+          "flour"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "loft_chest",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "brass_key"
+          },
+          {
+           "kind": "item",
+           "ref": "iron_key"
+          },
+          {
+           "kind": "clue",
+           "ref": "ledger"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "clueTexts": [
+        {
+         "id": "ledger",
+         "clue": "The mill ledger, signed by its keeper."
+        },
+        {
+         "id": "notice",
+         "clue": "A notice pinned to the mill door."
+        }
+       ]
+      }
+     },
+     "expect": {
+      "refused": "unknown-genre"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: a platformer needs its course",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "platformer"
+     },
+     "expect": {
+      "refused": "missing-definition",
+      "module": "platformer"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: a puzzle takes no course",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "puzzle",
+      "course": {
+       "places": [
+        {
+         "id": "gate",
+         "kind": "junction",
+         "label": "gate",
+         "position": {
+          "x": 0,
+          "z": 0
+         }
+        },
+        {
+         "id": "yard",
+         "kind": "junction",
+         "label": "yard",
+         "position": {
+          "x": 10,
+          "z": 0
+         }
+        },
+        {
+         "id": "ledge",
+         "kind": "lot",
+         "label": "1 Yard Lane",
+         "position": {
+          "x": 14,
+          "z": 3
+         }
+        },
+        {
+         "id": "tower",
+         "kind": "lot",
+         "label": "2 Yard Lane",
+         "position": {
+          "x": 20,
+          "z": 0
+         }
+        }
+       ],
+       "links": [
+        {
+         "from": "gate",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 10
+        },
+        {
+         "from": "yard",
+         "to": "ledge",
+         "mode": "jump",
+         "cost": 6,
+         "geometric": true
+        },
+        {
+         "from": "yard",
+         "to": "ledge",
+         "mode": "jump",
+         "cost": 6,
+         "geometric": true
+        },
+        {
+         "from": "ledge",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 4
+        },
+        {
+         "id": "tower_leap",
+         "from": "ledge",
+         "to": "tower",
+         "mode": "jump",
+         "cost": 8
+        },
+        {
+         "from": "yard",
+         "to": "tower",
+         "mode": "climb",
+         "cost": 30
+        }
+       ],
+       "levels": [
+        {
+         "id": "climb",
+         "order": 1,
+         "start": "gate",
+         "goal": "tower",
+         "goalKind": "home",
+         "subject": "ada",
+         "checkpoints": [
+          "yard"
+         ],
+         "par": 38
+        },
+        {
+         "id": "errand",
+         "order": 2,
+         "start": "tower",
+         "goal": "ledge",
+         "goalKind": "work",
+         "subject": "bram",
+         "checkpoints": [
+          "yard",
+          "yard"
+         ],
+         "par": 18
+        }
+       ]
+      },
+      "puzzle": {
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "mill_chest",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "brass_key",
+          "flour"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "loft_chest",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "brass_key"
+          },
+          {
+           "kind": "item",
+           "ref": "iron_key"
+          },
+          {
+           "kind": "clue",
+           "ref": "ledger"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "clueTexts": [
+        {
+         "id": "ledger",
+         "clue": "The mill ledger, signed by its keeper."
+        },
+        {
+         "id": "notice",
+         "clue": "A notice pinned to the mill door."
+        }
+       ]
+      }
+     },
+     "expect": {
+      "refused": "definition-not-placed",
+      "module": "platformer"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: rpg takes no campaign",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "rpg",
+      "campaign": {
+       "holdings": [
+        {
+         "business": "ashby_forge",
+         "trade": "blacksmith",
+         "settlement": "ashby",
+         "holder": "bram_smith"
+        },
+        {
+         "business": "ashby_store",
+         "trade": "General Store",
+         "settlement": "ashby",
+         "holder": "ada_miller"
+        },
+        {
+         "business": "brook_hut",
+         "trade": "",
+         "settlement": "brook",
+         "holder": "cora_field"
+        }
+       ],
+       "settlements": [
+        "ashby",
+        "brook"
+       ],
+       "residents": {
+        "brook": [
+         "iris"
+        ],
+        "ashby": [
+         "finn",
+         "gwen"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "refused": "definition-not-placed",
+      "module": "strategy"
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds pieces: junction labels (PL.core-junction-label): a course generated over a named-street corner, a square corner (square_corner_xn_zn), junctions with no street name and dotted node ids; its places carry core's labels, and each platform keeps its place's atom",
+   "steps": [
+    {
+     "call": "genrePieces.for",
+     "args": {
+      "genre": "platformer",
+      "course": {
+       "places": [
+        {
+         "id": "brightwater_square_corner_xn_zn",
+         "kind": "junction",
+         "label": "Brightwater Square, south-west corner",
+         "position": {
+          "x": -8.5,
+          "z": -8.5
+         }
+        },
+        {
+         "id": "brightwater_square_corner_xp_zp",
+         "kind": "junction",
+         "label": "Brightwater Square, north-east corner",
+         "position": {
+          "x": 8.5,
+          "z": 8.5
+         }
+        },
+        {
+         "id": "brightwater_square_corner_zn_xp",
+         "kind": "junction",
+         "label": "Brightwater Square, south-east corner",
+         "position": {
+          "x": 8.5,
+          "z": -8.5
+         }
+        },
+        {
+         "id": "brightwater_square_corner_zp_xn",
+         "kind": "junction",
+         "label": "Brightwater Square, north-west corner",
+         "position": {
+          "x": -8.5,
+          "z": 8.5
+         }
+        },
+        {
+         "id": "brightwater_street_lane_0_end",
+         "kind": "junction",
+         "label": "Mill Lane, south end",
+         "position": {
+          "x": -8.5,
+          "z": -19
+         }
+        },
+        {
+         "id": "brightwater_street_lane_0_mouth",
+         "kind": "junction",
+         "label": "Corner of Brightwater Square and Mill Lane",
+         "position": {
+          "x": -8.5,
+          "z": -11
+         }
+        },
+        {
+         "id": "hollowmere_node_0_0",
+         "kind": "junction",
+         "label": "Corner of High Street and Mill Lane",
+         "position": {
+          "x": 0,
+          "z": 0
+         }
+        },
+        {
+         "id": "hollowmere_node_0_1",
+         "kind": "junction",
+         "label": "High Street, north end",
+         "position": {
+          "x": 0,
+          "z": 50
+         }
+        },
+        {
+         "id": "hollowmere_node_1_0",
+         "kind": "junction",
+         "label": "Mill Lane, east end",
+         "position": {
+          "x": 50,
+          "z": 0
+         }
+        },
+        {
+         "id": "kestrel_ford_node_map_1",
+         "kind": "junction",
+         "label": "Corner of Bridge Row, Ford Street and River Road",
+         "position": {
+          "x": 0,
+          "z": 0
+         }
+        },
+        {
+         "id": "kestrel_ford_node_map_2",
+         "kind": "junction",
+         "label": "River Road, north end",
+         "position": {
+          "x": 0,
+          "z": 40
+         }
+        },
+        {
+         "id": "kestrel_ford_node_map_3",
+         "kind": "junction",
+         "label": "Corner of Ferry Lane and Ford Street",
+         "position": {
+          "x": 40,
+          "z": 0
+         }
+        },
+        {
+         "id": "kestrel_ford_node_map_4",
+         "kind": "junction",
+         "label": "River Road, north stretch",
+         "position": {
+          "x": 0,
+          "z": 30
+         }
+        },
+        {
+         "id": "kestrel_ford_node_map_5",
+         "kind": "junction",
+         "label": "Ferry Lane, south end",
+         "position": {
+          "x": 40,
+          "z": -30
+         }
+        },
+        {
+         "id": "kestrel_ford_node_map_6",
+         "kind": "junction",
+         "label": "Bridge Row, west end",
+         "position": {
+          "x": -30,
+          "z": 0
+         }
+        },
+        {
+         "id": "kestrel_ford_node_map_7",
+         "kind": "junction",
+         "label": "Weir Walk, south end",
+         "position": {
+          "x": -30,
+          "z": -40
+         }
+        },
+        {
+         "id": "kestrel_ford_node_map_8",
+         "kind": "junction",
+         "label": "Weir Walk, south corner",
+         "position": {
+          "x": -20,
+          "z": -40
+         }
+        },
+        {
+         "id": "kestrel_ford_node_map_9",
+         "kind": "junction",
+         "label": "Weir Walk, north end",
+         "position": {
+          "x": -20,
+          "z": 60
+         }
+        },
+        {
+         "id": "thornbury_node_0_0",
+         "kind": "junction",
+         "label": "Thornbury, south-west junction",
+         "position": {
+          "x": 0,
+          "z": 0
+         }
+        },
+        {
+         "id": "thornbury_node_0_1",
+         "kind": "junction",
+         "label": "Thornbury, south-east junction",
+         "position": {
+          "x": 20,
+          "z": 0
+         }
+        },
+        {
+         "id": "thornbury_node_9_9",
+         "kind": "junction",
+         "label": "Thornbury, north junction",
+         "position": {
+          "x": 10,
+          "z": 30
+         }
+        },
+        {
+         "id": "unnamed_node_0_0",
+         "kind": "junction",
+         "label": "Street junction",
+         "position": {
+          "x": 5,
+          "z": 5
+         }
+        }
+       ],
+       "links": [
+        {
+         "from": "hollowmere_node_0_0",
+         "to": "hollowmere_node_0_1",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "hollowmere_node_0_1",
+         "to": "hollowmere_node_0_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "hollowmere_node_0_0",
+         "to": "hollowmere_node_1_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "hollowmere_node_1_0",
+         "to": "hollowmere_node_0_0",
+         "mode": "walk",
+         "cost": 50
+        },
+        {
+         "from": "brightwater_square_corner_xn_zn",
+         "to": "brightwater_square_corner_zn_xp",
+         "mode": "walk",
+         "cost": 17
+        },
+        {
+         "from": "brightwater_square_corner_zn_xp",
+         "to": "brightwater_square_corner_xn_zn",
+         "mode": "walk",
+         "cost": 17
+        },
+        {
+         "from": "brightwater_square_corner_zn_xp",
+         "to": "brightwater_square_corner_xp_zp",
+         "mode": "walk",
+         "cost": 17
+        },
+        {
+         "from": "brightwater_square_corner_xp_zp",
+         "to": "brightwater_square_corner_zn_xp",
+         "mode": "walk",
+         "cost": 17
+        },
+        {
+         "from": "brightwater_square_corner_xp_zp",
+         "to": "brightwater_square_corner_zp_xn",
+         "mode": "walk",
+         "cost": 17
+        },
+        {
+         "from": "brightwater_square_corner_zp_xn",
+         "to": "brightwater_square_corner_xp_zp",
+         "mode": "walk",
+         "cost": 17
+        },
+        {
+         "from": "brightwater_square_corner_zp_xn",
+         "to": "brightwater_square_corner_xn_zn",
+         "mode": "walk",
+         "cost": 17
+        },
+        {
+         "from": "brightwater_square_corner_xn_zn",
+         "to": "brightwater_square_corner_zp_xn",
+         "mode": "walk",
+         "cost": 17
+        },
+        {
+         "from": "brightwater_square_corner_xn_zn",
+         "to": "brightwater_street_lane_0_mouth",
+         "mode": "walk",
+         "cost": 3
+        },
+        {
+         "from": "brightwater_street_lane_0_mouth",
+         "to": "brightwater_square_corner_xn_zn",
+         "mode": "walk",
+         "cost": 3
+        },
+        {
+         "from": "brightwater_street_lane_0_mouth",
+         "to": "brightwater_street_lane_0_end",
+         "mode": "walk",
+         "cost": 8
+        },
+        {
+         "from": "brightwater_street_lane_0_end",
+         "to": "brightwater_street_lane_0_mouth",
+         "mode": "walk",
+         "cost": 8
+        },
+        {
+         "from": "thornbury_node_0_0",
+         "to": "thornbury_node_0_1",
+         "mode": "walk",
+         "cost": 20
+        },
+        {
+         "from": "thornbury_node_0_1",
+         "to": "thornbury_node_0_0",
+         "mode": "walk",
+         "cost": 20
+        },
+        {
+         "from": "kestrel_ford_node_map_1",
+         "to": "kestrel_ford_node_map_4",
+         "mode": "walk",
+         "cost": 30
+        },
+        {
+         "from": "kestrel_ford_node_map_4",
+         "to": "kestrel_ford_node_map_1",
+         "mode": "walk",
+         "cost": 30
+        },
+        {
+         "from": "kestrel_ford_node_map_4",
+         "to": "kestrel_ford_node_map_2",
+         "mode": "walk",
+         "cost": 10
+        },
+        {
+         "from": "kestrel_ford_node_map_2",
+         "to": "kestrel_ford_node_map_4",
+         "mode": "walk",
+         "cost": 10
+        },
+        {
+         "from": "kestrel_ford_node_map_1",
+         "to": "kestrel_ford_node_map_3",
+         "mode": "walk",
+         "cost": 40
+        },
+        {
+         "from": "kestrel_ford_node_map_3",
+         "to": "kestrel_ford_node_map_1",
+         "mode": "walk",
+         "cost": 40
+        },
+        {
+         "from": "kestrel_ford_node_map_3",
+         "to": "kestrel_ford_node_map_5",
+         "mode": "walk",
+         "cost": 30
+        },
+        {
+         "from": "kestrel_ford_node_map_5",
+         "to": "kestrel_ford_node_map_3",
+         "mode": "walk",
+         "cost": 30
+        },
+        {
+         "from": "kestrel_ford_node_map_6",
+         "to": "kestrel_ford_node_map_1",
+         "mode": "walk",
+         "cost": 30
+        },
+        {
+         "from": "kestrel_ford_node_map_1",
+         "to": "kestrel_ford_node_map_6",
+         "mode": "walk",
+         "cost": 30
+        },
+        {
+         "from": "kestrel_ford_node_map_7",
+         "to": "kestrel_ford_node_map_8",
+         "mode": "walk",
+         "cost": 10
+        },
+        {
+         "from": "kestrel_ford_node_map_8",
+         "to": "kestrel_ford_node_map_7",
+         "mode": "walk",
+         "cost": 10
+        },
+        {
+         "from": "kestrel_ford_node_map_8",
+         "to": "kestrel_ford_node_map_9",
+         "mode": "walk",
+         "cost": 100
+        },
+        {
+         "from": "kestrel_ford_node_map_9",
+         "to": "kestrel_ford_node_map_8",
+         "mode": "walk",
+         "cost": 100
+        }
+       ],
+       "levels": []
+      }
+     },
+     "expect": {
+      "pieces": [
+       {
+        "id": "platformer.platform.brightwater_square_corner_xn_zn",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "brightwater_square_corner_xn_zn",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.brightwater_square_corner_xp_zp",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "brightwater_square_corner_xp_zp",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.brightwater_square_corner_zn_xp",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "brightwater_square_corner_zn_xp",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.brightwater_square_corner_zp_xn",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "brightwater_square_corner_zp_xn",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.brightwater_street_lane_0_end",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "brightwater_street_lane_0_end",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.brightwater_street_lane_0_mouth",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "brightwater_street_lane_0_mouth",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.hollowmere_node_0_0",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "hollowmere_node_0_0",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.hollowmere_node_0_1",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "hollowmere_node_0_1",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.hollowmere_node_1_0",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "hollowmere_node_1_0",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.kestrel_ford_node_map_1",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "kestrel_ford_node_map_1",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.kestrel_ford_node_map_2",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "kestrel_ford_node_map_2",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.kestrel_ford_node_map_3",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "kestrel_ford_node_map_3",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.kestrel_ford_node_map_4",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "kestrel_ford_node_map_4",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.kestrel_ford_node_map_5",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "kestrel_ford_node_map_5",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.kestrel_ford_node_map_6",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "kestrel_ford_node_map_6",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.kestrel_ford_node_map_7",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "kestrel_ford_node_map_7",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.kestrel_ford_node_map_8",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "kestrel_ford_node_map_8",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.kestrel_ford_node_map_9",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "kestrel_ford_node_map_9",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thornbury_node_0_0",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thornbury_node_0_0",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thornbury_node_0_1",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thornbury_node_0_1",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.thornbury_node_9_9",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "thornbury_node_9_9",
+        "archetype": "prop.platformer.platform"
+       },
+       {
+        "id": "platformer.platform.unnamed_node_0_0",
+        "module": "platformer",
+        "kind": "platform",
+        "ref": "unnamed_node_0_0",
+        "archetype": "prop.platformer.platform"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds collect: the binding walk: a piece's key derived, a stamped key kept, every unknown kind, module or variant unbound",
+   "steps": [
+    {
+     "call": "genrePieces.collect",
+     "args": {
+      "genrePieces": [
+       {
+        "id": "platformer.ledge.n6_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n6_forge_lane"
+       },
+       {
+        "id": "platformer.goal.level_1",
+        "module": "platformer",
+        "kind": "goal",
+        "variant": "home",
+        "ref": "n22_forge_lane",
+        "level": "level_1"
+       },
+       {
+        "id": "puzzle.lock.lock_3",
+        "module": "puzzle",
+        "kind": "lock",
+        "variant": "final",
+        "ref": "lock_3",
+        "at": "container_0"
+       },
+       {
+        "id": "strategy.holding.ironwood_s_builders",
+        "module": "strategy",
+        "kind": "holding",
+        "variant": "carpenter",
+        "ref": "ironwood_s_builders",
+        "at": "thistlecombe"
+       },
+       {
+        "id": "platformer.collectible.coin_1",
+        "module": "platformer",
+        "kind": "collectible",
+        "ref": "coin_1"
+       },
+       {
+        "id": "puzzle.switch.lever_1",
+        "module": "puzzle",
+        "kind": "switch",
+        "ref": "lever_1",
+        "archetype": "prop.dungeon.lever"
+       },
+       {
+        "id": "platformer.trampoline.t1",
+        "module": "platformer",
+        "kind": "trampoline",
+        "ref": "t1"
+       },
+       {
+        "id": "puzzle.ledge.x",
+        "module": "puzzle",
+        "kind": "ledge",
+        "ref": "x"
+       },
+       {
+        "id": "platformer.goal.level_2",
+        "module": "platformer",
+        "kind": "goal",
+        "variant": "castle",
+        "ref": "keep",
+        "level": "level_2"
+       },
+       {
+        "id": "roguelike.platform.p1",
+        "module": "roguelike",
+        "kind": "platform",
+        "ref": "p1"
+       },
+       {
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "finn",
+        "at": "ashby"
+       }
+      ]
+     },
+     "expect": {
+      "entities": [
+       {
+        "entityId": "platformer.ledge.n6_forge_lane",
+        "kind": "genrePiece",
+        "archetype": "prop.platformer.ledge",
+        "assetKey": "",
+        "stamped": false,
+        "positionalId": false
+       },
+       {
+        "entityId": "platformer.goal.level_1",
+        "kind": "genrePiece",
+        "archetype": "prop.platformer.goal.home",
+        "assetKey": "",
+        "stamped": false,
+        "positionalId": false
+       },
+       {
+        "entityId": "puzzle.lock.lock_3",
+        "kind": "genrePiece",
+        "archetype": "prop.puzzle.lock.final",
+        "assetKey": "",
+        "stamped": false,
+        "positionalId": false
+       },
+       {
+        "entityId": "strategy.holding.ironwood_s_builders",
+        "kind": "genrePiece",
+        "archetype": "building.strategy.holding.carpenter",
+        "assetKey": "",
+        "stamped": false,
+        "positionalId": false
+       },
+       {
+        "entityId": "platformer.collectible.coin_1",
+        "kind": "genrePiece",
+        "archetype": "item.platformer.collectible",
+        "assetKey": "",
+        "stamped": false,
+        "positionalId": false
+       },
+       {
+        "entityId": "puzzle.switch.lever_1",
+        "kind": "genrePiece",
+        "archetype": "prop.dungeon.lever",
+        "assetKey": "",
+        "stamped": true,
+        "positionalId": false
+       },
+       {
+        "entityId": "platformer.trampoline.t1",
+        "kind": "genrePiece",
+        "archetype": "",
+        "assetKey": "",
+        "stamped": false,
+        "positionalId": false
+       },
+       {
+        "entityId": "puzzle.ledge.x",
+        "kind": "genrePiece",
+        "archetype": "",
+        "assetKey": "",
+        "stamped": false,
+        "positionalId": false
+       },
+       {
+        "entityId": "platformer.goal.level_2",
+        "kind": "genrePiece",
+        "archetype": "",
+        "assetKey": "",
+        "stamped": false,
+        "positionalId": false
+       },
+       {
+        "entityId": "roguelike.platform.p1",
+        "kind": "genrePiece",
+        "archetype": "",
+        "assetKey": "",
+        "stamped": false,
+        "positionalId": false
+       },
+       {
+        "entityId": "",
+        "kind": "genrePiece",
+        "archetype": "npc.strategy.worker",
+        "assetKey": "",
+        "stamped": false,
+        "positionalId": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds collect: the binding walk: no genre pieces, no entities",
+   "steps": [
+    {
+     "call": "genrePieces.collect",
+     "args": {},
+     "expect": {
+      "entities": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds stamp: the exporter: every piece with a legal key is stamped, a stamped one kept, an unbound one left alone",
+   "steps": [
+    {
+     "call": "genrePieces.stamp",
+     "args": {
+      "genrePieces": [
+       {
+        "id": "platformer.ledge.n6_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n6_forge_lane"
+       },
+       {
+        "id": "platformer.goal.level_1",
+        "module": "platformer",
+        "kind": "goal",
+        "variant": "home",
+        "ref": "n22_forge_lane",
+        "level": "level_1"
+       },
+       {
+        "id": "puzzle.lock.lock_3",
+        "module": "puzzle",
+        "kind": "lock",
+        "variant": "final",
+        "ref": "lock_3",
+        "at": "container_0"
+       },
+       {
+        "id": "strategy.holding.ironwood_s_builders",
+        "module": "strategy",
+        "kind": "holding",
+        "variant": "carpenter",
+        "ref": "ironwood_s_builders",
+        "at": "thistlecombe"
+       },
+       {
+        "id": "platformer.collectible.coin_1",
+        "module": "platformer",
+        "kind": "collectible",
+        "ref": "coin_1"
+       },
+       {
+        "id": "puzzle.switch.lever_1",
+        "module": "puzzle",
+        "kind": "switch",
+        "ref": "lever_1",
+        "archetype": "prop.dungeon.lever"
+       },
+       {
+        "id": "platformer.trampoline.t1",
+        "module": "platformer",
+        "kind": "trampoline",
+        "ref": "t1"
+       },
+       {
+        "id": "puzzle.ledge.x",
+        "module": "puzzle",
+        "kind": "ledge",
+        "ref": "x"
+       },
+       {
+        "id": "platformer.goal.level_2",
+        "module": "platformer",
+        "kind": "goal",
+        "variant": "castle",
+        "ref": "keep",
+        "level": "level_2"
+       },
+       {
+        "id": "roguelike.platform.p1",
+        "module": "roguelike",
+        "kind": "platform",
+        "ref": "p1"
+       },
+       {
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "finn",
+        "at": "ashby"
+       }
+      ]
+     },
+     "expect": {
+      "entityLists": [
+       "genrePieces"
+      ],
+      "genrePieces": [
+       {
+        "id": "platformer.ledge.n6_forge_lane",
+        "module": "platformer",
+        "kind": "ledge",
+        "ref": "n6_forge_lane",
+        "archetype": "prop.platformer.ledge"
+       },
+       {
+        "id": "platformer.goal.level_1",
+        "module": "platformer",
+        "kind": "goal",
+        "variant": "home",
+        "ref": "n22_forge_lane",
+        "level": "level_1",
+        "archetype": "prop.platformer.goal.home"
+       },
+       {
+        "id": "puzzle.lock.lock_3",
+        "module": "puzzle",
+        "kind": "lock",
+        "variant": "final",
+        "ref": "lock_3",
+        "at": "container_0",
+        "archetype": "prop.puzzle.lock.final"
+       },
+       {
+        "id": "strategy.holding.ironwood_s_builders",
+        "module": "strategy",
+        "kind": "holding",
+        "variant": "carpenter",
+        "ref": "ironwood_s_builders",
+        "at": "thistlecombe",
+        "archetype": "building.strategy.holding.carpenter"
+       },
+       {
+        "id": "platformer.collectible.coin_1",
+        "module": "platformer",
+        "kind": "collectible",
+        "ref": "coin_1",
+        "archetype": "item.platformer.collectible"
+       },
+       {
+        "id": "puzzle.switch.lever_1",
+        "module": "puzzle",
+        "kind": "switch",
+        "ref": "lever_1",
+        "archetype": "prop.dungeon.lever"
+       },
+       {
+        "id": "platformer.trampoline.t1",
+        "module": "platformer",
+        "kind": "trampoline",
+        "ref": "t1"
+       },
+       {
+        "id": "puzzle.ledge.x",
+        "module": "puzzle",
+        "kind": "ledge",
+        "ref": "x"
+       },
+       {
+        "id": "platformer.goal.level_2",
+        "module": "platformer",
+        "kind": "goal",
+        "variant": "castle",
+        "ref": "keep",
+        "level": "level_2"
+       },
+       {
+        "id": "roguelike.platform.p1",
+        "module": "roguelike",
+        "kind": "platform",
+        "ref": "p1"
+       },
+       {
+        "module": "strategy",
+        "kind": "worker",
+        "ref": "finn",
+        "at": "ashby",
+        "archetype": "npc.strategy.worker"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre-pieces/kinds stamp: the exporter: a world without the list does not gain one",
+   "steps": [
+    {
+     "call": "genrePieces.stamp",
+     "args": {},
+     "expect": {
+      "entityLists": [],
+      "genrePieces": null
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -20,8 +20,10 @@
 
 // FIRST, and in this order: polyfills core needs at MODULE SCOPE. esbuild emits
 // modules in import order. `identity/kinp.ts` constructs a TextEncoder when it
-// loads; core logs through `console` from functions these rows call.
+// loads; core logs through `console` from functions these rows call; the
+// build-plan writer (`genrePieces.write`) copies with `structuredClone`.
 import './host-text-codec.js';
+import './host-structured-clone.js';
 import { clearDiagnostics, diagnostics } from './host-console.js';
 
 import { applyOps, applySteps, disposeSession, listSessions, openSession, session } from './host-sessions.js';
@@ -881,8 +883,8 @@ import { QUEST_TEMPLATES, getTemplatesByCategory, getTemplatesByDifficulty } fro
 // builds: GamePrologEngine with genre 'puzzle', on this library's native Trealla seam),
 // and its save block (puzzle-save.ts). `worldOf` is the genre corpora's world input (a
 // committed slice by name, a slice with KB predicates or entity lists dropped, or an
-// inline world), which core exports with its runner. The platformer (slice 2) and the
-// strategy game (slice 3) follow; the genre pieces are a later slice of the row.
+// inline world), which core exports with its runner. The platformer (slice 2), the
+// strategy game (slice 3) and the genre pieces (slice 4) follow.
 import {
 	DEFAULT_PUZZLE_MAX_ATTEMPTS,
 	PUZZLE_TUNING,
@@ -971,6 +973,51 @@ import {
 import { STRATEGY_AREA, STRATEGY_AUTHORED_PREDICATES, STRATEGY_RUNTIME_PREDICATES } from '@insimul/core/strategy/strategy-predicates';
 import { STRATEGY_BLOCK_MEMBERS, STRATEGY_EXTENSION_KEY, readStrategyBlock, strategyBlockOf, strategySaveBlock } from '@insimul/core/strategy/strategy-save';
 import { STRATEGY_WRITTEN_PREDICATES, StrategyDirector } from '@insimul/core/game-engine/logic/StrategyDirector';
+
+// ── the genre systems (P9j): the genre pieces (PL.native-genre-rows slice 4, U128, U115, U103) ──
+// The pieces a recipe-plan genre places (genre-pieces.ts: which kinds a genre places, the
+// key of one, a definition's pieces and their ids), the kinds they are keyed by
+// (archetypes/taxonomy.ts: GENRE_PIECE_KINDS and its readers), the binding walk's genre
+// piece leg (editor/binding/archetypes.ts: deriveGenrePieceArchetype, and
+// collectPlaceableEntities / stampWorldArchetypes over a world holding only
+// `entities.genrePieces`), and the build plan that stands them on the ground plane
+// (build-plan.ts: the anchors, the placement, the settle offset, the plan, its ground and
+// the writer). This slice completes the row.
+import {
+	GENRE_PIECE_KINDS,
+	GENRE_PIECE_MODULES,
+	genrePieceArchetype,
+	genrePieceArtSlots,
+	genrePieceKind,
+	isGenrePieceVariant,
+} from '@insimul/core/archetypes/taxonomy';
+import {
+	GENRE_PIECE_DEFINITIONS,
+	campaignPieces,
+	coursePieces,
+	genrePieceId,
+	genrePieceIdSegment,
+	genrePieceKeyFor,
+	genrePieceKindsFor,
+	genrePieceModulesFor,
+	genrePiecesFor,
+	puzzlePieces,
+} from '@insimul/core/genre-systems/genre-pieces';
+import {
+	GENRE_BUILD_ANCHOR_TABLES,
+	GENRE_BUILD_GROUND_MARGIN_M,
+	GENRE_BUILD_SETTLE_DIRECTIONS,
+	GENRE_BUILD_SETTLE_STEP_M,
+	GENRE_GROUND_MODULES,
+	GENRE_PIECE_PLACEMENT,
+	genreBuildAnchors,
+	genreBuildGround,
+	genreBuildPlan,
+	genreBuildSettleOffset,
+	placeGenrePieces,
+	writeGenreBuildPlan,
+} from '@insimul/core/genre-systems/build-plan';
+import { collectPlaceableEntities, deriveGenrePieceArchetype, stampWorldArchetypes } from '@insimul/core/editor/binding/archetypes';
 
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
@@ -3115,51 +3162,57 @@ const GENRE_STREET_NETWORK = [
 	['segments', tList(tObj([['id', tStr, REQ], ['name', tStr, OPT_NULL], ['nodeIds', tList(tStr), OPT_NULL]])), OPT_NULL],
 ];
 
+/** One of `GenreWorldSource.geography.settlements` (genre-mechanics/world-facts.ts), member for member. */
+const GENRE_WORLD_SETTLEMENT = [
+	['id', tStr, REQ],
+	['name', tStr, REQ],
+	['position', tObj(GENRE_VEC3), OPT_NULL],
+	['radius', tNum, OPT_NULL],
+	['lots', tList(tObj([
+		['id', tStr, REQ],
+		['address', tStr, OPT_NULL],
+		['streetName', tStr, OPT_NULL],
+		['districtName', tStr, OPT_NULL],
+		['position', tObj(GENRE_VEC3), OPT_NULL],
+		['streetEdgeId', tStr, OPT_NULL],
+	])), OPT_NULL],
+	['streetNetwork', tObj(GENRE_STREET_NETWORK), OPT_NULL],
+];
+
+/** core's `GenreWorldSource.entities` (genre-mechanics/world-facts.ts), member for member. */
+const GENRE_WORLD_SOURCE_ENTITIES = [
+	['characters', tList(tObj([['id', tStr, REQ], ['firstName', tStr, OPT_NULL], ['lastName', tStr, OPT_NULL], ['isAlive', tBool, OPT_NULL]])), OPT_NULL],
+	['npcs', tList(tObj([
+		['characterId', tStr, REQ],
+		['schedule', tObj([['homeBuildingId', tStr, OPT_NULL], ['workBuildingId', tStr, OPT_NULL]]), OPT_NULL],
+	])), OPT_NULL],
+	['buildings', tList(tObj([
+		['id', tStr, REQ],
+		['settlementId', tStr, OPT_NULL],
+		['lotId', tStr, OPT_NULL],
+		['businessId', tStr, OPT_NULL],
+		['occupantIds', tList(tStr), OPT_NULL],
+	])), OPT_NULL],
+	['businesses', tList(tObj([
+		['id', tStr, REQ],
+		['settlementId', tStr, OPT_NULL],
+		['name', tStr, REQ],
+		['businessType', tStr, OPT_NULL],
+		['ownerId', tStr, OPT_NULL],
+		['isOutOfBusiness', tBool, OPT_NULL],
+		['lotId', tStr, OPT_NULL],
+	])), OPT_NULL],
+	['containers', tList(tObj([['id', tStr, REQ], ['buildingId', tStr, OPT_NULL], ['containerType', tStr, OPT_NULL]])), OPT_NULL],
+];
+
 /** core's `GenreWorldSource` (genre-mechanics/world-facts.ts), member for member. */
 const GENRE_WORLD_SOURCE = [
 	['meta', tObj([['worldId', tStr, OPT], ['worldName', tStr, OPT], ['genreConfig', tObj([['id', tStr, OPT]]), OPT_NULL]]), OPT_NULL],
 	['geography', tObj([
 		['georeference', tObj([['rotationRad', tNum, OPT_NULL]]), OPT_NULL],
-		['settlements', tList(tObj([
-			['id', tStr, REQ],
-			['name', tStr, REQ],
-			['position', tObj(GENRE_VEC3), OPT_NULL],
-			['radius', tNum, OPT_NULL],
-			['lots', tList(tObj([
-				['id', tStr, REQ],
-				['address', tStr, OPT_NULL],
-				['streetName', tStr, OPT_NULL],
-				['districtName', tStr, OPT_NULL],
-				['position', tObj(GENRE_VEC3), OPT_NULL],
-				['streetEdgeId', tStr, OPT_NULL],
-			])), OPT_NULL],
-			['streetNetwork', tObj(GENRE_STREET_NETWORK), OPT_NULL],
-		])), OPT_NULL],
+		['settlements', tList(tObj(GENRE_WORLD_SETTLEMENT)), OPT_NULL],
 	]), OPT_NULL],
-	['entities', tObj([
-		['characters', tList(tObj([['id', tStr, REQ], ['firstName', tStr, OPT_NULL], ['lastName', tStr, OPT_NULL], ['isAlive', tBool, OPT_NULL]])), OPT_NULL],
-		['npcs', tList(tObj([
-			['characterId', tStr, REQ],
-			['schedule', tObj([['homeBuildingId', tStr, OPT_NULL], ['workBuildingId', tStr, OPT_NULL]]), OPT_NULL],
-		])), OPT_NULL],
-		['buildings', tList(tObj([
-			['id', tStr, REQ],
-			['settlementId', tStr, OPT_NULL],
-			['lotId', tStr, OPT_NULL],
-			['businessId', tStr, OPT_NULL],
-			['occupantIds', tList(tStr), OPT_NULL],
-		])), OPT_NULL],
-		['businesses', tList(tObj([
-			['id', tStr, REQ],
-			['settlementId', tStr, OPT_NULL],
-			['name', tStr, REQ],
-			['businessType', tStr, OPT_NULL],
-			['ownerId', tStr, OPT_NULL],
-			['isOutOfBusiness', tBool, OPT_NULL],
-			['lotId', tStr, OPT_NULL],
-		])), OPT_NULL],
-		['containers', tList(tObj([['id', tStr, REQ], ['buildingId', tStr, OPT_NULL], ['containerType', tStr, OPT_NULL]])), OPT_NULL],
-	]), OPT_NULL],
+	['entities', tObj(GENRE_WORLD_SOURCE_ENTITIES), OPT_NULL],
 	['systems', tObj([['knowledgeBase', tStr, OPT_NULL]]), OPT_NULL],
 	['player', tObj(GENRE_PLAYER), OPT_NULL],
 ];
@@ -3482,6 +3535,174 @@ function strategyIdArgs(method, args, keys) {
 	coded('invalid-input', () => {
 		for (const key of keys) needString(method, args[key], key);
 	});
+}
+
+// core's genre piece types (archetypes/taxonomy.ts, genre-systems/genre-pieces.ts,
+// genre-systems/build-plan.ts, game-engine/ir-types.ts), member for member, under the same
+// rule. Where core declares an argument `unknown` (a genre, a kind, a variant, a module asked
+// about; placeGenrePieces' pieces) nothing is checked: core answers every value. Where core's
+// own corpus replays a value outside a declared type and pins core's answer to it, the corpus
+// governs and the boundary is widened at exactly that member (each one named where it is).
+
+/** `null`, or a value holding `check` (a `T | null` table entry). */
+const tOrNull = (check) => (m, v, n) => {
+	if (v !== null) check(m, v, n);
+};
+
+/** core's `GenrePieceModule`. */
+const GENRE_PIECE_MODULE = tOneOf([...GENRE_PIECE_MODULES]);
+
+/** core's `GenrePieceKind` (taxonomy.ts): `variants` a list or `'segment'`, `source` a string or null. */
+const GENRE_PIECE_KIND = [
+	['module', GENRE_PIECE_MODULE, REQ],
+	['kind', tStr, REQ],
+	['archetype', tStr, REQ],
+	['variants', (m, v, n) => (v === 'segment' ? v : tList(tStr)(m, v, n)), REQ],
+	['source', tStr, REQ_NULL],
+];
+
+/** core's `GenrePiecePoint` (ir-types.ts). */
+const GENRE_PIECE_POINT = [['x', tNum, REQ], ['z', tNum, REQ]];
+const GENRE_PIECE_SPAN = [['from', tObj(GENRE_PIECE_POINT), REQ], ['to', tObj(GENRE_PIECE_POINT), REQ]];
+
+/** core's `GenrePieceIR` (ir-types.ts) members after `id`, `module`, `kind` and `ref`: each optional. */
+const GENRE_PIECE_IR_OPTIONAL = [
+	['variant', tStr, OPT],
+	['at', tStr, OPT],
+	['level', tStr, OPT],
+	['archetype', tStr, OPT],
+	['position', tObj(GENRE_PIECE_POINT), OPT],
+	['span', tObj(GENRE_PIECE_SPAN), OPT],
+];
+
+/** core's `GenrePieceIR` (ir-types.ts). */
+const GENRE_PIECE_IR = [['id', tStr, REQ], ['module', GENRE_PIECE_MODULE, REQ], ['kind', tStr, REQ], ['ref', tStr, REQ], ...GENRE_PIECE_IR_OPTIONAL];
+
+/**
+ * The binding walk's piece: core's `Partial<GenrePieceIR>` (deriveGenrePieceArchetype's
+ * parameter; collectPlaceableEntities and stampWorldArchetypes walk the same list), with
+ * `module` any string: core's kinds corpus pins a piece of module `roguelike` as unbound
+ * (archetype `''`), so the walk reads a module outside the union.
+ */
+const GENRE_WALK_PIECE = [['id', tStr, OPT], ['module', tStr, OPT], ['kind', tStr, OPT], ['ref', tStr, OPT], ...GENRE_PIECE_IR_OPTIONAL];
+
+/** core's `GenreGroundIR` (ir-types.ts): a `GenrePieceIR` of kind `ground` with its extent. */
+const GENRE_GROUND_IR = [
+	['id', tStr, REQ],
+	['module', tOneOf([...GENRE_GROUND_MODULES]), REQ],
+	['kind', tOneOf(['ground']), REQ],
+	['ref', tStr, REQ],
+	['archetype', tStr, REQ],
+	['position', tObj(GENRE_PIECE_POINT), REQ],
+	['extent', tObj([['min', tObj(GENRE_PIECE_POINT), REQ], ['max', tObj(GENRE_PIECE_POINT), REQ]]), REQ],
+	...GENRE_PIECE_IR_OPTIONAL.filter(([k]) => k !== 'archetype' && k !== 'position'),
+];
+
+// GenrePieceUnplacedReason (build-plan.ts, a type-only union).
+const GENRE_UNPLACED_REASONS = [
+	'invalid-piece',
+	'duplicate-id',
+	'unknown-kind',
+	'kind-not-placed',
+	'invalid-variant',
+	'invalid-position',
+	'no-anchor',
+	'missing-anchor',
+	'ambiguous-anchor',
+	'not-derived',
+	'off-ground',
+];
+
+/** core's `GenreBuildPlan | GenreGroundedBuildPlan` (build-plan.ts): a grounded plan carries `ground`. */
+const GENRE_BUILD_PLAN = [
+	['genre', tStr, REQ],
+	['ground', tList(tObj(GENRE_GROUND_IR)), OPT],
+	['pieces', tList(tObj(GENRE_PIECE_IR)), REQ],
+	['unplaced', tList(tObj([
+		['id', tStr, REQ_NULL],
+		['reason', tOneOf(GENRE_UNPLACED_REASONS), REQ],
+		['table', tOneOf([...GENRE_BUILD_ANCHOR_TABLES]), OPT],
+		['atom', tStr, OPT],
+	])), REQ],
+];
+
+/** core's `GenreBuildAnchors` (build-plan.ts): every table, atom → its value or null (ambiguous). */
+const GENRE_BUILD_ANCHORS = [
+	['places', tRecord(tOrNull(tObj(GENRE_PIECE_POINT))), REQ],
+	['links', tRecord(tOrNull(tObj([['from', tStr, REQ], ['to', tStr, REQ]]))), REQ],
+	['containers', tRecord(tOrNull(tObj(GENRE_PIECE_POINT))), REQ],
+	['locks', tRecord(tOrNull(tStr)), REQ],
+	['clues', tRecord(tOrNull(tStr)), REQ],
+	['businesses', tRecord(tOrNull(tObj(GENRE_PIECE_POINT))), REQ],
+	['settlements', tRecord(tOrNull(tObj(GENRE_PIECE_POINT))), REQ],
+	['people', tRecord(tOrNull(tObj(GENRE_PIECE_POINT))), REQ],
+];
+
+/**
+ * core's `Pick<Course, 'places' | 'links' | 'levels'>` (genre-pieces.ts), member for member
+ * as the platformer's `Course`, but a level's `goalKind` any string (core's kinds corpus pins
+ * an authored goal kind the course does not have, `castle`, as keying the bare goal) and a
+ * place's `position` optional (core's build-plan corpus pins a place with none as no anchor).
+ */
+const GENRE_PIECE_COURSE = PLATFORMER_COURSE.filter(([k]) => ['places', 'links', 'levels'].includes(k)).map(([k, check, how]) =>
+	k === 'links'
+		? [k, check, how]
+		: k === 'places'
+		? [k, tList(tObj([
+			['id', tStr, REQ],
+			['kind', tOneOf(PLATFORMER_PLACE_KINDS), REQ],
+			['label', tStr, REQ],
+			['position', tObj(GENRE_XZ), OPT],
+		])), how]
+		: [k, tList(tObj([
+			['id', tStr, REQ],
+			['order', tNum, REQ],
+			['start', tStr, REQ],
+			['goal', tStr, REQ],
+			['goalKind', tStr, REQ],
+			['subject', tStr, REQ_NULL],
+			['checkpoints', tList(tStr), REQ],
+			['par', tNum, REQ],
+		])), how],
+);
+/** core's `Pick<PuzzleDefinition, 'locks' | 'finalLock' | 'clueTexts'>` (genre-pieces.ts). */
+const GENRE_PIECE_PUZZLE = PUZZLE_DEFINITION.filter(([k]) => ['locks', 'finalLock', 'clueTexts'].includes(k));
+/** core's `Pick<Campaign, 'holdings' | 'settlements' | 'residents'>` (genre-pieces.ts). */
+const GENRE_PIECE_CAMPAIGN = STRATEGY_CAMPAIGN.filter(([k]) => ['holdings', 'settlements', 'residents'].includes(k));
+
+/** core's `GenrePieceDefinitions` (genre-pieces.ts) from the row's own `course`, `puzzle` and `campaign`: each passed when present; null refused (core declares none `| null`). */
+function genrePieceDefinitionsArg(method, args) {
+	const definitions = {};
+	for (const [key, spec] of [['course', GENRE_PIECE_COURSE], ['puzzle', GENRE_PIECE_PUZZLE], ['campaign', GENRE_PIECE_CAMPAIGN]]) {
+		if (!hasOwn(args, key)) continue;
+		definitions[key] = declared(method, args[key], key, spec);
+	}
+	return definitions;
+}
+
+/**
+ * core's `GenreBuildWorld` (build-plan.ts): a `GenreWorldSource` whose containers may carry a
+ * position, and whose settlements' `id` may be absent: core's build-plan corpus gives every
+ * settlement (Thistlecombe's fixture included) by `name` alone, which is all the anchors read.
+ */
+const GENRE_BUILD_WORLD = GENRE_WORLD_SOURCE.map(([k, check, how]) => {
+	if (k === 'geography') {
+		return [k, tObj([
+			['georeference', tObj([['rotationRad', tNum, OPT_NULL]]), OPT_NULL],
+			['settlements', tList(tObj(GENRE_WORLD_SETTLEMENT.map(([sk, scheck, show]) => [sk, scheck, sk === 'id' ? OPT : show]))), OPT_NULL],
+		]), how];
+	}
+	if (k !== 'entities') return [k, check, how];
+	return [k, tObj(GENRE_WORLD_SOURCE_ENTITIES.map(([ek, echeck, ehow]) =>
+		ek !== 'containers'
+			? [ek, echeck, ehow]
+			: [ek, tList(tObj([['id', tStr, REQ], ['buildingId', tStr, OPT_NULL], ['containerType', tStr, OPT_NULL], ['position', tObj(GENRE_XZ), OPT_NULL]])), ehow],
+	)), how];
+});
+
+/** A build row's `world`: core's `GenreBuildWorld | null | undefined` (absent or null: none). */
+function genreBuildWorldArg(method, args) {
+	return optionalArg(args.world, (v) => declared(method, v, 'world', GENRE_BUILD_WORLD));
 }
 
 // ── quests ────────────────────────────────────────────────────────────────────
@@ -6063,6 +6284,210 @@ const METHODS = {
 	'strategy.save.blockOf': (args) => {
 		coded('invalid-input', () => declared('strategy.save.blockOf', args.block, 'block', STRATEGY_DIRECTOR_STATE));
 		return { block: plain(strategyBlockOf(args.block)) };
+	},
+
+	// ── the genre pieces (PL.native-genre-rows slice 4; U103) ──
+
+	/**
+	 * `genrePieces.contract {}` → core's genre piece tables: the piece modules
+	 * (`GENRE_PIECE_MODULES`), every kind (`GENRE_PIECE_KINDS`: module, kind, archetype,
+	 * variants, source), the definition each module's pieces come from
+	 * (`GENRE_PIECE_DEFINITIONS`), the placement rules (`GENRE_PIECE_PLACEMENT`), the anchor
+	 * tables, the settle step and directions, and the grounded modules and their margin.
+	 */
+	'genrePieces.contract': () => ({
+		modules: [...GENRE_PIECE_MODULES],
+		kinds: plain(GENRE_PIECE_KINDS),
+		definitions: plain(GENRE_PIECE_DEFINITIONS),
+		placement: plain(GENRE_PIECE_PLACEMENT),
+		anchorTables: [...GENRE_BUILD_ANCHOR_TABLES],
+		settleStepM: GENRE_BUILD_SETTLE_STEP_M,
+		settleDirections: plain(GENRE_BUILD_SETTLE_DIRECTIONS),
+		groundModules: [...GENRE_GROUND_MODULES],
+		groundMarginM: GENRE_BUILD_GROUND_MARGIN_M,
+	}),
+
+	/** `genrePieces.kind { kind?, module? }` → `{ kind }` — core's `genrePieceKind` (the kind called `kind`, in `module` when the row names one, null included; null: none). Both are core's `unknown`. */
+	'genrePieces.kind': (args) => ({ kind: plain(hasOwn(args, 'module') ? genrePieceKind(args.kind, args.module) : genrePieceKind(args.kind)) }),
+
+	/** `genrePieces.isVariant { spec, variant? }` → `{ allowed }` — core's `isGenrePieceVariant` (`spec` a `GenrePieceKind`; no variant, null or `''` is always allowed). */
+	'genrePieces.isVariant': (args) => {
+		coded('invalid-input', () => declared('genrePieces.isVariant', args.spec, 'spec', GENRE_PIECE_KIND));
+		return { allowed: isGenrePieceVariant(args.spec, args.variant) };
+	},
+
+	/** `genrePieces.archetype { module?, kind?, variant? }` → `{ archetype }` — core's `genrePieceArchetype` (`''` for an unknown module or kind, a kind of another module, or a variant the kind does not allow). */
+	'genrePieces.archetype': (args) => ({ archetype: genrePieceArchetype(args.module, args.kind, args.variant) }),
+
+	/** `genrePieces.artSlots { module }` → `{ artSlots }` — core's `genrePieceArtSlots` (one `<root>.<module>.*` per root its kinds use, sorted). */
+	'genrePieces.artSlots': (args) => {
+		coded('invalid-input', () => GENRE_PIECE_MODULE('genrePieces.artSlots', args.module, 'module'));
+		return { artSlots: genrePieceArtSlots(args.module) };
+	},
+
+	/** `genrePieces.deriveArchetype { piece }` → `{ archetype }` — core's `deriveGenrePieceArchetype` (the binding walk's: a stamped key kept, else the derived one, `''` when none). */
+	'genrePieces.deriveArchetype': (args) => {
+		coded('invalid-input', () => declared('genrePieces.deriveArchetype', args.piece, 'piece', GENRE_WALK_PIECE));
+		return { archetype: deriveGenrePieceArchetype(args.piece) };
+	},
+
+	/** `genrePieces.modules { genre? }` → `{ modules }` — core's `genrePieceModulesFor` (the piece modules the genre's bundle activates, in core's order; null for a genre the registry does not know). */
+	'genrePieces.modules': (args) => ({ modules: genrePieceModulesFor(args.genre) }),
+
+	/** `genrePieces.kinds { genre? }` → core's `genrePieceKindsFor` answer (`{ genre, modules, kinds, artSlots }`, or `{ refused }`). */
+	'genrePieces.kinds': (args) => plain(genrePieceKindsFor(args.genre)),
+
+	/** `genrePieces.key { genre?, kind?, variant? }` → core's `genrePieceKeyFor` answer (`{ module, archetype }`, or `{ refused }`: unknown-genre, unknown-kind, kind-not-placed, invalid-variant, in that order). */
+	'genrePieces.key': (args) => plain(genrePieceKeyFor(args.genre, args.kind, args.variant)),
+
+	/** `genrePieces.idSegment { ref }` → `{ segment }` — core's `genrePieceIdSegment` (`%` → `%25`, `.` → `%2E`). */
+	'genrePieces.idSegment': (args) => {
+		coded('invalid-input', () => needString('genrePieces.idSegment', args.ref, 'ref'));
+		return { segment: genrePieceIdSegment(args.ref) };
+	},
+
+	/** `genrePieces.id { module, kind, refs }` → `{ id }` — core's `genrePieceId` (`<module>.<kind>.<ref…>`, each ref escaped). */
+	'genrePieces.id': (args) => {
+		const m = 'genrePieces.id';
+		coded('invalid-input', () => {
+			GENRE_PIECE_MODULE(m, args.module, 'module');
+			needString(m, args.kind, 'kind');
+			stringList(m, args.refs, 'refs');
+		});
+		return { id: genrePieceId(args.module, args.kind, args.refs) };
+	},
+
+	/** `genrePieces.course { course }` → `{ pieces }` — core's `coursePieces` (platforms, ledges, gaps, checkpoints and goals, in kind-table order). */
+	'genrePieces.course': (args) => {
+		coded('invalid-input', () => declared('genrePieces.course', args.course, 'course', GENRE_PIECE_COURSE));
+		return { pieces: plain(coursePieces(args.course)) };
+	},
+
+	/** `genrePieces.puzzle { puzzle }` → `{ pieces }` — core's `puzzlePieces` (locks, the keys some lock needs, clues). */
+	'genrePieces.puzzle': (args) => {
+		coded('invalid-input', () => declared('genrePieces.puzzle', args.puzzle, 'puzzle', GENRE_PIECE_PUZZLE));
+		return { pieces: plain(puzzlePieces(args.puzzle)) };
+	},
+
+	/** `genrePieces.campaign { campaign }` → `{ pieces }` — core's `campaignPieces` (holdings by trade, settlements, a worker per settlement and resident). */
+	'genrePieces.campaign': (args) => {
+		coded('invalid-input', () => declared('genrePieces.campaign', args.campaign, 'campaign', GENRE_PIECE_CAMPAIGN));
+		return { pieces: plain(campaignPieces(args.campaign)) };
+	},
+
+	/**
+	 * `genrePieces.for { genre?, course?, puzzle?, campaign? }` → core's `genrePiecesFor`
+	 * answer (`{ pieces }`, or `{ refused, module? }`: an unknown genre first, then by module
+	 * a definition the genre does not place or one it needs and was not given). A definition
+	 * is given when its key is present.
+	 */
+	'genrePieces.for': (args) => {
+		const definitions = coded('invalid-input', () => genrePieceDefinitionsArg('genrePieces.for', args));
+		return plain(genrePiecesFor(args.genre, definitions));
+	},
+
+	/**
+	 * `genrePieces.collect { genrePieces? }` → `{ entities }` — core's
+	 * `collectPlaceableEntities` over a world holding only `entities.genrePieces` (the binding
+	 * walk's genre piece leg: each piece an entity of kind `genrePiece`, its archetype derived
+	 * or stamped, `''` when none). Absent: no list.
+	 */
+	'genrePieces.collect': (args) => {
+		const m = 'genrePieces.collect';
+		coded('invalid-input', () => {
+			if (hasOwn(args, 'genrePieces')) tList(tObj(GENRE_WALK_PIECE))(m, args.genrePieces, 'genrePieces');
+		});
+		return { entities: plain(collectPlaceableEntities({ entities: hasOwn(args, 'genrePieces') ? { genrePieces: args.genrePieces } : {} })) };
+	},
+
+	/**
+	 * `genrePieces.stamp { genrePieces? }` → `{ entityLists, genrePieces }` — core's
+	 * `stampWorldArchetypes` over a world holding only `entities.genrePieces` (the exporter's
+	 * genre piece leg: every piece with a legal key stamped, a stamped one kept, an unbound one
+	 * left alone): the entity lists it returns with a value, and the stamped list (null when
+	 * the world has none, which it does not gain).
+	 */
+	'genrePieces.stamp': (args) => {
+		const m = 'genrePieces.stamp';
+		coded('invalid-input', () => {
+			if (hasOwn(args, 'genrePieces')) tList(tObj(GENRE_WALK_PIECE))(m, args.genrePieces, 'genrePieces');
+		});
+		const entities = stampWorldArchetypes({ entities: hasOwn(args, 'genrePieces') ? { genrePieces: args.genrePieces } : {} }).entities ?? {};
+		const entityLists = Object.keys(entities).filter((k) => entities[k] !== undefined);
+		return { entityLists, genrePieces: plain(entities.genrePieces ?? null) };
+	},
+
+	/**
+	 * `genrePieces.anchors { world?, course?, puzzle?, campaign? }` → `{ anchors }` — core's
+	 * `genreBuildAnchors(world, definitions)`: the eight tables (places, links, containers,
+	 * locks, clues, businesses, settlements, people), atom → value, null for an atom two
+	 * entries give different values; keys in code-unit order. `world` absent or null: none.
+	 */
+	'genrePieces.anchors': (args) => {
+		const m = 'genrePieces.anchors';
+		const input = coded('invalid-input', () => ({ world: genreBuildWorldArg(m, args), definitions: genrePieceDefinitionsArg(m, args) }));
+		return { anchors: plain(genreBuildAnchors(input.world, input.definitions)) };
+	},
+
+	/**
+	 * `genrePieces.place { genre?, pieces?, anchors? }` → core's `placeGenrePieces` answer
+	 * (`{ genre, pieces, unplaced }`, or `{ refused: 'unknown-genre' }`). `pieces` is core's
+	 * `unknown[] | null` (each item checked by core: `invalid-piece`); `anchors` is core's
+	 * `GenreBuildAnchors`, absent or null read as no tables (core's corpus pins an absent
+	 * `anchors` as every anchored piece missing its anchor).
+	 */
+	'genrePieces.place': (args) => {
+		const m = 'genrePieces.place';
+		coded('invalid-input', () => {
+			optionalArg(args.pieces, (v) => needArray(m, v, 'pieces'));
+			optionalArg(args.anchors, (v) => declared(m, v, 'anchors', GENRE_BUILD_ANCHORS));
+		});
+		return plain(placeGenrePieces(args.genre, args.pieces, orUndefined(args.anchors)));
+	},
+
+	/**
+	 * `genrePieces.plan { genre?, world?, course?, puzzle?, campaign? }` → core's
+	 * `genreBuildPlan` answer (`{ genre, pieces, unplaced }`, or `genrePiecesFor`'s refusal):
+	 * the definitions' pieces and the world's own `entities.genrePieces`, placed together.
+	 */
+	'genrePieces.plan': (args) => {
+		const m = 'genrePieces.plan';
+		const input = coded('invalid-input', () => ({ world: genreBuildWorldArg(m, args), definitions: genrePieceDefinitionsArg(m, args) }));
+		return plain(genreBuildPlan(args.genre, input.world, input.definitions));
+	},
+
+	/** `genrePieces.settleOffset { n }` → `{ offset }` — core's `genreBuildSettleOffset` (the n-th piece after the first on one point; `{0, 0}` for n below 1 or not whole). */
+	'genrePieces.settleOffset': (args) => {
+		coded('invalid-input', () => needNumber('genrePieces.settleOffset', args.n, 'n'));
+		return { offset: plain(genreBuildSettleOffset(args.n)) };
+	},
+
+	/**
+	 * `genrePieces.ground { genre?, world?, course?, puzzle?, campaign? }` → core's
+	 * `genreBuildGround` answer (`{ genre, ground, pieces, unplaced }`, or the plan's
+	 * refusal): the plan standing on the ground it states for the platformer and the puzzle,
+	 * every piece off it reported `off-ground`.
+	 */
+	'genrePieces.ground': (args) => {
+		const m = 'genrePieces.ground';
+		const input = coded('invalid-input', () => ({ world: genreBuildWorldArg(m, args), definitions: genrePieceDefinitionsArg(m, args) }));
+		return plain(genreBuildGround(args.genre, input.world, input.definitions));
+	},
+
+	/**
+	 * `genrePieces.write { world, plan }` → `{ world }` — core's `writeGenreBuildPlan`: a copy
+	 * of `world` whose `entities.genrePieces` is the plan's placed pieces, then the assistant's
+	 * it left out (less any position); a grounded plan (one carrying `ground`) also writes
+	 * `entities.genreGround`, an ungrounded one removes it. `plan` is a `genrePieces.plan` or
+	 * `genrePieces.ground` answer.
+	 */
+	'genrePieces.write': (args) => {
+		const m = 'genrePieces.write';
+		coded('invalid-input', () => {
+			declared(m, args.world, 'world', [['entities', tObj([]), OPT_NULL]]);
+			declared(m, args.plan, 'plan', GENRE_BUILD_PLAN);
+		});
+		return { world: plain(writeGenreBuildPlan(args.world, args.plan)) };
 	},
 
 	// ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────

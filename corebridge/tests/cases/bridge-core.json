@@ -49,6 +49,29 @@
        "genre.resolve",
        "genre.resolveGame",
        "genre.world.of",
+       "genrePieces.anchors",
+       "genrePieces.archetype",
+       "genrePieces.artSlots",
+       "genrePieces.campaign",
+       "genrePieces.collect",
+       "genrePieces.contract",
+       "genrePieces.course",
+       "genrePieces.deriveArchetype",
+       "genrePieces.for",
+       "genrePieces.ground",
+       "genrePieces.id",
+       "genrePieces.idSegment",
+       "genrePieces.isVariant",
+       "genrePieces.key",
+       "genrePieces.kind",
+       "genrePieces.kinds",
+       "genrePieces.modules",
+       "genrePieces.place",
+       "genrePieces.plan",
+       "genrePieces.puzzle",
+       "genrePieces.settleOffset",
+       "genrePieces.stamp",
+       "genrePieces.write",
        "inventory.apply",
        "inventory.create",
        "language.bank.analyzeWeaknesses",
@@ -614,7 +637,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 580}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 603}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -660,7 +683,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 580}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 603}}}}
    ]
   },
   {
