@@ -2663,8 +2663,10 @@ also run on both case legs (and `corebridge_cases_parity`, byte for byte) as
 and `core_vendor` holds to the vendored corpus case by case (`core_vendor_pass_by_negative`:
 ten perturbations named). Hand cases: `tests/cases/bridge-pass-by.json` (the contract
 whole, null radii, the segment distance, the replay's `dt`, a villager's speed and radius,
-the player's radius, `straightBack`, no time, and the `[invalid-input]` boundary of every
-declared member), every expectation computed by core's own functions at the pin.
+the player's radius, no time, `straightBack` on the corpus's doorway and alcove scenes
+beside the same scenes without it, where core's answers differ, and the `[invalid-input]`
+boundary of every declared member), every expectation computed by core's own functions at
+the pin.
 
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 
