@@ -332,7 +332,7 @@
   },
   {
    "name": "spanish-real",
-   "note": "A real language with homographs: `once` (eleven), `sin` (without) and `red` (net) are English words too (`alsoEnglish`); accented keys (`dónde`, `mañana` with an alternative), a two-word phrase (`buenos días`), a two-letter gloss (`en`, in), a one-word key that also starts a phrase key (`buenos`, `buenos días`), a homograph with an English alternative (`fin`, end or finish), and the three difficulties.",
+   "note": "A real language with homographs: `once` (eleven), `sin` (without) and `red` (net) are English words too (`alsoEnglish`); accented keys (`dónde`, `mañana` with an alternative), a two-word phrase (`buenos días`), a two-letter gloss (`en`, in), a one-word key that also starts a phrase key (`buenos`, `buenos días`), a homograph with an English alternative (`fin`, end or finish), homographs whose translation is two words (`pie`, on foot) or opens with an article (`can`, a dog), an alternative of two words (`hora`, alt `the time`), a gloss with parentheses (`usted`, you (formal)), and the three difficulties.",
    "chatCefr": {
     "version": 1,
     "baseLanguage": "English",
@@ -529,6 +529,17 @@
        "alsoEnglish": false
       },
       {
+       "word": "can",
+       "key": "can",
+       "translation": "a dog",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      },
+      {
        "word": "desafortunadamente",
        "key": "desafortunadamente",
        "translation": "unfortunately",
@@ -575,6 +586,19 @@
        "alsoEnglish": true
       },
       {
+       "word": "hora",
+       "key": "hora",
+       "translation": "hour",
+       "alternatives": [
+        "the time"
+       ],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
        "word": "mañana",
        "key": "mañana",
        "translation": "tomorrow",
@@ -610,6 +634,17 @@
        "alsoEnglish": false
       },
       {
+       "word": "pie",
+       "key": "pie",
+       "translation": "on foot",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      },
+      {
        "word": "red",
        "key": "red",
        "translation": "net",
@@ -630,6 +665,17 @@
        "context": null,
        "source": "wordTranslationCache",
        "alsoEnglish": true
+      },
+      {
+       "word": "usted",
+       "key": "usted",
+       "translation": "you (formal)",
+       "alternatives": [],
+       "partOfSpeech": "pronoun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
       }
      ],
      "evidenceWords": [
@@ -4035,6 +4081,120 @@
      "once"
     ],
     "newWordIndex": 2
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A gloss of k words is compared with the next k pieces: `pie — on foot —` glosses `pie` by its two-word translation; unglossed, `foot` (an English gloss word, in the next clause) would be the nearest evidence and make it English.",
+   "level": "A1",
+   "line": "We walk pie — on foot — home",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "pie",
+     "translation": "on foot",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "pie"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "After a gloss article the gloss is also tried from the article itself: `can — a dog —` glosses `can`, whose translation `a dog` opens with the article; unglossed, the English `dog` would make it English.",
+   "level": "A1",
+   "line": "The can — a dog — barks",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "can",
+     "translation": "a dog",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "can"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A token opening with `(` only waives the separator; the gloss must still match: `(big)` is no gloss of `red` (net), so the English `net` after it is the nearest evidence and `red` is English.",
+   "level": "A1",
+   "line": "We fish with a red (big) net",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "English evidence is every word of every gloss: `time` (the second word of `hora`'s alternative `the time`) one unit before `red` is as near as the evidence word `el` after, and the one before decides, so `red` is English.",
+   "level": "A1",
+   "line": "time red el",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "English evidence words are keyed: `usted`'s translation `you (formal)` gives `formal`, edge brackets stripped, one unit before `red`, as near as `el` after; the one before decides, so `red` is English.",
+   "level": "A1",
+   "line": "formal red el",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "Non-ASCII is read on a piece's key, not its token: `“Hey”` keys to `hey`, which is ASCII and no evidence, so `red` has no evidence and stays English.",
+   "level": "A1",
+   "line": "“Hey” red now",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
    }
   },
   {
