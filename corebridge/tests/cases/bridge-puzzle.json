@@ -6251,6 +6251,151 @@
      "expectError": "[invalid-input] insimulcore: puzzle.facts: `definition.maxAttempts` must be a finite number"
     },
     {
+     "call": "puzzle.facts",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.facts: `definition.maxAttempts` is missing"
+    },
+    {
+     "call": "puzzle.facts",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.facts: `definition.notes` is missing"
+    },
+    {
      "call": "puzzle.worldFacts",
      "args": {
       "world": {
