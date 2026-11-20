@@ -2688,7 +2688,7 @@ words with their English glosses) and the chat's message kinds. These rows repla
 an engine applies over it, with no model call and no key, so an engine binds them instead of
 keeping a copy (Unreal's interim `Portable/InsimulChatCefr`, which
 `P9h.unreal.retire-chat-cefr-copy` retires; `ENGINE_BINDINGS.md` maps it). Nothing here
-builds a section: every row but three takes one as `section`. Slice 1 is the vocabulary
+builds a section: every row but `chatCefr.lineRule` and `chatCefr.normalizeWord` takes one as `section`. Slice 1 is the vocabulary
 half; the grammar check, the strips and the speech steps (the section's `grammar` and
 `messages.speech`) are slice 2's and pass through unread.
 
