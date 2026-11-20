@@ -4,7 +4,7 @@
   "rulesVersion": 1,
   "repository": {
     "root": "native-native-pass-by-rows",
-    "gitHead": "de0d38b58b4fa13bd4897d92a8085bf393245895"
+    "gitHead": "43bb276cbeb1dceab4a48e0f07ac8e8867949128"
   },
   "coverage": {
     "files": 534,
