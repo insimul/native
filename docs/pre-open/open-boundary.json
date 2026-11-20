@@ -3,15 +3,15 @@
   "rules": "scripts/open-boundary.rules.json",
   "rulesVersion": 1,
   "repository": {
-    "root": "native-native-genre-rows-s1-puzzle",
-    "gitHead": "78bed714093d0f5378d4df61ee38159013e746ac"
+    "root": "native-native-genre-rows-s2-platformer",
+    "gitHead": "f3117093f9fce8279dccfd39ae3b540d8b0ef2f0"
   },
   "coverage": {
-    "files": 510,
-    "packScanned": 257,
+    "files": 517,
+    "packScanned": 264,
     "packDocuments": [],
     "importFiles": 21,
-    "importSpecifiers": 203,
+    "importSpecifiers": 207,
     "cargoManifests": 3,
     "cargoDependencies": 3,
     "cFiles": 153,
@@ -2339,7 +2339,59 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 915,
+      "line": 934,
+      "specifier": "@insimul/core/platformer/course",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the platformer.* course rows (core's platformer module's pure half: the course a world gives, authored or generated over its streets, homes and workplaces, the junction atoms and labels, the cheapest route, the level facts and the stars) and platformer.contract's defaults (PL.native-genre-rows slice 2, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s2-platformer (Features Gauntlet PL.native-genre-rows slice 2)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 935,
+      "specifier": "@insimul/core/platformer/platformer-predicates",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of platformer.contract's pack area and the platformer pack's authored and runtime predicates (PL.native-genre-rows slice 2, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s2-platformer (Features Gauntlet PL.native-genre-rows slice 2)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 943,
+      "specifier": "@insimul/core/platformer/platformer-save",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the platformer.save.* rows (core's platformer save block: read, block and blockOf) and platformer.contract's extension key, block members and runner keys (PL.native-genre-rows slice 2, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s2-platformer (Features Gauntlet PL.native-genre-rows slice 2)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 944,
+      "specifier": "@insimul/core/game-engine/logic/PlatformerDirector",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the platformer.director.* rows (core's PlatformerDirector: enter, step through core's TraversalPlanner, respawn, hint, progress, serialize and restore) and platformer.contract's written predicates (PL.native-genre-rows slice 2, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s2-platformer (Features Gauntlet PL.native-genre-rows slice 2)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 949,
       "specifier": "@insimul/core/system-packs/composer",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2352,7 +2404,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 924,
+      "line": 958,
       "specifier": "@insimul/core/editor/layout/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2365,7 +2417,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 925,
+      "line": 959,
       "specifier": "@insimul/core/editor/layout/composition/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2550,7 +2602,7 @@
       "unresolved": 0
     },
     "dependency": {
-      "findings": 122,
+      "findings": 126,
       "unresolved": 0
     },
     "unusedAllowances": 0
