@@ -595,7 +595,7 @@ int main(int argc, char **argv) {
 			for (const std::string &why : problems) std::printf("  [FAIL] contract: %s\n", why.c_str());
 			if (!problems.empty()) failed++;
 			std::printf("contract: %d of %zu constant(s) passBy.contract states agree with the corpus's, each with its export "
-			            "name; sideFrames and measuredAbreastS %s\n",
+			            "name, and sideFrames and measuredAbreastS %s\n",
 			            agree, constants->object_items.size(), problems.empty() ? "agree" : "checked, with problems");
 		}
 	}

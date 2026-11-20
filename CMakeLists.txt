@@ -1305,7 +1305,7 @@ target_link_libraries(insimulcore_villagers_pass_by_corpus PRIVATE insimulcore)
 set(INSIMUL_PASS_BY_CORPUS ${INSIMUL_PROPS_CORPUS}/villagers/pass-by.json)
 add_test(NAME villagers_pass_by_corpus COMMAND insimulcore_villagers_pass_by_corpus ${INSIMUL_PASS_BY_CORPUS})
 set_tests_properties(villagers_pass_by_corpus PROPERTIES
-  PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\ncontract: [1-9][0-9]* of [1-9][0-9]* constant[(]s[)] passBy.contract states agree with the corpus's, each with its export name, sideFrames and measuredAbreastS agree\n.*villager-pass-by: driven floor [1-9][0-9]*, guard [1-9][0-9]*, plan [1-9][0-9]*, round [1-9][0-9]*, replay [1-9][0-9]*. 0 undriven\nvillagers_pass_by_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nvillagers_pass_by_corpus: PASS")
+  PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\ncontract: [1-9][0-9]* of [1-9][0-9]* constant[(]s[)] passBy.contract states agree with the corpus's, each with its export name, and sideFrames and measuredAbreastS agree\n.*villager-pass-by: driven floor [1-9][0-9]*, guard [1-9][0-9]*, plan [1-9][0-9]*, round [1-9][0-9]*, replay [1-9][0-9]*. 0 undriven\nvillagers_pass_by_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nvillagers_pass_by_corpus: PASS")
 # Its negative pass: every case's expectation perturbed (its last leaf) must be refused.
 add_test(NAME villagers_pass_by_corpus_negative COMMAND insimulcore_villagers_pass_by_corpus --negative ${INSIMUL_PASS_BY_CORPUS})
 set_tests_properties(villagers_pass_by_corpus_negative PROPERTIES
