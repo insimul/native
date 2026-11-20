@@ -408,6 +408,6 @@
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
     "tools/emit-bridge-cases.mjs": "98c88a0c4933688c1ee2f3b5eb6bfa348bc6f4f9edce38bbb9e01197b00a0422",
-    "core-pin.json": "df9b749be92c7635cf9a3fb5ff9a23657c0805097f1055102c68a0ef72ce9b24"
+    "core-pin.json": "f259cf0f88eb3f0b98db6946c9dbf936f0a7869a8ba08a562cbcd84c2f03e6d2"
   }
 }

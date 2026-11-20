@@ -373,14 +373,38 @@ const LOAD_REFUSAL_CASES = path.join(CASES_DIR, 'core-ui-save-slots.json');
 // emitter that dropped cases would otherwise pass `--check --core`; the vendored corpus is
 // hashed and byte-compared with core, so holding the transcription to it holds it to core.
 const VILLAGE_CASES = path.join(CASES_DIR, 'core-saves-village.json');
+/** The first row each village-state op calls (save-file-game-state-corpus.ts's runVillageStateOp, through the rows). */
+const VILLAGE_FIRST_CALL = {
+  write: 'save.village.write',
+  read: 'save.village.read',
+  roundTrip: 'save.village.write',
+  stamp: 'save.village.runtimeOf',
+  agentCurie: 'save.village.agentCurie',
+  timeStateOf: 'save.village.timeStateOf',
+  totalHoursOf: 'save.village.totalHoursOf',
+  conversationTimestamp: 'save.village.conversations.timestamp',
+  conversationEpochMs: 'save.village.conversations.epochMs',
+  skillKb: 'save.village.read',
+};
 const VILLAGE_CORPUS = path.join(OUT_DIR, 'conformance/saves/village-state.json');
 function villageTranscriptionProblems() {
   const corpus = JSON.parse(fs.readFileSync(VILLAGE_CORPUS, 'utf8')).cases;
-  const names = new Set(JSON.parse(fs.readFileSync(VILLAGE_CASES, 'utf8')).cases.map((c) => c.name));
+  const transcribed = JSON.parse(fs.readFileSync(VILLAGE_CASES, 'utf8')).cases;
+  const byName = new Map(transcribed.map((c) => [c.name, c]));
+  const names = new Set(byName.keys());
   const missing = corpus.filter((c) => !names.has(`village-state ${c.op}: ${c.name}`)).map((c) => c.name);
+  // Each case's calls are the ones core's runner makes for its op, in its order: the first
+  // always, and for skillKb the checked read before skill.kb.loadJson.
+  const wrongCalls = corpus.filter((c) => {
+    const calls = (byName.get(`village-state ${c.op}: ${c.name}`)?.steps ?? []).map((st) => st.call);
+    if (calls.length === 0) return false;
+    if (calls[0] !== VILLAGE_FIRST_CALL[c.op]) return true;
+    return c.op === 'skillKb' && c.expected?.ok !== false && calls.join(' ') !== 'save.village.read skill.kb.loadJson';
+  }).map((c) => c.name);
   const want = corpus.length + 1;
   const problems = [];
   if (missing.length) problems.push(`${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
+  if (wrongCalls.length) problems.push(`${wrongCalls.length} case(s) not transcribed as core's runner calls their op, first: ${wrongCalls[0]}`);
   if (names.size !== want) problems.push(`it carries ${names.size} case(s), not the corpus's ${corpus.length} and the contract case`);
   return { problems, count: corpus.length };
 }
@@ -1362,7 +1386,7 @@ async function check(coreDir) {
   }
   console.log(
     `vendor-core-bundle: village state — cases/core-saves-village.json transcribes all ${village.count} case(s) of ` +
-      'conformance/saves/village-state.json, by name, and its contract',
+      'conformance/saves/village-state.json, by name and by the calls core\'s runner makes, and its contract',
   );
 
   if (coreDir) {
