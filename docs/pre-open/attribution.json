@@ -2,7 +2,7 @@
   "tool": "scripts/check-attribution.mjs",
   "repository": {
     "root": "native-native-chat-cefr-rows-s1-lexicon-hints-messages",
-    "gitHead": "393e84dced2c1574723df155e169c687ecdd066e"
+    "gitHead": "f4ea651638c1e95c452b9e0eb363fad5d307bdfe"
   },
   "coverage": {
     "trackedFiles": 539,
