@@ -3,19 +3,19 @@
   "rules": "scripts/open-boundary.rules.json",
   "rulesVersion": 1,
   "repository": {
-    "root": "native-native-genre-rows-s4-genre-pieces",
-    "gitHead": "7bd623defb1370a3f58695bfab04e3a290d74e07"
+    "root": "native-native-pass-by-rows",
+    "gitHead": "de0d38b58b4fa13bd4897d92a8085bf393245895"
   },
   "coverage": {
-    "files": 530,
-    "packScanned": 277,
+    "files": 534,
+    "packScanned": 280,
     "packDocuments": [],
     "importFiles": 21,
-    "importSpecifiers": 216,
+    "importSpecifiers": 218,
     "cargoManifests": 3,
     "cargoDependencies": 3,
-    "cFiles": 153,
-    "cIncludes": 910,
+    "cFiles": 154,
+    "cIncludes": 922,
     "buildFiles": 21
   },
   "content": [
@@ -2495,7 +2495,33 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 1025,
+      "line": 1074,
+      "specifier": "@insimul/core/pass-by/pass-by",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the passBy.contract, .guardFloor, .keepClear, .planStepAside, .planRound and .distanceToSegment rows (passByGuardFloor, keepClearOfPlayer, planStepAside, planRoundPlayer, passByDistanceToSegment and the PASS_BY_* constants) (core's villager pass-by rule; PL.native-pass-by-rows, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-pass-by-rows (Features Gauntlet PL.native-pass-by-rows)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 1075,
+      "specifier": "@insimul/core/pass-by/pass-by-replay",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the passBy.replay row (replayPassBy, the encounter stepped frame by frame over a scene given as data) (core's villager pass-by rule; PL.native-pass-by-rows, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-pass-by-rows (Features Gauntlet PL.native-pass-by-rows)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 1080,
       "specifier": "@insimul/core/system-packs/composer",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2508,7 +2534,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 1034,
+      "line": 1089,
       "specifier": "@insimul/core/editor/layout/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2521,7 +2547,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 1035,
+      "line": 1090,
       "specifier": "@insimul/core/editor/layout/composition/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2706,7 +2732,7 @@
       "unresolved": 0
     },
     "dependency": {
-      "findings": 134,
+      "findings": 136,
       "unresolved": 0
     },
     "unusedAllowances": 0
