@@ -84,6 +84,12 @@
 //       and diffs the bundle AND the derived cases byte for byte — that is the
 //       real reproducibility check.
 //
+//   node corebridge/tools/vendor-core-bundle.mjs --check-language-transcription-negative
+//       The language transcription guard's negative control: perturbs the vendored
+//       cases/core-language-*.json in memory (a dropped case, a dropped call, a first
+//       call changed, an answer expected nowhere, a call that is no language row) and
+//       fails unless the guard names each (the core_vendor_language_negative ctest).
+//
 //   node corebridge/tools/vendor-core-bundle.mjs --check-extension-keys <case dir>
 //       Only the save.rules extensionKeys check (below, SAVE_RULES_CASES_DIR) over
 //       <case dir> instead of corebridge/tests/cases/ — the negative control's mode.
@@ -559,7 +565,47 @@ function languageCallsOf(base, c) {
   return n;
 }
 
-function languageTranscriptionProblems() {
+// The answer keys of a run step that the transcription states in another shape than the
+// corpus's (a count as `$len`, ids as `$ids`, the cache's keys as pairs, a pick's id as a
+// subset, a sum the runner derives, the words as subsets), so the stated-value check below
+// does not look for them verbatim; each still has its own expectation in the transcription.
+const LANGUAGE_RESHAPED_KEYS = {
+  progress: ['do', 'words', 'weak'],
+  save: ['do'],
+  prompts: ['do', 'targets', 'nameable', 'tagged', 'picked'],
+  hover: ['do', 'cached', 'words'],
+  chat: ['do', 'bookWords', 'grammarChecked'],
+};
+
+/** Every value a transcribed case's expectations state, as JSON text (a `$subset`'s contents count; other operators do not). */
+function statedValues(kase) {
+  const out = new Set();
+  const walk = (v) => {
+    if (Array.isArray(v)) {
+      out.add(JSON.stringify(v));
+      v.forEach(walk);
+    } else if (v !== null && typeof v === 'object') {
+      const keys = Object.keys(v);
+      if (keys.length && keys.every((k) => k.startsWith('$'))) {
+        if (v.$subset) walk(v.$subset);
+        return;
+      }
+      out.add(JSON.stringify(v));
+      keys.forEach((k) => walk(v[k]));
+    } else out.add(JSON.stringify(v));
+  };
+  for (const st of kase.steps ?? []) if ('expect' in st) walk(st.expect);
+  return out;
+}
+
+/**
+ * The problems of the language transcriptions, read through `load(base)` (the vendored
+ * cases/core-language-<base>.json by default; the negative control hands perturbed ones).
+ */
+function languageTranscriptionProblems(load = (base) => {
+  const f = path.join(CASES_DIR, `core-language-${base}.json`);
+  return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null;
+}) {
   const problems = [];
   let count = 0;
   const files = [];
@@ -571,14 +617,13 @@ function languageTranscriptionProblems() {
       problems.push(`${rel} has no first-call table here`);
       continue;
     }
-    const casesFile = path.join(CASES_DIR, `core-language-${base}.json`);
-    if (!fs.existsSync(casesFile)) {
+    const doc = load(base);
+    if (!doc) {
       problems.push(`cases/core-language-${base}.json is missing`);
       continue;
     }
     const corpus = JSON.parse(fs.readFileSync(path.join(OUT_DIR, rel), 'utf8')).cases;
-    const transcribed = JSON.parse(fs.readFileSync(casesFile, 'utf8')).cases;
-    const byName = new Map(transcribed.map((c) => [c.name, c]));
+    const byName = new Map(doc.cases.map((c) => [c.name, c]));
     count += corpus.length;
     const nameOf = (c) => `language/${base} ${c.op}: ${c.name}`;
     const missing = corpus.filter((c) => !byName.has(nameOf(c))).map((c) => c.name);
@@ -593,11 +638,71 @@ function languageTranscriptionProblems() {
       const rows = new Set([...Object.keys(made), ...Object.keys(want)]);
       return [...rows].some((row) => (made[row] ?? 0) !== (want[row] ?? 0));
     }).map((c) => c.name);
+    // Every answer of a run's steps that the transcription carries verbatim is stated in
+    // some expectation of the case (a value core's runner reads, dropped by the emitter,
+    // would otherwise go unexpected and unseen).
+    const unstated = [];
+    for (const c of corpus) {
+      const kase = byName.get(nameOf(c));
+      if (!kase || !Array.isArray(c.expected) || !c.expected.every((x) => x && typeof x === 'object' && 'do' in x)) continue;
+      const stated = statedValues(kase);
+      c.expected.forEach((x, k) => {
+        for (const [key, v] of Object.entries(x)) {
+          if (!LANGUAGE_RESHAPED_KEYS[base].includes(key) && !stated.has(JSON.stringify(v))) unstated.push(`${c.name} (step ${k} ${x.do}: ${key})`);
+        }
+      });
+    }
     if (missing.length) problems.push(`core-language-${base}.json: ${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
     if (wrong.length) problems.push(`core-language-${base}.json: ${wrong.length} case(s) not transcribed as core's runner calls their op, first: ${wrong[0]}`);
+    if (unstated.length) problems.push(`core-language-${base}.json: ${unstated.length} answer(s) of the corpus expected nowhere, first: ${unstated[0]}`);
     if (byName.size !== corpus.length) problems.push(`core-language-${base}.json carries ${byName.size} case(s), not the corpus's ${corpus.length}`);
   }
   return { problems, count, files };
+}
+
+/**
+ * The language guard's negative control (`--check-language-transcription-negative`): each
+ * perturbation of the vendored transcriptions, made in memory, must be named by the guard.
+ */
+function languageTranscriptionNegative() {
+  const read = (base) => JSON.parse(fs.readFileSync(path.join(CASES_DIR, `core-language-${base}.json`), 'utf8'));
+  const perturbations = [
+    ['a dropped case', 'save', (d) => d.cases.splice(3, 1), 'corpus case(s) not transcribed'],
+    ['a dropped call (a chat line\'s recordTurn)', 'chat', (d) => {
+      const kase = d.cases.find((c) => c.steps.some((st) => st.call === 'language.difficulty.recordTurn'));
+      kase.steps.splice(kase.steps.findIndex((st) => st.call === 'language.difficulty.recordTurn'), 1);
+    }, "not transcribed as core's runner calls their op"],
+    ['a first call changed', 'hover', (d) => {
+      d.cases.find((c) => c.steps[0].call === 'language.hover.initial').steps[0].call = 'language.hover.addHints';
+    }, "not transcribed as core's runner calls their op"],
+    ['an answer expected nowhere (a hover display\'s encounters)', 'hover', (d) => {
+      // The display's `encounters` is stated on the call that last answered the state.
+      for (const kase of d.cases) {
+        for (const st of kase.steps) {
+          const held = st.expect?.$subset?.state?.$subset;
+          if (held && held.mastery && Object.keys(held.mastery).length) {
+            delete held.mastery;
+            return;
+          }
+        }
+      }
+      throw new Error('no hover case states a display\'s encounters');
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a call not a language row', 'prompts', (d) => {
+      d.cases[0].steps[1].call = 'props.interactables.press';
+    }, "not transcribed as core's runner calls their op"],
+  ];
+  let named = 0;
+  for (const [what, file, perturb, want] of perturbations) {
+    const doc = read(file);
+    perturb(doc);
+    const { problems } = languageTranscriptionProblems((base) => (base === file ? doc : read(base)));
+    const hit = problems.find((p) => p.startsWith(`core-language-${file}.json`) && p.includes(want));
+    console.log(`  ${hit ? 'named' : 'MISSED'}: ${what} -> ${hit ?? problems.join('; ') ?? 'no problem'}`);
+    if (hit) named++;
+  }
+  console.log(`vendor-core-bundle: language transcription negative — ${named} of ${perturbations.length} perturbed transcription(s) named`);
+  if (named !== perturbations.length) fail('the language transcription guard missed a perturbation');
 }
 
 function loadRefusalCasesOnDisk() {
@@ -1610,7 +1715,7 @@ async function check(coreDir) {
   if (lang.problems.length) fail(`the language transcription does not hold the vendored language corpora: ${lang.problems.join('; ')}`);
   console.log(
     `vendor-core-bundle: language — cases/core-language-{${lang.files.join(',')}}.json transcribe all ${lang.count} case(s) of ` +
-      'the vendored conformance/language/ files, by name and by the calls core\'s runner makes, row for row',
+      'the vendored conformance/language/ files, by name, by the calls core\'s runner makes, row for row, and with every answer stated',
   );
 
   if (coreDir) {
@@ -1797,7 +1902,9 @@ async function check(coreDir) {
   }
 }
 
-if (argValue('--check-extension-keys')) {
+if (args.includes('--check-language-transcription-negative')) {
+  languageTranscriptionNegative();
+} else if (argValue('--check-extension-keys')) {
   // The save.rules extensionKeys check alone, over another case directory: the
   // core_vendor_extension_keys_negative ctest points it at tests/save-extension-keys-negative/,
   // whose cases drop a key, reorder, add one and loosen the list, and must see each named.

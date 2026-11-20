@@ -25,6 +25,7 @@ set -u
 TOOL="$1"
 NAME=core_vendor
 [ "${2:-}" = "--check-extension-keys" ] && NAME=core_vendor_extension_keys_negative
+[ "${2:-}" = "--check-language-transcription-negative" ] && NAME=core_vendor_language_negative
 
 if ! command -v node >/dev/null 2>&1; then
   echo "  [SKIP] $NAME: 'node' not found — the vendored @insimul/core bundle"
@@ -39,6 +40,9 @@ fi
 
 if [ "$NAME" = core_vendor_extension_keys_negative ]; then
   exec node "$TOOL" --check-extension-keys "$3"
+fi
+if [ "$NAME" = core_vendor_language_negative ]; then
+  exec node "$TOOL" --check-language-transcription-negative
 fi
 if [ -n "${INSIMUL_CORE_DIR:-}" ]; then
   exec node "$TOOL" --check --core "$INSIMUL_CORE_DIR"

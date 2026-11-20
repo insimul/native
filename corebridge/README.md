@@ -2089,7 +2089,9 @@ unknown op or step fails its case and that an unknown row is the method table's 
 on both case legs (and `corebridge_cases_parity`) as
 `vendor/core/cases/core-language-{progress,save,prompts,hover,chat}.json`, which
 `emit-bridge-cases.mjs` transcribes and `core_vendor` holds to the vendored corpora case by
-case (by name, and by the calls core's runner makes for it, row for row and count for count).
+case (by name, by the calls core's runner makes for it, row for row and count for count,
+and with every answer of a run's steps stated in some expectation); `core_vendor_language_negative`
+proves the guard names five perturbations of those files.
 Hand cases: `tests/cases/bridge-language.json` (every row; malformed books and the
 `[invalid-input]` boundary of every state; core's refusals as values; a game's own
 tunings), every expectation computed by core's own functions at the pin.
@@ -2202,6 +2204,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `corebridge_radiant`, `corebridge_radiant_none` | the radiant corpus through core's real radiant engine on the native Prolog engine |
 | `core_vendor` | every vendored file matches its recorded sha256 and the pin; `cases/core-ui-save-slots.json` carries core's `load_refusals` as `ui.loadRefusal` cases (with `--check --core`, exactly as many as core states at the pin); every `save.rules` case under `tests/cases/` states exactly the sorted extension keys the vendored bundle's registry answers (22 at 45409ed; with `--check --core`, also the keys of core's `extensionRegistry` in `src/save-extensions.ts` at the pin) |
 | `core_vendor_extension_keys_negative` | that extension-key check alone over `tests/save-extension-keys-negative/`: a dropped key, a reordered list, an unregistered key, a list loosened to any array and a dropped key inside `$subset`, each named, and the run failed |
+| `core_vendor_language_negative` | the language transcription guard alone, over five in-memory perturbations of `cases/core-language-*.json` (a dropped case, a dropped call, a first call changed, an answer expected nowhere, a call that is no language row): passes only when the guard names all five |
 | `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (132 of 147 cases at 72c658c; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (129 cases at 431c95b, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |

@@ -610,6 +610,18 @@ add_test(NAME core_vendor_extension_keys_negative COMMAND
 set_tests_properties(core_vendor_extension_keys_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "extensionKeys drift \\(5 problem\\(s\\)\\)[^\n]*\n[^\n]*case 1 [^\n]*missing from the case: strategy\n[^\n]*case 2 [^\n]*not in sorted order\n[^\n]*case 3 [^\n]*not registered: questLog\n[^\n]*case 4 [^\n]*not the literal list of names\n[^\n]*case 5 [^\n]*missing from the case: puzzle\n|\\[SKIP\\] core_vendor_extension_keys_negative")
 
+# Its sibling for the language transcriptions (PL.native-language-rows): the guard that
+# holds cases/core-language-*.json to the vendored corpora (by name, by the calls core's
+# runner makes, row for row, and with every answer stated) is given five perturbations of
+# those files in memory (a dropped case, a dropped call, a first call changed, an answer
+# expected nowhere, a call that is no language row) and passes only when all five are named.
+add_test(NAME core_vendor_language_negative COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
+       --check-language-transcription-negative)
+set_tests_properties(core_vendor_language_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "language transcription negative [^ ]* 5 of 5 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_language_negative")
+
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus
 # vendor-core-bundle.mjs transcribes from core's own conformance files at the

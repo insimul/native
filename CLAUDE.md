@@ -873,8 +873,9 @@
   as core's `systems-corpus.ts` composes its kernels and fails unless each file's declared
   `ops` and `steps` are exactly the ones it drives; `emit-bridge-cases.mjs` transcribes each
   file into `vendor/core/cases/core-language-<file>.json` and `core_vendor` holds each
-  transcription to its corpus by name and by the calls core's runner makes, row for row
-  and count for count. `language.<area>.<fn>` is one core
+  transcription to its corpus by name, by the calls core's runner makes (row for row,
+  count for count) and by every run answer being stated (`core_vendor_language_negative`
+  must see five perturbations named). `language.<area>.<fn>` is one core
   kernel each, STATELESS (a JSON state in, core's result out; the host keeps the state), a
   refusal a value in core's shape (core's codes, no message: core states none). A book is
   read with core's own `readLanguageBlock` (the village save's reader), so an unreadable one
