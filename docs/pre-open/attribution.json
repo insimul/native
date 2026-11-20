@@ -1,11 +1,11 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-native-language-rows-s4-quest-feedback-quest-types",
-    "gitHead": "e56623c3b437095ec8c39bac55b65ccb79c40f44"
+    "root": "native-native-genre-rows-s1-puzzle",
+    "gitHead": "78bed714093d0f5378d4df61ee38159013e746ac"
   },
   "coverage": {
-    "trackedFiles": 501,
+    "trackedFiles": 510,
     "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,
