@@ -1,11 +1,11 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-native-language-rows-s2-bank-adaptation-pronunciation",
-    "gitHead": "9a0969c13340fdaae3b677717bcdf2ec0d44f0ec"
+    "root": "native-native-language-rows-s3-objects-collection-writing",
+    "gitHead": "fad81a05da912b4236c77e6bc0fa048e75f0368d"
   },
   "coverage": {
-    "trackedFiles": 491,
+    "trackedFiles": 497,
     "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,
