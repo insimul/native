@@ -1286,6 +1286,20 @@ void refusal_probes(Caller &c, const JsonValuePtr &slices, std::map<std::string,
 		probe(p, fails, "an input naming a fixture the file does not have is driven");
 	}
 	{
+		// The tables check can fail: a build-plan file whose settle step is not the contract's is caught.
+		std::string diff;
+		try {
+			JsonValuePtr k = c.call("genrePieces.contract", Obj());
+			Obj doc;
+			doc.put("placement", member(k, "placement", "genrePieces.contract"))
+			    .put("settle", Obj().put("stepM", make_number(2)).put("directions", member(k, "settleDirections", "genrePieces.contract")).v)
+			    .put("ground", Obj().put("modules", member(k, "groundModules", "genrePieces.contract")).put("marginM", member(k, "groundMarginM", "genrePieces.contract")).v);
+			diff = build_plan_tables(c, *doc.v);
+		} catch (const std::exception &) {
+		}
+		probe(p, diff.find("$.settle.stepM") != std::string::npos, "a build-plan file whose settle step is not genrePieces.contract's is not caught");
+	}
+	{
 		auto k = c.try_call("genrePieces.key", "{\"genre\":\"mystery\",\"kind\":\"lock\"}");
 		probe(p, k && k->get_string("refused") == "unknown-genre", "an unknown genre's key is not the value refusal unknown-genre");
 		auto f = c.try_call("genrePieces.for", "{\"genre\":\"platformer\"}");
@@ -1369,7 +1383,8 @@ int main(int argc, char **argv) {
 	            "for the puzzle, the platformer and the strategy game; values: unknown_riddle, unknown_lock, unknown_clue, "
 	            "unknown_level, locked, not_running, movement with the probed link, schema, unknown_faction, unknown_business, "
 	            "cannot_claim, cannot_assign, not_assigned, an unreadable block's keys (all three), a strategy step acting for the campaign's playerFaction, "
-	            "unknown-genre, missing-definition, invalid-piece; an unknown genre-pieces and build-plan op and an unknown fixture fail their case; "
+	            "unknown-genre, missing-definition, invalid-piece; an unknown genre-pieces and build-plan op and an unknown fixture fail their case, "
+	            "a build-plan table that is not the contract's is caught; "
 	            "errors: [invalid-input] for a world that is not an object (all four), a slice name that is no own key, a definition, a course, a link, a "
 	            "campaign, a board, a state row, a piece course, anchors and a plan missing members, a null genrePieces list; an unknown row)\n",
 	            probes.passed, probes.total);
