@@ -288,6 +288,30 @@ game; **meta** = about the bridge itself.
 | `language.questTypes.templates` | `{}` → `{ templates }` | `language/quest-templates` `QUEST_TEMPLATES` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
 | `language.questTypes.templatesByDifficulty` | `{ difficulty }` → `{ templates }` | `language/quest-templates` `getTemplatesByDifficulty` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
 | `language.questTypes.templatesByCategory` | `{ category }` → `{ templates }` | `language/quest-templates` `getTemplatesByCategory` | P9h language (PL.native-language-rows slice 4; core's P9h.core) |
+| `genre.world.of` | `{ world, slices? }` → `{ world }`: a slice by name, a slice with `dropFacts`/`dropEntities`/`player`, or an inline world | `genre-systems/systems-corpus` `worldOf` | P9j genre systems (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.contract` | `{}` → `{ relations, worldPredicates, authoredPredicates, runtimePredicates, writtenPredicates, defaultMaxAttempts, tuning, extensionKey, blockMembers, actorKeys }` | `puzzle/puzzle`, `puzzle/puzzle-predicates`, `puzzle/puzzle-save`, `PuzzleDirector` constants | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.forWorld` | `{ world, puzzle?, maxAttempts? }` → `{ definition }` (`puzzle` over the world's own section; `maxAttempts` a number or null) | `puzzle/puzzle` `puzzleForWorld` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.generate` | `{ world, maxAttempts? }` → `{ definition }` | `puzzle/puzzle` `generatePuzzle` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.issues` | `{ puzzle? }` → `{ issues }` | `puzzle/puzzle` `puzzleIssues` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.fromIR` | `{ puzzle, maxAttempts? }` → `{ definition }` (a section with issues is core's error) | `puzzle/puzzle` `puzzleFromIR` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.facts` | `{ definition }` → `{ facts }` | `puzzle/puzzle` `puzzleFacts` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.worldFacts` | `{ world, definition }` → `{ facts }` | `puzzle/puzzle` `puzzleWorldFacts` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.answerKey` | `{ world, definition }` → `{ answerKey }` | `puzzle/puzzle` `puzzleAnswerKey` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.choices` | `{ world, riddle, count? }` → `{ choices }` | `puzzle/puzzle` `puzzleChoices` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.director.create` | `{ definition, worldFacts?, kb? }` → `{ session, published }` (a KB of its own: `GamePrologEngine` genre `puzzle`) | `game-engine/logic/PuzzleDirector` (`publish`), `GamePrologEngine` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.director.findClue` | `{ session, actor, text }` → `{ ok, refusal?, reason, applied }` | `PuzzleDirector.findClue` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.director.answer` | `{ session, actor, riddle, given }` → the outcome with `correct`, `attemptsLeft` | `PuzzleDirector.answer` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.director.unlock` | `{ session, actor, lock }` → the outcome with `unmet`, and `order` when it opened | `PuzzleDirector.unlock` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.director.take` | `{ session, actor, item }` → the outcome | `PuzzleDirector.take` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.director.view` | `{ session, actor, riddle }` → `{ view }` (null: no such riddle) | `PuzzleDirector.view` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.director.progress` | `{ session, actor }` → `{ progress }` | `PuzzleDirector.progress` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.director.isComplete` | `{ session, actor }` → `{ complete }` | `PuzzleDirector.isComplete` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.director.serialize` | `{ session }` → `{ state }` | `PuzzleDirector.serialize` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.director.restore` | `{ session, state }` → the outcome (`schema` once the director has actors) | `PuzzleDirector.restore` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.director.stateFacts` | `{ state }` → `{ facts }` | `PuzzleDirector.stateFacts` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.save.read` | `{ block? }` → `{ ok: true, value }` (null: no block) or `{ ok: false, keys }` | `puzzle/puzzle-save` `readPuzzleBlock` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.save.block` | `{ state? }` → `{ block }` (null for no state) | `puzzle/puzzle-save` `puzzleSaveBlock` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `puzzle.save.blockOf` | `{ block }` → `{ block }` (rows by actor, lists in canonical order) | `puzzle/puzzle-save` `puzzleBlockOf` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `ui.loadRefusal` | `{ refusal }` → `{ outcome, message }`: every string `invalid_format` with its message; any other value `{ outcome: null, message: '' }` | `ui/save-slot-model` `slotOutcomeOfLoadRefusal`, `loadRefusalMessage` | P1 refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1), U126(2)) |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
@@ -2266,6 +2290,64 @@ Hand cases: `tests/cases/bridge-language.json` (every row; malformed books and t
 tunings; slice 4: every quest feedback row on its own with its defaults, every setting a
 world's quest type is read from, the definitions and templates whole, every objective
 type's completion check, a quest word naming an `Object.prototype` member), every expectation computed by core's own functions at the pin.
+
+### The genre systems rows: the puzzle (PL.native-genre-rows, slice 1)
+
+Core's P9j genre systems (`docs/genre-systems.md`) are rows (U115, U128), so an engine binds
+them instead of keeping a copy (Unreal's interim `Portable/InsimulPuzzle.{h,cpp}`, which
+`P9j.unreal.retire-puzzle-copy` retires). Slice 1 binds the puzzle (catalog
+`puzzle-rule-module`); the platformer, the strategy game and the genre pieces are later slices
+of the row.
+
+- **The definition** (`puzzle/puzzle.ts`, pure): `puzzle.forWorld` (the world's authored
+  section when it has riddles, else one generated from the world; the row's `puzzle`, or null
+  for none, stands over the world's own section when given; `maxAttempts` is the pack tunable,
+  a number or null for never spent, absent for core's default), `puzzle.generate`,
+  `puzzle.issues` and `puzzle.fromIR` (an authored section; one with issues is core's error),
+  `puzzle.facts` (the pack's authored facts), `puzzle.worldFacts` (the world facts its riddles
+  are answered from, for a KB that did not consult the whole world), `puzzle.answerKey` and
+  `puzzle.choices` (what a host offers; the verdict stays the KB's). `puzzle.contract` states
+  core's constants.
+- **The director** (`game-engine/logic/PuzzleDirector.ts`): `puzzle.director.create` opens a
+  session holding a KB of its own, built as core's runner builds it — `GamePrologEngine` with
+  genre `puzzle`, whose module activation consults the puzzle pack and declares its runtime
+  predicates — on this library's native Trealla seam; `kb` (a host program, for instance the
+  world's whole knowledge base) is consulted after the packs, and `worldFacts` and the
+  definition are published. Each further row is one method: `.findClue`, `.answer`,
+  `.unlock` (the host's `open_container` order is IN the outcome), `.take`, `.view`,
+  `.progress`, `.isComplete`, `.serialize` and `.restore`; `puzzle.director.stateFacts` is the
+  static. Every verdict is the KB's; a refusal (`unknown_riddle`, `clue_missing`, `spent`,
+  `locked`, …) is a VALUE in the outcome. `session.dispose` destroys the KB.
+- **The save block** (`puzzle/puzzle-save.ts`): `puzzle.save.read` (core's reader, its
+  refusal `{ ok: false, keys }` a value), `puzzle.save.block` and `puzzle.save.blockOf`. A load
+  builds the definition again from the same world and restores the READ value into a fresh
+  director.
+- **The world input** (`genre.world.of`, core's `worldOf`): the corpora's `world` — a committed
+  slice by name, a slice with KB predicates (`dropFacts`) or entity lists (`dropEntities`)
+  dropped or its player replaced, or an inline world. `slices` are the committed slices by name
+  (a name must be an own key of it); an unknown entity list is core's error. Bundling it brings
+  core's genre systems runner module and, with it, the platformer and strategy modules and
+  directors the later slices bind (the bundle grows 2,481,156 → 2,553,569 bytes).
+- **The boundary.** Every argument is held to the type core declares for it, member for member
+  (`GenreWorldSource`, `PuzzleIR`, `PuzzleDefinition`, `PuzzleRiddle`, `PuzzleDirectorState`):
+  a declared member must be present and of its type, an optional one may be absent, and a null
+  is refused unless core declares `| null`; members core does not declare pass through. Every
+  member is looked up as an own key. Anything else is `[invalid-input]`.
+
+Gates: `genre_systems_corpus` (+ `_negative`) drives every case of core's
+`conformance/puzzle/{definition,run,save}.json` (17 + 6 + 11) through the rows, each op as
+core's runner (`genre-systems/systems-corpus.ts`, `runGenreSystemsOp`) composes it, with the
+committed world slice `conformance/genre-mechanics/thistlecombe.world-slice.json`; all four
+files are copied byte for byte at the pin. `emit-bridge-cases.mjs` transcribes the three corpora
+into `cases/core-genre-puzzle-{definition,run,save}.json` (a world through `genre.world.of`
+over the vendored slice, named by `$file`; a case that reaches the KB is C-only), which
+`core_vendor` holds to the corpora (by name, by the calls core's runner makes in order, C-only
+exactly where a case reaches the KB, and with every answer stated) and
+`core_vendor_genre_negative` proves names nine perturbations of. Hand cases:
+`tests/cases/bridge-puzzle.json` (the contract, generate, a world's own section, issues, ids
+naming `Object.prototype` members, stateFacts and the save block's defaults, `worldOf`'s forms,
+the `[invalid-input]` boundary of every argument, and a director over its own KB with a host
+program), every expectation computed by core's own functions at the pin.
 
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 

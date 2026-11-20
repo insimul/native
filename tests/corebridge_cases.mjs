@@ -39,7 +39,7 @@
 
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 
@@ -187,9 +187,33 @@ function setPath(value, dotted, replacement, where) {
 	v[segs[segs.length - 1]] = replacement;
 }
 
+// `$file` (README "The case format"): a JSON file beside the case corpus, relative to
+// the running case file's directory, read once per run. Only the vendored tree may be
+// named: no absolute path and no path that climbs above the vendored tree's root.
+let caseDir = null;
+const fileDocs = new Map();
+function fileDoc(rel, where) {
+	if (isAbsolute(rel) || rel.includes('../../')) throw new Error(`bad case: ${where} — $file must be a relative path inside the vendored tree`);
+	const abs = join(caseDir, rel);
+	if (!fileDocs.has(abs)) {
+		if (!existsSync(abs)) throw new Error(`bad case: ${where} — $file names no readable file`);
+		fileDocs.set(abs, JSON.parse(readFileSync(abs, 'utf8')));
+	}
+	return fileDocs.get(abs);
+}
+
 function resolveRefs(value, bound, where) {
 	if (Array.isArray(value)) return value.map((v) => resolveRefs(v, bound, where));
 	if (value !== null && typeof value === 'object') {
+		if (typeof value.$file === 'string') {
+			const keys = Object.keys(value);
+			if (keys.length !== ('$path' in value ? 2 : 1) || ('$path' in value && typeof value.$path !== 'string')) {
+				throw new Error(`bad case: ${where} — $file takes only a string $path beside it`);
+			}
+			const doc = fileDoc(value.$file, where);
+			const target = '$path' in value ? getPath(doc, value.$path, where) : doc;
+			return structuredClone(target);
+		}
 		if (typeof value.$ref === 'string') {
 			const [name, ...rest] = value.$ref.split('.');
 			if (!Object.prototype.hasOwnProperty.call(bound, name)) throw new Error(`bad case: ${where} — nothing bound as ${name}`);
@@ -253,6 +277,7 @@ let failed = 0;
 
 for (const file of files) {
 	const rel = file.slice(REPO.length + 1);
+	caseDir = dirname(file);
 	const doc = JSON.parse(readFileSync(file, 'utf8'));
 	if (!Array.isArray(doc.cases) || doc.cases.length === 0) hard(`${rel} has no cases`);
 	for (const c of doc.cases) {

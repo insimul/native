@@ -1,0 +1,2745 @@
+{
+ "description": "A slice of a real Insimul world: the fields the puzzle, platformer and strategy generators read (packages/core/src/genre-mechanics/world-slice.ts), copied unchanged from the source export, and the ground-fact lines of its knowledge base for the predicates they read. Cut by `npm run genre-world-slice`; never edited by hand (fix a world at its source and re-slice).",
+ "provenance": {
+  "source": "thistlecombe.unity.json",
+  "sourceSha256": "e1c16b6750d5cf5b9baf6f5411dc0ebe8f01a9d4a4964ffde2d99c58fb76ffa4",
+  "worldId": "6abb8f9c921dc621d28bc0cc",
+  "predicates": [
+   "business/1",
+   "business_name/2",
+   "business_of_settlement/2",
+   "business_out_of_business/1",
+   "business_owner/2",
+   "business_type/2",
+   "first_name/2",
+   "game_text/1",
+   "item/1",
+   "item_base_type/2",
+   "item_name/2",
+   "last_name/2",
+   "lives_at/2",
+   "lot/1",
+   "married_to/2",
+   "occupation/2",
+   "parent_of/2",
+   "person/1",
+   "residence_of_settlement/2",
+   "settlement/1",
+   "text_author/2",
+   "text_clue/2",
+   "text_title/2",
+   "truth_about/2",
+   "truth_title/2",
+   "truth_type/2"
+  ]
+ },
+ "world": {
+  "meta": {
+   "worldId": "6abb8f9c921dc621d28bc0cc",
+   "worldName": "Thistlecombe",
+   "genreConfig": {
+    "id": "adventure"
+   }
+  },
+  "geography": {
+   "settlements": [
+    {
+     "id": "6abb8fae078b40088ad4da66",
+     "name": "Thistlecombe",
+     "position": {
+      "x": -20.24533607681755,
+      "y": 0,
+      "z": -73.6144375857339
+     },
+     "radius": 37.5503355704698,
+     "lots": [
+      {
+       "id": "6abb8ff3078b40088ad4dea5",
+       "address": "1 Queen Street",
+       "streetName": "Queen Street",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -83.57866941015088,
+        "y": 0,
+        "z": -133.6144375857339
+       },
+       "streetEdgeId": "street_ew_0"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dea6",
+       "address": "2 Queen Street",
+       "streetName": "Queen Street",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -70.24533607681755,
+        "y": 0,
+        "z": -133.6144375857339
+       },
+       "streetEdgeId": "street_ew_0"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dea7",
+       "address": "3 Queen Street",
+       "streetName": "Queen Street",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -56.912002743484216,
+        "y": 0,
+        "z": -133.6144375857339
+       },
+       "streetEdgeId": "street_ew_0"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dea8",
+       "address": "4 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -83.57866941015088,
+        "y": 0,
+        "z": -113.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dea9",
+       "address": "5 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -70.24533607681755,
+        "y": 0,
+        "z": -113.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deaa",
+       "address": "6 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -56.912002743484216,
+        "y": 0,
+        "z": -113.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deab",
+       "address": "7 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "North Ward",
+       "position": {
+        "x": -83.57866941015088,
+        "y": 0,
+        "z": -83.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deac",
+       "address": "8 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "North Ward",
+       "position": {
+        "x": -70.24533607681755,
+        "y": 0,
+        "z": -83.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dead",
+       "address": "9 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "North Ward",
+       "position": {
+        "x": -56.912002743484216,
+        "y": 0,
+        "z": -83.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deae",
+       "address": "10 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": -83.57866941015088,
+        "y": 0,
+        "z": -63.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deaf",
+       "address": "11 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": -70.24533607681755,
+        "y": 0,
+        "z": -63.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deb0",
+       "address": "12 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": -56.912002743484216,
+        "y": 0,
+        "z": -63.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deb1",
+       "address": "13 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -83.57866941015088,
+        "y": 0,
+        "z": -33.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deb2",
+       "address": "14 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -70.24533607681755,
+        "y": 0,
+        "z": -33.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deb3",
+       "address": "15 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -56.912002743484216,
+        "y": 0,
+        "z": -33.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deb4",
+       "address": "16 Castle Road",
+       "streetName": "Castle Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -83.57866941015088,
+        "y": 0,
+        "z": -13.614437585733896
+       },
+       "streetEdgeId": "street_ew_3"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deb5",
+       "address": "17 Castle Road",
+       "streetName": "Castle Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -70.24533607681755,
+        "y": 0,
+        "z": -13.614437585733896
+       },
+       "streetEdgeId": "street_ew_3"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deb6",
+       "address": "18 Castle Road",
+       "streetName": "Castle Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -56.912002743484216,
+        "y": 0,
+        "z": -13.614437585733896
+       },
+       "streetEdgeId": "street_ew_3"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deb7",
+       "address": "19 Queen Street",
+       "streetName": "Queen Street",
+       "districtName": "North Ward",
+       "position": {
+        "x": -33.57866941015089,
+        "y": 0,
+        "z": -133.6144375857339
+       },
+       "streetEdgeId": "street_ew_0"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deb8",
+       "address": "20 Queen Street",
+       "streetName": "Queen Street",
+       "districtName": "North Ward",
+       "position": {
+        "x": -20.24533607681755,
+        "y": 0,
+        "z": -133.6144375857339
+       },
+       "streetEdgeId": "street_ew_0"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deb9",
+       "address": "21 Queen Street",
+       "streetName": "Queen Street",
+       "districtName": "North Ward",
+       "position": {
+        "x": -6.912002743484216,
+        "y": 0,
+        "z": -133.6144375857339
+       },
+       "streetEdgeId": "street_ew_0"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deba",
+       "address": "22 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "North Ward",
+       "position": {
+        "x": -33.57866941015089,
+        "y": 0,
+        "z": -113.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4debb",
+       "address": "23 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "North Ward",
+       "position": {
+        "x": -20.24533607681755,
+        "y": 0,
+        "z": -113.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4debc",
+       "address": "24 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "North Ward",
+       "position": {
+        "x": -6.912002743484216,
+        "y": 0,
+        "z": -113.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4debd",
+       "address": "Town Square",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -33.57866941015089,
+        "y": 0,
+        "z": -83.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4debe",
+       "address": "Town Square",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -20.24533607681755,
+        "y": 0,
+        "z": -83.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4debf",
+       "address": "Grove",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -1.9120027434842162,
+        "y": 0,
+        "z": -83.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dec0",
+       "address": "Grove",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -33.57866941015089,
+        "y": 0,
+        "z": -58.614437585733896
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dec1",
+       "address": "Cemetery",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -20.24533607681755,
+        "y": 0,
+        "z": -58.614437585733896
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dec2",
+       "address": "Cemetery",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -6.912002743484216,
+        "y": 0,
+        "z": -63.614437585733896
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dec3",
+       "address": "25 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": -33.57866941015089,
+        "y": 0,
+        "z": -33.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dec4",
+       "address": "26 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": -20.24533607681755,
+        "y": 0,
+        "z": -33.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dec5",
+       "address": "27 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": -6.912002743484216,
+        "y": 0,
+        "z": -33.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dec6",
+       "address": "28 Castle Road",
+       "streetName": "Castle Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": -33.57866941015089,
+        "y": 0,
+        "z": -13.614437585733896
+       },
+       "streetEdgeId": "street_ew_3"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dec7",
+       "address": "29 Castle Road",
+       "streetName": "Castle Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": -20.24533607681755,
+        "y": 0,
+        "z": -13.614437585733896
+       },
+       "streetEdgeId": "street_ew_3"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dec8",
+       "address": "30 Castle Road",
+       "streetName": "Castle Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": -6.912002743484216,
+        "y": 0,
+        "z": -13.614437585733896
+       },
+       "streetEdgeId": "street_ew_3"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dec9",
+       "address": "31 Queen Street",
+       "streetName": "Queen Street",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 16.421330589849116,
+        "y": 0,
+        "z": -133.6144375857339
+       },
+       "streetEdgeId": "street_ew_0"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deca",
+       "address": "32 Queen Street",
+       "streetName": "Queen Street",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 29.75466392318245,
+        "y": 0,
+        "z": -133.6144375857339
+       },
+       "streetEdgeId": "street_ew_0"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4decb",
+       "address": "33 Queen Street",
+       "streetName": "Queen Street",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 43.087997256515784,
+        "y": 0,
+        "z": -133.6144375857339
+       },
+       "streetEdgeId": "street_ew_0"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4decc",
+       "address": "34 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 16.421330589849116,
+        "y": 0,
+        "z": -113.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4decd",
+       "address": "35 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 29.75466392318245,
+        "y": 0,
+        "z": -113.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4dece",
+       "address": "36 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 43.087997256515784,
+        "y": 0,
+        "z": -113.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4decf",
+       "address": "37 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "North Ward",
+       "position": {
+        "x": 16.421330589849116,
+        "y": 0,
+        "z": -83.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4ded0",
+       "address": "38 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "North Ward",
+       "position": {
+        "x": 29.75466392318245,
+        "y": 0,
+        "z": -83.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4ded1",
+       "address": "39 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "North Ward",
+       "position": {
+        "x": 43.087997256515784,
+        "y": 0,
+        "z": -83.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4ded2",
+       "address": "40 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": 16.421330589849116,
+        "y": 0,
+        "z": -63.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4ded3",
+       "address": "41 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": 29.75466392318245,
+        "y": 0,
+        "z": -63.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4ded4",
+       "address": "42 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "North Ward",
+       "position": {
+        "x": 43.087997256515784,
+        "y": 0,
+        "z": -63.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4ded5",
+       "address": "43 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 16.421330589849116,
+        "y": 0,
+        "z": -33.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4ded6",
+       "address": "44 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 29.75466392318245,
+        "y": 0,
+        "z": -33.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4ded7",
+       "address": "45 Mill Road",
+       "streetName": "Mill Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 43.087997256515784,
+        "y": 0,
+        "z": -33.614437585733896
+       },
+       "streetEdgeId": "street_ew_2"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4ded8",
+       "address": "46 Castle Road",
+       "streetName": "Castle Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 16.421330589849116,
+        "y": 0,
+        "z": -13.614437585733896
+       },
+       "streetEdgeId": "street_ew_3"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4ded9",
+       "address": "47 Castle Road",
+       "streetName": "Castle Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 29.75466392318245,
+        "y": 0,
+        "z": -13.614437585733896
+       },
+       "streetEdgeId": "street_ew_3"
+      },
+      {
+       "id": "6abb8ff3078b40088ad4deda",
+       "address": "48 Castle Road",
+       "streetName": "Castle Road",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": 43.087997256515784,
+        "y": 0,
+        "z": -13.614437585733896
+       },
+       "streetEdgeId": "street_ew_3"
+      },
+      {
+       "id": "6ac06924ebe1f5341d7c539c",
+       "address": "49 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -8.578669410150884,
+        "y": 0,
+        "z": -88.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6ac06924ebe1f5341d7c539e",
+       "address": "50 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -8.578669410150884,
+        "y": 0,
+        "z": -78.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6ac06924ebe1f5341d7c53a0",
+       "address": "51 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -33.57866941015089,
+        "y": 0,
+        "z": -68.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      },
+      {
+       "id": "6ac06924ebe1f5341d7c53a2",
+       "address": "52 Forge Lane",
+       "streetName": "Forge Lane",
+       "districtName": "Market Quarter",
+       "position": {
+        "x": -20.24533607681755,
+        "y": 0,
+        "z": -68.6144375857339
+       },
+       "streetEdgeId": "street_ew_1"
+      }
+     ],
+     "streetNetwork": {
+      "nodes": [
+       {
+        "id": "node_0_0",
+        "position": {
+         "x": -95.24533607681755,
+         "y": 0,
+         "z": -148.6144375857339
+        }
+       },
+       {
+        "id": "node_0_1",
+        "position": {
+         "x": -45.24533607681755,
+         "y": 0,
+         "z": -148.6144375857339
+        }
+       },
+       {
+        "id": "node_0_2",
+        "position": {
+         "x": 4.754663923182449,
+         "y": 0,
+         "z": -148.6144375857339
+        }
+       },
+       {
+        "id": "node_0_3",
+        "position": {
+         "x": 54.75466392318245,
+         "y": 0,
+         "z": -148.6144375857339
+        }
+       },
+       {
+        "id": "node_1_0",
+        "position": {
+         "x": -95.24533607681755,
+         "y": 0,
+         "z": -98.6144375857339
+        }
+       },
+       {
+        "id": "node_1_1",
+        "position": {
+         "x": -45.24533607681755,
+         "y": 0,
+         "z": -98.6144375857339
+        }
+       },
+       {
+        "id": "node_1_2",
+        "position": {
+         "x": 4.754663923182449,
+         "y": 0,
+         "z": -98.6144375857339
+        }
+       },
+       {
+        "id": "node_1_3",
+        "position": {
+         "x": 54.75466392318245,
+         "y": 0,
+         "z": -98.6144375857339
+        }
+       },
+       {
+        "id": "node_2_0",
+        "position": {
+         "x": -95.24533607681755,
+         "y": 0,
+         "z": -48.614437585733896
+        }
+       },
+       {
+        "id": "node_2_1",
+        "position": {
+         "x": -45.24533607681755,
+         "y": 0,
+         "z": -48.614437585733896
+        }
+       },
+       {
+        "id": "node_2_2",
+        "position": {
+         "x": 4.754663923182449,
+         "y": 0,
+         "z": -48.614437585733896
+        }
+       },
+       {
+        "id": "node_2_3",
+        "position": {
+         "x": 54.75466392318245,
+         "y": 0,
+         "z": -48.614437585733896
+        }
+       },
+       {
+        "id": "node_3_0",
+        "position": {
+         "x": -95.24533607681755,
+         "y": 0,
+         "z": 1.3855624142661043
+        }
+       },
+       {
+        "id": "node_3_1",
+        "position": {
+         "x": -45.24533607681755,
+         "y": 0,
+         "z": 1.3855624142661043
+        }
+       },
+       {
+        "id": "node_3_2",
+        "position": {
+         "x": 4.754663923182449,
+         "y": 0,
+         "z": 1.3855624142661043
+        }
+       },
+       {
+        "id": "node_3_3",
+        "position": {
+         "x": 54.75466392318245,
+         "y": 0,
+         "z": 1.3855624142661043
+        }
+       }
+      ],
+      "segments": [
+       {
+        "id": "street_ns_0",
+        "name": "High Street",
+        "nodeIds": [
+         "node_0_0",
+         "node_1_0",
+         "node_2_0",
+         "node_3_0"
+        ]
+       },
+       {
+        "id": "street_ns_1",
+        "name": "Church Lane",
+        "nodeIds": [
+         "node_0_1",
+         "node_1_1",
+         "node_2_1",
+         "node_3_1"
+        ]
+       },
+       {
+        "id": "street_ns_2",
+        "name": "Market Street",
+        "nodeIds": [
+         "node_0_2",
+         "node_1_2",
+         "node_2_2",
+         "node_3_2"
+        ]
+       },
+       {
+        "id": "street_ns_3",
+        "name": "King Street",
+        "nodeIds": [
+         "node_0_3",
+         "node_1_3",
+         "node_2_3",
+         "node_3_3"
+        ]
+       },
+       {
+        "id": "street_ew_0",
+        "name": "Queen Street",
+        "nodeIds": [
+         "node_0_0",
+         "node_0_1",
+         "node_0_2",
+         "node_0_3"
+        ]
+       },
+       {
+        "id": "street_ew_1",
+        "name": "Forge Lane",
+        "nodeIds": [
+         "node_1_0",
+         "node_1_1",
+         "node_1_2",
+         "node_1_3"
+        ]
+       },
+       {
+        "id": "street_ew_2",
+        "name": "Mill Road",
+        "nodeIds": [
+         "node_2_0",
+         "node_2_1",
+         "node_2_2",
+         "node_2_3"
+        ]
+       },
+       {
+        "id": "street_ew_3",
+        "name": "Castle Road",
+        "nodeIds": [
+         "node_3_0",
+         "node_3_1",
+         "node_3_2",
+         "node_3_3"
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "entities": {
+   "characters": [
+    {
+     "id": "6abb8fbf078b40088ad4da7a",
+     "firstName": "Aldwin",
+     "lastName": "Ashford",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc0078b40088ad4da7e",
+     "firstName": "Aislinn",
+     "lastName": "Ashford",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc0078b40088ad4da83",
+     "firstName": "Bronwen",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc0078b40088ad4da89",
+     "firstName": "Brennan",
+     "lastName": "Ashford",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc0078b40088ad4da8f",
+     "firstName": "Carrick",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc0078b40088ad4da95",
+     "firstName": "Dalton",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc1078b40088ad4da9d",
+     "firstName": "Eamon",
+     "lastName": "Carmichael",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc1078b40088ad4daa1",
+     "firstName": "Celeste",
+     "lastName": "Carmichael",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc1078b40088ad4daa8",
+     "firstName": "Fallon",
+     "lastName": "Edenbrook",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc2078b40088ad4daac",
+     "firstName": "Daphne",
+     "lastName": "Edenbrook",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc2078b40088ad4dab3",
+     "firstName": "Gareth",
+     "lastName": "Greystone",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc2078b40088ad4dab7",
+     "firstName": "Elowen",
+     "lastName": "Greystone",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc2078b40088ad4dabc",
+     "firstName": "Faye",
+     "lastName": "Greystone",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc2078b40088ad4dac2",
+     "firstName": "Hector",
+     "lastName": "Greystone",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc3078b40088ad4daca",
+     "firstName": "Iain",
+     "lastName": "Ironwood",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc3078b40088ad4dace",
+     "firstName": "Gwen",
+     "lastName": "Ironwood",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc3078b40088ad4dad5",
+     "firstName": "Jarrett",
+     "lastName": "Kingsley",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc3078b40088ad4dad9",
+     "firstName": "Hazel",
+     "lastName": "Kingsley",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc4078b40088ad4dae0",
+     "firstName": "Kael",
+     "lastName": "Merriweather",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc4078b40088ad4dae4",
+     "firstName": "Iris",
+     "lastName": "Merriweather",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc4078b40088ad4dae9",
+     "firstName": "Jessamine",
+     "lastName": "Ironwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc4078b40088ad4daef",
+     "firstName": "Kestrel",
+     "lastName": "Merriweather",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc5078b40088ad4daf5",
+     "firstName": "Leda",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc5078b40088ad4dafd",
+     "firstName": "Lachlan",
+     "lastName": "Oakfield",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc5078b40088ad4db01",
+     "firstName": "Meredith",
+     "lastName": "Oakfield",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc5078b40088ad4db06",
+     "firstName": "Nora",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc6078b40088ad4db0c",
+     "firstName": "Ophelia",
+     "lastName": "Quincy",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc6078b40088ad4db12",
+     "firstName": "Marcas",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc6078b40088ad4db1a",
+     "firstName": "Nolan",
+     "lastName": "Quincy",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc6078b40088ad4db1e",
+     "firstName": "Piper",
+     "lastName": "Quincy",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc7078b40088ad4db23",
+     "firstName": "Quinley",
+     "lastName": "Quincy",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc7078b40088ad4db29",
+     "firstName": "Owen",
+     "lastName": "Quincy",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc8078b40088ad4db42",
+     "firstName": "Pádraig",
+     "lastName": "Greystone",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc8078b40088ad4db48",
+     "firstName": "Rosalind",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc9078b40088ad4db4e",
+     "firstName": "Quinton",
+     "lastName": "Greystone",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fc9078b40088ad4db54",
+     "firstName": "Sienna",
+     "lastName": "Underwood",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fc9078b40088ad4db5f",
+     "firstName": "Thea",
+     "lastName": "Ironwood",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fca078b40088ad4db65",
+     "firstName": "Undine",
+     "lastName": "Greystone",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fca078b40088ad4db6b",
+     "firstName": "Vale",
+     "lastName": "Ironwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fca078b40088ad4db71",
+     "firstName": "Ronan",
+     "lastName": "Ironwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fcb078b40088ad4db81",
+     "firstName": "Soren",
+     "lastName": "Merriweather",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fcb078b40088ad4db87",
+     "firstName": "Willa",
+     "lastName": "Greystone",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fcb078b40088ad4db8d",
+     "firstName": "Tiernan",
+     "lastName": "Merriweather",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fcc078b40088ad4db93",
+     "firstName": "Xenia",
+     "lastName": "Merriweather",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fcc078b40088ad4db99",
+     "firstName": "Ulrich",
+     "lastName": "Merriweather",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fcc078b40088ad4dba4",
+     "firstName": "Valen",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fcd078b40088ad4dbaa",
+     "firstName": "Wren",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fcd078b40088ad4dbb0",
+     "firstName": "Xander",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fcd078b40088ad4dbbb",
+     "firstName": "Yara",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fce078b40088ad4dbc1",
+     "firstName": "Yael",
+     "lastName": "Quincy",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fce078b40088ad4dbc7",
+     "firstName": "Zara",
+     "lastName": "Greystone",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fce078b40088ad4dbd0",
+     "firstName": "Zephyr",
+     "lastName": "Shadowmere",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fce078b40088ad4dbd2",
+     "firstName": "Alise",
+     "lastName": "Quincy",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fce078b40088ad4dbd4",
+     "firstName": "Aldric",
+     "lastName": "Underwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fce078b40088ad4dbd6",
+     "firstName": "Briony",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd2078b40088ad4dc23",
+     "firstName": "Cora",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd3078b40088ad4dc29",
+     "firstName": "Brennon",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd3078b40088ad4dc2f",
+     "firstName": "Caspian",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd3078b40088ad4dc35",
+     "firstName": "Delphine",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd4078b40088ad4dc3f",
+     "firstName": "Elara",
+     "lastName": "Ashford",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fd4078b40088ad4dc49",
+     "firstName": "Dorian",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd4078b40088ad4dc4f",
+     "firstName": "Eadwin",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd5078b40088ad4dc55",
+     "firstName": "Fenwick",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd5078b40088ad4dc5b",
+     "firstName": "Galen",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd6078b40088ad4dc69",
+     "firstName": "Fawn",
+     "lastName": "Underwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd6078b40088ad4dc6f",
+     "firstName": "Gilda",
+     "lastName": "Underwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd6078b40088ad4dc75",
+     "firstName": "Hailey",
+     "lastName": "Underwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd7078b40088ad4dc84",
+     "firstName": "Indigo",
+     "lastName": "Greystone",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd7078b40088ad4dc8a",
+     "firstName": "Jessa",
+     "lastName": "Greystone",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fd7078b40088ad4dc90",
+     "firstName": "Kalista",
+     "lastName": "Greystone",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd8078b40088ad4dc9a",
+     "firstName": "Linn",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd8078b40088ad4dca0",
+     "firstName": "Harald",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd9078b40088ad4dcaa",
+     "firstName": "Maeve",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fd9078b40088ad4dcb8",
+     "firstName": "Nerida",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fda078b40088ad4dcbe",
+     "firstName": "Isak",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fda078b40088ad4dcc4",
+     "firstName": "Jericho",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fda078b40088ad4dcca",
+     "firstName": "Olive",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fdb078b40088ad4dcd5",
+     "firstName": "Kestrel",
+     "lastName": "Greystone",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fdb078b40088ad4dce0",
+     "firstName": "Phoebe",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fdb078b40088ad4dce6",
+     "firstName": "Leif",
+     "lastName": "Ironwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fdc078b40088ad4dcf4",
+     "firstName": "Quinn",
+     "lastName": "Ironwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fdc078b40088ad4dcfa",
+     "firstName": "Rowena",
+     "lastName": "Ironwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fdd078b40088ad4dd00",
+     "firstName": "Magnus",
+     "lastName": "Ironwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fdd078b40088ad4dd06",
+     "firstName": "Niclas",
+     "lastName": "Ironwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fde078b40088ad4dd16",
+     "firstName": "Sage",
+     "lastName": "Yarrow",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fde078b40088ad4dd1c",
+     "firstName": "Tamsin",
+     "lastName": "Greystone",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fde078b40088ad4dd22",
+     "firstName": "Ursula",
+     "lastName": "Greystone",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fde078b40088ad4dd28",
+     "firstName": "Vanessa",
+     "lastName": "Greystone",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fdf078b40088ad4dd2e",
+     "firstName": "Oswin",
+     "lastName": "Greystone",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fe0078b40088ad4dd40",
+     "firstName": "Wren",
+     "lastName": "Quincy",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fe0078b40088ad4dd46",
+     "firstName": "Xanthe",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fe1078b40088ad4dd57",
+     "firstName": "Percival",
+     "lastName": "Quincy",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fe1078b40088ad4dd5d",
+     "firstName": "Ysabella",
+     "lastName": "Oakfield",
+     "isAlive": false
+    },
+    {
+     "id": "6abb8fe2078b40088ad4dd67",
+     "firstName": "Zella",
+     "lastName": "Oakfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fe3078b40088ad4dd78",
+     "firstName": "Quill",
+     "lastName": "Westwood",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fe3078b40088ad4dd7a",
+     "firstName": "Adrienne",
+     "lastName": "Xanthis",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fe3078b40088ad4dd7c",
+     "firstName": "Rothgar",
+     "lastName": "Yarrow",
+     "isAlive": true
+    },
+    {
+     "id": "6abb8fe3078b40088ad4dd7e",
+     "firstName": "Blythe",
+     "lastName": "Zephyrus",
+     "isAlive": true
+    },
+    {
+     "id": "6abb9012078b40088ad4dfed",
+     "firstName": "James",
+     "lastName": "Harwick",
+     "isAlive": true
+    },
+    {
+     "id": "6abb9012078b40088ad4dfef",
+     "firstName": "Thomas",
+     "lastName": "Pemberton",
+     "isAlive": true
+    },
+    {
+     "id": "6abb9012078b40088ad4dff1",
+     "firstName": "Charles",
+     "lastName": "Whitfield",
+     "isAlive": true
+    },
+    {
+     "id": "6abb9012078b40088ad4dff3",
+     "firstName": "Edward",
+     "lastName": "Blackwell",
+     "isAlive": true
+    },
+    {
+     "id": "6abb9012078b40088ad4dff5",
+     "firstName": "Arthur",
+     "lastName": "Crane",
+     "isAlive": true
+    },
+    {
+     "id": "6abb960c078b40088ad4e2d2",
+     "firstName": "Thomas",
+     "lastName": "Quincy",
+     "isAlive": true
+    },
+    {
+     "id": "6abb967c078b40088ad4e302",
+     "firstName": "Melissa",
+     "lastName": "Ashford",
+     "isAlive": true
+    },
+    {
+     "id": "6abb967e078b40088ad4e317",
+     "firstName": "Matthew",
+     "lastName": "Ashford",
+     "isAlive": true
+    }
+   ],
+   "npcs": [
+    {
+     "characterId": "6abb8fcc078b40088ad4db93",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_13",
+      "workBuildingId": "bld_6abb8ff3078b40088ad4dea7"
+     }
+    },
+    {
+     "characterId": "6abb8fd9078b40088ad4dcaa",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_7",
+      "workBuildingId": "bld_6abb8ff3078b40088ad4dea6"
+     }
+    },
+    {
+     "characterId": "6abb8fdc078b40088ad4dcfa",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_12",
+      "workBuildingId": "bld_6abb8ff3078b40088ad4dea8"
+     }
+    },
+    {
+     "characterId": "6abb8fdd078b40088ad4dd06",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_12",
+      "workBuildingId": "bld_6abb8ff3078b40088ad4dea9"
+     }
+    },
+    {
+     "characterId": "6abb8fe0078b40088ad4dd46",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_7",
+      "workBuildingId": "bld_6abb8ff3078b40088ad4dea5"
+     }
+    },
+    {
+     "characterId": "6abb8fce078b40088ad4dbd0",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_21",
+      "workBuildingId": "bld_6abb8ff3078b40088ad4dea7"
+     }
+    },
+    {
+     "characterId": "6abb8fce078b40088ad4dbd4",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_22",
+      "workBuildingId": "bld_6abb8ff3078b40088ad4dea6"
+     }
+    },
+    {
+     "characterId": "6abb8fdd078b40088ad4dd00",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_12",
+      "workBuildingId": "bld_6abb8ff3078b40088ad4dea5"
+     }
+    },
+    {
+     "characterId": "6abb8fde078b40088ad4dd28",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_17",
+      "workBuildingId": "bld_6abb8ff3078b40088ad4dea8"
+     }
+    },
+    {
+     "characterId": "6abb8fe0078b40088ad4dd40",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_14",
+      "workBuildingId": "bld_6abb8ff3078b40088ad4dea9"
+     }
+    },
+    {
+     "characterId": "6abb8fcc078b40088ad4dba4",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_5",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fcd078b40088ad4dbaa",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_18",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fcd078b40088ad4dbb0",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_5",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fce078b40088ad4dbd6",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_10",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd2078b40088ad4dc23",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_6",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd3078b40088ad4dc29",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_6",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd3078b40088ad4dc2f",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_6",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd3078b40088ad4dc35",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_6",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd4078b40088ad4dc49",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_9",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd4078b40088ad4dc4f",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_9",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd5078b40088ad4dc55",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_20",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd5078b40088ad4dc5b",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_16",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd6078b40088ad4dc69",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_22",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd6078b40088ad4dc6f",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_22",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd6078b40088ad4dc75",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_22",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd7078b40088ad4dc84",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_20",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd7078b40088ad4dc90",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_20",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd8078b40088ad4dc9a",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_21",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd8078b40088ad4dca0",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_7",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fd9078b40088ad4dcb8",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_10",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fda078b40088ad4dcbe",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_10",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fda078b40088ad4dcc4",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_10",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fda078b40088ad4dcca",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_10",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fdb078b40088ad4dcd5",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_20",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fdb078b40088ad4dce0",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_16",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fdb078b40088ad4dce6",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_12",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fdc078b40088ad4dcf4",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_12",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fde078b40088ad4dd16",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_19",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fde078b40088ad4dd1c",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_20",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fde078b40088ad4dd22",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_20",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fdf078b40088ad4dd2e",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_6",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fe1078b40088ad4dd57",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_14",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fe2078b40088ad4dd67",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_6",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fe3078b40088ad4dd78",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_11",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fe3078b40088ad4dd7a",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_13",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fe3078b40088ad4dd7c",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_19",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fe3078b40088ad4dd7e",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_15",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc0078b40088ad4da83",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_5",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc0078b40088ad4da8f",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_8",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc0078b40088ad4da95",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_8",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc4078b40088ad4dae9",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_12",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc4078b40088ad4daef",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_13",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc5078b40088ad4daf5",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_8",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc5078b40088ad4db06",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_5",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc6078b40088ad4db0c",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_14",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc6078b40088ad4db12",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_5",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc7078b40088ad4db23",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_14",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc7078b40088ad4db29",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_14",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc8078b40088ad4db48",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_5",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fc9078b40088ad4db4e",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_20",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fca078b40088ad4db65",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_20",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fca078b40088ad4db6b",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_12",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fca078b40088ad4db71",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_12",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fcb078b40088ad4db81",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_13",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fcb078b40088ad4db87",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_20",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fcd078b40088ad4dbbb",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_8",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fce078b40088ad4dbc1",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_18",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb8fce078b40088ad4dbc7",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_20",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb960c078b40088ad4e2d2",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_14",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb967c078b40088ad4e302",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_16",
+      "workBuildingId": null
+     }
+    },
+    {
+     "characterId": "6abb967e078b40088ad4e317",
+     "schedule": {
+      "homeBuildingId": "bld_6abb8fae078b40088ad4da66_20",
+      "workBuildingId": null
+     }
+    }
+   ],
+   "buildings": [
+    {
+     "id": "bld_6abb8ff3078b40088ad4dea5",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4dea5",
+     "businessId": "6abb8ff3078b40088ad4dea5",
+     "occupantIds": [
+      "6abb8fe0078b40088ad4dd46",
+      "6abb8fdd078b40088ad4dd00"
+     ]
+    },
+    {
+     "id": "bld_6abb8ff3078b40088ad4dea6",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4dea6",
+     "businessId": "6abb8ff3078b40088ad4dea6",
+     "occupantIds": [
+      "6abb8fd9078b40088ad4dcaa",
+      "6abb8fce078b40088ad4dbd4"
+     ]
+    },
+    {
+     "id": "bld_6abb8ff3078b40088ad4dea7",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4dea7",
+     "businessId": "6abb8ff3078b40088ad4dea7",
+     "occupantIds": [
+      "6abb8fcc078b40088ad4db93",
+      "6abb8fce078b40088ad4dbd0"
+     ]
+    },
+    {
+     "id": "bld_6abb8ff3078b40088ad4dea8",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4dea8",
+     "businessId": "6abb8ff3078b40088ad4dea8",
+     "occupantIds": [
+      "6abb8fdc078b40088ad4dcfa",
+      "6abb8fde078b40088ad4dd28"
+     ]
+    },
+    {
+     "id": "bld_6abb8ff3078b40088ad4dea9",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4dea9",
+     "businessId": "6abb8ff3078b40088ad4dea9",
+     "occupantIds": [
+      "6abb8fdd078b40088ad4dd06",
+      "6abb8fe0078b40088ad4dd40"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_5",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deaa",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fc0078b40088ad4da83",
+      "6abb8fc6078b40088ad4db12",
+      "6abb8fc8078b40088ad4db48",
+      "6abb8fcd078b40088ad4dbb0",
+      "6abb8fc5078b40088ad4db06",
+      "6abb8fcc078b40088ad4dba4"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_6",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deab",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fd3078b40088ad4dc29",
+      "6abb8fe2078b40088ad4dd67",
+      "6abb8fd3078b40088ad4dc35",
+      "6abb8fdf078b40088ad4dd2e",
+      "6abb8fd2078b40088ad4dc23",
+      "6abb8fd3078b40088ad4dc2f"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_7",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deac",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fd8078b40088ad4dca0",
+      "6abb8fd9078b40088ad4dcaa",
+      "6abb8fe0078b40088ad4dd46"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_8",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4dead",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fc0078b40088ad4da8f",
+      "6abb8fcd078b40088ad4dbbb",
+      "6abb8fc0078b40088ad4da95",
+      "6abb8fc5078b40088ad4daf5"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_9",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deae",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fd4078b40088ad4dc49",
+      "6abb8fd4078b40088ad4dc4f"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_10",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deaf",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fce078b40088ad4dbd6",
+      "6abb8fd9078b40088ad4dcb8",
+      "6abb8fda078b40088ad4dcbe",
+      "6abb8fda078b40088ad4dcc4",
+      "6abb8fda078b40088ad4dcca"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_11",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deb0",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fe3078b40088ad4dd78"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_12",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deb1",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fc4078b40088ad4dae9",
+      "6abb8fca078b40088ad4db71",
+      "6abb8fca078b40088ad4db6b",
+      "6abb8fdb078b40088ad4dce6",
+      "6abb8fdc078b40088ad4dcf4",
+      "6abb8fdc078b40088ad4dcfa",
+      "6abb8fdd078b40088ad4dd00",
+      "6abb8fdd078b40088ad4dd06"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_13",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deb2",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fc4078b40088ad4daef",
+      "6abb8fcb078b40088ad4db81",
+      "6abb8fcc078b40088ad4db93",
+      "6abb8fe3078b40088ad4dd7a"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_14",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deb3",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fe0078b40088ad4dd40",
+      "6abb8fe1078b40088ad4dd57",
+      "6abb960c078b40088ad4e2d2",
+      "6abb8fc6078b40088ad4db0c",
+      "6abb8fc7078b40088ad4db29",
+      "6abb8fc7078b40088ad4db23"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_15",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deb4",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fe3078b40088ad4dd7e"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_16",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deb5",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fd5078b40088ad4dc5b",
+      "6abb8fdb078b40088ad4dce0",
+      "6abb967c078b40088ad4e302"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_17",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deb6",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fde078b40088ad4dd28"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_18",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deb7",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fcd078b40088ad4dbaa",
+      "6abb8fce078b40088ad4dbc1"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_19",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deb8",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fde078b40088ad4dd16",
+      "6abb8fe3078b40088ad4dd7c"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_20",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deb9",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fd5078b40088ad4dc55",
+      "6abb8fde078b40088ad4dd1c",
+      "6abb967e078b40088ad4e317",
+      "6abb8fc9078b40088ad4db4e",
+      "6abb8fca078b40088ad4db65",
+      "6abb8fdb078b40088ad4dcd5",
+      "6abb8fde078b40088ad4dd22",
+      "6abb8fcb078b40088ad4db87",
+      "6abb8fce078b40088ad4dbc7",
+      "6abb8fd7078b40088ad4dc84",
+      "6abb8fd7078b40088ad4dc90"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_21",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4deba",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fce078b40088ad4dbd0",
+      "6abb8fd8078b40088ad4dc9a"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_22",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4debb",
+     "businessId": null,
+     "occupantIds": [
+      "6abb8fce078b40088ad4dbd4",
+      "6abb8fd6078b40088ad4dc69",
+      "6abb8fd6078b40088ad4dc6f",
+      "6abb8fd6078b40088ad4dc75"
+     ]
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_23",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4debc",
+     "businessId": null,
+     "occupantIds": []
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_30",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4dec3",
+     "businessId": null,
+     "occupantIds": []
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_31",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4dec4",
+     "businessId": null,
+     "occupantIds": []
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_32",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4dec5",
+     "businessId": null,
+     "occupantIds": []
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_39",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4decc",
+     "businessId": null,
+     "occupantIds": []
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_42",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4decf",
+     "businessId": null,
+     "occupantIds": []
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_45",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4ded2",
+     "businessId": null,
+     "occupantIds": []
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_48",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6abb8ff3078b40088ad4ded5",
+     "businessId": null,
+     "occupantIds": []
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_54",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6ac06924ebe1f5341d7c539c",
+     "businessId": null,
+     "occupantIds": []
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_55",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6ac06924ebe1f5341d7c539e",
+     "businessId": null,
+     "occupantIds": []
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_56",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6ac06924ebe1f5341d7c53a0",
+     "businessId": null,
+     "occupantIds": []
+    },
+    {
+     "id": "bld_6abb8fae078b40088ad4da66_57",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "lotId": "6ac06924ebe1f5341d7c53a2",
+     "businessId": null,
+     "occupantIds": []
+    }
+   ],
+   "businesses": [
+    {
+     "id": "6abb8ff3078b40088ad4dea5",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "name": "Oakfield's Farmstead",
+     "businessType": "Farm",
+     "ownerId": "6abb8fe0078b40088ad4dd46",
+     "isOutOfBusiness": false,
+     "lotId": "6abb8ff3078b40088ad4dea5"
+    },
+    {
+     "id": "6abb8ff3078b40088ad4dea6",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "name": "Oakfield's Bakery",
+     "businessType": "Bakery",
+     "ownerId": "6abb8fd9078b40088ad4dcaa",
+     "isOutOfBusiness": false,
+     "lotId": "6abb8ff3078b40088ad4dea6"
+    },
+    {
+     "id": "6abb8ff3078b40088ad4dea7",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "name": "Merriweather's Ironworks",
+     "businessType": "Blacksmith",
+     "ownerId": "6abb8fcc078b40088ad4db93",
+     "isOutOfBusiness": false,
+     "lotId": "6abb8ff3078b40088ad4dea7"
+    },
+    {
+     "id": "6abb8ff3078b40088ad4dea8",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "name": "Ironwood's Builders",
+     "businessType": "Carpenter",
+     "ownerId": "6abb8fdc078b40088ad4dcfa",
+     "isOutOfBusiness": false,
+     "lotId": "6abb8ff3078b40088ad4dea8"
+    },
+    {
+     "id": "6abb8ff3078b40088ad4dea9",
+     "settlementId": "6abb8fae078b40088ad4da66",
+     "name": "Ironwood's Church",
+     "businessType": "Church",
+     "ownerId": "6abb8fdd078b40088ad4dd06",
+     "isOutOfBusiness": false,
+     "lotId": "6abb8ff3078b40088ad4dea9"
+    }
+   ],
+   "containers": [
+    {
+     "id": "container_bld_6abb8ff3078b40088ad4dea5_0",
+     "buildingId": "bld_6abb8ff3078b40088ad4dea5",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8ff3078b40088ad4dea6_0",
+     "buildingId": "bld_6abb8ff3078b40088ad4dea6",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8ff3078b40088ad4dea6_1",
+     "buildingId": "bld_6abb8ff3078b40088ad4dea6",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8ff3078b40088ad4dea6_2",
+     "buildingId": "bld_6abb8ff3078b40088ad4dea6",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8ff3078b40088ad4dea7_0",
+     "buildingId": "bld_6abb8ff3078b40088ad4dea7",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8ff3078b40088ad4dea7_1",
+     "buildingId": "bld_6abb8ff3078b40088ad4dea7",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8ff3078b40088ad4dea8_0",
+     "buildingId": "bld_6abb8ff3078b40088ad4dea8",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8ff3078b40088ad4dea8_1",
+     "buildingId": "bld_6abb8ff3078b40088ad4dea8",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8ff3078b40088ad4dea8_2",
+     "buildingId": "bld_6abb8ff3078b40088ad4dea8",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8ff3078b40088ad4dea9_0",
+     "buildingId": "bld_6abb8ff3078b40088ad4dea9",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8ff3078b40088ad4dea9_1",
+     "buildingId": "bld_6abb8ff3078b40088ad4dea9",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_5_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_5",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_5_1",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_5",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_5_2",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_5",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_6_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_6",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_6_1",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_6",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_7_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_7",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_8_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_8",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_8_1",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_8",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_9_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_9",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_9_1",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_9",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_9_2",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_9",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_10_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_10",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_10_1",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_10",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_11_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_11",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_12_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_12",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_13_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_13",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_13_1",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_13",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_13_2",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_13",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_14_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_14",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_15_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_15",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_15_1",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_15",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_15_2",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_15",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_16_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_16",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_16_1",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_16",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_17_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_17",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_17_1",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_17",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_18_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_18",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_18_1",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_18",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_19_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_19",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_20_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_20",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_20_1",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_20",
+     "containerType": "chest"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_20_2",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_20",
+     "containerType": "barrel"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_21_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_21",
+     "containerType": "crate"
+    },
+    {
+     "id": "container_bld_6abb8fae078b40088ad4da66_22_0",
+     "buildingId": "bld_6abb8fae078b40088ad4da66_22",
+     "containerType": "barrel"
+    }
+   ]
+  },
+  "systems": {
+   "knowledgeBase": "settlement(thistlecombe).\nbusiness(oakfield_s_farmstead).\nbusiness_name(oakfield_s_farmstead, 'Oakfield\\'s Farmstead').\nbusiness_type(oakfield_s_farmstead, farm).\nbusiness_of_settlement(oakfield_s_farmstead, thistlecombe).\nbusiness_owner(oakfield_s_farmstead, xanthe_oakfield).\nbusiness(oakfield_s_bakery).\nbusiness_name(oakfield_s_bakery, 'Oakfield\\'s Bakery').\nbusiness_type(oakfield_s_bakery, bakery).\nbusiness_of_settlement(oakfield_s_bakery, thistlecombe).\nbusiness_owner(oakfield_s_bakery, maeve_oakfield).\nbusiness(merriweather_s_ironworks).\nbusiness_name(merriweather_s_ironworks, 'Merriweather\\'s Ironworks').\nbusiness_type(merriweather_s_ironworks, blacksmith).\nbusiness_of_settlement(merriweather_s_ironworks, thistlecombe).\nbusiness_owner(merriweather_s_ironworks, xenia_merriweather).\nbusiness(ironwood_s_builders).\nbusiness_name(ironwood_s_builders, 'Ironwood\\'s Builders').\nbusiness_type(ironwood_s_builders, carpenter).\nbusiness_of_settlement(ironwood_s_builders, thistlecombe).\nbusiness_owner(ironwood_s_builders, rowena_ironwood).\nbusiness(ironwood_s_church).\nbusiness_name(ironwood_s_church, 'Ironwood\\'s Church').\nbusiness_type(ironwood_s_church, church).\nbusiness_of_settlement(ironwood_s_church, thistlecombe).\nbusiness_owner(ironwood_s_church, niclas_ironwood).\nlot(n1_queen_street).\nlot(n2_queen_street).\nlot(n3_queen_street).\nlot(n4_forge_lane).\nlot(n5_forge_lane).\nlot(n6_forge_lane).\nlot(n7_forge_lane).\nlot(n8_forge_lane).\nlot(n9_forge_lane).\nlot(n10_mill_road).\nlot(n11_mill_road).\nlot(n12_mill_road).\nlot(n13_mill_road).\nlot(n14_mill_road).\nlot(n15_mill_road).\nlot(n16_castle_road).\nlot(n17_castle_road).\nlot(n18_castle_road).\nlot(n19_queen_street).\nlot(n20_queen_street).\nlot(n21_queen_street).\nlot(n22_forge_lane).\nlot(n23_forge_lane).\nlot(n24_forge_lane).\nlot(town_square).\nlot(town_square).\nlot(grove).\nlot(grove).\nlot(cemetery).\nlot(cemetery).\nlot(n25_mill_road).\nlot(n26_mill_road).\nlot(n27_mill_road).\nlot(n28_castle_road).\nlot(n29_castle_road).\nlot(n30_castle_road).\nlot(n31_queen_street).\nlot(n32_queen_street).\nlot(n33_queen_street).\nlot(n34_forge_lane).\nlot(n35_forge_lane).\nlot(n36_forge_lane).\nlot(n37_forge_lane).\nlot(n38_forge_lane).\nlot(n39_forge_lane).\nlot(n40_mill_road).\nlot(n41_mill_road).\nlot(n42_mill_road).\nlot(n43_mill_road).\nlot(n44_mill_road).\nlot(n45_mill_road).\nlot(n46_castle_road).\nlot(n47_castle_road).\nlot(n48_castle_road).\nlot(n49_forge_lane).\nlot(n50_forge_lane).\nlot(n51_forge_lane).\nlot(n52_forge_lane).\nperson(aldwin_ashford).\nfirst_name(aldwin_ashford, 'Aldwin').\nlast_name(aldwin_ashford, 'Ashford').\nmarried_to(aldwin_ashford, aislinn_ashford).\nparent_of(aldwin_ashford, bronwen_oakfield).\nparent_of(aldwin_ashford, brennan_ashford).\nparent_of(aldwin_ashford, carrick_ashford).\nparent_of(aldwin_ashford, dalton_ashford).\nperson(aislinn_ashford).\nfirst_name(aislinn_ashford, 'Aislinn').\nlast_name(aislinn_ashford, 'Ashford').\nmarried_to(aislinn_ashford, aldwin_ashford).\nparent_of(aislinn_ashford, bronwen_oakfield).\nparent_of(aislinn_ashford, brennan_ashford).\nparent_of(aislinn_ashford, carrick_ashford).\nparent_of(aislinn_ashford, dalton_ashford).\nperson(bronwen_oakfield).\nfirst_name(bronwen_oakfield, 'Bronwen').\nlast_name(bronwen_oakfield, 'Oakfield').\noccupation(bronwen_oakfield, retired).\nmarried_to(bronwen_oakfield, marcas_oakfield).\nparent_of(bronwen_oakfield, cora_oakfield).\nparent_of(bronwen_oakfield, brennon_oakfield).\nparent_of(bronwen_oakfield, caspian_oakfield).\nparent_of(bronwen_oakfield, delphine_oakfield).\nparent_of(bronwen_oakfield, wren_quincy).\nparent_of(bronwen_oakfield, xanthe_oakfield).\nperson(brennan_ashford).\nfirst_name(brennan_ashford, 'Brennan').\nlast_name(brennan_ashford, 'Ashford').\nmarried_to(brennan_ashford, briony_ashford).\nparent_of(brennan_ashford, elara_ashford).\nparent_of(brennan_ashford, nerida_ashford).\nparent_of(brennan_ashford, isak_ashford).\nparent_of(brennan_ashford, jericho_ashford).\nparent_of(brennan_ashford, olive_ashford).\nperson(carrick_ashford).\nfirst_name(carrick_ashford, 'Carrick').\nlast_name(carrick_ashford, 'Ashford').\noccupation(carrick_ashford, retired).\nmarried_to(carrick_ashford, yara_ashford).\nparent_of(carrick_ashford, dorian_ashford).\nparent_of(carrick_ashford, eadwin_ashford).\nparent_of(carrick_ashford, fenwick_ashford).\nparent_of(carrick_ashford, galen_ashford).\nparent_of(carrick_ashford, zella_oakfield).\nperson(dalton_ashford).\nfirst_name(dalton_ashford, 'Dalton').\nlast_name(dalton_ashford, 'Ashford').\noccupation(dalton_ashford, retired).\nmarried_to(dalton_ashford, leda_ashford).\nperson(eamon_carmichael).\nfirst_name(eamon_carmichael, 'Eamon').\nlast_name(eamon_carmichael, 'Carmichael').\nmarried_to(eamon_carmichael, celeste_carmichael).\nperson(celeste_carmichael).\nfirst_name(celeste_carmichael, 'Celeste').\nlast_name(celeste_carmichael, 'Carmichael').\nmarried_to(celeste_carmichael, eamon_carmichael).\nperson(fallon_edenbrook).\nfirst_name(fallon_edenbrook, 'Fallon').\nlast_name(fallon_edenbrook, 'Edenbrook').\nmarried_to(fallon_edenbrook, daphne_edenbrook).\nperson(daphne_edenbrook).\nfirst_name(daphne_edenbrook, 'Daphne').\nlast_name(daphne_edenbrook, 'Edenbrook').\nmarried_to(daphne_edenbrook, fallon_edenbrook).\nperson(gareth_greystone).\nfirst_name(gareth_greystone, 'Gareth').\nlast_name(gareth_greystone, 'Greystone').\nmarried_to(gareth_greystone, elowen_greystone).\nparent_of(gareth_greystone, faye_greystone).\nparent_of(gareth_greystone, hector_greystone).\nparent_of(gareth_greystone, padraig_greystone).\nparent_of(gareth_greystone, rosalind_oakfield).\nparent_of(gareth_greystone, quinton_greystone).\nparent_of(gareth_greystone, sienna_underwood).\nperson(elowen_greystone).\nfirst_name(elowen_greystone, 'Elowen').\nlast_name(elowen_greystone, 'Greystone').\nmarried_to(elowen_greystone, gareth_greystone).\nparent_of(elowen_greystone, faye_greystone).\nparent_of(elowen_greystone, hector_greystone).\nparent_of(elowen_greystone, padraig_greystone).\nparent_of(elowen_greystone, rosalind_oakfield).\nparent_of(elowen_greystone, quinton_greystone).\nparent_of(elowen_greystone, sienna_underwood).\nperson(faye_greystone).\nfirst_name(faye_greystone, 'Faye').\nlast_name(faye_greystone, 'Greystone').\nperson(hector_greystone).\nfirst_name(hector_greystone, 'Hector').\nlast_name(hector_greystone, 'Greystone').\nmarried_to(hector_greystone, zara_greystone).\nperson(iain_ironwood).\nfirst_name(iain_ironwood, 'Iain').\nlast_name(iain_ironwood, 'Ironwood').\nmarried_to(iain_ironwood, gwen_ironwood).\nparent_of(iain_ironwood, thea_ironwood).\nparent_of(iain_ironwood, undine_greystone).\nparent_of(iain_ironwood, vale_ironwood).\nparent_of(iain_ironwood, ronan_ironwood).\nperson(gwen_ironwood).\nfirst_name(gwen_ironwood, 'Gwen').\nlast_name(gwen_ironwood, 'Ironwood').\nmarried_to(gwen_ironwood, iain_ironwood).\nparent_of(gwen_ironwood, thea_ironwood).\nparent_of(gwen_ironwood, undine_greystone).\nparent_of(gwen_ironwood, vale_ironwood).\nparent_of(gwen_ironwood, ronan_ironwood).\nperson(jarrett_kingsley).\nfirst_name(jarrett_kingsley, 'Jarrett').\nlast_name(jarrett_kingsley, 'Kingsley').\nmarried_to(jarrett_kingsley, hazel_kingsley).\nperson(hazel_kingsley).\nfirst_name(hazel_kingsley, 'Hazel').\nlast_name(hazel_kingsley, 'Kingsley').\nmarried_to(hazel_kingsley, jarrett_kingsley).\nperson(kael_merriweather).\nfirst_name(kael_merriweather, 'Kael').\nlast_name(kael_merriweather, 'Merriweather').\nmarried_to(kael_merriweather, iris_merriweather).\nparent_of(kael_merriweather, jessamine_ironwood).\nparent_of(kael_merriweather, kestrel_merriweather).\nparent_of(kael_merriweather, leda_ashford).\nparent_of(kael_merriweather, soren_merriweather).\nparent_of(kael_merriweather, willa_greystone).\nparent_of(kael_merriweather, tiernan_merriweather).\nparent_of(kael_merriweather, xenia_merriweather).\nparent_of(kael_merriweather, ulrich_merriweather).\nperson(iris_merriweather).\nfirst_name(iris_merriweather, 'Iris').\nlast_name(iris_merriweather, 'Merriweather').\nmarried_to(iris_merriweather, kael_merriweather).\nparent_of(iris_merriweather, jessamine_ironwood).\nparent_of(iris_merriweather, kestrel_merriweather).\nparent_of(iris_merriweather, leda_ashford).\nparent_of(iris_merriweather, soren_merriweather).\nparent_of(iris_merriweather, willa_greystone).\nparent_of(iris_merriweather, tiernan_merriweather).\nparent_of(iris_merriweather, xenia_merriweather).\nparent_of(iris_merriweather, ulrich_merriweather).\nperson(jessamine_ironwood).\nfirst_name(jessamine_ironwood, 'Jessamine').\nlast_name(jessamine_ironwood, 'Ironwood').\noccupation(jessamine_ironwood, retired).\nmarried_to(jessamine_ironwood, ronan_ironwood).\nparent_of(jessamine_ironwood, phoebe_ashford).\nparent_of(jessamine_ironwood, leif_ironwood).\nparent_of(jessamine_ironwood, quinn_ironwood).\nparent_of(jessamine_ironwood, rowena_ironwood).\nparent_of(jessamine_ironwood, magnus_ironwood).\nparent_of(jessamine_ironwood, niclas_ironwood).\nperson(kestrel_merriweather).\nfirst_name(kestrel_merriweather, 'Kestrel').\nlast_name(kestrel_merriweather, 'Merriweather').\noccupation(kestrel_merriweather, retired).\nperson(leda_ashford).\nfirst_name(leda_ashford, 'Leda').\nlast_name(leda_ashford, 'Ashford').\noccupation(leda_ashford, retired).\nmarried_to(leda_ashford, dalton_ashford).\nperson(lachlan_oakfield).\nfirst_name(lachlan_oakfield, 'Lachlan').\nlast_name(lachlan_oakfield, 'Oakfield').\nmarried_to(lachlan_oakfield, meredith_oakfield).\nparent_of(lachlan_oakfield, nora_oakfield).\nparent_of(lachlan_oakfield, ophelia_quincy).\nparent_of(lachlan_oakfield, marcas_oakfield).\nparent_of(lachlan_oakfield, valen_oakfield).\nparent_of(lachlan_oakfield, wren_oakfield).\nparent_of(lachlan_oakfield, xander_oakfield).\nperson(meredith_oakfield).\nfirst_name(meredith_oakfield, 'Meredith').\nlast_name(meredith_oakfield, 'Oakfield').\nmarried_to(meredith_oakfield, lachlan_oakfield).\nparent_of(meredith_oakfield, nora_oakfield).\nparent_of(meredith_oakfield, ophelia_quincy).\nparent_of(meredith_oakfield, marcas_oakfield).\nparent_of(meredith_oakfield, valen_oakfield).\nparent_of(meredith_oakfield, wren_oakfield).\nparent_of(meredith_oakfield, xander_oakfield).\nperson(nora_oakfield).\nfirst_name(nora_oakfield, 'Nora').\nlast_name(nora_oakfield, 'Oakfield').\noccupation(nora_oakfield, retired).\nperson(ophelia_quincy).\nfirst_name(ophelia_quincy, 'Ophelia').\nlast_name(ophelia_quincy, 'Quincy').\noccupation(ophelia_quincy, retired).\nmarried_to(ophelia_quincy, owen_quincy).\nparent_of(ophelia_quincy, percival_quincy).\nparent_of(ophelia_quincy, ysabella_oakfield).\nperson(marcas_oakfield).\nfirst_name(marcas_oakfield, 'Marcas').\nlast_name(marcas_oakfield, 'Oakfield').\noccupation(marcas_oakfield, retired).\nmarried_to(marcas_oakfield, bronwen_oakfield).\nparent_of(marcas_oakfield, cora_oakfield).\nparent_of(marcas_oakfield, brennon_oakfield).\nparent_of(marcas_oakfield, caspian_oakfield).\nparent_of(marcas_oakfield, delphine_oakfield).\nparent_of(marcas_oakfield, wren_quincy).\nparent_of(marcas_oakfield, xanthe_oakfield).\nperson(nolan_quincy).\nfirst_name(nolan_quincy, 'Nolan').\nlast_name(nolan_quincy, 'Quincy').\nmarried_to(nolan_quincy, piper_quincy).\nparent_of(nolan_quincy, quinley_quincy).\nparent_of(nolan_quincy, owen_quincy).\nparent_of(nolan_quincy, yara_ashford).\nparent_of(nolan_quincy, yael_quincy).\nparent_of(nolan_quincy, zara_greystone).\nperson(piper_quincy).\nfirst_name(piper_quincy, 'Piper').\nlast_name(piper_quincy, 'Quincy').\nmarried_to(piper_quincy, nolan_quincy).\nparent_of(piper_quincy, quinley_quincy).\nparent_of(piper_quincy, owen_quincy).\nparent_of(piper_quincy, yara_ashford).\nparent_of(piper_quincy, yael_quincy).\nparent_of(piper_quincy, zara_greystone).\nperson(quinley_quincy).\nfirst_name(quinley_quincy, 'Quinley').\nlast_name(quinley_quincy, 'Quincy').\noccupation(quinley_quincy, retired).\nperson(owen_quincy).\nfirst_name(owen_quincy, 'Owen').\nlast_name(owen_quincy, 'Quincy').\noccupation(owen_quincy, retired).\nmarried_to(owen_quincy, ophelia_quincy).\nparent_of(owen_quincy, percival_quincy).\nparent_of(owen_quincy, ysabella_oakfield).\nperson(padraig_greystone).\nfirst_name(padraig_greystone, 'Pádraig').\nlast_name(padraig_greystone, 'Greystone').\noccupation(padraig_greystone, retired).\nmarried_to(padraig_greystone, willa_greystone).\nparent_of(padraig_greystone, indigo_greystone).\nparent_of(padraig_greystone, jessa_greystone).\nparent_of(padraig_greystone, kalista_greystone).\nparent_of(padraig_greystone, sage_yarrow).\nparent_of(padraig_greystone, tamsin_greystone).\nparent_of(padraig_greystone, ursula_greystone).\nparent_of(padraig_greystone, vanessa_greystone).\nparent_of(padraig_greystone, oswin_greystone).\nperson(rosalind_oakfield).\nfirst_name(rosalind_oakfield, 'Rosalind').\nlast_name(rosalind_oakfield, 'Oakfield').\noccupation(rosalind_oakfield, retired).\nmarried_to(rosalind_oakfield, xander_oakfield).\nparent_of(rosalind_oakfield, linn_oakfield).\nparent_of(rosalind_oakfield, harald_oakfield).\nperson(quinton_greystone).\nfirst_name(quinton_greystone, 'Quinton').\nlast_name(quinton_greystone, 'Greystone').\noccupation(quinton_greystone, retired).\nmarried_to(quinton_greystone, undine_greystone).\nparent_of(quinton_greystone, maeve_oakfield).\nparent_of(quinton_greystone, kestrel_greystone).\nperson(sienna_underwood).\nfirst_name(sienna_underwood, 'Sienna').\nlast_name(sienna_underwood, 'Underwood').\nmarried_to(sienna_underwood, aldric_underwood).\nparent_of(sienna_underwood, fawn_underwood).\nparent_of(sienna_underwood, gilda_underwood).\nparent_of(sienna_underwood, hailey_underwood).\nperson(thea_ironwood).\nfirst_name(thea_ironwood, 'Thea').\nlast_name(thea_ironwood, 'Ironwood').\noccupation(thea_ironwood, retired).\nperson(undine_greystone).\nfirst_name(undine_greystone, 'Undine').\nlast_name(undine_greystone, 'Greystone').\noccupation(undine_greystone, retired).\nmarried_to(undine_greystone, quinton_greystone).\nparent_of(undine_greystone, maeve_oakfield).\nparent_of(undine_greystone, kestrel_greystone).\nperson(vale_ironwood).\nfirst_name(vale_ironwood, 'Vale').\nlast_name(vale_ironwood, 'Ironwood').\noccupation(vale_ironwood, retired).\nperson(ronan_ironwood).\nfirst_name(ronan_ironwood, 'Ronan').\nlast_name(ronan_ironwood, 'Ironwood').\noccupation(ronan_ironwood, retired).\nmarried_to(ronan_ironwood, jessamine_ironwood).\nparent_of(ronan_ironwood, phoebe_ashford).\nparent_of(ronan_ironwood, leif_ironwood).\nparent_of(ronan_ironwood, quinn_ironwood).\nparent_of(ronan_ironwood, rowena_ironwood).\nparent_of(ronan_ironwood, magnus_ironwood).\nparent_of(ronan_ironwood, niclas_ironwood).\nperson(soren_merriweather).\nfirst_name(soren_merriweather, 'Soren').\nlast_name(soren_merriweather, 'Merriweather').\noccupation(soren_merriweather, retired).\nperson(willa_greystone).\nfirst_name(willa_greystone, 'Willa').\nlast_name(willa_greystone, 'Greystone').\noccupation(willa_greystone, retired).\nmarried_to(willa_greystone, padraig_greystone).\nparent_of(willa_greystone, indigo_greystone).\nparent_of(willa_greystone, jessa_greystone).\nparent_of(willa_greystone, kalista_greystone).\nparent_of(willa_greystone, sage_yarrow).\nparent_of(willa_greystone, tamsin_greystone).\nparent_of(willa_greystone, ursula_greystone).\nparent_of(willa_greystone, vanessa_greystone).\nparent_of(willa_greystone, oswin_greystone).\nperson(tiernan_merriweather).\nfirst_name(tiernan_merriweather, 'Tiernan').\nlast_name(tiernan_merriweather, 'Merriweather').\nperson(xenia_merriweather).\nfirst_name(xenia_merriweather, 'Xenia').\nlast_name(xenia_merriweather, 'Merriweather').\noccupation(xenia_merriweather, owner_blacksmith).\nperson(ulrich_merriweather).\nfirst_name(ulrich_merriweather, 'Ulrich').\nlast_name(ulrich_merriweather, 'Merriweather').\nperson(valen_oakfield).\nfirst_name(valen_oakfield, 'Valen').\nlast_name(valen_oakfield, 'Oakfield').\noccupation(valen_oakfield, carpenter).\nperson(wren_oakfield).\nfirst_name(wren_oakfield, 'Wren').\nlast_name(wren_oakfield, 'Oakfield').\noccupation(wren_oakfield, seamstress).\nperson(xander_oakfield).\nfirst_name(xander_oakfield, 'Xander').\nlast_name(xander_oakfield, 'Oakfield').\noccupation(xander_oakfield, shoemaker).\nmarried_to(xander_oakfield, rosalind_oakfield).\nparent_of(xander_oakfield, linn_oakfield).\nparent_of(xander_oakfield, harald_oakfield).\nperson(yara_ashford).\nfirst_name(yara_ashford, 'Yara').\nlast_name(yara_ashford, 'Ashford').\noccupation(yara_ashford, retired).\nmarried_to(yara_ashford, carrick_ashford).\nparent_of(yara_ashford, dorian_ashford).\nparent_of(yara_ashford, eadwin_ashford).\nparent_of(yara_ashford, fenwick_ashford).\nparent_of(yara_ashford, galen_ashford).\nparent_of(yara_ashford, zella_oakfield).\nperson(yael_quincy).\nfirst_name(yael_quincy, 'Yael').\nlast_name(yael_quincy, 'Quincy').\noccupation(yael_quincy, retired).\nmarried_to(yael_quincy, alise_quincy).\nperson(zara_greystone).\nfirst_name(zara_greystone, 'Zara').\nlast_name(zara_greystone, 'Greystone').\noccupation(zara_greystone, retired).\nmarried_to(zara_greystone, hector_greystone).\nperson(zephyr_shadowmere).\nfirst_name(zephyr_shadowmere, 'Zephyr').\nlast_name(zephyr_shadowmere, 'Shadowmere').\noccupation(zephyr_shadowmere, blacksmith).\nperson(alise_quincy).\nfirst_name(alise_quincy, 'Alise').\nlast_name(alise_quincy, 'Quincy').\nmarried_to(alise_quincy, yael_quincy).\nperson(aldric_underwood).\nfirst_name(aldric_underwood, 'Aldric').\nlast_name(aldric_underwood, 'Underwood').\noccupation(aldric_underwood, baker).\nmarried_to(aldric_underwood, sienna_underwood).\nparent_of(aldric_underwood, fawn_underwood).\nparent_of(aldric_underwood, gilda_underwood).\nparent_of(aldric_underwood, hailey_underwood).\nperson(briony_ashford).\nfirst_name(briony_ashford, 'Briony').\nlast_name(briony_ashford, 'Ashford').\noccupation(briony_ashford, carpenter).\nmarried_to(briony_ashford, brennan_ashford).\nparent_of(briony_ashford, elara_ashford).\nparent_of(briony_ashford, nerida_ashford).\nparent_of(briony_ashford, isak_ashford).\nparent_of(briony_ashford, jericho_ashford).\nparent_of(briony_ashford, olive_ashford).\nperson(cora_oakfield).\nfirst_name(cora_oakfield, 'Cora').\nlast_name(cora_oakfield, 'Oakfield').\noccupation(cora_oakfield, carpenter).\nperson(brennon_oakfield).\nfirst_name(brennon_oakfield, 'Brennon').\nlast_name(brennon_oakfield, 'Oakfield').\noccupation(brennon_oakfield, cook).\nmarried_to(brennon_oakfield, zella_oakfield).\nperson(caspian_oakfield).\nfirst_name(caspian_oakfield, 'Caspian').\nlast_name(caspian_oakfield, 'Oakfield').\noccupation(caspian_oakfield, cook).\nmarried_to(caspian_oakfield, ysabella_oakfield).\nperson(delphine_oakfield).\nfirst_name(delphine_oakfield, 'Delphine').\nlast_name(delphine_oakfield, 'Oakfield').\noccupation(delphine_oakfield, laborer).\nmarried_to(delphine_oakfield, oswin_greystone).\nperson(elara_ashford).\nfirst_name(elara_ashford, 'Elara').\nlast_name(elara_ashford, 'Ashford').\nperson(dorian_ashford).\nfirst_name(dorian_ashford, 'Dorian').\nlast_name(dorian_ashford, 'Ashford').\noccupation(dorian_ashford, cook).\nperson(eadwin_ashford).\nfirst_name(eadwin_ashford, 'Eadwin').\nlast_name(eadwin_ashford, 'Ashford').\noccupation(eadwin_ashford, carpenter).\nperson(fenwick_ashford).\nfirst_name(fenwick_ashford, 'Fenwick').\nlast_name(fenwick_ashford, 'Ashford').\noccupation(fenwick_ashford, cook).\nmarried_to(fenwick_ashford, tamsin_greystone).\nparent_of(fenwick_ashford, matthew_ashford).\nperson(galen_ashford).\nfirst_name(galen_ashford, 'Galen').\nlast_name(galen_ashford, 'Ashford').\noccupation(galen_ashford, farmer).\nmarried_to(galen_ashford, phoebe_ashford).\nparent_of(galen_ashford, melissa_ashford).\nperson(fawn_underwood).\nfirst_name(fawn_underwood, 'Fawn').\nlast_name(fawn_underwood, 'Underwood').\noccupation(fawn_underwood, student).\nperson(gilda_underwood).\nfirst_name(gilda_underwood, 'Gilda').\nlast_name(gilda_underwood, 'Underwood').\noccupation(gilda_underwood, student).\nperson(hailey_underwood).\nfirst_name(hailey_underwood, 'Hailey').\nlast_name(hailey_underwood, 'Underwood').\noccupation(hailey_underwood, student).\nperson(indigo_greystone).\nfirst_name(indigo_greystone, 'Indigo').\nlast_name(indigo_greystone, 'Greystone').\noccupation(indigo_greystone, laborer).\nperson(jessa_greystone).\nfirst_name(jessa_greystone, 'Jessa').\nlast_name(jessa_greystone, 'Greystone').\nperson(kalista_greystone).\nfirst_name(kalista_greystone, 'Kalista').\nlast_name(kalista_greystone, 'Greystone').\noccupation(kalista_greystone, laborer).\nperson(linn_oakfield).\nfirst_name(linn_oakfield, 'Linn').\nlast_name(linn_oakfield, 'Oakfield').\noccupation(linn_oakfield, carpenter).\nperson(harald_oakfield).\nfirst_name(harald_oakfield, 'Harald').\nlast_name(harald_oakfield, 'Oakfield').\noccupation(harald_oakfield, carpenter).\nmarried_to(harald_oakfield, maeve_oakfield).\nperson(maeve_oakfield).\nfirst_name(maeve_oakfield, 'Maeve').\nlast_name(maeve_oakfield, 'Oakfield').\noccupation(maeve_oakfield, owner_bakery).\nmarried_to(maeve_oakfield, harald_oakfield).\nperson(nerida_ashford).\nfirst_name(nerida_ashford, 'Nerida').\nlast_name(nerida_ashford, 'Ashford').\noccupation(nerida_ashford, student).\nperson(isak_ashford).\nfirst_name(isak_ashford, 'Isak').\nlast_name(isak_ashford, 'Ashford').\noccupation(isak_ashford, student).\nperson(jericho_ashford).\nfirst_name(jericho_ashford, 'Jericho').\nlast_name(jericho_ashford, 'Ashford').\noccupation(jericho_ashford, student).\nperson(olive_ashford).\nfirst_name(olive_ashford, 'Olive').\nlast_name(olive_ashford, 'Ashford').\noccupation(olive_ashford, student).\nperson(kestrel_greystone).\nfirst_name(kestrel_greystone, 'Kestrel').\nlast_name(kestrel_greystone, 'Greystone').\noccupation(kestrel_greystone, carpenter).\nmarried_to(kestrel_greystone, ursula_greystone).\nperson(phoebe_ashford).\nfirst_name(phoebe_ashford, 'Phoebe').\nlast_name(phoebe_ashford, 'Ashford').\noccupation(phoebe_ashford, baker).\nmarried_to(phoebe_ashford, galen_ashford).\nparent_of(phoebe_ashford, melissa_ashford).\nperson(leif_ironwood).\nfirst_name(leif_ironwood, 'Leif').\nlast_name(leif_ironwood, 'Ironwood').\noccupation(leif_ironwood, farmer).\nperson(quinn_ironwood).\nfirst_name(quinn_ironwood, 'Quinn').\nlast_name(quinn_ironwood, 'Ironwood').\noccupation(quinn_ironwood, carpenter).\nperson(rowena_ironwood).\nfirst_name(rowena_ironwood, 'Rowena').\nlast_name(rowena_ironwood, 'Ironwood').\noccupation(rowena_ironwood, owner_carpenter).\nperson(magnus_ironwood).\nfirst_name(magnus_ironwood, 'Magnus').\nlast_name(magnus_ironwood, 'Ironwood').\noccupation(magnus_ironwood, farmhand).\nperson(niclas_ironwood).\nfirst_name(niclas_ironwood, 'Niclas').\nlast_name(niclas_ironwood, 'Ironwood').\noccupation(niclas_ironwood, owner_church).\nperson(sage_yarrow).\nfirst_name(sage_yarrow, 'Sage').\nlast_name(sage_yarrow, 'Yarrow').\noccupation(sage_yarrow, cook).\nmarried_to(sage_yarrow, rothgar_yarrow).\nperson(tamsin_greystone).\nfirst_name(tamsin_greystone, 'Tamsin').\nlast_name(tamsin_greystone, 'Greystone').\noccupation(tamsin_greystone, farmer).\nmarried_to(tamsin_greystone, fenwick_ashford).\nparent_of(tamsin_greystone, matthew_ashford).\nperson(ursula_greystone).\nfirst_name(ursula_greystone, 'Ursula').\nlast_name(ursula_greystone, 'Greystone').\noccupation(ursula_greystone, farmer).\nmarried_to(ursula_greystone, kestrel_greystone).\nperson(vanessa_greystone).\nfirst_name(vanessa_greystone, 'Vanessa').\nlast_name(vanessa_greystone, 'Greystone').\noccupation(vanessa_greystone, carpenter).\nperson(oswin_greystone).\nfirst_name(oswin_greystone, 'Oswin').\nlast_name(oswin_greystone, 'Greystone').\noccupation(oswin_greystone, carpenter).\nmarried_to(oswin_greystone, delphine_oakfield).\nperson(wren_quincy).\nfirst_name(wren_quincy, 'Wren').\nlast_name(wren_quincy, 'Quincy').\noccupation(wren_quincy, groundskeeper).\nmarried_to(wren_quincy, percival_quincy).\nparent_of(wren_quincy, thomas_quincy).\nperson(xanthe_oakfield).\nfirst_name(xanthe_oakfield, 'Xanthe').\nlast_name(xanthe_oakfield, 'Oakfield').\noccupation(xanthe_oakfield, owner_farm).\nperson(percival_quincy).\nfirst_name(percival_quincy, 'Percival').\nlast_name(percival_quincy, 'Quincy').\noccupation(percival_quincy, laborer).\nmarried_to(percival_quincy, wren_quincy).\nparent_of(percival_quincy, thomas_quincy).\nperson(ysabella_oakfield).\nfirst_name(ysabella_oakfield, 'Ysabella').\nlast_name(ysabella_oakfield, 'Oakfield').\nmarried_to(ysabella_oakfield, caspian_oakfield).\nperson(zella_oakfield).\nfirst_name(zella_oakfield, 'Zella').\nlast_name(zella_oakfield, 'Oakfield').\noccupation(zella_oakfield, laborer).\nmarried_to(zella_oakfield, brennon_oakfield).\nperson(quill_westwood).\nfirst_name(quill_westwood, 'Quill').\nlast_name(quill_westwood, 'Westwood').\noccupation(quill_westwood, laborer).\nperson(adrienne_xanthis).\nfirst_name(adrienne_xanthis, 'Adrienne').\nlast_name(adrienne_xanthis, 'Xanthis').\noccupation(adrienne_xanthis, student).\nperson(rothgar_yarrow).\nfirst_name(rothgar_yarrow, 'Rothgar').\nlast_name(rothgar_yarrow, 'Yarrow').\noccupation(rothgar_yarrow, cook).\nmarried_to(rothgar_yarrow, sage_yarrow).\nperson(blythe_zephyrus).\nfirst_name(blythe_zephyrus, 'Blythe').\nlast_name(blythe_zephyrus, 'Zephyrus').\noccupation(blythe_zephyrus, farmer).\nperson(james_harwick).\nfirst_name(james_harwick, 'James').\nlast_name(james_harwick, 'Harwick').\noccupation(james_harwick, editor).\nperson(thomas_pemberton).\nfirst_name(thomas_pemberton, 'Thomas').\nlast_name(thomas_pemberton, 'Pemberton').\noccupation(thomas_pemberton, retired).\nperson(charles_whitfield).\nfirst_name(charles_whitfield, 'Charles').\nlast_name(charles_whitfield, 'Whitfield').\noccupation(charles_whitfield, merchant).\nperson(edward_blackwell).\nfirst_name(edward_blackwell, 'Edward').\nlast_name(edward_blackwell, 'Blackwell').\noccupation(edward_blackwell, professor).\nperson(arthur_crane).\nfirst_name(arthur_crane, 'Arthur').\nlast_name(arthur_crane, 'Crane').\noccupation(arthur_crane, innkeeper).\nperson(thomas_quincy).\nfirst_name(thomas_quincy, 'Thomas').\nlast_name(thomas_quincy, 'Quincy').\nperson(melissa_ashford).\nfirst_name(melissa_ashford, 'Melissa').\nlast_name(melissa_ashford, 'Ashford').\nperson(matthew_ashford).\nfirst_name(matthew_ashford, 'Matthew').\nlast_name(matthew_ashford, 'Ashford').\nitem(book_simplified_single).\nitem_name(book_simplified_single, 'Book Simplified Single').\nitem_base_type(book_simplified_single, book).\nitem(kite_shield).\nitem_name(kite_shield, 'Kite Shield').\nitem_base_type(kite_shield, shield).\nitem(dart_golden).\nitem_name(dart_golden, 'Dart Golden').\nitem_base_type(dart_golden, dart_golden).\nitem(empty_yellow_potion).\nitem_name(empty_yellow_potion, 'Empty Yellow Potion').\nitem_base_type(empty_yellow_potion, potion).\nitem(dart).\nitem_name(dart, 'Dart').\nitem_base_type(dart, dart).\nitem(crown_1).\nitem_name(crown_1, 'Crown').\nitem_base_type(crown_1, crown).\nitem(bucket_metal).\nitem_name(bucket_metal, 'Bucket Metal').\nitem_base_type(bucket_metal, bucket).\nitem(banner_2_cloth).\nitem_name(banner_2_cloth, 'Banner 2 Cloth').\nitem_base_type(banner_2_cloth, banner_2_cloth).\nitem(stone_fire_pit).\nitem_name(stone_fire_pit, 'Stone Fire Pit').\nitem_base_type(stone_fire_pit, decoration).\nitem(small_bottles).\nitem_name(small_bottles, 'Small Bottles').\nitem_base_type(small_bottles, bottle).\nitem(book_group_medium_1).\nitem_name(book_group_medium_1, 'Book Group Medium').\nitem_base_type(book_group_medium_1, book).\nitem(candle_1).\nitem_name(candle_1, 'Candle').\nitem_base_type(candle_1, candle).\nitem(shelf_arch).\nitem_name(shelf_arch, 'Shelf Arch').\nitem_base_type(shelf_arch, shelf).\nitem(brass_goblets).\nitem_name(brass_goblets, 'Brass Goblets').\nitem_base_type(brass_goblets, goblet).\nitem(cage_small).\nitem_name(cage_small, 'Cage Small').\nitem_base_type(cage_small, cage_small).\nitem(sword_big_1).\nitem_name(sword_big_1, 'Sword Big').\nitem_base_type(sword_big_1, sword).\nitem(book_1).\nitem_name(book_1, 'Book').\nitem_base_type(book_1, book).\nitem(dagger_1).\nitem_name(dagger_1, 'Dagger').\nitem_base_type(dagger_1, dagger).\nitem(banner_1_cloth).\nitem_name(banner_1_cloth, 'Banner 1 Cloth').\nitem_base_type(banner_1_cloth, banner_1_cloth).\nitem(gothic_cabinet).\nitem_name(gothic_cabinet, 'Gothic Cabinet').\nitem_base_type(gothic_cabinet, cabinet).\nitem(wooden_bucket_2).\nitem_name(wooden_bucket_2, 'Wooden Bucket').\nitem_base_type(wooden_bucket_2, bucket).\nitem(ornate_medieval_mace).\nitem_name(ornate_medieval_mace, 'Ornate Medieval Mace').\nitem_base_type(ornate_medieval_mace, mace).\nitem(wine_barrel).\nitem_name(wine_barrel, 'Wine Barrel').\nitem_base_type(wine_barrel, barrel).\nitem(cabinet).\nitem_name(cabinet, 'Cabinet').\nitem_base_type(cabinet, cabinet).\nitem(dagger_2).\nitem_name(dagger_2, 'Dagger').\nitem_base_type(dagger_2, dagger).\nitem(wooden_bookshelf_worn).\nitem_name(wooden_bookshelf_worn, 'Wooden Bookshelf Worn').\nitem_base_type(wooden_bookshelf_worn, shelf).\nitem(key3).\nitem_name(key3, 'Key3').\nitem_base_type(key3, key).\nitem(potion_1).\nitem_name(potion_1, 'Potion').\nitem_base_type(potion_1, potion).\nitem(shelf_small_bottles).\nitem_name(shelf_small_bottles, 'Shelf Small Bottles').\nitem_base_type(shelf_small_bottles, shelf).\nitem(bone).\nitem_name(bone, 'Bone').\nitem_base_type(bone, bone).\nitem(shield_heater_1).\nitem_name(shield_heater_1, 'Shield Heater').\nitem_base_type(shield_heater_1, shield).\nitem(key_gold).\nitem_name(key_gold, 'Key Gold').\nitem_base_type(key_gold, key).\nitem(rope_1).\nitem_name(rope_1, 'Rope').\nitem_base_type(rope_1, rope).\nitem(empty_orange_potion).\nitem_name(empty_orange_potion, 'Empty Orange Potion').\nitem_base_type(empty_orange_potion, potion).\nitem(sword_big_2).\nitem_name(sword_big_2, 'Sword Big').\nitem_base_type(sword_big_2, sword).\nitem(ornate_war_hammer).\nitem_name(ornate_war_hammer, 'Ornate War Hammer').\nitem_base_type(ornate_war_hammer, hammer).\nitem(farm_crate_apple).\nitem_name(farm_crate_apple, 'Farm Crate Apple').\nitem_base_type(farm_crate_apple, crate).\nitem(antique_estoc).\nitem_name(antique_estoc, 'Antique Estoc').\nitem_base_type(antique_estoc, quest_weapon).\nitem(pouch_large).\nitem_name(pouch_large, 'Pouch Large').\nitem_base_type(pouch_large, pouch).\nitem(table_large).\nitem_name(table_large, 'Table Large').\nitem_base_type(table_large, table).\nitem(whetstone).\nitem_name(whetstone, 'Whetstone').\nitem_base_type(whetstone, whetstone).\nitem(treasure_chest_1).\nitem_name(treasure_chest_1, 'Treasure Chest').\nitem_base_type(treasure_chest_1, chest).\nitem(ring7).\nitem_name(ring7, 'Ring7').\nitem_base_type(ring7, ring).\nitem(axe_small_1).\nitem_name(axe_small_1, 'Axe Small').\nitem_base_type(axe_small_1, axe).\nitem(book_2).\nitem_name(book_2, 'Book').\nitem_base_type(book_2, book).\nitem(mineral).\nitem_name(mineral, 'Mineral').\nitem_base_type(mineral, mineral).\nitem(heart).\nitem_name(heart, 'Heart').\nitem_base_type(heart, heart).\nitem(rope_2).\nitem_name(rope_2, 'Rope').\nitem_base_type(rope_2, rope).\nitem(shelf_simple).\nitem_name(shelf_simple, 'Shelf Simple').\nitem_base_type(shelf_simple, shelf).\nitem(sword_bronze).\nitem_name(sword_bronze, 'Sword Bronze').\nitem_base_type(sword_bronze, sword).\nitem(shield_round_1).\nitem_name(shield_round_1, 'Shield Round').\nitem_base_type(shield_round_1, shield).\nitem(steel_helmet).\nitem_name(steel_helmet, 'Steel Helmet').\nitem_base_type(steel_helmet, helmet).\nitem(snowflake2).\nitem_name(snowflake2, 'Snowflake2').\nitem_base_type(snowflake2, snowflake2).\nitem(table_knife).\nitem_name(table_knife, 'Table Knife').\nitem_base_type(table_knife, knife).\nitem(bed_twin2).\nitem_name(bed_twin2, 'Bed Twin2').\nitem_base_type(bed_twin2, bed).\nitem(padlock).\nitem_name(padlock, 'Padlock').\nitem_base_type(padlock, padlock).\nitem(candle_2).\nitem_name(candle_2, 'Candle').\nitem_base_type(candle_2, candle).\nitem(book1_closed).\nitem_name(book1_closed, 'Book1 Closed').\nitem_base_type(book1_closed, book).\nitem(book4_open).\nitem_name(book4_open, 'Book4 Open').\nitem_base_type(book4_open, book).\nitem(white_flask).\nitem_name(white_flask, 'White Flask').\nitem_base_type(white_flask, potion).\nitem(stool_1).\nitem_name(stool_1, 'Stool').\nitem_base_type(stool_1, stool).\nitem(empty_clear_potion).\nitem_name(empty_clear_potion, 'Empty Clear Potion').\nitem_base_type(empty_clear_potion, potion).\nitem(brass_candleholders).\nitem_name(brass_candleholders, 'Brass Candleholders').\nitem_base_type(brass_candleholders, candleholder).\nitem(sword_1).\nitem_name(sword_1, 'Sword').\nitem_base_type(sword_1, sword).\nitem(lantern_wall).\nitem_name(lantern_wall, 'Lantern Wall').\nitem_base_type(lantern_wall, lantern).\nitem(armor_golden).\nitem_name(armor_golden, 'Armor Golden').\nitem_base_type(armor_golden, armor).\nitem(bed_twin1).\nitem_name(bed_twin1, 'Bed Twin1').\nitem_base_type(bed_twin1, bed).\nitem(hammer_small).\nitem_name(hammer_small, 'Hammer Small').\nitem_base_type(hammer_small, hammer).\nitem(key2).\nitem_name(key2, 'Key2').\nitem_base_type(key2, key).\nitem(barrel_2).\nitem_name(barrel_2, 'Barrel').\nitem_base_type(barrel_2, barrel).\nitem(parchment).\nitem_name(parchment, 'Parchment').\nitem_base_type(parchment, parchment).\nitem(empty_red_potion).\nitem_name(empty_red_potion, 'Empty Red Potion').\nitem_base_type(empty_red_potion, potion).\nitem(vase_rubble_medium).\nitem_name(vase_rubble_medium, 'Vase Rubble Medium').\nitem_base_type(vase_rubble_medium, vase).\nitem(potion6_filled).\nitem_name(potion6_filled, 'Potion6 Filled').\nitem_base_type(potion6_filled, potion).\nitem(lantern).\nitem_name(lantern, 'Lantern').\nitem_base_type(lantern, lamp).\nitem(crystal_1).\nitem_name(crystal_1, 'Crystal').\nitem_base_type(crystal_1, gemstone).\nitem(mug_2).\nitem_name(mug_2, 'Mug').\nitem_base_type(mug_2, mug).\nitem(coin_1).\nitem_name(coin_1, 'Coin').\nitem_base_type(coin_1, coin).\nitem(crystal2_damaged).\nitem_name(crystal2_damaged, 'Crystal2 Damaged').\nitem_base_type(crystal2_damaged, crystal).\nitem(ring3).\nitem_name(ring3, 'Ring3').\nitem_base_type(ring3, ring).\nitem(weapon_stand).\nitem_name(weapon_stand, 'Weapon Stand').\nitem_base_type(weapon_stand, weaponstand).\nitem(book4_closed).\nitem_name(book4_closed, 'Book4 Closed').\nitem_base_type(book4_closed, book).\nitem(shield_celtic_golden).\nitem_name(shield_celtic_golden, 'Shield Celtic Golden').\nitem_base_type(shield_celtic_golden, shield).\nitem(axe_1).\nitem_name(axe_1, 'Axe').\nitem_base_type(axe_1, axe).\nitem(star).\nitem_name(star, 'Star').\nitem_base_type(star, star).\nitem(axe_small_golden).\nitem_name(axe_small_golden, 'Axe Small Golden').\nitem_base_type(axe_small_golden, axe).\nitem(ring6).\nitem_name(ring6, 'Ring6').\nitem_base_type(ring6, ring).\nitem(crystal3_damaged).\nitem_name(crystal3_damaged, 'Crystal3 Damaged').\nitem_base_type(crystal3_damaged, crystal).\nitem(crate_wooden).\nitem_name(crate_wooden, 'Crate Wooden').\nitem_base_type(crate_wooden, crate).\nitem(chicken_leg_1).\nitem_name(chicken_leg_1, 'Chicken Leg').\nitem_base_type(chicken_leg_1, chickenleg).\nitem(axe_double_golden).\nitem_name(axe_double_golden, 'Axe Double Golden').\nitem_base_type(axe_double_golden, axe).\nitem(vase_1).\nitem_name(vase_1, 'Vase').\nitem_base_type(vase_1, vase).\nitem(armor_black).\nitem_name(armor_black, 'Armor Black').\nitem_base_type(armor_black, armor).\nitem(coin_star).\nitem_name(coin_star, 'Coin Star').\nitem_base_type(coin_star, coin_star).\nitem(book_group_small_1).\nitem_name(book_group_small_1, 'Book Group Small').\nitem_base_type(book_group_small_1, book).\nitem(chandelier_3).\nitem_name(chandelier_3, 'Chandelier').\nitem_base_type(chandelier_3, chandelier).\nitem(empty_pink_potion).\nitem_name(empty_pink_potion, 'Empty Pink Potion').\nitem_base_type(empty_pink_potion, potion).\nitem(potion1_filled).\nitem_name(potion1_filled, 'Potion1 Filled').\nitem_base_type(potion1_filled, potion).\nitem(hammer_double_golden).\nitem_name(hammer_double_golden, 'Hammer Double Golden').\nitem_base_type(hammer_double_golden, hammer).\nitem(workbench_drawers).\nitem_name(workbench_drawers, 'Workbench Drawers').\nitem_base_type(workbench_drawers, drawer).\nitem(bow_wooden2).\nitem_name(bow_wooden2, 'Bow Wooden2').\nitem_base_type(bow_wooden2, bow).\nitem(bottle).\nitem_name(bottle, 'Bottle').\nitem_base_type(bottle, bottle).\nitem(gold_necklace).\nitem_name(gold_necklace, 'Gold Necklace').\nitem_base_type(gold_necklace, necklace).\nitem(key4).\nitem_name(key4, 'Key4').\nitem_base_type(key4, key).\nitem(bow_golden_1).\nitem_name(bow_golden_1, 'Bow Golden').\nitem_base_type(bow_golden_1, bow).\nitem(potion9_filled).\nitem_name(potion9_filled, 'Potion9 Filled').\nitem_base_type(potion9_filled, potion).\nitem(green_chair).\nitem_name(green_chair, 'Green Chair').\nitem_base_type(green_chair, chair).\nitem(arrow).\nitem_name(arrow, 'Arrow').\nitem_base_type(arrow, arrow).\nitem(axe_double_1).\nitem_name(axe_double_1, 'Axe Double').\nitem_base_type(axe_double_1, axe).\nitem(bookcase_1).\nitem_name(bookcase_1, 'Bookcase').\nitem_base_type(bookcase_1, book).\nitem(wooden_crate_2).\nitem_name(wooden_crate_2, 'Wooden Crate').\nitem_base_type(wooden_crate_2, chest).\nitem(shield_heater_2).\nitem_name(shield_heater_2, 'Shield Heater').\nitem_base_type(shield_heater_2, shield).\nitem(chandelier_4).\nitem_name(chandelier_4, 'Chandelier').\nitem_base_type(chandelier_4, chandelier).\nitem(longbow).\nitem_name(longbow, 'Longbow').\nitem_base_type(longbow, bow).\nitem(sword_big_golden).\nitem_name(sword_big_golden, 'Sword Big Golden').\nitem_base_type(sword_big_golden, sword).\nitem(crate_metal).\nitem_name(crate_metal, 'Crate Metal').\nitem_base_type(crate_metal, crate).\nitem(empty_farm_crate).\nitem_name(empty_farm_crate, 'Empty Farm Crate').\nitem_base_type(empty_farm_crate, crate).\nitem(necklace2).\nitem_name(necklace2, 'Necklace2').\nitem_base_type(necklace2, necklace).\nitem(farm_crate_carrot).\nitem_name(farm_crate_carrot, 'Farm Crate Carrot').\nitem_base_type(farm_crate_carrot, crate).\nitem(key1).\nitem_name(key1, 'Key1').\nitem_base_type(key1, key).\nitem(barrel_apples).\nitem_name(barrel_apples, 'Barrel Apples').\nitem_base_type(barrel_apples, barrel).\nitem(pickaxe_bronze).\nitem_name(pickaxe_bronze, 'Pickaxe Bronze').\nitem_base_type(pickaxe_bronze, axe).\nitem(crystal5).\nitem_name(crystal5, 'Crystal5').\nitem_base_type(crystal5, crystal).\nitem(empty_cart).\nitem_name(empty_cart, 'Empty Cart').\nitem_base_type(empty_cart, stall_cart_empty).\nitem(empty_market_stall).\nitem_name(empty_market_stall, 'Empty Market Stall').\nitem_base_type(empty_market_stall, stall_empty).\nitem(book_stand).\nitem_name(book_stand, 'Book Stand').\nitem_base_type(book_stand, book).\nitem(potion4_filled).\nitem_name(potion4_filled, 'Potion4 Filled').\nitem_base_type(potion4_filled, potion).\nitem(banner_1).\nitem_name(banner_1, 'Banner').\nitem_base_type(banner_1, banner_1).\nitem(book2_open).\nitem_name(book2_open, 'Book2 Open').\nitem_base_type(book2_open, book).\nitem(chest_closed).\nitem_name(chest_closed, 'Chest Closed').\nitem_base_type(chest_closed, chest).\nitem(dummy).\nitem_name(dummy, 'Dummy').\nitem_base_type(dummy, dummy).\nitem(crystal2).\nitem_name(crystal2, 'Crystal2').\nitem_base_type(crystal2, crystal).\nitem(shelf_1).\nitem_name(shelf_1, 'Shelf').\nitem_base_type(shelf_1, shelf).\nitem(coin_pile_1).\nitem_name(coin_pile_1, 'Coin Pile').\nitem_base_type(coin_pile_1, coin_pile_2).\nitem(peg_rack).\nitem_name(peg_rack, 'Peg Rack').\nitem_base_type(peg_rack, peg_rack).\nitem(bag_1).\nitem_name(bag_1, 'Bag').\nitem_base_type(bag_1, bag).\nitem(bow_evil).\nitem_name(bow_evil, 'Bow Evil').\nitem_base_type(bow_evil, bow).\nitem(book2_closed).\nitem_name(book2_closed, 'Book2 Closed').\nitem_base_type(book2_closed, book).\nitem(anvil_log).\nitem_name(anvil_log, 'Anvil Log').\nitem_base_type(anvil_log, anvil_log).\nitem(banner_2).\nitem_name(banner_2, 'Banner').\nitem_base_type(banner_2, banner_2).\nitem(shield_wooden).\nitem_name(shield_wooden, 'Shield Wooden').\nitem_base_type(shield_wooden, shield).\nitem(book_group_medium_2).\nitem_name(book_group_medium_2, 'Book Group Medium').\nitem_base_type(book_group_medium_2, book).\nitem(potion_2).\nitem_name(potion_2, 'Potion').\nitem_base_type(potion_2, potion).\nitem(axe_double_2).\nitem_name(axe_double_2, 'Axe Double').\nitem_base_type(axe_double_2, axe).\nitem(book1_open).\nitem_name(book1_open, 'Book1 Open').\nitem_base_type(book1_open, book).\nitem(book_stack_1).\nitem_name(book_stack_1, 'Book Stack').\nitem_base_type(book_stack_1, book).\nitem(potion8_filled).\nitem_name(potion8_filled, 'Potion8 Filled').\nitem_base_type(potion8_filled, potion).\nitem(table_plate).\nitem_name(table_plate, 'Table Plate').\nitem_base_type(table_plate, table).\nitem(sword_2).\nitem_name(sword_2, 'Sword').\nitem_base_type(sword_2, sword).\nitem(wooden_table_4).\nitem_name(wooden_table_4, 'Wooden Table').\nitem_base_type(wooden_table_4, table).\nitem(fish_bone_1).\nitem_name(fish_bone_1, 'Fish Bone').\nitem_base_type(fish_bone_1, fishbone).\nitem(sword_golden_1).\nitem_name(sword_golden_1, 'Sword Golden').\nitem_base_type(sword_golden_1, sword).\nitem(key_metal).\nitem_name(key_metal, 'Key Metal').\nitem_base_type(key_metal, key).\nitem(ring4).\nitem_name(ring4, 'Ring4').\nitem_base_type(ring4, ring).\nitem(wooden_crate_3).\nitem_name(wooden_crate_3, 'Wooden Crate').\nitem_base_type(wooden_crate_3, chest).\nitem(empty_purple_potion).\nitem_name(empty_purple_potion, 'Empty Purple Potion').\nitem_base_type(empty_purple_potion, potion).\nitem(book_encyclopedia_set).\nitem_name(book_encyclopedia_set, 'Book Encyclopedia Set').\nitem_base_type(book_encyclopedia_set, books).\nitem(pouch).\nitem_name(pouch, 'Pouch').\nitem_base_type(pouch, pouch).\nitem(chest_wood).\nitem_name(chest_wood, 'Chest Wood').\nitem_base_type(chest_wood, chest).\nitem(necklace3).\nitem_name(necklace3, 'Necklace3').\nitem_base_type(necklace3, necklace).\nitem(gothic_bed).\nitem_name(gothic_bed, 'Gothic Bed').\nitem_base_type(gothic_bed, bed).\nitem(armor_leather).\nitem_name(armor_leather, 'Armor Leather').\nitem_base_type(armor_leather, armor).\nitem(pot_1).\nitem_name(pot_1, 'Pot').\nitem_base_type(pot_1, pot_1).\nitem(candle_stick_triple).\nitem_name(candle_stick_triple, 'Candle Stick Triple').\nitem_base_type(candle_stick_triple, candle).\nitem(hammer_double_1).\nitem_name(hammer_double_1, 'Hammer Double').\nitem_base_type(hammer_double_1, hammer).\nitem(ornate_medieval_dagger).\nitem_name(ornate_medieval_dagger, 'Ornate Medieval Dagger').\nitem_base_type(ornate_medieval_dagger, dagger).\nitem(crown_2).\nitem_name(crown_2, 'Crown').\nitem_base_type(crown_2, crown).\nitem(book_group_small_2).\nitem_name(book_group_small_2, 'Book Group Small').\nitem_base_type(book_group_small_2, book).\nitem(scroll_1).\nitem_name(scroll_1, 'Scroll').\nitem_base_type(scroll_1, scroll).\nitem(dutch_ship_large_2).\nitem_name(dutch_ship_large_2, 'Dutch Ship Large').\nitem_base_type(dutch_ship_large_2, wood).\nitem(barrel_holder).\nitem_name(barrel_holder, 'Barrel Holder').\nitem_base_type(barrel_holder, barrel).\nitem(book_stack_2).\nitem_name(book_stack_2, 'Book Stack').\nitem_base_type(book_stack_2, book).\nitem(table_fork).\nitem_name(table_fork, 'Table Fork').\nitem_base_type(table_fork, table).\nitem(potion7_filled).\nitem_name(potion7_filled, 'Potion7 Filled').\nitem_base_type(potion7_filled, potion).\nitem(ancient_scroll).\nitem_name(ancient_scroll, 'Ancient Scroll').\nitem_base_type(ancient_scroll, scroll).\nitem(nightstand_shelf).\nitem_name(nightstand_shelf, 'Nightstand Shelf').\nitem_base_type(nightstand_shelf, shelf).\nitem(coin_2).\nitem_name(coin_2, 'Coin').\nitem_base_type(coin_2, coin).\nitem(empty_dark_potion).\nitem_name(empty_dark_potion, 'Empty Dark Potion').\nitem_base_type(empty_dark_potion, potion).\nitem(scroll_2).\nitem_name(scroll_2, 'Scroll').\nitem_base_type(scroll_2, scroll).\nitem(table_spoon).\nitem_name(table_spoon, 'Table Spoon').\nitem_base_type(table_spoon, table).\nitem(bucket_wooden).\nitem_name(bucket_wooden, 'Bucket Wooden').\nitem_base_type(bucket_wooden, bucket).\nitem(skull2).\nitem_name(skull2, 'Skull2').\nitem_base_type(skull2, skull2).\nitem(chest_ingots).\nitem_name(chest_ingots, 'Chest Ingots').\nitem_base_type(chest_ingots, chest).\nitem(crystal4).\nitem_name(crystal4, 'Crystal4').\nitem_base_type(crystal4, crystal).\nitem(snowflake1).\nitem_name(snowflake1, 'Snowflake1').\nitem_base_type(snowflake1, snowflake1).\nitem(axe_bronze).\nitem_name(axe_bronze, 'Axe Bronze').\nitem_base_type(axe_bronze, axe).\nitem(book_group_medium_3).\nitem_name(book_group_medium_3, 'Book Group Medium').\nitem_base_type(book_group_medium_3, book).\nitem(crystal3).\nitem_name(crystal3, 'Crystal3').\nitem_base_type(crystal3, crystal).\nitem(potion2_filled).\nitem_name(potion2_filled, 'Potion2 Filled').\nitem_base_type(potion2_filled, potion).\nitem(book_group_small_3).\nitem_name(book_group_small_3, 'Book Group Small').\nitem_base_type(book_group_small_3, book).\nitem(empty_green_potion).\nitem_name(empty_green_potion, 'Empty Green Potion').\nitem_base_type(empty_green_potion, potion).\nitem(rope_3).\nitem_name(rope_3, 'Rope').\nitem_base_type(rope_3, rope).\nitem(sword_golden_2).\nitem_name(sword_golden_2, 'Sword Golden').\nitem_base_type(sword_golden_2, sword).\nitem(shield_round_2).\nitem_name(shield_round_2, 'Shield Round').\nitem_base_type(shield_round_2, shield).\nitem(pot_1_lid).\nitem_name(pot_1_lid, 'Pot 1 Lid').\nitem_base_type(pot_1_lid, pot_1_lid).\nitem(ring2).\nitem_name(ring2, 'Ring2').\nitem_base_type(ring2, ring).\nitem(coin_skull).\nitem_name(coin_skull, 'Coin Skull').\nitem_base_type(coin_skull, coin_skull).\nitem(empty_silver_flask).\nitem_name(empty_silver_flask, 'Empty Silver Flask').\nitem_base_type(empty_silver_flask, potion).\nitem(ice_staff).\nitem_name(ice_staff, 'Ice Staff').\nitem_base_type(ice_staff, staff).\nitem(heart_half).\nitem_name(heart_half, 'Heart Half').\nitem_base_type(heart_half, heart_half).\nitem(snowflake3).\nitem_name(snowflake3, 'Snowflake3').\nitem_base_type(snowflake3, snowflake3).\nitem(bow_wooden).\nitem_name(bow_wooden, 'Bow Wooden').\nitem_base_type(bow_wooden, bow).\nitem(sword_3).\nitem_name(sword_3, 'Sword').\nitem_base_type(sword_3, sword).\nitem(empty_white_flask).\nitem_name(empty_white_flask, 'Empty White Flask').\nitem_base_type(empty_white_flask, potion).\nitem(dagger_golden).\nitem_name(dagger_golden, 'Dagger Golden').\nitem_base_type(dagger_golden, dagger).\nitem(chain_coil).\nitem_name(chain_coil, 'Chain Coil').\nitem_base_type(chain_coil, chain_coil).\nitem(chair_1).\nitem_name(chair_1, 'Chair').\nitem_base_type(chair_1, chair).\nitem(book3_closed).\nitem_name(book3_closed, 'Book3 Closed').\nitem_base_type(book3_closed, book).\nitem(wooden_stool_1).\nitem_name(wooden_stool_1, 'Wooden Stool').\nitem_base_type(wooden_stool_1, stool).\nitem(heart_broken).\nitem_name(heart_broken, 'Heart Broken').\nitem_base_type(heart_broken, heart_broken).\nitem(potion5_filled).\nitem_name(potion5_filled, 'Potion5 Filled').\nitem_base_type(potion5_filled, potion).\nitem(coin_pile_2).\nitem_name(coin_pile_2, 'Coin Pile').\nitem_base_type(coin_pile_2, coin_pile).\nitem(claymore).\nitem_name(claymore, 'Claymore').\nitem_base_type(claymore, ore).\nitem(arrow_quiver).\nitem_name(arrow_quiver, 'Arrow Quiver').\nitem_base_type(arrow_quiver, arrow).\nitem(anvil).\nitem_name(anvil, 'Anvil').\nitem_base_type(anvil, anvil).\nitem(bow_golden_2).\nitem_name(bow_golden_2, 'Bow Golden').\nitem_base_type(bow_golden_2, bow).\nitem(torch_metal).\nitem_name(torch_metal, 'Torch Metal').\nitem_base_type(torch_metal, torch).\nitem(dagger_3).\nitem_name(dagger_3, 'Dagger').\nitem_base_type(dagger_3, dagger).\nitem(necklace).\nitem_name(necklace, 'Necklace').\nitem_base_type(necklace, necklace).\nitem(candle_stick).\nitem_name(candle_stick, 'Candle Stick').\nitem_base_type(candle_stick, candle).\nitem(animated_chest).\nitem_name(animated_chest, 'Animated Chest').\nitem_base_type(animated_chest, chest).\nitem(arrow_golden).\nitem_name(arrow_golden, 'Arrow Golden').\nitem_base_type(arrow_golden, arrow).\nitem(candle_stick_stand).\nitem_name(candle_stick_stand, 'Candle Stick Stand').\nitem_base_type(candle_stick_stand, candle).\nitem(crystal5_damaged).\nitem_name(crystal5_damaged, 'Crystal5 Damaged').\nitem_base_type(crystal5_damaged, crystal).\nitem(vase_2).\nitem_name(vase_2, 'Vase').\nitem_base_type(vase_2, vase).\nitem(signet_ring).\nitem_name(signet_ring, 'Signet Ring').\nitem_base_type(signet_ring, ring).\nitem(staff).\nitem_name(staff, 'Staff').\nitem_base_type(staff, staff).\nitem(ring5).\nitem_name(ring5, 'Ring5').\nitem_base_type(ring5, ring).\nitem(crown_3).\nitem_name(crown_3, 'Crown').\nitem_base_type(crown_3, crown).\nitem(carrot_1).\nitem_name(carrot_1, 'Carrot').\nitem_base_type(carrot_1, carrot).\nitem(crystal_2).\nitem_name(crystal_2, 'Crystal').\nitem_base_type(crystal_2, crystal).\nitem(book_3).\nitem_name(book_3, 'Book').\nitem_base_type(book_3, book).\nitem(wooden_staff).\nitem_name(wooden_staff, 'Wooden Staff').\nitem_base_type(wooden_staff, staff).\nitem(barrel_5).\nitem_name(barrel_5, 'Barrel').\nitem_base_type(barrel_5, barrel).\nitem(silver_flask).\nitem_name(silver_flask, 'Silver Flask').\nitem_base_type(silver_flask, potion).\nitem(hammer_double_2).\nitem_name(hammer_double_2, 'Hammer Double').\nitem_base_type(hammer_double_2, hammer).\nitem(rollofpaper).\nitem_name(rollofpaper, 'Rollofpaper').\nitem_base_type(rollofpaper, rollofpaper).\nitem(small_bottle).\nitem_name(small_bottle, 'Small Bottle').\nitem_base_type(small_bottle, bottle).\nitem(bench).\nitem_name(bench, 'Bench').\nitem_base_type(bench, bench).\nitem(cauldron).\nitem_name(cauldron, 'Cauldron').\nitem_base_type(cauldron, cauldron).\nitem(potion3_filled).\nitem_name(potion3_filled, 'Potion3 Filled').\nitem_base_type(potion3_filled, potion).\nitem(potion_3).\nitem_name(potion_3, 'Potion').\nitem_base_type(potion_3, potion).\nitem(book3_open).\nitem_name(book3_open, 'Book3 Open').\nitem_base_type(book3_open, book).\nitem(sword_4).\nitem_name(sword_4, 'Sword').\nitem_base_type(sword_4, sword).\nitem(empty_blue_potion).\nitem_name(empty_blue_potion, 'Empty Blue Potion').\nitem_base_type(empty_blue_potion, potion).\nitem(bag_2).\nitem_name(bag_2, 'Bag').\nitem_base_type(bag_2, bag).\nitem(chest_open).\nitem_name(chest_open, 'Chest Open').\nitem_base_type(chest_open, chest).\nitem(workbench).\nitem_name(workbench, 'Workbench').\nitem_base_type(workbench, bench).\nitem(chalice_1).\nitem_name(chalice_1, 'Chalice').\nitem_base_type(chalice_1, chalice).\nitem(axe_small_3).\nitem_name(axe_small_3, 'Axe Small').\nitem_base_type(axe_small_3, axe).\nitem(crystal_1_damaged).\nitem_name(crystal_1_damaged, 'Crystal 1 Damaged').\nitem_base_type(crystal_1_damaged, crystal).\nitem(scythe).\nitem_name(scythe, 'Scythe').\nitem_base_type(scythe, scythe).\nitem(chalice_2).\nitem_name(chalice_2, 'Chalice').\nitem_base_type(chalice_2, chalice).\nitem(skull).\nitem_name(skull, 'Skull').\nitem_base_type(skull, skull).\nitem(dagger_4).\nitem_name(dagger_4, 'Dagger').\nitem_base_type(dagger_4, dagger).\nitem(gems).\nitem_name(gems, 'Gems').\nitem_base_type(gems, gems).\nitem(ring).\nitem_name(ring, 'Ring').\nitem_base_type(ring, ring).\nitem(tree_stump).\nitem_name(tree_stump, 'Tree Stump').\nitem_base_type(tree_stump, stump).\nitem(boulder).\nitem_name(boulder, 'Boulder').\nitem_base_type(boulder, rock).\nitem(glove).\nitem_name(glove, 'Glove').\nitem_base_type(glove, accessory).\nitem(ship_pinnace).\nitem_name(ship_pinnace, 'Ship Pinnace').\nitem_base_type(ship_pinnace, wood).\nitem(scroll_3).\nitem_name(scroll_3, 'Scroll').\nitem_base_type(scroll_3, scroll).\nitem(armor_metal_2).\nitem_name(armor_metal_2, 'Armor Metal').\nitem_base_type(armor_metal_2, armor).\nitem(shield).\nitem_name(shield, 'Shield').\nitem_base_type(shield, shield).\ntruth_title(owner_at_6abb8ff3078b40088ad4dea5, 'Owner at 6abb8ff3078b40088ad4dea5').\ntruth_type(owner_at_6abb8ff3078b40088ad4dea5, occupation).\ntruth_about(owner_at_6abb8ff3078b40088ad4dea5, xanthe_oakfield).\ntruth_title(owner_at_6abb8ff3078b40088ad4dea6, 'Owner at 6abb8ff3078b40088ad4dea6').\ntruth_type(owner_at_6abb8ff3078b40088ad4dea6, occupation).\ntruth_about(owner_at_6abb8ff3078b40088ad4dea6, maeve_oakfield).\ntruth_title(owner_at_6abb8ff3078b40088ad4dea7, 'Owner at 6abb8ff3078b40088ad4dea7').\ntruth_type(owner_at_6abb8ff3078b40088ad4dea7, occupation).\ntruth_about(owner_at_6abb8ff3078b40088ad4dea7, xenia_merriweather).\ntruth_title(owner_at_6abb8ff3078b40088ad4dea8, 'Owner at 6abb8ff3078b40088ad4dea8').\ntruth_type(owner_at_6abb8ff3078b40088ad4dea8, occupation).\ntruth_about(owner_at_6abb8ff3078b40088ad4dea8, rowena_ironwood).\ntruth_title(owner_at_6abb8ff3078b40088ad4dea9, 'Owner at 6abb8ff3078b40088ad4dea9').\ntruth_type(owner_at_6abb8ff3078b40088ad4dea9, occupation).\ntruth_about(owner_at_6abb8ff3078b40088ad4dea9, niclas_ironwood).\ntruth_title(farmhand_at_6abb8ff3078b40088ad4dea5, 'Farmhand at 6abb8ff3078b40088ad4dea5').\ntruth_type(farmhand_at_6abb8ff3078b40088ad4dea5, occupation).\ntruth_about(farmhand_at_6abb8ff3078b40088ad4dea5, magnus_ironwood).\ntruth_title(baker_at_6abb8ff3078b40088ad4dea6, 'Baker at 6abb8ff3078b40088ad4dea6').\ntruth_type(baker_at_6abb8ff3078b40088ad4dea6, occupation).\ntruth_about(baker_at_6abb8ff3078b40088ad4dea6, aldric_underwood).\ntruth_title(blacksmith_at_6abb8ff3078b40088ad4dea7, 'Blacksmith at 6abb8ff3078b40088ad4dea7').\ntruth_type(blacksmith_at_6abb8ff3078b40088ad4dea7, occupation).\ntruth_about(blacksmith_at_6abb8ff3078b40088ad4dea7, zephyr_shadowmere).\ntruth_title(carpenter_at_6abb8ff3078b40088ad4dea8, 'Carpenter at 6abb8ff3078b40088ad4dea8').\ntruth_type(carpenter_at_6abb8ff3078b40088ad4dea8, occupation).\ntruth_about(carpenter_at_6abb8ff3078b40088ad4dea8, vanessa_greystone).\ntruth_title(groundskeeper_at_6abb8ff3078b40088ad4dea9, 'Groundskeeper at 6abb8ff3078b40088ad4dea9').\ntruth_type(groundskeeper_at_6abb8ff3078b40088ad4dea9, occupation).\ntruth_about(groundskeeper_at_6abb8ff3078b40088ad4dea9, wren_quincy).\ntruth_title(marriage_of_eadwin_ashford_and_kalista_greystone, 'Marriage of Eadwin Ashford and Kalista Greystone').\ntruth_type(marriage_of_eadwin_ashford_and_kalista_greystone, marriage).\ntruth_about(marriage_of_eadwin_ashford_and_kalista_greystone, eadwin_ashford).\ntruth_title(marriage_of_oswin_greystone_and_delphine_oakfield, 'Marriage of Oswin Greystone and Delphine Oakfield').\ntruth_type(marriage_of_oswin_greystone_and_delphine_oakfield, marriage).\ntruth_about(marriage_of_oswin_greystone_and_delphine_oakfield, oswin_greystone).\ntruth_title(marriage_of_kestrel_greystone_and_ursula_greystone, 'Marriage of Kestrel Greystone and Ursula Greystone').\ntruth_type(marriage_of_kestrel_greystone_and_ursula_greystone, marriage).\ntruth_about(marriage_of_kestrel_greystone_and_ursula_greystone, kestrel_greystone).\ntruth_title(marriage_of_fenwick_ashford_and_tamsin_greystone, 'Marriage of Fenwick Ashford and Tamsin Greystone').\ntruth_type(marriage_of_fenwick_ashford_and_tamsin_greystone, marriage).\ntruth_about(marriage_of_fenwick_ashford_and_tamsin_greystone, fenwick_ashford).\ntruth_title(birth_of_thomas_quincy, 'Birth of Thomas Quincy').\ntruth_type(birth_of_thomas_quincy, birth).\ntruth_about(birth_of_thomas_quincy, thomas_quincy).\ntruth_title(divorce_of_eadwin_ashford_and_kalista_greystone, 'Divorce of Eadwin Ashford and Kalista Greystone').\ntruth_type(divorce_of_eadwin_ashford_and_kalista_greystone, divorce).\ntruth_about(divorce_of_eadwin_ashford_and_kalista_greystone, eadwin_ashford).\ntruth_title(death_of_padraig_greystone, 'Death of Pádraig Greystone').\ntruth_type(death_of_padraig_greystone, death).\ntruth_about(death_of_padraig_greystone, padraig_greystone).\ntruth_title(birth_of_melissa_ashford, 'Birth of Melissa Ashford').\ntruth_type(birth_of_melissa_ashford, birth).\ntruth_about(birth_of_melissa_ashford, melissa_ashford).\ntruth_title(birth_of_matthew_ashford, 'Birth of Matthew Ashford').\ntruth_type(birth_of_matthew_ashford, birth).\ntruth_about(birth_of_matthew_ashford, matthew_ashford).\ntruth_title(death_of_thea_ironwood, 'Death of Thea Ironwood').\ntruth_type(death_of_thea_ironwood, death).\ntruth_about(death_of_thea_ironwood, thea_ironwood).\ntruth_title(flour_dusted_pride, 'Flour-Dusted Pride').\ntruth_type(flour_dusted_pride, trait).\ntruth_about(flour_dusted_pride, maeve_oakfield).\ntruth_title(a_recipe_withheld, 'A Recipe Withheld').\ntruth_type(a_recipe_withheld, secret).\ntruth_about(a_recipe_withheld, maeve_oakfield).\ntruth_title(married_into_forge_lane, 'Married into Forge Lane').\ntruth_type(married_into_forge_lane, relationship).\ntruth_about(married_into_forge_lane, maeve_oakfield).\ntruth_title(greeting_1, 'Greeting').\ntruth_type(greeting_1, greeting).\ntruth_about(greeting_1, maeve_oakfield).\ntruth_title(youngest_and_watchful, 'Youngest and Watchful').\ntruth_type(youngest_and_watchful, trait).\ntruth_about(youngest_and_watchful, niclas_ironwood).\ntruth_title(a_doubt_he_keeps_to_the_altar, 'A Doubt He Keeps to the Altar').\ntruth_type(a_doubt_he_keeps_to_the_altar, secret).\ntruth_about(a_doubt_he_keeps_to_the_altar, niclas_ironwood).\ntruth_title(sibling_at_the_hearth, 'Sibling at the Hearth').\ntruth_type(sibling_at_the_hearth, relationship).\ntruth_about(sibling_at_the_hearth, niclas_ironwood).\ntruth_title(greeting_2, 'Greeting').\ntruth_type(greeting_2, greeting).\ntruth_about(greeting_2, niclas_ironwood).\ntruth_title(no_patience_for_ornament, 'No Patience for Ornament').\ntruth_type(no_patience_for_ornament, trait).\ntruth_about(no_patience_for_ornament, valen_oakfield).\ntruth_title(the_trade_he_didn_t_choose, 'The Trade He Didn\\'t Choose').\ntruth_type(the_trade_he_didn_t_choose, secret).\ntruth_about(the_trade_he_didn_t_choose, valen_oakfield).\ntruth_title(brothers_under_one_roof_1, 'Brothers Under One Roof').\ntruth_type(brothers_under_one_roof_1, relationship).\ntruth_about(brothers_under_one_roof_1, valen_oakfield).\ntruth_title(greeting_3, 'Greeting').\ntruth_type(greeting_3, greeting).\ntruth_about(greeting_3, valen_oakfield).\ntruth_title(an_eye_for_fit, 'An Eye for Fit').\ntruth_type(an_eye_for_fit, trait).\ntruth_about(an_eye_for_fit, wren_oakfield).\ntruth_title(quiet_grief_kept_stitched_shut, 'Quiet Grief Kept Stitched Shut').\ntruth_type(quiet_grief_kept_stitched_shut, secret).\ntruth_about(quiet_grief_kept_stitched_shut, wren_oakfield).\ntruth_title(a_house_apart_from_family, 'A House Apart from Family').\ntruth_type(a_house_apart_from_family, relationship).\ntruth_about(a_house_apart_from_family, wren_oakfield).\ntruth_title(greeting_4, 'Greeting').\ntruth_type(greeting_4, greeting).\ntruth_about(greeting_4, wren_oakfield).\ntruth_title(steady_hands_steady_man, 'Steady Hands, Steady Man').\ntruth_type(steady_hands_steady_man, trait).\ntruth_about(steady_hands_steady_man, xander_oakfield).\ntruth_title(a_son_he_worries_over, 'A Son He Worries Over').\ntruth_type(a_son_he_worries_over, secret).\ntruth_about(a_son_he_worries_over, xander_oakfield).\ntruth_title(wife_by_his_side, 'Wife by His Side').\ntruth_type(wife_by_his_side, relationship).\ntruth_about(wife_by_his_side, xander_oakfield).\ntruth_title(greeting_5, 'Greeting').\ntruth_type(greeting_5, greeting).\ntruth_about(greeting_5, xander_oakfield).\ntruth_title(a_stranger_s_hands, 'A Stranger\\'s Hands').\ntruth_type(a_stranger_s_hands, trait).\ntruth_about(a_stranger_s_hands, zephyr_shadowmere).\ntruth_title(the_loneliness_he_hides, 'The Loneliness He Hides').\ntruth_type(the_loneliness_he_hides, secret).\ntruth_about(the_loneliness_he_hides, zephyr_shadowmere).\ntruth_title(an_unlikely_housemate, 'An Unlikely Housemate').\ntruth_type(an_unlikely_housemate, relationship).\ntruth_about(an_unlikely_housemate, zephyr_shadowmere).\ntruth_title(greeting_6, 'Greeting').\ntruth_type(greeting_6, greeting).\ntruth_about(greeting_6, zephyr_shadowmere).\ntruth_title(flour_handed_father, 'Flour-Handed Father').\ntruth_type(flour_handed_father, trait).\ntruth_about(flour_handed_father, aldric_underwood).\ntruth_title(a_grief_kneaded_into_routine, 'A Grief Kneaded Into Routine').\ntruth_type(a_grief_kneaded_into_routine, secret).\ntruth_about(a_grief_kneaded_into_routine, aldric_underwood).\ntruth_title(three_daughters_one_table, 'Three Daughters, One Table').\ntruth_type(three_daughters_one_table, relationship).\ntruth_about(three_daughters_one_table, aldric_underwood).\ntruth_title(greeting_7, 'Greeting').\ntruth_type(greeting_7, greeting).\ntruth_about(greeting_7, aldric_underwood).\ntruth_title(measures_twice_cuts_once, 'Measures twice, cuts once').\ntruth_type(measures_twice_cuts_once, trait).\ntruth_about(measures_twice_cuts_once, briony_ashford).\ntruth_title(the_chisel_she_won_t_use, 'The chisel she won\\'t use').\ntruth_type(the_chisel_she_won_t_use, secret).\ntruth_about(the_chisel_she_won_t_use, briony_ashford).\ntruth_title(nerida_carries_too_much, 'Nerida carries too much').\ntruth_type(nerida_carries_too_much, relationship).\ntruth_about(nerida_carries_too_much, briony_ashford).\ntruth_title(greeting_8, 'Greeting').\ntruth_type(greeting_8, greeting).\ntruth_about(greeting_8, briony_ashford).\ntruth_title(whistles_while_she_works, 'Whistles while she works').\ntruth_type(whistles_while_she_works, trait).\ntruth_about(whistles_while_she_works, cora_oakfield).\ntruth_title(a_quiet_envy, 'A quiet envy').\ntruth_type(a_quiet_envy, secret).\ntruth_about(a_quiet_envy, cora_oakfield).\ntruth_title(watching_over_caspian, 'Watching over Caspian').\ntruth_type(watching_over_caspian, relationship).\ntruth_about(watching_over_caspian, cora_oakfield).\ntruth_title(greeting_9, 'Greeting').\ntruth_type(greeting_9, greeting).\ntruth_about(greeting_9, cora_oakfield).\ntruth_title(never_trusts_his_own_first_taste, 'Never trusts his own first taste').\ntruth_type(never_trusts_his_own_first_taste, trait).\ntruth_about(never_trusts_his_own_first_taste, brennon_oakfield).\ntruth_title(the_burned_recipe, 'The burned recipe').\ntruth_type(the_burned_recipe, secret).\ntruth_about(the_burned_recipe, brennon_oakfield).\ntruth_title(saving_the_best_cut_for_zella, 'Saving the best cut for Zella').\ntruth_type(saving_the_best_cut_for_zella, relationship).\ntruth_about(saving_the_best_cut_for_zella, brennon_oakfield).\ntruth_title(greeting_10, 'Greeting').\ntruth_type(greeting_10, greeting).\ntruth_about(greeting_10, brennon_oakfield).\ntruth_title(cooking_for_two_out_of_habit, 'Cooking for two out of habit').\ntruth_type(cooking_for_two_out_of_habit, trait).\ntruth_about(cooking_for_two_out_of_habit, caspian_oakfield).\ntruth_title(the_second_plate, 'The second plate').\ntruth_type(the_second_plate, secret).\ntruth_about(the_second_plate, caspian_oakfield).\ntruth_title(cora_s_quiet_visits, 'Cora\\'s quiet visits').\ntruth_type(cora_s_quiet_visits, relationship).\ntruth_about(cora_s_quiet_visits, caspian_oakfield).\ntruth_title(greeting_11, 'Greeting').\ntruth_type(greeting_11, greeting).\ntruth_about(greeting_11, caspian_oakfield).\ntruth_title(prouder_of_her_back_than_her_hands, 'Prouder of her back than her hands').\ntruth_type(prouder_of_her_back_than_her_hands, trait).\ntruth_about(prouder_of_her_back_than_her_hands, delphine_oakfield).\ntruth_title(more_than_someone_s_wife, 'More than someone\\'s wife').\ntruth_type(more_than_someone_s_wife, secret).\ntruth_about(more_than_someone_s_wife, delphine_oakfield).\ntruth_title(a_quiet_match, 'A quiet match').\ntruth_type(a_quiet_match, relationship).\ntruth_about(a_quiet_match, delphine_oakfield).\ntruth_title(greeting_12, 'Greeting').\ntruth_type(greeting_12, greeting).\ntruth_about(greeting_12, delphine_oakfield).\ntruth_title(fussy_with_his_spices, 'Fussy with his spices').\ntruth_type(fussy_with_his_spices, trait).\ntruth_about(fussy_with_his_spices, dorian_ashford).\ntruth_title(a_courtship_he_never_started, 'A courtship he never started').\ntruth_type(a_courtship_he_never_started, secret).\ntruth_about(a_courtship_he_never_started, dorian_ashford).\ntruth_title(cooking_for_eadwin, 'Cooking for Eadwin').\ntruth_type(cooking_for_eadwin, relationship).\ntruth_about(cooking_for_eadwin, dorian_ashford).\ntruth_title(greeting_13, 'Greeting').\ntruth_type(greeting_13, greeting).\ntruth_about(greeting_13, dorian_ashford).\ntruth_title(slow_and_unhurried, 'Slow and unhurried').\ntruth_type(slow_and_unhurried, trait).\ntruth_about(slow_and_unhurried, eadwin_ashford).\ntruth_title(a_tally_of_unfinished_work, 'A tally of unfinished work').\ntruth_type(a_tally_of_unfinished_work, secret).\ntruth_about(a_tally_of_unfinished_work, eadwin_ashford).\ntruth_title(dorian_s_cooking, 'Dorian\\'s cooking').\ntruth_type(dorian_s_cooking, relationship).\ntruth_about(dorian_s_cooking, eadwin_ashford).\ntruth_title(greeting_14, 'Greeting').\ntruth_type(greeting_14, greeting).\ntruth_about(greeting_14, eadwin_ashford).\ntruth_title(patient_teacher, 'Patient teacher').\ntruth_type(patient_teacher, trait).\ntruth_about(patient_teacher, fenwick_ashford).\ntruth_title(worry_he_keeps_quiet, 'Worry he keeps quiet').\ntruth_type(worry_he_keeps_quiet, secret).\ntruth_about(worry_he_keeps_quiet, fenwick_ashford).\ntruth_title(teaching_matthew, 'Teaching Matthew').\ntruth_type(teaching_matthew, relationship).\ntruth_about(teaching_matthew, fenwick_ashford).\ntruth_title(greeting_15, 'Greeting').\ntruth_type(greeting_15, greeting).\ntruth_about(greeting_15, fenwick_ashford).\ntruth_title(up_before_the_sun_1, 'Up before the sun').\ntruth_type(up_before_the_sun_1, trait).\ntruth_about(up_before_the_sun_1, galen_ashford).\ntruth_title(a_father_s_quiet_doubt, 'A father\\'s quiet doubt').\ntruth_type(a_father_s_quiet_doubt, secret).\ntruth_about(a_father_s_quiet_doubt, galen_ashford).\ntruth_title(trusting_phoebe, 'Trusting Phoebe').\ntruth_type(trusting_phoebe, relationship).\ntruth_about(trusting_phoebe, galen_ashford).\ntruth_title(greeting_16, 'Greeting').\ntruth_type(greeting_16, greeting).\ntruth_about(greeting_16, galen_ashford).\ntruth_title(blunt_and_unbothered, 'Blunt and unbothered').\ntruth_type(blunt_and_unbothered, trait).\ntruth_about(blunt_and_unbothered, indigo_greystone).\ntruth_title(wanting_a_path_of_her_own, 'Wanting a path of her own').\ntruth_type(wanting_a_path_of_her_own, secret).\ntruth_about(wanting_a_path_of_her_own, indigo_greystone).\ntruth_title(shared_work_with_ursula, 'Shared work with Ursula').\ntruth_type(shared_work_with_ursula, relationship).\ntruth_about(shared_work_with_ursula, indigo_greystone).\ntruth_title(greeting_17, 'Greeting').\ntruth_type(greeting_17, greeting).\ntruth_about(greeting_17, indigo_greystone).\ntruth_title(precise_to_a_fault, 'Precise to a fault').\ntruth_type(precise_to_a_fault, trait).\ntruth_about(precise_to_a_fault, linn_oakfield).\ntruth_title(unspoken_wish, 'Unspoken wish').\ntruth_type(unspoken_wish, secret).\ntruth_about(unspoken_wish, linn_oakfield).\ntruth_title(sister_apart, 'Sister apart').\ntruth_type(sister_apart, relationship).\ntruth_about(sister_apart, linn_oakfield).\ntruth_title(greeting_18, 'Greeting').\ntruth_type(greeting_18, greeting).\ntruth_about(greeting_18, linn_oakfield).\ntruth_title(steady_with_his_hands_slow_with_his_words, 'Steady with his hands, slow with his words').\ntruth_type(steady_with_his_hands_slow_with_his_words, trait).\ntruth_about(steady_with_his_hands_slow_with_his_words, harald_oakfield).\ntruth_title(a_quiet_worry, 'A quiet worry').\ntruth_type(a_quiet_worry, secret).\ntruth_about(a_quiet_worry, harald_oakfield).\ntruth_title(married_into_steadiness, 'Married into steadiness').\ntruth_type(married_into_steadiness, relationship).\ntruth_about(married_into_steadiness, harald_oakfield).\ntruth_title(greeting_19, 'Greeting').\ntruth_type(greeting_19, greeting).\ntruth_about(greeting_19, harald_oakfield).\ntruth_title(whistles_while_he_works, 'Whistles while he works').\ntruth_type(whistles_while_he_works, trait).\ntruth_about(whistles_while_he_works, kestrel_greystone).\ntruth_title(a_crowded_house_a_private_ache, 'A crowded house, a private ache').\ntruth_type(a_crowded_house_a_private_ache, secret).\ntruth_about(a_crowded_house_a_private_ache, kestrel_greystone).\ntruth_title(greeting_20, 'Greeting').\ntruth_type(greeting_20, greeting).\ntruth_about(greeting_20, kestrel_greystone).\ntruth_title(flour_dusted_and_cheerful, 'Flour-dusted and cheerful').\ntruth_type(flour_dusted_and_cheerful, trait).\ntruth_about(flour_dusted_and_cheerful, phoebe_ashford).\ntruth_title(a_secret_worry_for_melissa, 'A secret worry for Melissa').\ntruth_type(a_secret_worry_for_melissa, secret).\ntruth_about(a_secret_worry_for_melissa, phoebe_ashford).\ntruth_title(a_house_full_of_love, 'A house full of love').\ntruth_type(a_house_full_of_love, relationship).\ntruth_about(a_house_full_of_love, phoebe_ashford).\ntruth_title(greeting_21, 'Greeting').\ntruth_type(greeting_21, greeting).\ntruth_about(greeting_21, phoebe_ashford).\ntruth_title(first_up_last_in, 'First up, last in').\ntruth_type(first_up_last_in, trait).\ntruth_about(first_up_last_in, leif_ironwood).\ntruth_title(a_private_restlessness, 'A private restlessness').\ntruth_type(a_private_restlessness, secret).\ntruth_about(a_private_restlessness, leif_ironwood).\ntruth_title(eldest_under_a_full_roof, 'Eldest under a full roof').\ntruth_type(eldest_under_a_full_roof, relationship).\ntruth_about(eldest_under_a_full_roof, leif_ironwood).\ntruth_title(greeting_22, 'Greeting').\ntruth_type(greeting_22, greeting).\ntruth_about(greeting_22, leif_ironwood).\ntruth_title(sharp_eyed_and_exacting, 'Sharp-eyed and exacting').\ntruth_type(sharp_eyed_and_exacting, trait).\ntruth_about(sharp_eyed_and_exacting, quinn_ironwood).\ntruth_title(a_guarded_ambition, 'A guarded ambition').\ntruth_type(a_guarded_ambition, secret).\ntruth_about(a_guarded_ambition, quinn_ironwood).\ntruth_title(sister_among_many, 'Sister among many').\ntruth_type(sister_among_many, relationship).\ntruth_about(sister_among_many, quinn_ironwood).\ntruth_title(greeting_23, 'Greeting').\ntruth_type(greeting_23, greeting).\ntruth_about(greeting_23, quinn_ironwood).\ntruth_title(strong_back_quiet_mind, 'Strong back, quiet mind').\ntruth_type(strong_back_quiet_mind, trait).\ntruth_about(strong_back_quiet_mind, magnus_ironwood).\ntruth_title(a_secret_shame, 'A secret shame').\ntruth_type(a_secret_shame, secret).\ntruth_about(a_secret_shame, magnus_ironwood).\ntruth_title(working_another_s_land, 'Working another\\'s land').\ntruth_type(working_another_s_land, relationship).\ntruth_about(working_another_s_land, magnus_ironwood).\ntruth_title(greeting_24, 'Greeting').\ntruth_type(greeting_24, greeting).\ntruth_about(greeting_24, magnus_ironwood).\ntruth_title(cooks_for_comfort, 'Cooks for comfort').\ntruth_type(cooks_for_comfort, trait).\ntruth_about(cooks_for_comfort, sage_yarrow).\ntruth_title(a_quiet_unease, 'A quiet unease').\ntruth_type(a_quiet_unease, secret).\ntruth_about(a_quiet_unease, sage_yarrow).\ntruth_title(a_household_of_two, 'A household of two').\ntruth_type(a_household_of_two, relationship).\ntruth_about(a_household_of_two, sage_yarrow).\ntruth_title(greeting_25, 'Greeting').\ntruth_type(greeting_25, greeting).\ntruth_about(greeting_25, sage_yarrow).\ntruth_title(up_before_the_sun_2, 'Up before the sun').\ntruth_type(up_before_the_sun_2, trait).\ntruth_about(up_before_the_sun_2, tamsin_greystone).\ntruth_title(a_private_fear, 'A private fear').\ntruth_type(a_private_fear, secret).\ntruth_about(a_private_fear, tamsin_greystone).\ntruth_title(a_full_house_at_queen_street, 'A full house at Queen Street').\ntruth_type(a_full_house_at_queen_street, relationship).\ntruth_about(a_full_house_at_queen_street, tamsin_greystone).\ntruth_title(greeting_26, 'Greeting').\ntruth_type(greeting_26, greeting).\ntruth_about(greeting_26, tamsin_greystone).\ntruth_title(up_with_the_dark, 'Up with the dark').\ntruth_type(up_with_the_dark, trait).\ntruth_about(up_with_the_dark, ursula_greystone).\ntruth_title(a_quiet_grief_1, 'A quiet grief').\ntruth_type(a_quiet_grief_1, secret).\ntruth_about(a_quiet_grief_1, ursula_greystone).\ntruth_title(a_house_of_sisters, 'A house of sisters').\ntruth_type(a_house_of_sisters, relationship).\ntruth_about(a_house_of_sisters, ursula_greystone).\ntruth_title(greeting_27, 'Greeting').\ntruth_type(greeting_27, greeting).\ntruth_about(greeting_27, ursula_greystone).\ntruth_title(an_edge_for_everything, 'An edge for everything').\ntruth_type(an_edge_for_everything, trait).\ntruth_about(an_edge_for_everything, vanessa_greystone).\ntruth_title(the_offer_she_never_explained, 'The offer she never explained').\ntruth_type(the_offer_she_never_explained, secret).\ntruth_about(the_offer_she_never_explained, vanessa_greystone).\ntruth_title(two_carpenters_one_trade, 'Two carpenters, one trade').\ntruth_type(two_carpenters_one_trade, relationship).\ntruth_about(two_carpenters_one_trade, vanessa_greystone).\ntruth_title(greeting_28, 'Greeting').\ntruth_type(greeting_28, greeting).\ntruth_about(greeting_28, vanessa_greystone).\ntruth_title(a_whistle_for_every_task, 'A whistle for every task').\ntruth_type(a_whistle_for_every_task, trait).\ntruth_about(a_whistle_for_every_task, oswin_greystone).\ntruth_title(longing_for_his_own_roof, 'Longing for his own roof').\ntruth_type(longing_for_his_own_roof, secret).\ntruth_about(longing_for_his_own_roof, oswin_greystone).\ntruth_title(a_full_fond_house, 'A full, fond house').\ntruth_type(a_full_fond_house, relationship).\ntruth_about(a_full_fond_house, oswin_greystone).\ntruth_title(greeting_29, 'Greeting').\ntruth_type(greeting_29, greeting).\ntruth_about(greeting_29, oswin_greystone).\ntruth_title(keeper_of_every_name, 'Keeper of every name').\ntruth_type(keeper_of_every_name, trait).\ntruth_about(keeper_of_every_name, wren_quincy).\ntruth_title(words_for_the_dead, 'Words for the dead').\ntruth_type(words_for_the_dead, secret).\ntruth_about(words_for_the_dead, wren_quincy).\ntruth_title(a_small_shadow_at_her_heel, 'A small shadow at her heel').\ntruth_type(a_small_shadow_at_her_heel, relationship).\ntruth_about(a_small_shadow_at_her_heel, wren_quincy).\ntruth_title(greeting_30, 'Greeting').\ntruth_type(greeting_30, greeting).\ntruth_about(greeting_30, wren_quincy).\ntruth_title(no_job_too_small, 'No job too small').\ntruth_type(no_job_too_small, trait).\ntruth_about(no_job_too_small, percival_quincy).\ntruth_title(a_silent_weariness, 'A silent weariness').\ntruth_type(a_silent_weariness, secret).\ntruth_about(a_silent_weariness, percival_quincy).\ntruth_title(teaching_the_boy, 'Teaching the boy').\ntruth_type(teaching_the_boy, relationship).\ntruth_about(teaching_the_boy, percival_quincy).\ntruth_title(greeting_31, 'Greeting').\ntruth_type(greeting_31, greeting).\ntruth_about(greeting_31, percival_quincy).\ntruth_title(no_patience_for_nonsense, 'No patience for nonsense').\ntruth_type(no_patience_for_nonsense, trait).\ntruth_about(no_patience_for_nonsense, zella_oakfield).\ntruth_title(a_name_she_misses, 'A name she misses').\ntruth_type(a_name_she_misses, secret).\ntruth_about(a_name_she_misses, zella_oakfield).\ntruth_title(greeting_32, 'Greeting').\ntruth_type(greeting_32, greeting).\ntruth_about(greeting_32, zella_oakfield).\ntruth_title(hands_for_hire, 'Hands for hire').\ntruth_type(hands_for_hire, trait).\ntruth_about(hands_for_hire, quill_westwood).\ntruth_title(thoughts_of_leaving, 'Thoughts of leaving').\ntruth_type(thoughts_of_leaving, secret).\ntruth_about(thoughts_of_leaving, quill_westwood).\ntruth_title(built_from_nothing, 'Built from nothing').\ntruth_type(built_from_nothing, backstory).\ntruth_about(built_from_nothing, quill_westwood).\ntruth_title(greeting_33, 'Greeting').\ntruth_type(greeting_33, greeting).\ntruth_about(greeting_33, quill_westwood).\ntruth_title(always_tasting, 'Always tasting').\ntruth_type(always_tasting, trait).\ntruth_about(always_tasting, rothgar_yarrow).\ntruth_title(not_good_enough_he_fears, 'Not good enough, he fears').\ntruth_type(not_good_enough_he_fears, secret).\ntruth_about(not_good_enough_he_fears, rothgar_yarrow).\ntruth_title(supper_for_two, 'Supper for two').\ntruth_type(supper_for_two, relationship).\ntruth_about(supper_for_two, rothgar_yarrow).\ntruth_title(greeting_34, 'Greeting').\ntruth_type(greeting_34, greeting).\ntruth_about(greeting_34, rothgar_yarrow).\ntruth_title(young_and_determined, 'Young and determined').\ntruth_type(young_and_determined, trait).\ntruth_about(young_and_determined, blythe_zephyrus).\ntruth_title(a_plot_of_her_own, 'A plot of her own').\ntruth_type(a_plot_of_her_own, secret).\ntruth_about(a_plot_of_her_own, blythe_zephyrus).\ntruth_title(arrived_with_nothing_but_will, 'Arrived with nothing but will').\ntruth_type(arrived_with_nothing_but_will, backstory).\ntruth_about(arrived_with_nothing_but_will, blythe_zephyrus).\ntruth_title(greeting_35, 'Greeting').\ntruth_type(greeting_35, greeting).\ntruth_about(greeting_35, blythe_zephyrus).\ntruth_title(a_pencil_always_in_hand, 'A pencil always in hand').\ntruth_type(a_pencil_always_in_hand, trait).\ntruth_about(a_pencil_always_in_hand, james_harwick).\ntruth_title(doubt_behind_the_red_ink, 'Doubt behind the red ink').\ntruth_type(doubt_behind_the_red_ink, secret).\ntruth_about(doubt_behind_the_red_ink, james_harwick).\ntruth_title(a_life_without_a_fixed_roof, 'A life without a fixed roof').\ntruth_type(a_life_without_a_fixed_roof, backstory).\ntruth_about(a_life_without_a_fixed_roof, james_harwick).\ntruth_title(greeting_36, 'Greeting').\ntruth_type(greeting_36, greeting).\ntruth_about(greeting_36, james_harwick).\ntruth_title(a_man_of_the_road, 'A Man of the Road').\ntruth_type(a_man_of_the_road, trait).\ntruth_about(a_man_of_the_road, charles_whitfield).\ntruth_title(no_place_to_set_down, 'No Place to Set Down').\ntruth_type(no_place_to_set_down, secret).\ntruth_about(no_place_to_set_down, charles_whitfield).\ntruth_title(greeting_37, 'Greeting').\ntruth_type(greeting_37, greeting).\ntruth_about(greeting_37, charles_whitfield).\ntruth_title(keeper_of_old_pages, 'Keeper of Old Pages').\ntruth_type(keeper_of_old_pages, trait).\ntruth_about(keeper_of_old_pages, edward_blackwell).\ntruth_title(the_unfinished_work, 'The Unfinished Work').\ntruth_type(the_unfinished_work, secret).\ntruth_about(the_unfinished_work, edward_blackwell).\ntruth_title(greeting_38, 'Greeting').\ntruth_type(greeting_38, greeting).\ntruth_about(greeting_38, edward_blackwell).\ntruth_title(a_welcome_for_everyone, 'A Welcome for Everyone').\ntruth_type(a_welcome_for_everyone, trait).\ntruth_about(a_welcome_for_everyone, arthur_crane).\ntruth_title(the_smile_that_costs_him, 'The Smile That Costs Him').\ntruth_type(the_smile_that_costs_him, secret).\ntruth_about(the_smile_that_costs_him, arthur_crane).\ntruth_title(greeting_39, 'Greeting').\ntruth_type(greeting_39, greeting).\ntruth_about(greeting_39, arthur_crane).\ntruth_title(the_family_s_memory, 'The Family\\'s Memory').\ntruth_type(the_family_s_memory, trait).\ntruth_about(the_family_s_memory, bronwen_oakfield).\ntruth_title(a_quiet_grief_2, 'A Quiet Grief').\ntruth_type(a_quiet_grief_2, secret).\ntruth_about(a_quiet_grief_2, bronwen_oakfield).\ntruth_title(fifty_years_with_marcas, 'Fifty Years with Marcas').\ntruth_type(fifty_years_with_marcas, relationship).\ntruth_about(fifty_years_with_marcas, bronwen_oakfield).\ntruth_title(greeting_40, 'Greeting').\ntruth_type(greeting_40, greeting).\ntruth_about(greeting_40, bronwen_oakfield).\ntruth_title(the_storyteller, 'The Storyteller').\ntruth_type(the_storyteller, trait).\ntruth_about(the_storyteller, carrick_ashford).\ntruth_title(a_son_he_worried_over, 'A Son He Worried Over').\ntruth_type(a_son_he_worried_over, secret).\ntruth_about(a_son_he_worried_over, carrick_ashford).\ntruth_title(brothers_under_one_roof_2, 'Brothers Under One Roof').\ntruth_type(brothers_under_one_roof_2, relationship).\ntruth_about(brothers_under_one_roof_2, carrick_ashford).\ntruth_title(greeting_41, 'Greeting').\ntruth_type(greeting_41, greeting).\ntruth_about(greeting_41, carrick_ashford).\ntruth_title(the_steady_one, 'The Steady One').\ntruth_type(the_steady_one, trait).\ntruth_about(the_steady_one, dalton_ashford).\ntruth_title(an_old_ache, 'An Old Ache').\ntruth_type(an_old_ache, secret).\ntruth_about(an_old_ache, dalton_ashford).\ntruth_title(a_marriage_of_habit_and_comfort, 'A Marriage of Habit and Comfort').\ntruth_type(a_marriage_of_habit_and_comfort, relationship).\ntruth_about(a_marriage_of_habit_and_comfort, dalton_ashford).\ntruth_title(greeting_42, 'Greeting').\ntruth_type(greeting_42, greeting).\ntruth_about(greeting_42, dalton_ashford).\ntruth_title(the_independent_sister, 'The Independent Sister').\ntruth_type(the_independent_sister, trait).\ntruth_about(the_independent_sister, kestrel_merriweather).\ntruth_title(the_one_who_got_away_1, 'The One Who Got Away').\ntruth_type(the_one_who_got_away_1, secret).\ntruth_about(the_one_who_got_away_1, kestrel_merriweather).\ntruth_title(a_house_shared_with_soren_and_xenia, 'A House Shared with Soren and Xenia').\ntruth_type(a_house_shared_with_soren_and_xenia, relationship).\ntruth_about(a_house_shared_with_soren_and_xenia, kestrel_merriweather).\ntruth_title(greeting_43, 'Greeting').\ntruth_type(greeting_43, greeting).\ntruth_about(greeting_43, kestrel_merriweather).\ntruth_title(the_mender, 'The Mender').\ntruth_type(the_mender, trait).\ntruth_about(the_mender, leda_ashford).\ntruth_title(a_private_sorrow, 'A Private Sorrow').\ntruth_type(a_private_sorrow, secret).\ntruth_about(a_private_sorrow, leda_ashford).\ntruth_title(dalton_s_wife, 'Dalton\\'s Wife').\ntruth_type(dalton_s_wife, relationship).\ntruth_about(dalton_s_wife, leda_ashford).\ntruth_title(greeting_44, 'Greeting').\ntruth_type(greeting_44, greeting).\ntruth_about(greeting_44, leda_ashford).\ntruth_title(the_unmarried_aunt, 'The Unmarried Aunt').\ntruth_type(the_unmarried_aunt, trait).\ntruth_about(the_unmarried_aunt, nora_oakfield).\ntruth_title(no_regrets_she_says, 'No Regrets, She Says').\ntruth_type(no_regrets_she_says, secret).\ntruth_about(no_regrets_she_says, nora_oakfield).\ntruth_title(surrounded_by_brothers, 'Surrounded by Brothers').\ntruth_type(surrounded_by_brothers, relationship).\ntruth_about(surrounded_by_brothers, nora_oakfield).\ntruth_title(greeting_45, 'Greeting').\ntruth_type(greeting_45, greeting).\ntruth_about(greeting_45, nora_oakfield).\ntruth_title(a_house_full_of_noise, 'A House Full of Noise').\ntruth_type(a_house_full_of_noise, trait).\ntruth_about(a_house_full_of_noise, ophelia_quincy).\ntruth_title(the_quiet_grief, 'The Quiet Grief').\ntruth_type(the_quiet_grief, secret).\ntruth_about(the_quiet_grief, ophelia_quincy).\ntruth_title(old_married_comfort, 'Old Married Comfort').\ntruth_type(old_married_comfort, relationship).\ntruth_about(old_married_comfort, ophelia_quincy).\ntruth_title(greeting_46, 'Greeting').\ntruth_type(greeting_46, greeting).\ntruth_about(greeting_46, ophelia_quincy).\ntruth_title(counts_his_blessings_aloud, 'Counts His Blessings Aloud').\ntruth_type(counts_his_blessings_aloud, trait).\ntruth_about(counts_his_blessings_aloud, marcas_oakfield).\ntruth_title(the_one_who_got_away_2, 'The One Who Got Away').\ntruth_type(the_one_who_got_away_2, secret).\ntruth_about(the_one_who_got_away_2, marcas_oakfield).\ntruth_title(fifty_years_of_bronwen, 'Fifty Years of Bronwen').\ntruth_type(fifty_years_of_bronwen, relationship).\ntruth_about(fifty_years_of_bronwen, marcas_oakfield).\ntruth_title(greeting_47, 'Greeting').\ntruth_type(greeting_47, greeting).\ntruth_about(greeting_47, marcas_oakfield).\ntruth_title(never_idle_hands, 'Never Idle Hands').\ntruth_type(never_idle_hands, trait).\ntruth_about(never_idle_hands, quinley_quincy).\ntruth_title(a_life_not_chosen_twice, 'A Life Not Chosen Twice').\ntruth_type(a_life_not_chosen_twice, secret).\ntruth_about(a_life_not_chosen_twice, quinley_quincy).\ntruth_title(her_brother_s_shadow, 'Her Brother\\'s Shadow').\ntruth_type(her_brother_s_shadow, relationship).\ntruth_about(her_brother_s_shadow, quinley_quincy).\ntruth_title(greeting_48, 'Greeting').\ntruth_type(greeting_48, greeting).\ntruth_about(greeting_48, quinley_quincy).\ntruth_title(a_carver_of_small_things, 'A Carver of Small Things').\ntruth_type(a_carver_of_small_things, trait).\ntruth_about(a_carver_of_small_things, owen_quincy).\ntruth_title(worry_he_won_t_voice, 'Worry He Won\\'t Voice').\ntruth_type(worry_he_won_t_voice, secret).\ntruth_about(worry_he_won_t_voice, owen_quincy).\ntruth_title(pride_in_percival, 'Pride in Percival').\ntruth_type(pride_in_percival, relationship).\ntruth_about(pride_in_percival, owen_quincy).\ntruth_title(greeting_49, 'Greeting').\ntruth_type(greeting_49, greeting).\ntruth_about(greeting_49, owen_quincy).\ntruth_title(runs_a_tight_house, 'Runs a Tight House').\ntruth_type(runs_a_tight_house, trait).\ntruth_about(runs_a_tight_house, rosalind_oakfield).\ntruth_title(an_old_grudge_half_forgiven, 'An Old Grudge, Half-Forgiven').\ntruth_type(an_old_grudge_half_forgiven, secret).\ntruth_about(an_old_grudge_half_forgiven, rosalind_oakfield).\ntruth_title(xander_s_steady_hand, 'Xander\\'s Steady Hand').\ntruth_type(xander_s_steady_hand, relationship).\ntruth_about(xander_s_steady_hand, rosalind_oakfield).\ntruth_title(greeting_50, 'Greeting').\ntruth_type(greeting_50, greeting).\ntruth_about(greeting_50, rosalind_oakfield).\ntruth_title(the_village_storyteller, 'The Village Storyteller').\ntruth_type(the_village_storyteller, trait).\ntruth_about(the_village_storyteller, quinton_greystone).\ntruth_title(a_little_envy, 'A Little Envy').\ntruth_type(a_little_envy, secret).\ntruth_about(a_little_envy, quinton_greystone).\ntruth_title(undine_s_patience, 'Undine\\'s Patience').\ntruth_type(undine_s_patience, relationship).\ntruth_about(undine_s_patience, quinton_greystone).\ntruth_title(greeting_51, 'Greeting').\ntruth_type(greeting_51, greeting).\ntruth_about(greeting_51, quinton_greystone).\ntruth_title(keeper_of_a_crowded_house, 'Keeper of a Crowded House').\ntruth_type(keeper_of_a_crowded_house, trait).\ntruth_about(keeper_of_a_crowded_house, undine_greystone).\ntruth_title(a_mother_s_unspoken_worry, 'A Mother\\'s Unspoken Worry').\ntruth_type(a_mother_s_unspoken_worry, secret).\ntruth_about(a_mother_s_unspoken_worry, undine_greystone).\ntruth_title(greeting_52, 'Greeting').\ntruth_type(greeting_52, greeting).\ntruth_about(greeting_52, undine_greystone).\ntruth_title(content_to_live_simply, 'Content to Live Simply').\ntruth_type(content_to_live_simply, trait).\ntruth_about(content_to_live_simply, vale_ironwood).\ntruth_title(a_name_never_spoken, 'A Name Never Spoken').\ntruth_type(a_name_never_spoken, secret).\ntruth_about(a_name_never_spoken, vale_ironwood).\ntruth_title(her_brother_s_house, 'Her Brother\\'s House').\ntruth_type(her_brother_s_house, relationship).\ntruth_about(her_brother_s_house, vale_ironwood).\ntruth_title(greeting_53, 'Greeting').\ntruth_type(greeting_53, greeting).\ntruth_about(greeting_53, vale_ironwood).\ntruth_title(a_house_full_of_children, 'A House Full of Children').\ntruth_type(a_house_full_of_children, trait).\ntruth_about(a_house_full_of_children, ronan_ironwood).\ntruth_title(a_favorite_unspoken, 'A Favorite, Unspoken').\ntruth_type(a_favorite_unspoken, secret).\ntruth_about(a_favorite_unspoken, ronan_ironwood).\ntruth_title(jessamine_s_steady_keel, 'Jessamine\\'s Steady Keel').\ntruth_type(jessamine_s_steady_keel, relationship).\ntruth_about(jessamine_s_steady_keel, ronan_ironwood).\ntruth_title(greeting_54, 'Greeting').\ntruth_type(greeting_54, greeting).\ntruth_about(greeting_54, ronan_ironwood).\ntruth_title(the_quiet_bachelor, 'The Quiet Bachelor').\ntruth_type(the_quiet_bachelor, trait).\ntruth_about(the_quiet_bachelor, soren_merriweather).\ntruth_title(a_small_regret, 'A Small Regret').\ntruth_type(a_small_regret, secret).\ntruth_about(a_small_regret, soren_merriweather).\ntruth_title(two_sisters_one_roof, 'Two Sisters, One Roof').\ntruth_type(two_sisters_one_roof, relationship).\ntruth_about(two_sisters_one_roof, soren_merriweather).\ntruth_title(greeting_55, 'Greeting').\ntruth_type(greeting_55, greeting).\ntruth_about(greeting_55, soren_merriweather).\ntruth_title(keeper_of_a_full_house, 'Keeper of a full house').\ntruth_type(keeper_of_a_full_house, trait).\ntruth_about(keeper_of_a_full_house, willa_greystone).\ntruth_title(a_quiet_ache_for_walls_of_her_own, 'A quiet ache for walls of her own').\ntruth_type(a_quiet_ache_for_walls_of_her_own, secret).\ntruth_about(a_quiet_ache_for_walls_of_her_own, willa_greystone).\ntruth_title(her_daughter_tamsin, 'Her daughter Tamsin').\ntruth_type(her_daughter_tamsin, relationship).\ntruth_about(her_daughter_tamsin, willa_greystone).\ntruth_title(greeting_56, 'Greeting').\ntruth_type(greeting_56, greeting).\ntruth_about(greeting_56, willa_greystone).\ntruth_title(opinions_freely_given, 'Opinions freely given').\ntruth_type(opinions_freely_given, trait).\ntruth_about(opinions_freely_given, yara_ashford).\ntruth_title(a_favored_child_never_named, 'A favored child, never named').\ntruth_type(a_favored_child_never_named, secret).\ntruth_about(a_favored_child_never_named, yara_ashford).\ntruth_title(fifty_years_with_carrick, 'Fifty years with Carrick').\ntruth_type(fifty_years_with_carrick, relationship).\ntruth_about(fifty_years_with_carrick, yara_ashford).\ntruth_title(greeting_57, 'Greeting').\ntruth_type(greeting_57, greeting).\ntruth_about(greeting_57, yara_ashford).\ntruth_title(a_walker_of_empty_paths, 'A walker of empty paths').\ntruth_type(a_walker_of_empty_paths, trait).\ntruth_about(a_walker_of_empty_paths, yael_quincy).\ntruth_title(conversations_with_no_one, 'Conversations with no one').\ntruth_type(conversations_with_no_one, secret).\ntruth_about(conversations_with_no_one, yael_quincy).\ntruth_title(his_sister_yara, 'His sister Yara').\ntruth_type(his_sister_yara, relationship).\ntruth_about(his_sister_yara, yael_quincy).\ntruth_title(greeting_58, 'Greeting').\ntruth_type(greeting_58, greeting).\ntruth_about(greeting_58, yael_quincy).\ntruth_title(a_guest_in_a_crowded_house, 'A guest in a crowded house').\ntruth_type(a_guest_in_a_crowded_house, trait).\ntruth_about(a_guest_in_a_crowded_house, zara_greystone).\ntruth_title(wishing_for_her_own_door, 'Wishing for her own door').\ntruth_type(wishing_for_her_own_door, secret).\ntruth_about(wishing_for_her_own_door, zara_greystone).\ntruth_title(her_brother_in_law_quinton, 'Her brother-in-law Quinton').\ntruth_type(her_brother_in_law_quinton, relationship).\ntruth_about(her_brother_in_law_quinton, zara_greystone).\ntruth_title(greeting_59, 'Greeting').\ntruth_type(greeting_59, greeting).\ntruth_about(greeting_59, zara_greystone).\ntruth_title(the_grown_up_sister, 'The grown-up sister').\ntruth_type(the_grown_up_sister, trait).\ntruth_about(the_grown_up_sister, fawn_underwood).\ntruth_title(pretending_not_to_be_scared, 'Pretending not to be scared').\ntruth_type(pretending_not_to_be_scared, secret).\ntruth_about(pretending_not_to_be_scared, fawn_underwood).\ntruth_title(watching_over_gilda_and_hailey, 'Watching over Gilda and Hailey').\ntruth_type(watching_over_gilda_and_hailey, relationship).\ntruth_about(watching_over_gilda_and_hailey, fawn_underwood).\ntruth_title(greeting_60, 'Greeting').\ntruth_type(greeting_60, greeting).\ntruth_about(greeting_60, fawn_underwood).\ntruth_title(a_collector_of_small_treasures, 'A collector of small treasures').\ntruth_type(a_collector_of_small_treasures, trait).\ntruth_about(a_collector_of_small_treasures, gilda_underwood).\ntruth_title(the_broken_mug, 'The broken mug').\ntruth_type(the_broken_mug, secret).\ntruth_about(the_broken_mug, gilda_underwood).\ntruth_title(shadowing_fawn, 'Shadowing Fawn').\ntruth_type(shadowing_fawn, relationship).\ntruth_about(shadowing_fawn, gilda_underwood).\ntruth_title(greeting_61, 'Greeting').\ntruth_type(greeting_61, greeting).\ntruth_about(greeting_61, gilda_underwood).\ntruth_title(a_hand_always_reaching_for_papa_s, 'A hand always reaching for Papa\\'s').\ntruth_type(a_hand_always_reaching_for_papa_s, trait).\ntruth_about(a_hand_always_reaching_for_papa_s, hailey_underwood).\ntruth_title(a_face_she_can_t_remember, 'A face she can\\'t remember').\ntruth_type(a_face_she_can_t_remember, secret).\ntruth_about(a_face_she_can_t_remember, hailey_underwood).\ntruth_title(papa_s_shadow, 'Papa\\'s shadow').\ntruth_type(papa_s_shadow, relationship).\ntruth_about(papa_s_shadow, hailey_underwood).\ntruth_title(greeting_62, 'Greeting').\ntruth_type(greeting_62, greeting).\ntruth_about(greeting_62, hailey_underwood).\ntruth_title(the_one_who_took_charge, 'The one who took charge').\ntruth_type(the_one_who_took_charge, trait).\ntruth_about(the_one_who_took_charge, nerida_ashford).\ntruth_title(a_private_wish_to_be_elsewhere, 'A private wish to be elsewhere').\ntruth_type(a_private_wish_to_be_elsewhere, secret).\ntruth_about(a_private_wish_to_be_elsewhere, nerida_ashford).\ntruth_title(steadying_her_mother_briony, 'Steadying her mother Briony').\ntruth_type(steadying_her_mother_briony, relationship).\ntruth_about(steadying_her_mother_briony, nerida_ashford).\ntruth_title(greeting_63, 'Greeting').\ntruth_type(greeting_63, greeting).\ntruth_about(greeting_63, nerida_ashford).\ntruth_title(hands_that_won_t_stay_still, 'Hands that won\\'t stay still').\ntruth_type(hands_that_won_t_stay_still, trait).\ntruth_about(hands_that_won_t_stay_still, isak_ashford).\ntruth_title(fear_of_letting_her_down, 'Fear of letting her down').\ntruth_type(fear_of_letting_her_down, secret).\ntruth_about(fear_of_letting_her_down, isak_ashford).\ntruth_title(rivalry_with_jericho, 'Rivalry with Jericho').\ntruth_type(rivalry_with_jericho, relationship).\ntruth_about(rivalry_with_jericho, isak_ashford).\ntruth_title(greeting_64, 'Greeting').\ntruth_type(greeting_64, greeting).\ntruth_about(greeting_64, isak_ashford).\ntruth_title(trouble_with_a_grin, 'Trouble with a grin').\ntruth_type(trouble_with_a_grin, trait).\ntruth_about(trouble_with_a_grin, jericho_ashford).\ntruth_title(feeling_invisible_in_the_middle, 'Feeling invisible in the middle').\ntruth_type(feeling_invisible_in_the_middle, secret).\ntruth_about(feeling_invisible_in_the_middle, jericho_ashford).\ntruth_title(following_isak_everywhere, 'Following Isak everywhere').\ntruth_type(following_isak_everywhere, relationship).\ntruth_about(following_isak_everywhere, jericho_ashford).\ntruth_title(greeting_65, 'Greeting').\ntruth_type(greeting_65, greeting).\ntruth_about(greeting_65, jericho_ashford).\ntruth_title(a_houseful_not_a_family, 'A houseful, not a family').\ntruth_type(a_houseful_not_a_family, relationship).\ntruth_about(a_houseful_not_a_family, adrienne_xanthis).\ntruth_title(wishes_she_belonged_more_loudly, 'Wishes she belonged more loudly').\ntruth_type(wishes_she_belonged_more_loudly, secret).\ntruth_about(wishes_she_belonged_more_loudly, adrienne_xanthis).\ntruth_title(climbs_things_she_shouldn_t, 'Climbs things she shouldn\\'t').\ntruth_type(climbs_things_she_shouldn_t, trait).\ntruth_about(climbs_things_she_shouldn_t, adrienne_xanthis).\ntruth_title(greeting_66, 'Greeting').\ntruth_type(greeting_66, greeting).\ntruth_about(greeting_66, adrienne_xanthis).\ntruth_title(no_fixed_roof, 'No fixed roof').\ntruth_type(no_fixed_roof, trait).\ntruth_about(no_fixed_roof, thomas_pemberton).\ntruth_title(a_life_lived_alone, 'A life lived alone').\ntruth_type(a_life_lived_alone, backstory).\ntruth_about(a_life_lived_alone, thomas_pemberton).\ntruth_title(still_keeps_a_ledger, 'Still keeps a ledger').\ntruth_type(still_keeps_a_ledger, secret).\ntruth_about(still_keeps_a_ledger, thomas_pemberton).\ntruth_title(greeting_67, 'Greeting').\ntruth_type(greeting_67, greeting).\ntruth_about(greeting_67, thomas_pemberton).\ntruth_title(a_house_of_three_generations, 'A house of three generations').\ntruth_type(a_house_of_three_generations, relationship).\ntruth_about(a_house_of_three_generations, thomas_quincy).\ntruth_title(hides_his_scrapes, 'Hides his scrapes').\ntruth_type(hides_his_scrapes, secret).\ntruth_about(hides_his_scrapes, thomas_quincy).\ntruth_title(never_stops_moving, 'Never stops moving').\ntruth_type(never_stops_moving, trait).\ntruth_about(never_stops_moving, thomas_quincy).\ntruth_title(greeting_68, 'Greeting').\ntruth_type(greeting_68, greeting).\ntruth_about(greeting_68, thomas_quincy).\ntruth_title(her_father_s_shadow, 'Her father\\'s shadow').\ntruth_type(her_father_s_shadow, relationship).\ntruth_about(her_father_s_shadow, melissa_ashford).\ntruth_title(hoards_shiny_things, 'Hoards shiny things').\ntruth_type(hoards_shiny_things, secret).\ntruth_about(hoards_shiny_things, melissa_ashford).\ntruth_title(talks_to_everything, 'Talks to everything').\ntruth_type(talks_to_everything, trait).\ntruth_about(talks_to_everything, melissa_ashford).\ntruth_title(greeting_69, 'Greeting').\ntruth_type(greeting_69, greeting).\ntruth_about(greeting_69, melissa_ashford).\ntruth_title(surrounded_by_greystones, 'Surrounded by Greystones').\ntruth_type(surrounded_by_greystones, relationship).\ntruth_about(surrounded_by_greystones, matthew_ashford).\ntruth_title(afraid_of_the_dark_lane, 'Afraid of the dark lane').\ntruth_type(afraid_of_the_dark_lane, secret).\ntruth_about(afraid_of_the_dark_lane, matthew_ashford).\ntruth_title(collects_pebbles, 'Collects pebbles').\ntruth_type(collects_pebbles, trait).\ntruth_about(collects_pebbles, matthew_ashford).\ntruth_title(greeting_70, 'Greeting').\ntruth_type(greeting_70, greeting).\ntruth_about(greeting_70, matthew_ashford).\ntruth_title(hands_that_don_t_stop, 'Hands that don\\'t stop').\ntruth_type(hands_that_don_t_stop, trait).\ntruth_about(hands_that_don_t_stop, kalista_greystone).\ntruth_title(tired_of_noise, 'Tired of noise').\ntruth_type(tired_of_noise, secret).\ntruth_about(tired_of_noise, kalista_greystone).\ntruth_title(watching_over_matthew, 'Watching over Matthew').\ntruth_type(watching_over_matthew, relationship).\ntruth_about(watching_over_matthew, kalista_greystone).\ntruth_title(greeting_71, 'Greeting').\ntruth_type(greeting_71, greeting).\ntruth_about(greeting_71, kalista_greystone).\ntruth_title(a_house_full_of_her_own_making, 'A house full of her own making').\ntruth_type(a_house_full_of_her_own_making, trait).\ntruth_about(a_house_full_of_her_own_making, jessamine_ironwood).\ntruth_title(an_old_wish_unspoken, 'An old wish unspoken').\ntruth_type(an_old_wish_unspoken, secret).\ntruth_about(an_old_wish_unspoken, jessamine_ironwood).\ntruth_title(ronan_beside_her_still, 'Ronan beside her still').\ntruth_type(ronan_beside_her_still, relationship).\ntruth_about(ronan_beside_her_still, jessamine_ironwood).\ntruth_title(greeting_72, 'Greeting').\ntruth_type(greeting_72, greeting).\ntruth_about(greeting_72, jessamine_ironwood).\ntruth_title(always_watching_rarely_asking, 'Always watching, rarely asking').\ntruth_type(always_watching_rarely_asking, trait).\ntruth_about(always_watching_rarely_asking, olive_ashford).\ntruth_title(the_grave_she_visits_alone, 'The grave she visits alone').\ntruth_type(the_grave_she_visits_alone, secret).\ntruth_about(the_grave_she_visits_alone, olive_ashford).\ntruth_title(following_nerida_s_lead, 'Following Nerida\\'s lead').\ntruth_type(following_nerida_s_lead, relationship).\ntruth_about(following_nerida_s_lead, olive_ashford).\ntruth_title(greeting_73, 'Greeting').\ntruth_type(greeting_73, greeting).\ntruth_about(greeting_73, olive_ashford).\ntruth_title(late_to_the_forge, 'Late to the Forge').\ntruth_type(late_to_the_forge, trait).\ntruth_about(late_to_the_forge, xenia_merriweather).\ntruth_title(the_cost_of_years, 'The Cost of Years').\ntruth_type(the_cost_of_years, secret).\ntruth_about(the_cost_of_years, xenia_merriweather).\ntruth_title(kestrel_s_presence, 'Kestrel\\'s Presence').\ntruth_type(kestrel_s_presence, relationship).\ntruth_about(kestrel_s_presence, xenia_merriweather).\ntruth_title(greeting_74, 'Greeting').\ntruth_type(greeting_74, greeting).\ntruth_about(greeting_74, xenia_merriweather).\ntruth_title(master_of_wood, 'Master of Wood').\ntruth_type(master_of_wood, trait).\ntruth_about(master_of_wood, rowena_ironwood).\ntruth_title(bigger_dreams, 'Bigger Dreams').\ntruth_type(bigger_dreams, secret).\ntruth_about(bigger_dreams, rowena_ironwood).\ntruth_title(father_s_faith, 'Father\\'s Faith').\ntruth_type(father_s_faith, relationship).\ntruth_about(father_s_faith, rowena_ironwood).\ntruth_title(greeting_75, 'Greeting').\ntruth_type(greeting_75, greeting).\ntruth_about(greeting_75, rowena_ironwood).\ntruth_title(earth_rooted, 'Earth-Rooted').\ntruth_type(earth_rooted, trait).\ntruth_about(earth_rooted, xanthe_oakfield).\ntruth_title(maeve_s_shadow, 'Maeve\\'s Shadow').\ntruth_type(maeve_s_shadow, secret).\ntruth_about(maeve_s_shadow, xanthe_oakfield).\ntruth_title(harald_s_quiet_support, 'Harald\\'s Quiet Support').\ntruth_type(harald_s_quiet_support, relationship).\ntruth_about(harald_s_quiet_support, xanthe_oakfield).\ntruth_title(greeting_76, 'Greeting').\ntruth_type(greeting_76, greeting).\ntruth_about(greeting_76, xanthe_oakfield).\ngame_text(journal_lundi_matin).\ntext_title(journal_lundi_matin, 'Journal — Lundi matin').\ntext_author(journal_lundi_matin, 'Jean-Luc Moreau').\ntext_clue(journal_lundi_matin, 'Jean-Luc Moreau has a secret spot near the bayou under the cypress trees — a place nobody visits.').\ngame_text(journal_la_decouverte).\ntext_title(journal_la_decouverte, 'Journal — La Découverte').\ntext_author(journal_la_decouverte, 'Jean-Luc Moreau').\ntext_clue(journal_la_decouverte, 'Jean-Luc Moreau found hidden Chitimacha documents in the old library — behind the shelves, in a wooden box.').\ngame_text(journal_les_menaces).\ntext_title(journal_les_menaces, 'Journal — Les Menaces').\ntext_author(journal_les_menaces, 'Jean-Luc Moreau').\ntext_clue(journal_les_menaces, 'Jean-Luc Moreau hid originals at \"where the herons rest\" — a cabin by the bayou built by their grandfather. The Beaumont family is behind the threats.').\ngame_text(journal_la_derniere_nuit).\ntext_title(journal_la_derniere_nuit, 'Journal — La Dernière Nuit').\ntext_author(journal_la_derniere_nuit, 'Jean-Luc Moreau').\ntext_clue(journal_la_derniere_nuit, 'Jean-Luc Moreau left clues scattered in the library, café, and church. The path: behind the cemetery oak, follow the fishermen\\'s trail to the bayou bend, look for giant cypress trees.').\ngame_text(journal_epilogue).\ntext_title(journal_epilogue, 'Journal — Épilogue').\ntext_author(journal_epilogue, 'Jean-Luc Moreau').\ntext_clue(journal_epilogue, 'Jean-Luc Moreau is at the grandfather\\'s cabin — \"where the water and the roots meet.\" They have the manuscript and original Chitimacha documents. They are alive, waiting for someone brave enough to pu').\ngame_text(page_de_journal_intime_ils_savent).\ntext_title(page_de_journal_intime_ils_savent, 'Page de journal intime — \"Ils savent\"').\ntext_author(page_de_journal_intime_ils_savent, 'Jean-Luc Moreau').\ntext_clue(page_de_journal_intime_ils_savent, 'Written three days before the disappearance. Shows Jean-Luc Moreau felt threatened.').\ngame_text(carte_marquee_de_croix_rouges).\ntext_title(carte_marquee_de_croix_rouges, 'Carte marquée de croix rouges').\ntext_clue(carte_marquee_de_croix_rouges, 'Three red crosses mark locations Jean-Luc Moreau visited in secret.').\ngame_text(premiere_edition_note_au_crayon).\ntext_title(premiere_edition_note_au_crayon, 'Première édition — Note au crayon').\ntext_clue(premiere_edition_note_au_crayon, 'Inside cover has a date and \"the garden remembers\" in pencil.').\ngame_text(carnet_mouille_notes_de_recherche).\ntext_title(carnet_mouille_notes_de_recherche, 'Carnet mouillé — Notes de recherche').\ntext_author(carnet_mouille_notes_de_recherche, 'Jean-Luc Moreau').\ntext_clue(carnet_mouille_notes_de_recherche, 'Research notes about the founding families, found in a cave.').\ngame_text(message_grave_sur_un_banc).\ntext_title(message_grave_sur_un_banc, 'Message gravé sur un banc').\ntext_clue(message_grave_sur_un_banc, 'Carved message signed with Jean-Luc Moreau\\'s initials.').\ngame_text(lettre_dechiree_fuite_vers_la_cote).\ntext_title(lettre_dechiree_fuite_vers_la_cote, 'Lettre déchirée — \"Fuite vers la côte\"').\ntext_clue(lettre_dechiree_fuite_vers_la_cote, 'Red herring: handwriting doesn\\'t match the writer\\'s.').\ngame_text(recu_du_cafe_du_pont).\ntext_title(recu_du_cafe_du_pont, 'Reçu du Café du Pont').\ntext_clue(recu_du_cafe_du_pont, 'Red herring: shows two coffees, but waiter remembers only the writer alone.').\ngame_text(avis_de_disparition).\ntext_title(avis_de_disparition, 'Avis de Disparition').\ntext_clue(avis_de_disparition, 'A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter.').\ngame_text(les_droits_fonciers_en_louisiane).\ntext_title(les_droits_fonciers_en_louisiane, 'Les Droits Fonciers en Louisiane').\ngame_text(rapport_d_enquete_famille_beaumont).\ntext_title(rapport_d_enquete_famille_beaumont, 'Rapport d\\'Enquête : Famille Beaumont').\ntext_author(rapport_d_enquete_famille_beaumont, 'Jean-Luc Moreau').\ntext_clue(rapport_d_enquete_famille_beaumont, 'Jean-Luc Moreau\\'s private investigation notes on the Beaumont family\\'s connection to historical land fraud.').\ngame_text(le_manuscrit_retrouve).\ntext_title(le_manuscrit_retrouve, 'Le Manuscrit Retrouvé').\ntext_author(le_manuscrit_retrouve, 'Jean-Luc Moreau').\ntext_clue(le_manuscrit_retrouve, 'The manuscript Jean-Luc Moreau was writing — the complete account of the Beaumont family\\'s land fraud against the Chitimacha people.').\ngame_text(declaration_des_anciens_chitimacha).\ntext_title(declaration_des_anciens_chitimacha, 'Déclaration des Anciens Chitimacha').\ngame_text(l_article_final).\ntext_title(l_article_final, 'L\\'Article Final').\ngame_text(le_petit_heron_blanc).\ntext_title(le_petit_heron_blanc, 'Le Petit Héron Blanc').\ngame_text(la_legende_du_bayou_bleu).\ntext_title(la_legende_du_bayou_bleu, 'La Légende du Bayou Bleu').\ngame_text(le_dernier_pecheur_du_bayou).\ntext_title(le_dernier_pecheur_du_bayou, 'Le Dernier Pêcheur du Bayou').\ngame_text(notre_village).\ntext_title(notre_village, 'Notre Village').\ngame_text(les_chitimacha_peuple_du_bayou).\ntext_title(les_chitimacha_peuple_du_bayou, 'Les Chitimacha : Peuple du Bayou').\ngame_text(bayou_lafourche_memoire_et_verite).\ntext_title(bayou_lafourche_memoire_et_verite, 'Bayou Lafourche : Mémoire et Vérité').\ngame_text(lettre_a_maman).\ntext_title(lettre_a_maman, 'Lettre à Maman').\ngame_text(lettre_de_la_maitresse).\ntext_title(lettre_de_la_maitresse, 'Lettre de la Maîtresse').\ngame_text(lettre_au_redacteur_en_chef).\ntext_title(lettre_au_redacteur_en_chef, 'Lettre au Rédacteur en Chef').\ngame_text(beignets_de_la_louisiane).\ntext_title(beignets_de_la_louisiane, 'Beignets de la Louisiane').\ngame_text(gumbo_de_grand_mere).\ntext_title(gumbo_de_grand_mere, 'Gumbo de Grand-mère').\ngame_text(jambalaya_creole).\ntext_title(jambalaya_creole, 'Jambalaya Créole').\ngame_text(le_bayou_le_matin).\ntext_title(le_bayou_le_matin, 'Le Bayou le Matin').\ngame_text(comptine_du_marche).\ntext_title(comptine_du_marche, 'Comptine du Marché').\ngame_text(les_racines).\ntext_title(les_racines, 'Les Racines').\nresidence_of_settlement(n6_forge_lane, thistlecombe).\nlives_at(bronwen_oakfield, n6_forge_lane).\nlives_at(marcas_oakfield, n6_forge_lane).\nlives_at(rosalind_oakfield, n6_forge_lane).\nlives_at(xander_oakfield, n6_forge_lane).\nlives_at(nora_oakfield, n6_forge_lane).\nlives_at(valen_oakfield, n6_forge_lane).\nresidence_of_settlement(n7_forge_lane, thistlecombe).\nlives_at(brennon_oakfield, n7_forge_lane).\nlives_at(zella_oakfield, n7_forge_lane).\nlives_at(delphine_oakfield, n7_forge_lane).\nlives_at(oswin_greystone, n7_forge_lane).\nlives_at(cora_oakfield, n7_forge_lane).\nlives_at(caspian_oakfield, n7_forge_lane).\nresidence_of_settlement(n8_forge_lane, thistlecombe).\nlives_at(harald_oakfield, n8_forge_lane).\nlives_at(maeve_oakfield, n8_forge_lane).\nlives_at(xanthe_oakfield, n8_forge_lane).\nresidence_of_settlement(n9_forge_lane, thistlecombe).\nlives_at(carrick_ashford, n9_forge_lane).\nlives_at(yara_ashford, n9_forge_lane).\nlives_at(dalton_ashford, n9_forge_lane).\nlives_at(leda_ashford, n9_forge_lane).\nresidence_of_settlement(n10_mill_road, thistlecombe).\nlives_at(dorian_ashford, n10_mill_road).\nlives_at(eadwin_ashford, n10_mill_road).\nresidence_of_settlement(n11_mill_road, thistlecombe).\nlives_at(briony_ashford, n11_mill_road).\nlives_at(nerida_ashford, n11_mill_road).\nlives_at(isak_ashford, n11_mill_road).\nlives_at(jericho_ashford, n11_mill_road).\nlives_at(olive_ashford, n11_mill_road).\nresidence_of_settlement(n12_mill_road, thistlecombe).\nlives_at(quill_westwood, n12_mill_road).\nresidence_of_settlement(n13_mill_road, thistlecombe).\nlives_at(jessamine_ironwood, n13_mill_road).\nlives_at(ronan_ironwood, n13_mill_road).\nlives_at(vale_ironwood, n13_mill_road).\nlives_at(leif_ironwood, n13_mill_road).\nlives_at(quinn_ironwood, n13_mill_road).\nlives_at(rowena_ironwood, n13_mill_road).\nlives_at(magnus_ironwood, n13_mill_road).\nlives_at(niclas_ironwood, n13_mill_road).\nresidence_of_settlement(n14_mill_road, thistlecombe).\nlives_at(kestrel_merriweather, n14_mill_road).\nlives_at(soren_merriweather, n14_mill_road).\nlives_at(xenia_merriweather, n14_mill_road).\nlives_at(adrienne_xanthis, n14_mill_road).\nresidence_of_settlement(n15_mill_road, thistlecombe).\nlives_at(wren_quincy, n15_mill_road).\nlives_at(percival_quincy, n15_mill_road).\nlives_at(thomas_quincy, n15_mill_road).\nlives_at(ophelia_quincy, n15_mill_road).\nlives_at(owen_quincy, n15_mill_road).\nlives_at(quinley_quincy, n15_mill_road).\nresidence_of_settlement(n16_castle_road, thistlecombe).\nlives_at(blythe_zephyrus, n16_castle_road).\nresidence_of_settlement(n17_castle_road, thistlecombe).\nlives_at(galen_ashford, n17_castle_road).\nlives_at(phoebe_ashford, n17_castle_road).\nlives_at(melissa_ashford, n17_castle_road).\nresidence_of_settlement(n18_castle_road, thistlecombe).\nlives_at(vanessa_greystone, n18_castle_road).\nresidence_of_settlement(n19_queen_street, thistlecombe).\nlives_at(wren_oakfield, n19_queen_street).\nlives_at(yael_quincy, n19_queen_street).\nresidence_of_settlement(n20_queen_street, thistlecombe).\nlives_at(sage_yarrow, n20_queen_street).\nlives_at(rothgar_yarrow, n20_queen_street).\nresidence_of_settlement(n21_queen_street, thistlecombe).\nlives_at(fenwick_ashford, n21_queen_street).\nlives_at(tamsin_greystone, n21_queen_street).\nlives_at(matthew_ashford, n21_queen_street).\nlives_at(quinton_greystone, n21_queen_street).\nlives_at(undine_greystone, n21_queen_street).\nlives_at(kestrel_greystone, n21_queen_street).\nlives_at(ursula_greystone, n21_queen_street).\nlives_at(willa_greystone, n21_queen_street).\nlives_at(zara_greystone, n21_queen_street).\nlives_at(indigo_greystone, n21_queen_street).\nlives_at(kalista_greystone, n21_queen_street).\nresidence_of_settlement(n22_forge_lane, thistlecombe).\nlives_at(zephyr_shadowmere, n22_forge_lane).\nlives_at(linn_oakfield, n22_forge_lane).\nresidence_of_settlement(n23_forge_lane, thistlecombe).\nlives_at(aldric_underwood, n23_forge_lane).\nlives_at(fawn_underwood, n23_forge_lane).\nlives_at(gilda_underwood, n23_forge_lane).\nlives_at(hailey_underwood, n23_forge_lane).\nresidence_of_settlement(n24_forge_lane, thistlecombe).\nresidence_of_settlement(n25_mill_road, thistlecombe).\nresidence_of_settlement(n26_mill_road, thistlecombe).\nresidence_of_settlement(n27_mill_road, thistlecombe).\nresidence_of_settlement(n34_forge_lane, thistlecombe).\nresidence_of_settlement(n37_forge_lane, thistlecombe).\nresidence_of_settlement(n40_mill_road, thistlecombe).\nresidence_of_settlement(n43_mill_road, thistlecombe).\nresidence_of_settlement(n49_forge_lane, thistlecombe).\nresidence_of_settlement(n50_forge_lane, thistlecombe).\nresidence_of_settlement(n51_forge_lane, thistlecombe).\nresidence_of_settlement(n52_forge_lane, thistlecombe).\n"
+  },
+  "player": {
+   "startPosition": {
+    "x": -45.24533607681755,
+    "y": 0,
+    "z": -73.6144375857339
+   }
+  }
+ }
+}

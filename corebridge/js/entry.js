@@ -874,6 +874,41 @@ import {
 import { LANGUAGE_OBJECTIVE_TYPE_MAP, LANGUAGE_REWARD_TYPE_MAP } from '@insimul/core/quest-types/language-learning';
 import { QUEST_TEMPLATES, getTemplatesByCategory, getTemplatesByDifficulty } from '@insimul/core/language/quest-templates';
 
+// ── the genre systems (P9j): the puzzle (PL.native-genre-rows slice 1, U128, U115) ──
+// The puzzle module's pure half (puzzle.ts: the definition a world gives, authored or
+// generated, its facts, the world facts its riddles are answered from, the answer key and
+// the choices), its decision layer (PuzzleDirector, over a KB that module activation
+// builds: GamePrologEngine with genre 'puzzle', on this library's native Trealla seam),
+// and its save block (puzzle-save.ts). `worldOf` is the genre corpora's world input (a
+// committed slice by name, a slice with KB predicates or entity lists dropped, or an
+// inline world), which core exports with its runner. The platformer, the strategy game
+// and the genre pieces are later slices of the row.
+import {
+	DEFAULT_PUZZLE_MAX_ATTEMPTS,
+	PUZZLE_TUNING,
+	PUZZLE_WORLD_PREDICATES,
+	generatePuzzle,
+	puzzleAnswerKey,
+	puzzleChoices,
+	puzzleFacts,
+	puzzleForWorld,
+	puzzleFromIR,
+	puzzleIssues,
+	puzzleWorldFacts,
+} from '@insimul/core/puzzle/puzzle';
+import { PUZZLE_AREA, PUZZLE_AUTHORED_PREDICATES, PUZZLE_RELATIONS, PUZZLE_RUNTIME_PREDICATES } from '@insimul/core/puzzle/puzzle-predicates';
+import {
+	PUZZLE_ACTOR_KEYS,
+	PUZZLE_BLOCK_MEMBERS,
+	PUZZLE_EXTENSION_KEY,
+	puzzleBlockOf,
+	puzzleSaveBlock,
+	readPuzzleBlock,
+} from '@insimul/core/puzzle/puzzle-save';
+import { PUZZLE_WRITTEN_PREDICATES, PuzzleDirector } from '@insimul/core/game-engine/logic/PuzzleDirector';
+import { GamePrologEngine } from '@insimul/core/game-engine/logic/GamePrologEngine';
+import { worldOf } from '@insimul/core/genre-systems/systems-corpus';
+
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
 // settings and activation, over the pack catalog the caller sends.
@@ -2968,6 +3003,189 @@ function jsonData(value) {
 	return text === undefined ? null : JSON.parse(text);
 }
 
+// ── the genre systems' boundary (PL.native-genre-rows) ────────────────────────
+// Every argument is held to the type core declares for it (the language rows' rule,
+// slice 3's verdict m1 and slice 4's m5): a declared member must be present and of its
+// type; an optional one may be absent, and a null is refused unless core declares the
+// member `| null`. Members core does not declare pass through untouched. Every member
+// is looked up as an OWN key, so a name that is an Object.prototype member never reads
+// the prototype.
+
+/** How a declared member may be given: required, optional (`?`), and whether `| null`. */
+const REQ = 'req';
+const REQ_NULL = 'reqNull';
+const OPT = 'opt';
+const OPT_NULL = 'optNull';
+
+/** `value` an object whose declared members (`[key, check, how]`) hold their types. */
+function declared(method, value, name, spec) {
+	needObject(method, value, name);
+	for (const [key, check, how] of spec) {
+		const where = `${name}.${key}`;
+		if (!hasOwn(value, key)) {
+			if (how === REQ || how === REQ_NULL) throw refuse(method, `\`${where}\` is missing`);
+			continue;
+		}
+		if (value[key] === null) {
+			if (how === REQ_NULL || how === OPT_NULL) continue;
+			throw refuse(method, `\`${where}\` must not be null`);
+		}
+		check(method, value[key], where);
+	}
+	return value;
+}
+
+const tStr = (m, v, n) => needString(m, v, n);
+const tNum = (m, v, n) => needNumber(m, v, n);
+const tBool = (m, v, n) => needBoolean(m, v, n);
+const tList = (check) => (m, v, n) => needArray(m, v, n).forEach((x, i) => check(m, x, `${n}[${i}]`));
+const tObj = (spec) => (m, v, n) => declared(m, v, n, spec);
+const tOneOf = (allowed) => (m, v, n) => oneOf(m, v, allowed, n);
+
+// core's GenreVec3 and the street node's ground point (genre-mechanics/world-facts.ts).
+const GENRE_VEC3 = [['x', tNum, REQ], ['y', tNum, OPT], ['z', tNum, REQ]];
+const GENRE_XZ = [['x', tNum, REQ], ['z', tNum, REQ]];
+const GENRE_PLAYER = [['startPosition', tObj(GENRE_VEC3), OPT_NULL]];
+
+/** core's `GenreWorldSource` (genre-mechanics/world-facts.ts), member for member. */
+const GENRE_WORLD_SOURCE = [
+	['meta', tObj([['worldId', tStr, OPT], ['worldName', tStr, OPT], ['genreConfig', tObj([['id', tStr, OPT]]), OPT_NULL]]), OPT_NULL],
+	['geography', tObj([
+		['georeference', tObj([['rotationRad', tNum, OPT_NULL]]), OPT_NULL],
+		['settlements', tList(tObj([
+			['id', tStr, REQ],
+			['name', tStr, REQ],
+			['position', tObj(GENRE_VEC3), OPT_NULL],
+			['radius', tNum, OPT_NULL],
+			['lots', tList(tObj([
+				['id', tStr, REQ],
+				['address', tStr, OPT_NULL],
+				['streetName', tStr, OPT_NULL],
+				['districtName', tStr, OPT_NULL],
+				['position', tObj(GENRE_VEC3), OPT_NULL],
+				['streetEdgeId', tStr, OPT_NULL],
+			])), OPT_NULL],
+			['streetNetwork', tObj([
+				['nodes', tList(tObj([['id', tStr, REQ], ['position', tObj(GENRE_XZ), OPT_NULL]])), OPT_NULL],
+				['segments', tList(tObj([['id', tStr, REQ], ['name', tStr, OPT_NULL], ['nodeIds', tList(tStr), OPT_NULL]])), OPT_NULL],
+			]), OPT_NULL],
+		])), OPT_NULL],
+	]), OPT_NULL],
+	['entities', tObj([
+		['characters', tList(tObj([['id', tStr, REQ], ['firstName', tStr, OPT_NULL], ['lastName', tStr, OPT_NULL], ['isAlive', tBool, OPT_NULL]])), OPT_NULL],
+		['npcs', tList(tObj([
+			['characterId', tStr, REQ],
+			['schedule', tObj([['homeBuildingId', tStr, OPT_NULL], ['workBuildingId', tStr, OPT_NULL]]), OPT_NULL],
+		])), OPT_NULL],
+		['buildings', tList(tObj([
+			['id', tStr, REQ],
+			['settlementId', tStr, OPT_NULL],
+			['lotId', tStr, OPT_NULL],
+			['businessId', tStr, OPT_NULL],
+			['occupantIds', tList(tStr), OPT_NULL],
+		])), OPT_NULL],
+		['businesses', tList(tObj([
+			['id', tStr, REQ],
+			['settlementId', tStr, OPT_NULL],
+			['name', tStr, REQ],
+			['businessType', tStr, OPT_NULL],
+			['ownerId', tStr, OPT_NULL],
+			['isOutOfBusiness', tBool, OPT_NULL],
+			['lotId', tStr, OPT_NULL],
+		])), OPT_NULL],
+		['containers', tList(tObj([['id', tStr, REQ], ['buildingId', tStr, OPT_NULL], ['containerType', tStr, OPT_NULL]])), OPT_NULL],
+	]), OPT_NULL],
+	['systems', tObj([['knowledgeBase', tStr, OPT_NULL]]), OPT_NULL],
+	['player', tObj(GENRE_PLAYER), OPT_NULL],
+];
+
+/** A world as core's genre modules read it (`GenreWorldSource`). */
+function genreWorldArg(method, value, name) {
+	return declared(method, value, name, GENRE_WORLD_SOURCE);
+}
+
+// core's puzzle types: PuzzleNeed (puzzle.ts) and PuzzleNeedIR (ir-types.ts) share the four kinds.
+const PUZZLE_NEED_KINDS = ['riddle', 'item', 'clue', 'lock'];
+const PUZZLE_NEED = [['kind', tOneOf(PUZZLE_NEED_KINDS), REQ], ['ref', tStr, REQ]];
+// PuzzleDefinition's `source` (a type-only union in puzzle.ts).
+const PUZZLE_SOURCES = ['authored', 'generated', 'empty'];
+
+/** core's `PuzzleIR` (game-engine/ir-types.ts): every member optional; a riddle's relation any string (puzzleIssues names a bad one). */
+const PUZZLE_IR = [
+	['riddles', tList(tObj([['id', tStr, REQ], ['relation', tStr, REQ], ['subject', tStr, REQ], ['prompt', tStr, OPT], ['clues', tList(tStr), OPT]])), OPT],
+	['locks', tList(tObj([['id', tStr, REQ], ['target', tStr, REQ], ['needs', tList(tObj(PUZZLE_NEED)), REQ], ['holds', tList(tStr), OPT]])), OPT],
+	['finalLock', tStr, OPT],
+	['maxAttempts', tNum, OPT_NULL],
+];
+
+/** core's `PuzzleRiddle` (puzzle.ts): a relation is one of `PUZZLE_RELATIONS`. */
+const PUZZLE_RIDDLE = [
+	['id', tStr, REQ],
+	['relation', tOneOf(PUZZLE_RELATIONS), REQ],
+	['subject', tStr, REQ],
+	['prompt', tStr, REQ],
+	['clues', tList(tStr), REQ],
+];
+
+/** core's `PuzzleDefinition` (puzzle.ts), every member declared and required. */
+const PUZZLE_DEFINITION = [
+	['riddles', tList(tObj(PUZZLE_RIDDLE)), REQ],
+	['locks', tList(tObj([['id', tStr, REQ], ['target', tStr, REQ], ['needs', tList(tObj(PUZZLE_NEED)), REQ], ['holds', tList(tStr), REQ]])), REQ],
+	['finalLock', tStr, REQ_NULL],
+	['maxAttempts', tNum, REQ_NULL],
+	['clueTexts', tList(tObj([['id', tStr, REQ], ['clue', tStr, REQ]])), REQ],
+	['source', tOneOf(PUZZLE_SOURCES), REQ],
+	['notes', tList(tStr), REQ],
+];
+
+/** One `[riddle, wrong answers]` row of a `PuzzleActorState`. */
+function puzzleAttemptArg(method, value, name) {
+	if (needArray(method, value, name).length !== 2) throw refuse(method, `\`${name}\` must be a [riddle, count] pair`);
+	needString(method, value[0], `${name}[0]`);
+	needNumber(method, value[1], `${name}[1]`);
+}
+
+/** core's `PuzzleDirectorState` (PuzzleDirector.ts), which is also the save block (`SavedPuzzle`). */
+const PUZZLE_DIRECTOR_STATE = [
+	['actors', tList(tObj([
+		['actor', tStr, REQ],
+		['clues', tList(tStr), REQ],
+		['solved', tList(tStr), REQ],
+		['attempts', tList(puzzleAttemptArg), REQ],
+		['opened', tList(tStr), REQ],
+		['taken', tList(tStr), REQ],
+	])), REQ],
+];
+
+/**
+ * `PuzzleGenerationOptions` from a row's `maxAttempts`: absent is core's default (`{}`);
+ * a number, or null for never spent, is passed (null is a value here, not a default).
+ */
+function puzzleOptionsArg(method, args) {
+	if (!hasOwn(args, 'maxAttempts')) return {};
+	if (args.maxAttempts !== null) needNumber(method, args.maxAttempts, 'maxAttempts');
+	return { maxAttempts: args.maxAttempts };
+}
+
+/** The world a puzzle row reads: `world`, with `puzzle` over its own section when the row is given one. */
+function puzzleWorldArg(method, args) {
+	const world = genreWorldArg(method, args.world, 'world');
+	if (hasOwn(args, 'puzzle')) {
+		if (args.puzzle !== null) declared(method, args.puzzle, 'puzzle', PUZZLE_IR);
+		return { ...world, puzzle: args.puzzle };
+	}
+	if (hasOwn(world, 'puzzle') && world.puzzle !== null) declared(method, world.puzzle, 'world.puzzle', PUZZLE_IR);
+	return world;
+}
+
+/** A puzzle director session's actor and one more id (`text`, `riddle`, `lock` or `item`). */
+function puzzleActorArgs(method, args, key) {
+	coded('invalid-input', () => {
+		needString(method, args.actor, 'actor');
+		if (key) needString(method, args[key], key);
+	});
+}
+
 // ── quests ────────────────────────────────────────────────────────────────────
 
 const QUEST_STATUSES = ['available', 'active', 'completed'];
@@ -4743,6 +4961,265 @@ const METHODS = {
 	'language.questTypes.templatesByCategory': (args) => ({
 		templates: plain(getTemplatesByCategory(coded('invalid-input', () => needString('language.questTypes.templatesByCategory', args.category, 'category')))),
 	}),
+
+	// ── the genre systems (P9j): the world input and the puzzle (PL.native-genre-rows slice 1) ──
+	// core's P9j corpora's runner (genre-systems/systems-corpus.ts, runGenreSystemsOp) composes
+	// these functions; tests/genre_systems_corpus.cpp composes the rows the same way. A
+	// refusal core states is a VALUE in the answer (a director outcome's `refusal`, a save
+	// read's `keys`); an argument outside core's declared types is `[invalid-input]`.
+
+	/**
+	 * `genre.world.of { world, slices? }` → `{ world }` — core's `worldOf`: a world named
+	 * by a slice (`"thistlecombe"`), a slice with whole KB predicates (`dropFacts`,
+	 * `name/arity`) or entity lists (`dropEntities`) dropped or its player start replaced
+	 * (`{ slice, dropFacts?, dropEntities?, player? }`), or an inline world (any other
+	 * object). `slices` are the committed world slices by name (core's runner reads no
+	 * file; the caller loads them). A slice name must be an own key of `slices`. An
+	 * unknown entity list is core's error.
+	 */
+	'genre.world.of': (args) => {
+		const m = 'genre.world.of';
+		const slices = coded('invalid-input', () => {
+			const s = optionalObject(m, args.slices, 'slices') ?? {};
+			for (const [k, w] of Object.entries(s)) genreWorldArg(m, w, `slices.${k}`);
+			const named = (v, where) => {
+				needString(m, v, where);
+				if (!hasOwn(s, v)) throw refuse(m, `\`${where}\` names no slice of \`slices\` (got ${JSON.stringify(v)})`);
+			};
+			const w = args.world;
+			if (typeof w === 'string') named(w, 'world');
+			else if (typeof needObject(m, w, 'world').slice === 'string') {
+				named(w.slice, 'world.slice');
+				optionalArg(w.dropFacts, (v) => stringList(m, v, 'world.dropFacts'));
+				optionalArg(w.dropEntities, (v) => stringList(m, v, 'world.dropEntities'));
+				if (hasOwn(w, 'player') && w.player !== null) declared(m, w.player, 'world.player', GENRE_PLAYER);
+			} else genreWorldArg(m, w, 'world');
+			return s;
+		});
+		return { world: plain(worldOf(args.world, slices)) };
+	},
+
+	/**
+	 * `puzzle.contract {}` → core's puzzle constants: the relations a riddle asks, the world
+	 * predicates the generator reads, the pack's authored, runtime and written predicates,
+	 * the default attempt limit and the pack tuning, and the save block's key and members.
+	 */
+	'puzzle.contract': () => ({
+		relations: [...PUZZLE_RELATIONS],
+		worldPredicates: [...PUZZLE_WORLD_PREDICATES],
+		authoredPredicates: [...PUZZLE_AUTHORED_PREDICATES],
+		runtimePredicates: [...PUZZLE_RUNTIME_PREDICATES],
+		writtenPredicates: [...PUZZLE_WRITTEN_PREDICATES],
+		defaultMaxAttempts: DEFAULT_PUZZLE_MAX_ATTEMPTS,
+		tuning: plain(PUZZLE_TUNING),
+		extensionKey: PUZZLE_EXTENSION_KEY,
+		blockMembers: [...PUZZLE_BLOCK_MEMBERS],
+		actorKeys: [...PUZZLE_ACTOR_KEYS],
+	}),
+
+	/**
+	 * `puzzle.forWorld { world, puzzle?, maxAttempts? }` → `{ definition }` — core's
+	 * `puzzleForWorld`: the world's authored section when it has riddles, else one generated
+	 * from the world. `puzzle` (a `PuzzleIR`, or null for none) stands over the world's own
+	 * `puzzle` when given; `maxAttempts` is the pack tunable (a number, or null for never
+	 * spent; absent: core's default).
+	 */
+	'puzzle.forWorld': (args) => {
+		const m = 'puzzle.forWorld';
+		const [world, options] = coded('invalid-input', () => [puzzleWorldArg(m, args), puzzleOptionsArg(m, args)]);
+		return { definition: plain(puzzleForWorld(world, options)) };
+	},
+
+	/** `puzzle.generate { world, maxAttempts? }` → `{ definition }` — core's `generatePuzzle` (the world's own section unread). */
+	'puzzle.generate': (args) => {
+		const m = 'puzzle.generate';
+		const [world, options] = coded('invalid-input', () => [genreWorldArg(m, args.world, 'world'), puzzleOptionsArg(m, args)]);
+		return { definition: plain(generatePuzzle(world, options)) };
+	},
+
+	/** `puzzle.issues { puzzle? }` → `{ issues }` — core's `puzzleIssues` (absent or null: none). */
+	'puzzle.issues': (args) => {
+		const m = 'puzzle.issues';
+		coded('invalid-input', () => optionalArg(args.puzzle, (v) => declared(m, v, 'puzzle', PUZZLE_IR)));
+		return { issues: puzzleIssues(orUndefined(args.puzzle)) };
+	},
+
+	/** `puzzle.fromIR { puzzle, maxAttempts? }` → `{ definition }` — core's `puzzleFromIR`; a section with issues is core's error. */
+	'puzzle.fromIR': (args) => {
+		const m = 'puzzle.fromIR';
+		const options = coded('invalid-input', () => {
+			declared(m, args.puzzle, 'puzzle', PUZZLE_IR);
+			return puzzleOptionsArg(m, args);
+		});
+		return { definition: plain(puzzleFromIR(args.puzzle, options)) };
+	},
+
+	/** `puzzle.facts { definition }` → `{ facts }` — core's `puzzleFacts` (the definition as the pack's authored facts). */
+	'puzzle.facts': (args) => {
+		coded('invalid-input', () => declared('puzzle.facts', args.definition, 'definition', PUZZLE_DEFINITION));
+		return { facts: puzzleFacts(args.definition) };
+	},
+
+	/** `puzzle.worldFacts { world, definition }` → `{ facts }` — core's `puzzleWorldFacts` (the world facts its riddles are answered from). */
+	'puzzle.worldFacts': (args) => {
+		const m = 'puzzle.worldFacts';
+		coded('invalid-input', () => {
+			genreWorldArg(m, args.world, 'world');
+			declared(m, args.definition, 'definition', PUZZLE_DEFINITION);
+		});
+		return { facts: puzzleWorldFacts(args.world, args.definition) };
+	},
+
+	/** `puzzle.answerKey { world, definition }` → `{ answerKey }` — core's `puzzleAnswerKey` (riddle id → the world's answers). */
+	'puzzle.answerKey': (args) => {
+		const m = 'puzzle.answerKey';
+		coded('invalid-input', () => {
+			genreWorldArg(m, args.world, 'world');
+			declared(m, args.definition, 'definition', PUZZLE_DEFINITION);
+		});
+		return { answerKey: plain(puzzleAnswerKey(args.world, args.definition)) };
+	},
+
+	/** `puzzle.choices { world, riddle, count? }` → `{ choices }` — core's `puzzleChoices` (absent or null count: core's 4). */
+	'puzzle.choices': (args) => {
+		const m = 'puzzle.choices';
+		coded('invalid-input', () => {
+			genreWorldArg(m, args.world, 'world');
+			declared(m, args.riddle, 'riddle', PUZZLE_RIDDLE);
+			optNumber(m, args.count, 'count');
+		});
+		return { choices: puzzleChoices(args.world, args.riddle, orUndefined(args.count)) };
+	},
+
+	/**
+	 * `puzzle.director.create { definition, worldFacts?, kb? }` → `{ session, published }` —
+	 * core's `PuzzleDirector` over a KB of its own, built as core's runner builds it:
+	 * `GamePrologEngine` with genre `puzzle` (module activation consults the puzzle pack and
+	 * declares its runtime predicates) on a native KB. `kb` (a program, or a list of
+	 * clauses) is consulted after the packs, as `GamePrologEngine.create`'s world content
+	 * is; a program the KB refuses is `[invalid-input]`. `worldFacts` (`puzzle.worldFacts`)
+	 * are published with the definition (`publish()`, whose count is `published`). The KB
+	 * lives as long as the session: `session.dispose` destroys it.
+	 */
+	'puzzle.director.create': async (args) => {
+		const m = 'puzzle.director.create';
+		const input = coded('invalid-input', () => ({
+			definition: declared(m, args.definition, 'definition', PUZZLE_DEFINITION),
+			worldFacts: optionalArg(args.worldFacts, (v) => stringList(m, v, 'worldFacts')),
+			kb: optionalArg(args.kb, (v) => (Array.isArray(v) ? stringList(m, v, 'kb').join('\n') : needString(m, v, 'kb'))),
+		}));
+		const engine = await createPrologEngine();
+		try {
+			// core's runner: genreEngine('puzzle') = GamePrologEngine.create({ genre: 'puzzle' }).
+			await GamePrologEngine.create({ genre: 'puzzle', engine });
+			if (input.kb !== undefined) {
+				const consulted = await engine.consult(input.kb);
+				if (!consulted.success) {
+					const err = refuse(m, `the KB refused \`kb\`: ${consulted.error}`);
+					err.code = 'invalid-input';
+					throw err;
+				}
+			}
+			const director = new PuzzleDirector({ definition: input.definition, engine, ...(input.worldFacts ? { worldFacts: input.worldFacts } : {}) });
+			const published = await director.publish();
+			return { session: openSession('puzzle.director', { director, onDispose: () => engine.destroy() }), published };
+		} catch (err) {
+			engine.destroy();
+			throw err;
+		}
+	},
+
+	/** `puzzle.director.findClue { session, actor, text }` → core's `findClue` outcome (`{ ok, refusal?, reason, applied }`). */
+	'puzzle.director.findClue': async (args) => {
+		const m = 'puzzle.director.findClue';
+		const s = session(m, args, 'puzzle.director');
+		puzzleActorArgs(m, args, 'text');
+		return plain(await s.director.findClue(args.actor, args.text));
+	},
+
+	/** `puzzle.director.answer { session, actor, riddle, given }` → core's `answer` outcome (with `correct`, `attemptsLeft`). */
+	'puzzle.director.answer': async (args) => {
+		const m = 'puzzle.director.answer';
+		const s = session(m, args, 'puzzle.director');
+		puzzleActorArgs(m, args, 'riddle');
+		coded('invalid-input', () => needString(m, args.given, 'given'));
+		return plain(await s.director.answer(args.actor, args.riddle, args.given));
+	},
+
+	/** `puzzle.director.unlock { session, actor, lock }` → core's `unlock` outcome (with `unmet`, and the host's `order` when it opened). */
+	'puzzle.director.unlock': async (args) => {
+		const m = 'puzzle.director.unlock';
+		const s = session(m, args, 'puzzle.director');
+		puzzleActorArgs(m, args, 'lock');
+		return plain(await s.director.unlock(args.actor, args.lock));
+	},
+
+	/** `puzzle.director.take { session, actor, item }` → core's `take` outcome. */
+	'puzzle.director.take': async (args) => {
+		const m = 'puzzle.director.take';
+		const s = session(m, args, 'puzzle.director');
+		puzzleActorArgs(m, args, 'item');
+		return plain(await s.director.take(args.actor, args.item));
+	},
+
+	/** `puzzle.director.view { session, actor, riddle }` → `{ view }` — core's `view` (null: no such riddle). */
+	'puzzle.director.view': async (args) => {
+		const m = 'puzzle.director.view';
+		const s = session(m, args, 'puzzle.director');
+		puzzleActorArgs(m, args, 'riddle');
+		return { view: plain(await s.director.view(args.actor, args.riddle)) };
+	},
+
+	/** `puzzle.director.progress { session, actor }` → `{ progress }` — core's `progress` (a quest tracker's counts). */
+	'puzzle.director.progress': async (args) => {
+		const m = 'puzzle.director.progress';
+		const s = session(m, args, 'puzzle.director');
+		puzzleActorArgs(m, args);
+		return { progress: plain(await s.director.progress(args.actor)) };
+	},
+
+	/** `puzzle.director.isComplete { session, actor }` → `{ complete }` — core's `isComplete` (`puzzle_complete/1`). */
+	'puzzle.director.isComplete': async (args) => {
+		const m = 'puzzle.director.isComplete';
+		const s = session(m, args, 'puzzle.director');
+		puzzleActorArgs(m, args);
+		return { complete: await s.director.isComplete(args.actor) };
+	},
+
+	/** `puzzle.director.serialize { session }` → `{ state }` — core's `serialize` (the save block's value). */
+	'puzzle.director.serialize': (args) => {
+		const s = session('puzzle.director.serialize', args, 'puzzle.director');
+		return { state: plain(s.director.serialize()) };
+	},
+
+	/** `puzzle.director.restore { session, state }` → core's `restore` outcome (a director that has actors refuses: `schema`). */
+	'puzzle.director.restore': async (args) => {
+		const m = 'puzzle.director.restore';
+		const s = session(m, args, 'puzzle.director');
+		coded('invalid-input', () => declared(m, args.state, 'state', PUZZLE_DIRECTOR_STATE));
+		return plain(await s.director.restore(args.state));
+	},
+
+	/** `puzzle.director.stateFacts { state }` → `{ facts }` — core's `PuzzleDirector.stateFacts` (every runtime fact a state implies). */
+	'puzzle.director.stateFacts': (args) => {
+		coded('invalid-input', () => declared('puzzle.director.stateFacts', args.state, 'state', PUZZLE_DIRECTOR_STATE));
+		return { facts: PuzzleDirector.stateFacts(args.state) };
+	},
+
+	/** `puzzle.save.read { block? }` → core's `readPuzzleBlock` (`{ ok: true, value }`, null for no block; `{ ok: false, keys }`). */
+	'puzzle.save.read': (args) => plain(readPuzzleBlock(args.block)),
+
+	/** `puzzle.save.block { state? }` → `{ block }` — core's `puzzleSaveBlock` (absent or null state: null). */
+	'puzzle.save.block': (args) => {
+		coded('invalid-input', () => optionalArg(args.state, (v) => declared('puzzle.save.block', v, 'state', PUZZLE_DIRECTOR_STATE)));
+		return { block: plain(puzzleSaveBlock(orUndefined(args.state))) };
+	},
+
+	/** `puzzle.save.blockOf { block }` → `{ block }` — core's `puzzleBlockOf` (only its member, rows by actor, lists in canonical order). */
+	'puzzle.save.blockOf': (args) => {
+		coded('invalid-input', () => declared('puzzle.save.blockOf', args.block, 'block', PUZZLE_DIRECTOR_STATE));
+		return { block: plain(puzzleBlockOf(args.block)) };
+	},
 
 	// ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
 

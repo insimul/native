@@ -51,6 +51,14 @@ literally.
   bound result (path segments are object keys or array indices), and an optional
   `"$set": { "dotted.path": value, … }` beside it edits the copy (tampering a
   bound envelope, say).
+- In `args`, `{ "$file": "<path>", "$path": "dotted.path" }` is replaced by a deep
+  copy of a JSON file's value at `$path` (the whole file without it). The path is
+  relative to the directory of the case file being run, must stay inside the vendored
+  tree (no absolute path, no `../../`), and is read once per run. A generated case
+  names a vendored corpus input this way instead of copying it into every step: the
+  genre systems cases name the committed world slice
+  (`../conformance/genre-mechanics/thistlecombe.world-slice.json`, `$path` `world`),
+  which is 181 KB. Both harnesses implement it.
 
 ## Library-version answers
 

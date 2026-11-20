@@ -48,6 +48,7 @@
        "genre.registry",
        "genre.resolve",
        "genre.resolveGame",
+       "genre.world.of",
        "inventory.apply",
        "inventory.create",
        "language.bank.analyzeWeaknesses",
@@ -323,6 +324,29 @@
        "props.pickups.settle",
        "props.reader.apply",
        "props.reader.create",
+       "puzzle.answerKey",
+       "puzzle.choices",
+       "puzzle.contract",
+       "puzzle.director.answer",
+       "puzzle.director.create",
+       "puzzle.director.findClue",
+       "puzzle.director.isComplete",
+       "puzzle.director.progress",
+       "puzzle.director.restore",
+       "puzzle.director.serialize",
+       "puzzle.director.stateFacts",
+       "puzzle.director.take",
+       "puzzle.director.unlock",
+       "puzzle.director.view",
+       "puzzle.facts",
+       "puzzle.forWorld",
+       "puzzle.fromIR",
+       "puzzle.generate",
+       "puzzle.issues",
+       "puzzle.save.block",
+       "puzzle.save.blockOf",
+       "puzzle.save.read",
+       "puzzle.worldFacts",
        "quest.completion.apply",
        "quest.completion.create",
        "quest.hydrate",
@@ -541,7 +565,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 507}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 531}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -587,7 +611,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 507}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 531}}}}
    ]
   },
   {

@@ -1,0 +1,1858 @@
+{
+  "schema": "insimul.conformance.genre-systems/1",
+  "area": "puzzle",
+  "file": "puzzle/run",
+  "phase": "P9j",
+  "description": "PuzzleDirector played step by step (puzzle-rule-module). Each run is a fresh knowledge base for the puzzle genre (GamePrologEngine.create({genre: 'puzzle'}): the genre's modules and their predicate packs by module activation), the director built over it from the case's inline definition and published, then the steps in order. Steps: clue (findClue), answer, unlock (opening TELLS the host open_container: the order is in the result), take, view, progress, complete (isComplete), restore, state (serialize). The actor is player unless the step names one. published is how many facts publish() asserted; state is serialize() after the last step.",
+  "sources": [
+    "Rules: core's puzzle, platformer and strategy modules (src/puzzle, src/platformer, src/strategy) and their directors (src/game-engine/logic/{Puzzle,Platformer,Strategy}Director.ts), unchanged by this corpus; their predicate packs are pinned clause by clause by conformance/prolog/mechanic-{puzzle,platformer,strategy}.json.",
+    "Worlds: the committed slice of Thistlecombe (Unity closing-wave export, conformance/genre-mechanics/thistlecombe.world-slice.json) and synthetic worlds written in src/genre-systems/systems-corpus-cases.ts."
+  ],
+  "runner": "src/genre-systems/systems-corpus.ts (runGenreSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "puzzle-rule-module"
+  ],
+  "ops": [
+    "run"
+  ],
+  "steps": [
+    "restore",
+    "clue",
+    "answer",
+    "unlock",
+    "take",
+    "view",
+    "progress",
+    "complete",
+    "state"
+  ],
+  "cases": [
+    {
+      "name": "thistlecombe: every clue found, every riddle answered, every key taken, the last lock opened",
+      "op": "run",
+      "note": "Each refusal on the way leaves the KB untouched (applied is empty) and says why; the host is told open_container for each lock.",
+      "input": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            },
+            {
+              "id": "riddle_2",
+              "relation": "occupation_of",
+              "subject": "rowena_ironwood",
+              "prompt": "What does Rowena Ironwood do for a living?",
+              "clues": []
+            },
+            {
+              "id": "riddle_3",
+              "relation": "subject_of",
+              "subject": "bigger_dreams",
+              "prompt": "Whose secret is \"Bigger Dreams\"?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            },
+            {
+              "id": "lock_3",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "lock_2"
+                },
+                {
+                  "kind": "clue",
+                  "ref": "carnet_mouille_notes_de_recherche"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_3",
+          "maxAttempts": 3,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            },
+            {
+              "id": "carnet_mouille_notes_de_recherche",
+              "clue": "Research notes about the founding families, found in a cave."
+            }
+          ],
+          "source": "generated",
+          "notes": []
+        },
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "occupation(rowena_ironwood, owner_carpenter).",
+          "truth_about(bigger_dreams, rowena_ironwood)."
+        ],
+        "steps": [
+          {
+            "step": "view",
+            "riddle": "riddle_1"
+          },
+          {
+            "step": "answer",
+            "riddle": "riddle_1",
+            "given": "rowena_ironwood"
+          },
+          {
+            "step": "clue",
+            "text": "not_a_clue"
+          },
+          {
+            "step": "clue",
+            "text": "avis_de_disparition"
+          },
+          {
+            "step": "clue",
+            "text": "avis_de_disparition"
+          },
+          {
+            "step": "view",
+            "riddle": "riddle_1"
+          },
+          {
+            "step": "answer",
+            "riddle": "riddle_1",
+            "given": "aldric_underwood"
+          },
+          {
+            "step": "answer",
+            "riddle": "riddle_1",
+            "given": "rowena_ironwood"
+          },
+          {
+            "step": "answer",
+            "riddle": "riddle_1",
+            "given": "rowena_ironwood"
+          },
+          {
+            "step": "unlock",
+            "lock": "lock_2"
+          },
+          {
+            "step": "unlock",
+            "lock": "lock_1"
+          },
+          {
+            "step": "unlock",
+            "lock": "lock_1"
+          },
+          {
+            "step": "take",
+            "item": "key2"
+          },
+          {
+            "step": "take",
+            "item": "key1"
+          },
+          {
+            "step": "take",
+            "item": "key1"
+          },
+          {
+            "step": "progress"
+          },
+          {
+            "step": "answer",
+            "riddle": "riddle_2",
+            "given": "owner_carpenter"
+          },
+          {
+            "step": "unlock",
+            "lock": "lock_2"
+          },
+          {
+            "step": "take",
+            "item": "key2"
+          },
+          {
+            "step": "answer",
+            "riddle": "riddle_3",
+            "given": "rowena_ironwood"
+          },
+          {
+            "step": "unlock",
+            "lock": "lock_3"
+          },
+          {
+            "step": "complete"
+          },
+          {
+            "step": "clue",
+            "text": "carnet_mouille_notes_de_recherche"
+          },
+          {
+            "step": "unlock",
+            "lock": "lock_3"
+          },
+          {
+            "step": "complete"
+          },
+          {
+            "step": "progress"
+          }
+        ]
+      },
+      "expected": {
+        "published": 25,
+        "steps": [
+          {
+            "step": "view",
+            "view": {
+              "id": "riddle_1",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "open": false,
+              "solved": false,
+              "attemptsLeft": 3,
+              "missingClues": [
+                "avis_de_disparition"
+              ]
+            }
+          },
+          {
+            "step": "answer",
+            "ok": false,
+            "refusal": "clue_missing",
+            "reason": "riddle_1 waits on a clue player has not found",
+            "applied": [],
+            "correct": false,
+            "attemptsLeft": 3
+          },
+          {
+            "step": "clue",
+            "ok": false,
+            "refusal": "unknown_clue",
+            "reason": "\"not_a_clue\" is not a clue in this puzzle",
+            "applied": []
+          },
+          {
+            "step": "clue",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_clue_found(player, avis_de_disparition)."
+            ]
+          },
+          {
+            "step": "clue",
+            "ok": true,
+            "reason": null,
+            "applied": []
+          },
+          {
+            "step": "view",
+            "view": {
+              "id": "riddle_1",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "open": true,
+              "solved": false,
+              "attemptsLeft": 3,
+              "missingClues": []
+            }
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_attempts(player, riddle_1, 1)."
+            ],
+            "correct": false,
+            "attemptsLeft": 2
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_attempts(player, riddle_1, 1).",
+              "puzzle_solved(player, riddle_1)."
+            ],
+            "correct": true,
+            "attemptsLeft": 3
+          },
+          {
+            "step": "answer",
+            "ok": false,
+            "refusal": "already_solved",
+            "reason": "player has already solved riddle_1",
+            "applied": [],
+            "correct": false,
+            "attemptsLeft": 3
+          },
+          {
+            "step": "unlock",
+            "ok": false,
+            "refusal": "locked",
+            "reason": "lock_2 still needs item key1, riddle riddle_2",
+            "applied": [],
+            "unmet": [
+              {
+                "kind": "item",
+                "ref": "key1"
+              },
+              {
+                "kind": "riddle",
+                "ref": "riddle_2"
+              }
+            ]
+          },
+          {
+            "step": "unlock",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_opened(player, lock_1)."
+            ],
+            "unmet": [],
+            "order": {
+              "agent": "player",
+              "action": "open_container",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "tick": 1,
+              "animation": "handle",
+              "utility": 0
+            }
+          },
+          {
+            "step": "unlock",
+            "ok": false,
+            "refusal": "already_open",
+            "reason": "player has already opened lock_1",
+            "applied": [],
+            "unmet": []
+          },
+          {
+            "step": "take",
+            "ok": false,
+            "refusal": "not_available",
+            "reason": "key2 is not behind a lock player has opened, or is already held",
+            "applied": []
+          },
+          {
+            "step": "take",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "has_item(player, key1, 1)."
+            ]
+          },
+          {
+            "step": "take",
+            "ok": false,
+            "refusal": "not_available",
+            "reason": "key1 is not behind a lock player has opened, or is already held",
+            "applied": []
+          },
+          {
+            "step": "progress",
+            "progress": {
+              "cluesFound": 1,
+              "cluesTotal": 2,
+              "riddlesSolved": 1,
+              "riddlesTotal": 3,
+              "locksOpened": 1,
+              "locksTotal": 3,
+              "complete": false
+            }
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_solved(player, riddle_2)."
+            ],
+            "correct": true,
+            "attemptsLeft": 3
+          },
+          {
+            "step": "unlock",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_opened(player, lock_2)."
+            ],
+            "unmet": [],
+            "order": {
+              "agent": "player",
+              "action": "open_container",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "tick": 2,
+              "animation": "handle",
+              "utility": 0
+            }
+          },
+          {
+            "step": "take",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "has_item(player, key2, 1)."
+            ]
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_solved(player, riddle_3)."
+            ],
+            "correct": true,
+            "attemptsLeft": 3
+          },
+          {
+            "step": "unlock",
+            "ok": false,
+            "refusal": "locked",
+            "reason": "lock_3 still needs clue carnet_mouille_notes_de_recherche",
+            "applied": [],
+            "unmet": [
+              {
+                "kind": "clue",
+                "ref": "carnet_mouille_notes_de_recherche"
+              }
+            ]
+          },
+          {
+            "step": "complete",
+            "complete": false
+          },
+          {
+            "step": "clue",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_clue_found(player, carnet_mouille_notes_de_recherche)."
+            ]
+          },
+          {
+            "step": "unlock",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_opened(player, lock_3)."
+            ],
+            "unmet": [],
+            "order": {
+              "agent": "player",
+              "action": "open_container",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "tick": 3,
+              "animation": "handle",
+              "utility": 0
+            }
+          },
+          {
+            "step": "complete",
+            "complete": true
+          },
+          {
+            "step": "progress",
+            "progress": {
+              "cluesFound": 2,
+              "cluesTotal": 2,
+              "riddlesSolved": 3,
+              "riddlesTotal": 3,
+              "locksOpened": 3,
+              "locksTotal": 3,
+              "complete": true
+            }
+          }
+        ],
+        "state": {
+          "actors": [
+            {
+              "actor": "player",
+              "clues": [
+                "avis_de_disparition",
+                "carnet_mouille_notes_de_recherche"
+              ],
+              "solved": [
+                "riddle_1",
+                "riddle_2",
+                "riddle_3"
+              ],
+              "attempts": [],
+              "opened": [
+                "lock_1",
+                "lock_2",
+                "lock_3"
+              ],
+              "taken": [
+                "key1",
+                "key2"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "thistlecombe: two players keep separate progress; the rival has solved nothing",
+      "op": "run",
+      "input": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            },
+            {
+              "id": "riddle_2",
+              "relation": "occupation_of",
+              "subject": "rowena_ironwood",
+              "prompt": "What does Rowena Ironwood do for a living?",
+              "clues": []
+            },
+            {
+              "id": "riddle_3",
+              "relation": "subject_of",
+              "subject": "bigger_dreams",
+              "prompt": "Whose secret is \"Bigger Dreams\"?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            },
+            {
+              "id": "lock_3",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "lock_2"
+                },
+                {
+                  "kind": "clue",
+                  "ref": "carnet_mouille_notes_de_recherche"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_3",
+          "maxAttempts": 3,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            },
+            {
+              "id": "carnet_mouille_notes_de_recherche",
+              "clue": "Research notes about the founding families, found in a cave."
+            }
+          ],
+          "source": "generated",
+          "notes": []
+        },
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "occupation(rowena_ironwood, owner_carpenter).",
+          "truth_about(bigger_dreams, rowena_ironwood)."
+        ],
+        "steps": [
+          {
+            "step": "clue",
+            "text": "avis_de_disparition"
+          },
+          {
+            "step": "answer",
+            "riddle": "riddle_1",
+            "given": "rowena_ironwood"
+          },
+          {
+            "step": "unlock",
+            "actor": "rival",
+            "lock": "lock_1"
+          },
+          {
+            "step": "answer",
+            "actor": "rival",
+            "riddle": "riddle_1",
+            "given": "rowena_ironwood"
+          },
+          {
+            "step": "clue",
+            "actor": "rival",
+            "text": "avis_de_disparition"
+          },
+          {
+            "step": "answer",
+            "actor": "rival",
+            "riddle": "riddle_1",
+            "given": "maeve_oakfield"
+          },
+          {
+            "step": "progress",
+            "actor": "rival"
+          },
+          {
+            "step": "complete",
+            "actor": "rival"
+          },
+          {
+            "step": "state"
+          }
+        ]
+      },
+      "expected": {
+        "published": 25,
+        "steps": [
+          {
+            "step": "clue",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_clue_found(player, avis_de_disparition)."
+            ]
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_solved(player, riddle_1)."
+            ],
+            "correct": true,
+            "attemptsLeft": 3
+          },
+          {
+            "step": "unlock",
+            "ok": false,
+            "refusal": "locked",
+            "reason": "lock_1 still needs clue avis_de_disparition, riddle riddle_1",
+            "applied": [],
+            "unmet": [
+              {
+                "kind": "clue",
+                "ref": "avis_de_disparition"
+              },
+              {
+                "kind": "riddle",
+                "ref": "riddle_1"
+              }
+            ]
+          },
+          {
+            "step": "answer",
+            "ok": false,
+            "refusal": "clue_missing",
+            "reason": "riddle_1 waits on a clue rival has not found",
+            "applied": [],
+            "correct": false,
+            "attemptsLeft": 3
+          },
+          {
+            "step": "clue",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_clue_found(rival, avis_de_disparition)."
+            ]
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_attempts(rival, riddle_1, 1)."
+            ],
+            "correct": false,
+            "attemptsLeft": 2
+          },
+          {
+            "step": "progress",
+            "progress": {
+              "cluesFound": 1,
+              "cluesTotal": 2,
+              "riddlesSolved": 0,
+              "riddlesTotal": 3,
+              "locksOpened": 0,
+              "locksTotal": 3,
+              "complete": false
+            }
+          },
+          {
+            "step": "complete",
+            "complete": false
+          },
+          {
+            "step": "state",
+            "state": {
+              "actors": [
+                {
+                  "actor": "player",
+                  "clues": [
+                    "avis_de_disparition"
+                  ],
+                  "solved": [
+                    "riddle_1"
+                  ],
+                  "attempts": [],
+                  "opened": [],
+                  "taken": []
+                },
+                {
+                  "actor": "rival",
+                  "clues": [
+                    "avis_de_disparition"
+                  ],
+                  "solved": [],
+                  "attempts": [
+                    [
+                      "riddle_1",
+                      1
+                    ]
+                  ],
+                  "opened": [],
+                  "taken": []
+                }
+              ]
+            }
+          }
+        ],
+        "state": {
+          "actors": [
+            {
+              "actor": "player",
+              "clues": [
+                "avis_de_disparition"
+              ],
+              "solved": [
+                "riddle_1"
+              ],
+              "attempts": [],
+              "opened": [],
+              "taken": []
+            },
+            {
+              "actor": "rival",
+              "clues": [
+                "avis_de_disparition"
+              ],
+              "solved": [],
+              "attempts": [
+                [
+                  "riddle_1",
+                  1
+                ]
+              ],
+              "opened": [],
+              "taken": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "mill: two wrong answers spend a riddle; a riddle the world cannot answer is never put",
+      "op": "run",
+      "input": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?",
+              "clues": []
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "prompt": "occupation of ada?",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop",
+              "prompt": "owner of ghost_shop?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "loft",
+          "maxAttempts": 2,
+          "clueTexts": [],
+          "source": "authored",
+          "notes": []
+        },
+        "worldFacts": [
+          "business_owner(the_mill, ada).",
+          "business_owner(the_mill, bryn).",
+          "occupation(ada, miller)."
+        ],
+        "steps": [
+          {
+            "step": "answer",
+            "riddle": "keeper",
+            "given": "cora"
+          },
+          {
+            "step": "view",
+            "riddle": "keeper"
+          },
+          {
+            "step": "answer",
+            "riddle": "keeper",
+            "given": "dell"
+          },
+          {
+            "step": "view",
+            "riddle": "keeper"
+          },
+          {
+            "step": "answer",
+            "riddle": "keeper",
+            "given": "ada"
+          },
+          {
+            "step": "answer",
+            "riddle": "ghost",
+            "given": "ada"
+          },
+          {
+            "step": "view",
+            "riddle": "ghost"
+          },
+          {
+            "step": "answer",
+            "riddle": "nonesuch",
+            "given": "ada"
+          },
+          {
+            "step": "unlock",
+            "lock": "nonesuch"
+          },
+          {
+            "step": "view",
+            "riddle": "nonesuch"
+          },
+          {
+            "step": "unlock",
+            "lock": "hatch"
+          },
+          {
+            "step": "state"
+          }
+        ]
+      },
+      "expected": {
+        "published": 20,
+        "steps": [
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_attempts(player, keeper, 1)."
+            ],
+            "correct": false,
+            "attemptsLeft": 1
+          },
+          {
+            "step": "view",
+            "view": {
+              "id": "keeper",
+              "prompt": "Who keeps the mill?",
+              "open": true,
+              "solved": false,
+              "attemptsLeft": 1,
+              "missingClues": []
+            }
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_attempts(player, keeper, 1).",
+              "puzzle_attempts(player, keeper, 2)."
+            ],
+            "correct": false,
+            "attemptsLeft": 0
+          },
+          {
+            "step": "view",
+            "view": {
+              "id": "keeper",
+              "prompt": "Who keeps the mill?",
+              "open": false,
+              "solved": false,
+              "attemptsLeft": 0,
+              "missingClues": []
+            }
+          },
+          {
+            "step": "answer",
+            "ok": false,
+            "refusal": "spent",
+            "reason": "keeper has had all the wrong answers it allows",
+            "applied": [],
+            "correct": false,
+            "attemptsLeft": 0
+          },
+          {
+            "step": "answer",
+            "ok": false,
+            "refusal": "unanswerable",
+            "reason": "nothing in this world answers ghost",
+            "applied": [],
+            "correct": false,
+            "attemptsLeft": 2
+          },
+          {
+            "step": "view",
+            "view": {
+              "id": "ghost",
+              "prompt": "owner of ghost_shop?",
+              "open": true,
+              "solved": false,
+              "attemptsLeft": 2,
+              "missingClues": []
+            }
+          },
+          {
+            "step": "answer",
+            "ok": false,
+            "refusal": "unknown_riddle",
+            "reason": "\"nonesuch\" is not a riddle in this puzzle",
+            "applied": [],
+            "correct": false,
+            "attemptsLeft": 2
+          },
+          {
+            "step": "unlock",
+            "ok": false,
+            "refusal": "unknown_lock",
+            "reason": "\"nonesuch\" is not a lock in this puzzle",
+            "applied": [],
+            "unmet": []
+          },
+          {
+            "step": "view",
+            "view": null
+          },
+          {
+            "step": "unlock",
+            "ok": false,
+            "refusal": "locked",
+            "reason": "hatch still needs riddle keeper",
+            "applied": [],
+            "unmet": [
+              {
+                "kind": "riddle",
+                "ref": "keeper"
+              }
+            ]
+          },
+          {
+            "step": "state",
+            "state": {
+              "actors": [
+                {
+                  "actor": "player",
+                  "clues": [],
+                  "solved": [],
+                  "attempts": [
+                    [
+                      "keeper",
+                      2
+                    ]
+                  ],
+                  "opened": [],
+                  "taken": []
+                }
+              ]
+            }
+          }
+        ],
+        "state": {
+          "actors": [
+            {
+              "actor": "player",
+              "clues": [],
+              "solved": [],
+              "attempts": [
+                [
+                  "keeper",
+                  2
+                ]
+              ],
+              "opened": [],
+              "taken": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "mill: a riddle with two keepers takes either; a lock needs another lock, an item and a riddle",
+      "op": "run",
+      "input": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?",
+              "clues": []
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "prompt": "occupation of ada?",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop",
+              "prompt": "owner of ghost_shop?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "loft",
+          "maxAttempts": 2,
+          "clueTexts": [],
+          "source": "authored",
+          "notes": []
+        },
+        "worldFacts": [
+          "business_owner(the_mill, ada).",
+          "business_owner(the_mill, bryn).",
+          "occupation(ada, miller)."
+        ],
+        "steps": [
+          {
+            "step": "answer",
+            "riddle": "keeper",
+            "given": "bryn"
+          },
+          {
+            "step": "unlock",
+            "lock": "loft"
+          },
+          {
+            "step": "unlock",
+            "lock": "hatch"
+          },
+          {
+            "step": "take",
+            "item": "flour"
+          },
+          {
+            "step": "unlock",
+            "lock": "loft"
+          },
+          {
+            "step": "take",
+            "item": "brass_key"
+          },
+          {
+            "step": "view",
+            "riddle": "trade"
+          },
+          {
+            "step": "clue",
+            "text": "ledger"
+          },
+          {
+            "step": "answer",
+            "riddle": "trade",
+            "given": "miller"
+          },
+          {
+            "step": "unlock",
+            "lock": "loft"
+          },
+          {
+            "step": "complete"
+          },
+          {
+            "step": "progress"
+          }
+        ]
+      },
+      "expected": {
+        "published": 20,
+        "steps": [
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_solved(player, keeper)."
+            ],
+            "correct": true,
+            "attemptsLeft": 2
+          },
+          {
+            "step": "unlock",
+            "ok": false,
+            "refusal": "locked",
+            "reason": "loft still needs lock hatch, item brass_key, riddle trade",
+            "applied": [],
+            "unmet": [
+              {
+                "kind": "lock",
+                "ref": "hatch"
+              },
+              {
+                "kind": "item",
+                "ref": "brass_key"
+              },
+              {
+                "kind": "riddle",
+                "ref": "trade"
+              }
+            ]
+          },
+          {
+            "step": "unlock",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_opened(player, hatch)."
+            ],
+            "unmet": [],
+            "order": {
+              "agent": "player",
+              "action": "open_container",
+              "target": "mill_chest",
+              "tick": 1,
+              "animation": "handle",
+              "utility": 0
+            }
+          },
+          {
+            "step": "take",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "has_item(player, flour, 1)."
+            ]
+          },
+          {
+            "step": "unlock",
+            "ok": false,
+            "refusal": "locked",
+            "reason": "loft still needs item brass_key, riddle trade",
+            "applied": [],
+            "unmet": [
+              {
+                "kind": "item",
+                "ref": "brass_key"
+              },
+              {
+                "kind": "riddle",
+                "ref": "trade"
+              }
+            ]
+          },
+          {
+            "step": "take",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "has_item(player, brass_key, 1)."
+            ]
+          },
+          {
+            "step": "view",
+            "view": {
+              "id": "trade",
+              "prompt": "occupation of ada?",
+              "open": false,
+              "solved": false,
+              "attemptsLeft": 2,
+              "missingClues": [
+                "ledger"
+              ]
+            }
+          },
+          {
+            "step": "clue",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_clue_found(player, ledger)."
+            ]
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_solved(player, trade)."
+            ],
+            "correct": true,
+            "attemptsLeft": 2
+          },
+          {
+            "step": "unlock",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_opened(player, loft)."
+            ],
+            "unmet": [],
+            "order": {
+              "agent": "player",
+              "action": "open_container",
+              "target": "loft_chest",
+              "tick": 2,
+              "animation": "handle",
+              "utility": 0
+            }
+          },
+          {
+            "step": "complete",
+            "complete": true
+          },
+          {
+            "step": "progress",
+            "progress": {
+              "cluesFound": 1,
+              "cluesTotal": 1,
+              "riddlesSolved": 2,
+              "riddlesTotal": 3,
+              "locksOpened": 2,
+              "locksTotal": 2,
+              "complete": true
+            }
+          }
+        ],
+        "state": {
+          "actors": [
+            {
+              "actor": "player",
+              "clues": [
+                "ledger"
+              ],
+              "solved": [
+                "keeper",
+                "trade"
+              ],
+              "attempts": [],
+              "opened": [
+                "hatch",
+                "loft"
+              ],
+              "taken": [
+                "brass_key",
+                "flour"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "mill: with no attempt limit a riddle is never spent",
+      "op": "run",
+      "input": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?",
+              "clues": []
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "prompt": "occupation of ada?",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop",
+              "prompt": "owner of ghost_shop?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "loft",
+          "maxAttempts": null,
+          "clueTexts": [],
+          "source": "authored",
+          "notes": []
+        },
+        "worldFacts": [
+          "business_owner(the_mill, ada).",
+          "business_owner(the_mill, bryn).",
+          "occupation(ada, miller)."
+        ],
+        "steps": [
+          {
+            "step": "answer",
+            "riddle": "keeper",
+            "given": "cora"
+          },
+          {
+            "step": "answer",
+            "riddle": "keeper",
+            "given": "dell"
+          },
+          {
+            "step": "answer",
+            "riddle": "keeper",
+            "given": "eve"
+          },
+          {
+            "step": "view",
+            "riddle": "keeper"
+          },
+          {
+            "step": "answer",
+            "riddle": "keeper",
+            "given": "ada"
+          },
+          {
+            "step": "view",
+            "riddle": "keeper"
+          }
+        ]
+      },
+      "expected": {
+        "published": 19,
+        "steps": [
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_attempts(player, keeper, 1)."
+            ],
+            "correct": false,
+            "attemptsLeft": null
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_attempts(player, keeper, 1).",
+              "puzzle_attempts(player, keeper, 2)."
+            ],
+            "correct": false,
+            "attemptsLeft": null
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_attempts(player, keeper, 2).",
+              "puzzle_attempts(player, keeper, 3)."
+            ],
+            "correct": false,
+            "attemptsLeft": null
+          },
+          {
+            "step": "view",
+            "view": {
+              "id": "keeper",
+              "prompt": "Who keeps the mill?",
+              "open": true,
+              "solved": false,
+              "attemptsLeft": null,
+              "missingClues": []
+            }
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_attempts(player, keeper, 3).",
+              "puzzle_solved(player, keeper)."
+            ],
+            "correct": true,
+            "attemptsLeft": null
+          },
+          {
+            "step": "view",
+            "view": {
+              "id": "keeper",
+              "prompt": "Who keeps the mill?",
+              "open": false,
+              "solved": true,
+              "attemptsLeft": null,
+              "missingClues": []
+            }
+          }
+        ],
+        "state": {
+          "actors": [
+            {
+              "actor": "player",
+              "clues": [],
+              "solved": [
+                "keeper"
+              ],
+              "attempts": [],
+              "opened": [],
+              "taken": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "mill: restore puts a saved actor back; a second restore is refused",
+      "op": "run",
+      "input": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?",
+              "clues": []
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "prompt": "occupation of ada?",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop",
+              "prompt": "owner of ghost_shop?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "loft",
+          "maxAttempts": 2,
+          "clueTexts": [],
+          "source": "authored",
+          "notes": []
+        },
+        "worldFacts": [
+          "business_owner(the_mill, ada).",
+          "business_owner(the_mill, bryn).",
+          "occupation(ada, miller)."
+        ],
+        "steps": [
+          {
+            "step": "restore",
+            "state": {
+              "actors": [
+                {
+                  "actor": "player",
+                  "clues": [
+                    "ledger"
+                  ],
+                  "solved": [
+                    "keeper"
+                  ],
+                  "attempts": [
+                    [
+                      "trade",
+                      1
+                    ]
+                  ],
+                  "opened": [
+                    "hatch"
+                  ],
+                  "taken": [
+                    "brass_key"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "step": "view",
+            "riddle": "trade"
+          },
+          {
+            "step": "unlock",
+            "lock": "loft"
+          },
+          {
+            "step": "answer",
+            "riddle": "trade",
+            "given": "miller"
+          },
+          {
+            "step": "unlock",
+            "lock": "loft"
+          },
+          {
+            "step": "complete"
+          },
+          {
+            "step": "restore",
+            "state": {
+              "actors": []
+            }
+          }
+        ]
+      },
+      "expected": {
+        "published": 20,
+        "steps": [
+          {
+            "step": "restore",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_clue_found(player, ledger).",
+              "puzzle_solved(player, keeper).",
+              "puzzle_attempts(player, trade, 1).",
+              "puzzle_opened(player, hatch).",
+              "has_item(player, brass_key, 1)."
+            ]
+          },
+          {
+            "step": "view",
+            "view": {
+              "id": "trade",
+              "prompt": "occupation of ada?",
+              "open": true,
+              "solved": false,
+              "attemptsLeft": 1,
+              "missingClues": []
+            }
+          },
+          {
+            "step": "unlock",
+            "ok": false,
+            "refusal": "locked",
+            "reason": "loft still needs riddle trade",
+            "applied": [],
+            "unmet": [
+              {
+                "kind": "riddle",
+                "ref": "trade"
+              }
+            ]
+          },
+          {
+            "step": "answer",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_attempts(player, trade, 1).",
+              "puzzle_solved(player, trade)."
+            ],
+            "correct": true,
+            "attemptsLeft": 2
+          },
+          {
+            "step": "unlock",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "puzzle_opened(player, loft)."
+            ],
+            "unmet": [],
+            "order": {
+              "agent": "player",
+              "action": "open_container",
+              "target": "loft_chest",
+              "tick": 1,
+              "animation": "handle",
+              "utility": 0
+            }
+          },
+          {
+            "step": "complete",
+            "complete": true
+          },
+          {
+            "step": "restore",
+            "ok": false,
+            "refusal": "schema",
+            "reason": "restore() is for a fresh director; this one already has actors",
+            "applied": []
+          }
+        ],
+        "state": {
+          "actors": [
+            {
+              "actor": "player",
+              "clues": [
+                "ledger"
+              ],
+              "solved": [
+                "keeper",
+                "trade"
+              ],
+              "attempts": [],
+              "opened": [
+                "hatch",
+                "loft"
+              ],
+              "taken": [
+                "brass_key"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,911 @@
+{
+ "area": "genre-puzzle-save",
+ "description": "core's genre systems corpus conformance/puzzle/save.json (P9j.core) through the genre.world.of and puzzle.* rows, each op as core's reference runner (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/genre-mechanics/thistlecombe.world-slice.json": "2dccd06611aa6325c6a7ea9d3c4ae18135252f039a8cb3ba61173d95608376cb",
+   "conformance/puzzle/save.json": "3ca6d63e5bb2fbb2f9836f9c4ce5c74c2f8b5212941b222aad6c443af323d49f"
+  }
+ },
+ "cases": [
+  {
+   "name": "puzzle/save block: block: the director's state, rows by actor and every list in canonical order",
+   "steps": [
+    {
+     "call": "puzzle.save.block",
+     "args": {
+      "state": {
+       "actors": [
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "riddle_1",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "player",
+         "clues": [
+          "carnet_mouille_notes_de_recherche",
+          "avis_de_disparition"
+         ],
+         "solved": [
+          "riddle_2",
+          "riddle_1"
+         ],
+         "attempts": [
+          [
+           "riddle_3",
+           1
+          ]
+         ],
+         "opened": [
+          "lock_2",
+          "lock_1"
+         ],
+         "taken": [
+          "key2",
+          "key1"
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "block": {
+       "$type": "object"
+      }
+     },
+     "bind": "b"
+    },
+    {
+     "call": "puzzle.save.blockOf",
+     "args": {
+      "block": {
+       "$ref": "b.block"
+      }
+     },
+     "expect": {
+      "block": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "avis_de_disparition",
+          "carnet_mouille_notes_de_recherche"
+         ],
+         "solved": [
+          "riddle_1",
+          "riddle_2"
+         ],
+         "attempts": [
+          [
+           "riddle_3",
+           1
+          ]
+         ],
+         "opened": [
+          "lock_1",
+          "lock_2"
+         ],
+         "taken": [
+          "key1",
+          "key2"
+         ]
+        },
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "riddle_1",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/save block: block: an empty director",
+   "steps": [
+    {
+     "call": "puzzle.save.block",
+     "args": {
+      "state": {
+       "actors": []
+      }
+     },
+     "expect": {
+      "block": {
+       "$type": "object"
+      }
+     },
+     "bind": "b"
+    },
+    {
+     "call": "puzzle.save.blockOf",
+     "args": {
+      "block": {
+       "$ref": "b.block"
+      }
+     },
+     "expect": {
+      "block": {
+       "actors": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/save read: read: a block as written reads back unchanged",
+   "steps": [
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": {
+       "actors": [
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "riddle_1",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "player",
+         "clues": [
+          "carnet_mouille_notes_de_recherche",
+          "avis_de_disparition"
+         ],
+         "solved": [
+          "riddle_2",
+          "riddle_1"
+         ],
+         "attempts": [
+          [
+           "riddle_3",
+           1
+          ]
+         ],
+         "opened": [
+          "lock_2",
+          "lock_1"
+         ],
+         "taken": [
+          "key2",
+          "key1"
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "$type": "object"
+      }
+     },
+     "bind": "r"
+    },
+    {
+     "call": "puzzle.save.blockOf",
+     "args": {
+      "block": {
+       "$ref": "r.value"
+      }
+     },
+     "expect": {
+      "block": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "avis_de_disparition",
+          "carnet_mouille_notes_de_recherche"
+         ],
+         "solved": [
+          "riddle_1",
+          "riddle_2"
+         ],
+         "attempts": [
+          [
+           "riddle_3",
+           1
+          ]
+         ],
+         "opened": [
+          "lock_1",
+          "lock_2"
+         ],
+         "taken": [
+          "key1",
+          "key2"
+         ]
+        },
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "riddle_1",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/save read: read: absent lists read as empty",
+   "steps": [
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": {
+       "actors": [
+        {
+         "actor": "player"
+        }
+       ]
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "$type": "object"
+      }
+     },
+     "bind": "r"
+    },
+    {
+     "call": "puzzle.save.blockOf",
+     "args": {
+      "block": {
+       "$ref": "r.value"
+      }
+     },
+     "expect": {
+      "block": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [],
+         "solved": [],
+         "attempts": [],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/save read: read: no block (absent or null) is no puzzle",
+   "steps": [
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": null
+     },
+     "expect": {
+      "ok": true,
+      "value": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/save read: read refused: a block that is not an object",
+   "steps": [
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": [
+       "player"
+      ]
+     },
+     "expect": {
+      "ok": false,
+      "keys": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/save read: read refused: actors that is not a list",
+   "steps": [
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": {
+       "actors": "player"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "keys": [
+       "actors"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/save read: read refused: every unreadable member, in ascending order",
+   "steps": [
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "a",
+          "a"
+         ],
+         "solved": [
+          "r1"
+         ],
+         "attempts": [
+          [
+           "r1",
+           1
+          ]
+         ],
+         "opened": "lock_1",
+         "taken": [
+          7
+         ]
+        },
+        {
+         "actor": "player"
+        },
+        {
+         "actor": ""
+        },
+        "rival",
+        {
+         "actor": "rival",
+         "attempts": [
+          [
+           "r2",
+           0
+          ]
+         ]
+        },
+        {
+         "actor": "third",
+         "attempts": [
+          [
+           "r3",
+           1
+          ],
+          [
+           "r3",
+           2
+          ]
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "ok": false,
+      "keys": [
+       "actors[0].attempts",
+       "actors[0].clues",
+       "actors[0].opened",
+       "actors[0].taken",
+       "actors[1]",
+       "actors[2]",
+       "actors[3]",
+       "actors[4].attempts",
+       "actors[5].attempts"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/save restore: restore: a saved player comes back mid-puzzle and finishes it",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's PuzzleDirector over a KB (GamePrologEngine's puzzle pack on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "avis_de_disparition"
+         ],
+         "solved": [
+          "riddle_1",
+          "riddle_2"
+         ],
+         "attempts": [
+          [
+           "riddle_3",
+           2
+          ]
+         ],
+         "opened": [
+          "lock_1",
+          "lock_2"
+         ],
+         "taken": [
+          "key1",
+          "key2"
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "$type": "object"
+      }
+     },
+     "bind": "r"
+    },
+    {
+     "call": "puzzle.save.blockOf",
+     "args": {
+      "block": {
+       "$ref": "r.value"
+      }
+     },
+     "expect": {
+      "block": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "avis_de_disparition"
+         ],
+         "solved": [
+          "riddle_1",
+          "riddle_2"
+         ],
+         "attempts": [
+          [
+           "riddle_3",
+           2
+          ]
+         ],
+         "opened": [
+          "lock_1",
+          "lock_2"
+         ],
+         "taken": [
+          "key1",
+          "key2"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.create",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "ironwood_s_builders",
+         "prompt": "Who keeps Ironwood's Builders?",
+         "clues": [
+          "avis_de_disparition"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "rowena_ironwood",
+         "prompt": "What does Rowena Ironwood do for a living?",
+         "clues": []
+        },
+        {
+         "id": "riddle_3",
+         "relation": "subject_of",
+         "subject": "bigger_dreams",
+         "prompt": "Whose secret is \"Bigger Dreams\"?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "avis_de_disparition"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key1"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key2"
+         ]
+        },
+        {
+         "id": "lock_3",
+         "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key2"
+          },
+          {
+           "kind": "lock",
+           "ref": "lock_2"
+          },
+          {
+           "kind": "clue",
+           "ref": "carnet_mouille_notes_de_recherche"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_3"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "lock_3",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "avis_de_disparition",
+         "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+        },
+        {
+         "id": "carnet_mouille_notes_de_recherche",
+         "clue": "Research notes about the founding families, found in a cave."
+        }
+       ],
+       "source": "generated",
+       "notes": []
+      },
+      "worldFacts": [
+       "business_owner(ironwood_s_builders, rowena_ironwood).",
+       "occupation(rowena_ironwood, owner_carpenter).",
+       "truth_about(bigger_dreams, rowena_ironwood)."
+      ]
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      },
+      "published": 25
+     },
+     "bind": "s"
+    },
+    {
+     "call": "puzzle.director.restore",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "state": {
+       "$ref": "r.value"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_clue_found(player, avis_de_disparition).",
+       "puzzle_solved(player, riddle_1).",
+       "puzzle_solved(player, riddle_2).",
+       "puzzle_attempts(player, riddle_3, 2).",
+       "puzzle_opened(player, lock_1).",
+       "puzzle_opened(player, lock_2).",
+       "has_item(player, key1, 1).",
+       "has_item(player, key2, 1)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.progress",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player"
+     },
+     "expect": {
+      "progress": {
+       "cluesFound": 1,
+       "cluesTotal": 2,
+       "riddlesSolved": 2,
+       "riddlesTotal": 3,
+       "locksOpened": 2,
+       "locksTotal": 3,
+       "complete": false
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_3"
+     },
+     "expect": {
+      "view": {
+       "id": "riddle_3",
+       "prompt": "Whose secret is \"Bigger Dreams\"?",
+       "open": true,
+       "solved": false,
+       "attemptsLeft": 1,
+       "missingClues": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_3",
+      "given": "maeve_oakfield"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, riddle_3, 2).",
+       "puzzle_attempts(player, riddle_3, 3)."
+      ],
+      "correct": false,
+      "attemptsLeft": 0
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_3"
+     },
+     "expect": {
+      "view": {
+       "id": "riddle_3",
+       "prompt": "Whose secret is \"Bigger Dreams\"?",
+       "open": false,
+       "solved": false,
+       "attemptsLeft": 0,
+       "missingClues": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "lock_3"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "locked",
+      "reason": "lock_3 still needs clue carnet_mouille_notes_de_recherche, riddle riddle_3",
+      "applied": [],
+      "unmet": [
+       {
+        "kind": "clue",
+        "ref": "carnet_mouille_notes_de_recherche"
+       },
+       {
+        "kind": "riddle",
+        "ref": "riddle_3"
+       }
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "avis_de_disparition"
+         ],
+         "solved": [
+          "riddle_1",
+          "riddle_2"
+         ],
+         "attempts": [
+          [
+           "riddle_3",
+           3
+          ]
+         ],
+         "opened": [
+          "lock_1",
+          "lock_2"
+         ],
+         "taken": [
+          "key1",
+          "key2"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "avis_de_disparition"
+         ],
+         "solved": [
+          "riddle_1",
+          "riddle_2"
+         ],
+         "attempts": [
+          [
+           "riddle_3",
+           3
+          ]
+         ],
+         "opened": [
+          "lock_1",
+          "lock_2"
+         ],
+         "taken": [
+          "key1",
+          "key2"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/save restore: restore refused: an unreadable block restores nothing",
+   "steps": [
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": {
+       "actors": [
+        {
+         "actor": "player",
+         "solved": [
+          "riddle_1"
+         ],
+         "attempts": [
+          [
+           "riddle_1",
+           1
+          ]
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "ok": false,
+      "keys": [
+       "actors[0].attempts"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/save restore: restore: no block is a fresh puzzle",
+   "steps": [
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": null
+     },
+     "expect": {
+      "ok": true,
+      "value": null
+     }
+    }
+   ]
+  }
+ ]
+}

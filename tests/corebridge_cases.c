@@ -707,8 +707,53 @@ static void bad_case(const char *where, const char *what) {
 	exit(2);
 }
 
+/* `$file` (corebridge/tests/README.md): a JSON file beside the case corpus, read
+ * once per run. Paths are relative to the directory of the case file being run
+ * (`case_dir`), so a case names a vendored corpus input (a world slice) instead
+ * of copying it into every step. Only the vendored tree may be named: no
+ * absolute path and no path that climbs above the vendored tree's root. */
+static char *read_file(const char *path, size_t *len);
+static char case_dir[4096];
+
+typedef struct {
+	char *path;
+	jval *doc;
+} file_entry;
+
+static file_entry file_cache[16];
+static int n_file_cache;
+
+static const jval *file_doc(const char *rel, const char *where) {
+	if (rel[0] == '/' || strstr(rel, "../../") != NULL) bad_case(where, "$file must be a relative path inside the vendored tree");
+	char path[8192];
+	snprintf(path, sizeof(path), "%s/%s", case_dir, rel);
+	for (int i = 0; i < n_file_cache; i++)
+		if (strcmp(file_cache[i].path, path) == 0) return file_cache[i].doc;
+	if (n_file_cache == (int)(sizeof(file_cache) / sizeof(file_cache[0]))) bad_case(where, "too many $file inputs");
+	size_t len;
+	char *text = read_file(path, &len);
+	if (!text) bad_case(where, "$file names no readable file");
+	const char *err = NULL;
+	jval *doc = jparse(text, len, &err);
+	free(text);
+	if (!doc) bad_case(where, "$file is not JSON");
+	file_cache[n_file_cache].path = (char *)xmalloc(strlen(path) + 1);
+	strcpy(file_cache[n_file_cache].path, path);
+	file_cache[n_file_cache].doc = doc;
+	return file_cache[n_file_cache++].doc;
+}
+
 static jval *resolve_refs(const jval *v, const char *where) {
 	if (v->t == J_OBJ) {
+		const jval *file = jget(v, "$file");
+		if (file && file->t == J_STR) {
+			const jval *at = jget(v, "$path");
+			if (v->len != (at ? 2u : 1u) || (at && at->t != J_STR)) bad_case(where, "$file takes only a string $path beside it");
+			jval *doc = (jval *)file_doc(file->s, where);
+			jval *target = at ? path_get(doc, at->s) : doc;
+			if (!target) bad_case(where, "$file $path does not resolve");
+			return jclone(target);
+		}
 		const jval *ref = jget(v, "$ref");
 		if (ref && ref->t == J_STR) {
 			char name[256];
@@ -876,6 +921,14 @@ int main(int argc, char **argv) {
 			return 2;
 		}
 		const char *rel = label_of(files.v[fi]);
+		{
+			const char *slash = strrchr(files.v[fi], '/');
+			size_t dn = slash ? (size_t)(slash - files.v[fi]) : 1;
+			if (dn >= sizeof(case_dir)) dn = sizeof(case_dir) - 1;
+			if (slash) memcpy(case_dir, files.v[fi], dn);
+			else case_dir[0] = '.';
+			case_dir[dn] = '\0';
+		}
 		for (size_t ci = 0; ci < cases->len; ci++) {
 			const jval *c = cases->items[ci];
 			const jval *name = jget(c, "name");

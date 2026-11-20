@@ -904,6 +904,26 @@
   optional member). Never import `language-learning/systems-corpus` (core's runner).
   `chat-strip.json` belongs to PL.native-chat-cefr-rows, and core's genre quest types
   (`quest-types/genre-quests.ts`, bundled through `index.ts`) to PL.native-genre-rows.
+- **The genre systems rows (PL.native-genre-rows, U115, U128; landed in SLICES) run core's
+  `conformance/<genre>/*.json` UNCHANGED**, copied as the genre systems set
+  (`GENRE_SYSTEMS_CORPUS_FILES`; slice 1: `puzzle/{definition,run,save}.json`, 34 cases, with
+  the world slice they name, `genre-mechanics/thistlecombe.world-slice.json`) and driven by
+  `tests/genre_systems_corpus.cpp` as `genre_systems_corpus` (+ `_negative`), which composes
+  each op as core's `genre-systems/systems-corpus.ts` (`runGenreSystemsOp`) composes core's
+  functions and fails unless each file's declared `ops` and `steps` are exactly the ones it
+  drives. `emit-bridge-cases.mjs` transcribes each file into
+  `vendor/core/cases/core-genre-puzzle-<file>.json` (the slice named by `$file`, not copied
+  into each case; a case that reaches the KB is C-only) and `core_vendor` holds each to its
+  corpus (by name, by the calls core's runner makes in order, C-only exactly where it
+  reaches the KB, every answer stated; `core_vendor_genre_negative` must see nine
+  perturbations named). The definition rows are stateless; `puzzle.director.*` is a session
+  whose KB is its own (`GamePrologEngine` genre `puzzle` on the native seam, a host program
+  as `kb`), destroyed by `session.dispose`. Every argument is held to core's declared type
+  member by member (`declared()` in entry.js: present and typed, optional may be absent,
+  null only where core declares `| null`, own keys only). `genre.world.of` (core's
+  `worldOf`) is the ONE import of `genre-systems/systems-corpus` (core's runner): no row runs
+  `runGenreSystemsOp`. The platformer, strategy and genre pieces are later slices;
+  `conformance/prolog/mechanic-puzzle.json` stays with PL.native-prolog-mirror-full (U120(9)).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

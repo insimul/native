@@ -1,0 +1,1873 @@
+{
+  "schema": "insimul.conformance.genre-systems/1",
+  "area": "puzzle",
+  "file": "puzzle/definition",
+  "phase": "P9j",
+  "description": "The puzzle a world gives (puzzle-rule-module): generate = puzzleForWorld({...world, puzzle}, {maxAttempts}) (the authored section when it has riddles, else generated from the world; the pack tunable maxAttempts stands in for core's default where the section authors none) with puzzleFacts, puzzleWorldFacts and puzzleAnswerKey; authored = puzzleIssues and, when there are none, puzzleFromIR; choices = puzzleChoices for every riddle of the world's puzzle (count 4 unless given). A riddle never carries its answer: the answer key is the world's facts.",
+  "sources": [
+    "Rules: core's puzzle, platformer and strategy modules (src/puzzle, src/platformer, src/strategy) and their directors (src/game-engine/logic/{Puzzle,Platformer,Strategy}Director.ts), unchanged by this corpus; their predicate packs are pinned clause by clause by conformance/prolog/mechanic-{puzzle,platformer,strategy}.json.",
+    "Worlds: the committed slice of Thistlecombe (Unity closing-wave export, conformance/genre-mechanics/thistlecombe.world-slice.json) and synthetic worlds written in src/genre-systems/systems-corpus-cases.ts."
+  ],
+  "runner": "src/genre-systems/systems-corpus.ts (runGenreSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "puzzle-rule-module"
+  ],
+  "ops": [
+    "generate",
+    "authored",
+    "choices"
+  ],
+  "cases": [
+    {
+      "name": "thistlecombe: three locks in a chain, drawn from the village",
+      "op": "generate",
+      "input": {
+        "world": "thistlecombe"
+      },
+      "expected": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            },
+            {
+              "id": "riddle_2",
+              "relation": "occupation_of",
+              "subject": "rowena_ironwood",
+              "prompt": "What does Rowena Ironwood do for a living?",
+              "clues": []
+            },
+            {
+              "id": "riddle_3",
+              "relation": "subject_of",
+              "subject": "bigger_dreams",
+              "prompt": "Whose secret is \"Bigger Dreams\"?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            },
+            {
+              "id": "lock_3",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "lock_2"
+                },
+                {
+                  "kind": "clue",
+                  "ref": "carnet_mouille_notes_de_recherche"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_3",
+          "maxAttempts": 3,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            },
+            {
+              "id": "carnet_mouille_notes_de_recherche",
+              "clue": "Research notes about the founding families, found in a cave."
+            }
+          ],
+          "source": "generated",
+          "notes": []
+        },
+        "facts": [
+          "puzzle_riddle(riddle_1, owner_of, ironwood_s_builders).",
+          "puzzle_riddle_prompt(riddle_1, 'Who keeps Ironwood\\'s Builders?').",
+          "puzzle_riddle_clue(riddle_1, avis_de_disparition).",
+          "puzzle_riddle(riddle_2, occupation_of, rowena_ironwood).",
+          "puzzle_riddle_prompt(riddle_2, 'What does Rowena Ironwood do for a living?').",
+          "puzzle_riddle(riddle_3, subject_of, bigger_dreams).",
+          "puzzle_riddle_prompt(riddle_3, 'Whose secret is \"Bigger Dreams\"?').",
+          "puzzle_lock(lock_1, container_bld_6abb8ff3078b40088ad4dea8_0).",
+          "puzzle_lock_needs(lock_1, clue(avis_de_disparition)).",
+          "puzzle_lock_needs(lock_1, riddle(riddle_1)).",
+          "puzzle_lock_holds(lock_1, key1).",
+          "puzzle_lock(lock_2, container_bld_6abb8fae078b40088ad4da66_12_0).",
+          "puzzle_lock_needs(lock_2, item(key1)).",
+          "puzzle_lock_needs(lock_2, riddle(riddle_2)).",
+          "puzzle_lock_holds(lock_2, key2).",
+          "puzzle_lock(lock_3, container_bld_6abb8ff3078b40088ad4dea9_0).",
+          "puzzle_lock_needs(lock_3, item(key2)).",
+          "puzzle_lock_needs(lock_3, lock(lock_2)).",
+          "puzzle_lock_needs(lock_3, clue(carnet_mouille_notes_de_recherche)).",
+          "puzzle_lock_needs(lock_3, riddle(riddle_3)).",
+          "puzzle_final(lock_3).",
+          "puzzle_max_attempts(3)."
+        ],
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "occupation(rowena_ironwood, owner_carpenter).",
+          "truth_about(bigger_dreams, rowena_ironwood)."
+        ],
+        "answerKey": {
+          "riddle_1": [
+            "rowena_ironwood"
+          ],
+          "riddle_2": [
+            "owner_carpenter"
+          ],
+          "riddle_3": [
+            "rowena_ironwood"
+          ]
+        }
+      }
+    },
+    {
+      "name": "thistlecombe: the pack tunable sets the attempt limit",
+      "op": "generate",
+      "input": {
+        "world": "thistlecombe",
+        "maxAttempts": 5
+      },
+      "expected": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            },
+            {
+              "id": "riddle_2",
+              "relation": "occupation_of",
+              "subject": "rowena_ironwood",
+              "prompt": "What does Rowena Ironwood do for a living?",
+              "clues": []
+            },
+            {
+              "id": "riddle_3",
+              "relation": "subject_of",
+              "subject": "bigger_dreams",
+              "prompt": "Whose secret is \"Bigger Dreams\"?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            },
+            {
+              "id": "lock_3",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "lock_2"
+                },
+                {
+                  "kind": "clue",
+                  "ref": "carnet_mouille_notes_de_recherche"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_3",
+          "maxAttempts": 5,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            },
+            {
+              "id": "carnet_mouille_notes_de_recherche",
+              "clue": "Research notes about the founding families, found in a cave."
+            }
+          ],
+          "source": "generated",
+          "notes": []
+        },
+        "facts": [
+          "puzzle_riddle(riddle_1, owner_of, ironwood_s_builders).",
+          "puzzle_riddle_prompt(riddle_1, 'Who keeps Ironwood\\'s Builders?').",
+          "puzzle_riddle_clue(riddle_1, avis_de_disparition).",
+          "puzzle_riddle(riddle_2, occupation_of, rowena_ironwood).",
+          "puzzle_riddle_prompt(riddle_2, 'What does Rowena Ironwood do for a living?').",
+          "puzzle_riddle(riddle_3, subject_of, bigger_dreams).",
+          "puzzle_riddle_prompt(riddle_3, 'Whose secret is \"Bigger Dreams\"?').",
+          "puzzle_lock(lock_1, container_bld_6abb8ff3078b40088ad4dea8_0).",
+          "puzzle_lock_needs(lock_1, clue(avis_de_disparition)).",
+          "puzzle_lock_needs(lock_1, riddle(riddle_1)).",
+          "puzzle_lock_holds(lock_1, key1).",
+          "puzzle_lock(lock_2, container_bld_6abb8fae078b40088ad4da66_12_0).",
+          "puzzle_lock_needs(lock_2, item(key1)).",
+          "puzzle_lock_needs(lock_2, riddle(riddle_2)).",
+          "puzzle_lock_holds(lock_2, key2).",
+          "puzzle_lock(lock_3, container_bld_6abb8ff3078b40088ad4dea9_0).",
+          "puzzle_lock_needs(lock_3, item(key2)).",
+          "puzzle_lock_needs(lock_3, lock(lock_2)).",
+          "puzzle_lock_needs(lock_3, clue(carnet_mouille_notes_de_recherche)).",
+          "puzzle_lock_needs(lock_3, riddle(riddle_3)).",
+          "puzzle_final(lock_3).",
+          "puzzle_max_attempts(5)."
+        ],
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "occupation(rowena_ironwood, owner_carpenter).",
+          "truth_about(bigger_dreams, rowena_ironwood)."
+        ],
+        "answerKey": {
+          "riddle_1": [
+            "rowena_ironwood"
+          ],
+          "riddle_2": [
+            "owner_carpenter"
+          ],
+          "riddle_3": [
+            "rowena_ironwood"
+          ]
+        }
+      }
+    },
+    {
+      "name": "thistlecombe: an attempt limit of null never spends a riddle",
+      "op": "generate",
+      "input": {
+        "world": "thistlecombe",
+        "maxAttempts": null
+      },
+      "expected": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            },
+            {
+              "id": "riddle_2",
+              "relation": "occupation_of",
+              "subject": "rowena_ironwood",
+              "prompt": "What does Rowena Ironwood do for a living?",
+              "clues": []
+            },
+            {
+              "id": "riddle_3",
+              "relation": "subject_of",
+              "subject": "bigger_dreams",
+              "prompt": "Whose secret is \"Bigger Dreams\"?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            },
+            {
+              "id": "lock_3",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "lock_2"
+                },
+                {
+                  "kind": "clue",
+                  "ref": "carnet_mouille_notes_de_recherche"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_3",
+          "maxAttempts": null,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            },
+            {
+              "id": "carnet_mouille_notes_de_recherche",
+              "clue": "Research notes about the founding families, found in a cave."
+            }
+          ],
+          "source": "generated",
+          "notes": []
+        },
+        "facts": [
+          "puzzle_riddle(riddle_1, owner_of, ironwood_s_builders).",
+          "puzzle_riddle_prompt(riddle_1, 'Who keeps Ironwood\\'s Builders?').",
+          "puzzle_riddle_clue(riddle_1, avis_de_disparition).",
+          "puzzle_riddle(riddle_2, occupation_of, rowena_ironwood).",
+          "puzzle_riddle_prompt(riddle_2, 'What does Rowena Ironwood do for a living?').",
+          "puzzle_riddle(riddle_3, subject_of, bigger_dreams).",
+          "puzzle_riddle_prompt(riddle_3, 'Whose secret is \"Bigger Dreams\"?').",
+          "puzzle_lock(lock_1, container_bld_6abb8ff3078b40088ad4dea8_0).",
+          "puzzle_lock_needs(lock_1, clue(avis_de_disparition)).",
+          "puzzle_lock_needs(lock_1, riddle(riddle_1)).",
+          "puzzle_lock_holds(lock_1, key1).",
+          "puzzle_lock(lock_2, container_bld_6abb8fae078b40088ad4da66_12_0).",
+          "puzzle_lock_needs(lock_2, item(key1)).",
+          "puzzle_lock_needs(lock_2, riddle(riddle_2)).",
+          "puzzle_lock_holds(lock_2, key2).",
+          "puzzle_lock(lock_3, container_bld_6abb8ff3078b40088ad4dea9_0).",
+          "puzzle_lock_needs(lock_3, item(key2)).",
+          "puzzle_lock_needs(lock_3, lock(lock_2)).",
+          "puzzle_lock_needs(lock_3, clue(carnet_mouille_notes_de_recherche)).",
+          "puzzle_lock_needs(lock_3, riddle(riddle_3)).",
+          "puzzle_final(lock_3)."
+        ],
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "occupation(rowena_ironwood, owner_carpenter).",
+          "truth_about(bigger_dreams, rowena_ironwood)."
+        ],
+        "answerKey": {
+          "riddle_1": [
+            "rowena_ironwood"
+          ],
+          "riddle_2": [
+            "owner_carpenter"
+          ],
+          "riddle_3": [
+            "rowena_ironwood"
+          ]
+        }
+      }
+    },
+    {
+      "name": "no text carries a clue: no lock waits on reading one",
+      "op": "generate",
+      "input": {
+        "world": {
+          "slice": "thistlecombe",
+          "dropFacts": [
+            "text_clue/2"
+          ]
+        }
+      },
+      "expected": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": []
+            },
+            {
+              "id": "riddle_2",
+              "relation": "occupation_of",
+              "subject": "rowena_ironwood",
+              "prompt": "What does Rowena Ironwood do for a living?",
+              "clues": []
+            },
+            {
+              "id": "riddle_3",
+              "relation": "subject_of",
+              "subject": "bigger_dreams",
+              "prompt": "Whose secret is \"Bigger Dreams\"?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            },
+            {
+              "id": "lock_3",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "lock_2"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_3",
+          "maxAttempts": 3,
+          "clueTexts": [],
+          "source": "generated",
+          "notes": [
+            "the world has no text carrying a clue, so no lock waits on reading one"
+          ]
+        },
+        "facts": [
+          "puzzle_riddle(riddle_1, owner_of, ironwood_s_builders).",
+          "puzzle_riddle_prompt(riddle_1, 'Who keeps Ironwood\\'s Builders?').",
+          "puzzle_riddle(riddle_2, occupation_of, rowena_ironwood).",
+          "puzzle_riddle_prompt(riddle_2, 'What does Rowena Ironwood do for a living?').",
+          "puzzle_riddle(riddle_3, subject_of, bigger_dreams).",
+          "puzzle_riddle_prompt(riddle_3, 'Whose secret is \"Bigger Dreams\"?').",
+          "puzzle_lock(lock_1, container_bld_6abb8ff3078b40088ad4dea8_0).",
+          "puzzle_lock_needs(lock_1, riddle(riddle_1)).",
+          "puzzle_lock_holds(lock_1, key1).",
+          "puzzle_lock(lock_2, container_bld_6abb8fae078b40088ad4da66_12_0).",
+          "puzzle_lock_needs(lock_2, item(key1)).",
+          "puzzle_lock_needs(lock_2, riddle(riddle_2)).",
+          "puzzle_lock_holds(lock_2, key2).",
+          "puzzle_lock(lock_3, container_bld_6abb8ff3078b40088ad4dea9_0).",
+          "puzzle_lock_needs(lock_3, item(key2)).",
+          "puzzle_lock_needs(lock_3, lock(lock_2)).",
+          "puzzle_lock_needs(lock_3, riddle(riddle_3)).",
+          "puzzle_final(lock_3).",
+          "puzzle_max_attempts(3)."
+        ],
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "occupation(rowena_ironwood, owner_carpenter).",
+          "truth_about(bigger_dreams, rowena_ironwood)."
+        ],
+        "answerKey": {
+          "riddle_1": [
+            "rowena_ironwood"
+          ],
+          "riddle_2": [
+            "owner_carpenter"
+          ],
+          "riddle_3": [
+            "rowena_ironwood"
+          ]
+        }
+      }
+    },
+    {
+      "name": "no key in the catalogue: the chain ends at the first lock",
+      "op": "generate",
+      "input": {
+        "world": {
+          "slice": "thistlecombe",
+          "dropFacts": [
+            "item_base_type/2"
+          ]
+        }
+      },
+      "expected": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_1",
+          "maxAttempts": 3,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            }
+          ],
+          "source": "generated",
+          "notes": [
+            "the item catalogue has no key, so the chain ends at the first lock"
+          ]
+        },
+        "facts": [
+          "puzzle_riddle(riddle_1, owner_of, ironwood_s_builders).",
+          "puzzle_riddle_prompt(riddle_1, 'Who keeps Ironwood\\'s Builders?').",
+          "puzzle_riddle_clue(riddle_1, avis_de_disparition).",
+          "puzzle_lock(lock_1, container_bld_6abb8ff3078b40088ad4dea8_0).",
+          "puzzle_lock_needs(lock_1, clue(avis_de_disparition)).",
+          "puzzle_lock_needs(lock_1, riddle(riddle_1)).",
+          "puzzle_final(lock_1).",
+          "puzzle_max_attempts(3)."
+        ],
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood)."
+        ],
+        "answerKey": {
+          "riddle_1": [
+            "rowena_ironwood"
+          ]
+        }
+      }
+    },
+    {
+      "name": "no secret truth: the chain ends at the second lock",
+      "op": "generate",
+      "input": {
+        "world": {
+          "slice": "thistlecombe",
+          "dropFacts": [
+            "truth_type/2"
+          ]
+        }
+      },
+      "expected": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            },
+            {
+              "id": "riddle_2",
+              "relation": "occupation_of",
+              "subject": "rowena_ironwood",
+              "prompt": "What does Rowena Ironwood do for a living?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            }
+          ],
+          "finalLock": "lock_2",
+          "maxAttempts": 3,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            }
+          ],
+          "source": "generated",
+          "notes": [
+            "the world keeps no secret truth about anybody, so the chain ends at the second lock"
+          ]
+        },
+        "facts": [
+          "puzzle_riddle(riddle_1, owner_of, ironwood_s_builders).",
+          "puzzle_riddle_prompt(riddle_1, 'Who keeps Ironwood\\'s Builders?').",
+          "puzzle_riddle_clue(riddle_1, avis_de_disparition).",
+          "puzzle_riddle(riddle_2, occupation_of, rowena_ironwood).",
+          "puzzle_riddle_prompt(riddle_2, 'What does Rowena Ironwood do for a living?').",
+          "puzzle_lock(lock_1, container_bld_6abb8ff3078b40088ad4dea8_0).",
+          "puzzle_lock_needs(lock_1, clue(avis_de_disparition)).",
+          "puzzle_lock_needs(lock_1, riddle(riddle_1)).",
+          "puzzle_lock_holds(lock_1, key1).",
+          "puzzle_lock(lock_2, container_bld_6abb8fae078b40088ad4da66_12_0).",
+          "puzzle_lock_needs(lock_2, item(key1)).",
+          "puzzle_lock_needs(lock_2, riddle(riddle_2)).",
+          "puzzle_lock_holds(lock_2, key2).",
+          "puzzle_final(lock_2).",
+          "puzzle_max_attempts(3)."
+        ],
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "occupation(rowena_ironwood, owner_carpenter)."
+        ],
+        "answerKey": {
+          "riddle_1": [
+            "rowena_ironwood"
+          ],
+          "riddle_2": [
+            "owner_carpenter"
+          ]
+        }
+      }
+    },
+    {
+      "name": "the keeper has no occupation: the second riddle asks the trade",
+      "op": "generate",
+      "input": {
+        "world": {
+          "slice": "thistlecombe",
+          "dropFacts": [
+            "occupation/2"
+          ]
+        }
+      },
+      "expected": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            },
+            {
+              "id": "riddle_2",
+              "relation": "trade_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "What trade is plied at Ironwood's Builders?",
+              "clues": []
+            },
+            {
+              "id": "riddle_3",
+              "relation": "subject_of",
+              "subject": "bigger_dreams",
+              "prompt": "Whose secret is \"Bigger Dreams\"?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            },
+            {
+              "id": "lock_3",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "lock_2"
+                },
+                {
+                  "kind": "clue",
+                  "ref": "carnet_mouille_notes_de_recherche"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_3",
+          "maxAttempts": 3,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            },
+            {
+              "id": "carnet_mouille_notes_de_recherche",
+              "clue": "Research notes about the founding families, found in a cave."
+            }
+          ],
+          "source": "generated",
+          "notes": []
+        },
+        "facts": [
+          "puzzle_riddle(riddle_1, owner_of, ironwood_s_builders).",
+          "puzzle_riddle_prompt(riddle_1, 'Who keeps Ironwood\\'s Builders?').",
+          "puzzle_riddle_clue(riddle_1, avis_de_disparition).",
+          "puzzle_riddle(riddle_2, trade_of, ironwood_s_builders).",
+          "puzzle_riddle_prompt(riddle_2, 'What trade is plied at Ironwood\\'s Builders?').",
+          "puzzle_riddle(riddle_3, subject_of, bigger_dreams).",
+          "puzzle_riddle_prompt(riddle_3, 'Whose secret is \"Bigger Dreams\"?').",
+          "puzzle_lock(lock_1, container_bld_6abb8ff3078b40088ad4dea8_0).",
+          "puzzle_lock_needs(lock_1, clue(avis_de_disparition)).",
+          "puzzle_lock_needs(lock_1, riddle(riddle_1)).",
+          "puzzle_lock_holds(lock_1, key1).",
+          "puzzle_lock(lock_2, container_bld_6abb8fae078b40088ad4da66_12_0).",
+          "puzzle_lock_needs(lock_2, item(key1)).",
+          "puzzle_lock_needs(lock_2, riddle(riddle_2)).",
+          "puzzle_lock_holds(lock_2, key2).",
+          "puzzle_lock(lock_3, container_bld_6abb8ff3078b40088ad4dea9_0).",
+          "puzzle_lock_needs(lock_3, item(key2)).",
+          "puzzle_lock_needs(lock_3, lock(lock_2)).",
+          "puzzle_lock_needs(lock_3, clue(carnet_mouille_notes_de_recherche)).",
+          "puzzle_lock_needs(lock_3, riddle(riddle_3)).",
+          "puzzle_final(lock_3).",
+          "puzzle_max_attempts(3)."
+        ],
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "business_type(ironwood_s_builders, carpenter).",
+          "truth_about(bigger_dreams, rowena_ironwood)."
+        ],
+        "answerKey": {
+          "riddle_1": [
+            "rowena_ironwood"
+          ],
+          "riddle_2": [
+            "carpenter"
+          ],
+          "riddle_3": [
+            "rowena_ironwood"
+          ]
+        }
+      }
+    },
+    {
+      "name": "no container anywhere: nothing to lock, the puzzle is empty",
+      "op": "generate",
+      "input": {
+        "world": {
+          "slice": "thistlecombe",
+          "dropEntities": [
+            "containers"
+          ]
+        }
+      },
+      "expected": {
+        "definition": {
+          "riddles": [],
+          "locks": [],
+          "finalLock": null,
+          "maxAttempts": 3,
+          "clueTexts": [],
+          "source": "empty",
+          "notes": [
+            "no container stands inside Ironwood's Builders, so there is nothing to lock"
+          ]
+        },
+        "facts": [
+          "puzzle_max_attempts(3)."
+        ],
+        "worldFacts": [],
+        "answerKey": {}
+      }
+    },
+    {
+      "name": "no business has a keeper: nothing to ask, the puzzle is empty",
+      "op": "generate",
+      "input": {
+        "world": {
+          "slice": "thistlecombe",
+          "dropFacts": [
+            "business_owner/2"
+          ]
+        }
+      },
+      "expected": {
+        "definition": {
+          "riddles": [],
+          "locks": [],
+          "finalLock": null,
+          "maxAttempts": 3,
+          "clueTexts": [],
+          "source": "empty",
+          "notes": [
+            "the world names no business with a keeper, so there is nothing to ask"
+          ]
+        },
+        "facts": [
+          "puzzle_max_attempts(3)."
+        ],
+        "worldFacts": [],
+        "answerKey": {}
+      }
+    },
+    {
+      "name": "an authored section wins over generation; the tunable stands in for its missing attempt limit",
+      "op": "generate",
+      "input": {
+        "world": "thistlecombe",
+        "puzzle": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?"
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop"
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "loft"
+        },
+        "maxAttempts": 5
+      },
+      "expected": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?",
+              "clues": []
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "prompt": "occupation of ada?",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop",
+              "prompt": "owner of ghost_shop?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "loft",
+          "maxAttempts": 5,
+          "clueTexts": [],
+          "source": "authored",
+          "notes": []
+        },
+        "facts": [
+          "puzzle_riddle(keeper, owner_of, the_mill).",
+          "puzzle_riddle_prompt(keeper, 'Who keeps the mill?').",
+          "puzzle_riddle(trade, occupation_of, ada).",
+          "puzzle_riddle_prompt(trade, 'occupation of ada?').",
+          "puzzle_riddle_clue(trade, ledger).",
+          "puzzle_riddle(ghost, owner_of, ghost_shop).",
+          "puzzle_riddle_prompt(ghost, 'owner of ghost_shop?').",
+          "puzzle_lock(hatch, mill_chest).",
+          "puzzle_lock_needs(hatch, riddle(keeper)).",
+          "puzzle_lock_holds(hatch, brass_key).",
+          "puzzle_lock_holds(hatch, flour).",
+          "puzzle_lock(loft, loft_chest).",
+          "puzzle_lock_needs(loft, lock(hatch)).",
+          "puzzle_lock_needs(loft, item(brass_key)).",
+          "puzzle_lock_needs(loft, riddle(trade)).",
+          "puzzle_final(loft).",
+          "puzzle_max_attempts(5)."
+        ],
+        "worldFacts": [],
+        "answerKey": {
+          "keeper": [],
+          "trade": [],
+          "ghost": []
+        }
+      }
+    },
+    {
+      "name": "an authored attempt limit wins over the tunable",
+      "op": "generate",
+      "input": {
+        "world": "thistlecombe",
+        "puzzle": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?"
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop"
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "loft",
+          "maxAttempts": 2
+        },
+        "maxAttempts": 5
+      },
+      "expected": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?",
+              "clues": []
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "prompt": "occupation of ada?",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop",
+              "prompt": "owner of ghost_shop?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "loft",
+          "maxAttempts": 2,
+          "clueTexts": [],
+          "source": "authored",
+          "notes": []
+        },
+        "facts": [
+          "puzzle_riddle(keeper, owner_of, the_mill).",
+          "puzzle_riddle_prompt(keeper, 'Who keeps the mill?').",
+          "puzzle_riddle(trade, occupation_of, ada).",
+          "puzzle_riddle_prompt(trade, 'occupation of ada?').",
+          "puzzle_riddle_clue(trade, ledger).",
+          "puzzle_riddle(ghost, owner_of, ghost_shop).",
+          "puzzle_riddle_prompt(ghost, 'owner of ghost_shop?').",
+          "puzzle_lock(hatch, mill_chest).",
+          "puzzle_lock_needs(hatch, riddle(keeper)).",
+          "puzzle_lock_holds(hatch, brass_key).",
+          "puzzle_lock_holds(hatch, flour).",
+          "puzzle_lock(loft, loft_chest).",
+          "puzzle_lock_needs(loft, lock(hatch)).",
+          "puzzle_lock_needs(loft, item(brass_key)).",
+          "puzzle_lock_needs(loft, riddle(trade)).",
+          "puzzle_final(loft).",
+          "puzzle_max_attempts(2)."
+        ],
+        "worldFacts": [],
+        "answerKey": {
+          "keeper": [],
+          "trade": [],
+          "ghost": []
+        }
+      }
+    },
+    {
+      "name": "a section with no riddles generates, keeping its attempt limit",
+      "op": "generate",
+      "input": {
+        "world": "thistlecombe",
+        "puzzle": {
+          "maxAttempts": 1
+        }
+      },
+      "expected": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            },
+            {
+              "id": "riddle_2",
+              "relation": "occupation_of",
+              "subject": "rowena_ironwood",
+              "prompt": "What does Rowena Ironwood do for a living?",
+              "clues": []
+            },
+            {
+              "id": "riddle_3",
+              "relation": "subject_of",
+              "subject": "bigger_dreams",
+              "prompt": "Whose secret is \"Bigger Dreams\"?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            },
+            {
+              "id": "lock_3",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "lock_2"
+                },
+                {
+                  "kind": "clue",
+                  "ref": "carnet_mouille_notes_de_recherche"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_3",
+          "maxAttempts": 1,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            },
+            {
+              "id": "carnet_mouille_notes_de_recherche",
+              "clue": "Research notes about the founding families, found in a cave."
+            }
+          ],
+          "source": "generated",
+          "notes": []
+        },
+        "facts": [
+          "puzzle_riddle(riddle_1, owner_of, ironwood_s_builders).",
+          "puzzle_riddle_prompt(riddle_1, 'Who keeps Ironwood\\'s Builders?').",
+          "puzzle_riddle_clue(riddle_1, avis_de_disparition).",
+          "puzzle_riddle(riddle_2, occupation_of, rowena_ironwood).",
+          "puzzle_riddle_prompt(riddle_2, 'What does Rowena Ironwood do for a living?').",
+          "puzzle_riddle(riddle_3, subject_of, bigger_dreams).",
+          "puzzle_riddle_prompt(riddle_3, 'Whose secret is \"Bigger Dreams\"?').",
+          "puzzle_lock(lock_1, container_bld_6abb8ff3078b40088ad4dea8_0).",
+          "puzzle_lock_needs(lock_1, clue(avis_de_disparition)).",
+          "puzzle_lock_needs(lock_1, riddle(riddle_1)).",
+          "puzzle_lock_holds(lock_1, key1).",
+          "puzzle_lock(lock_2, container_bld_6abb8fae078b40088ad4da66_12_0).",
+          "puzzle_lock_needs(lock_2, item(key1)).",
+          "puzzle_lock_needs(lock_2, riddle(riddle_2)).",
+          "puzzle_lock_holds(lock_2, key2).",
+          "puzzle_lock(lock_3, container_bld_6abb8ff3078b40088ad4dea9_0).",
+          "puzzle_lock_needs(lock_3, item(key2)).",
+          "puzzle_lock_needs(lock_3, lock(lock_2)).",
+          "puzzle_lock_needs(lock_3, clue(carnet_mouille_notes_de_recherche)).",
+          "puzzle_lock_needs(lock_3, riddle(riddle_3)).",
+          "puzzle_final(lock_3).",
+          "puzzle_max_attempts(1)."
+        ],
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "occupation(rowena_ironwood, owner_carpenter).",
+          "truth_about(bigger_dreams, rowena_ironwood)."
+        ],
+        "answerKey": {
+          "riddle_1": [
+            "rowena_ironwood"
+          ],
+          "riddle_2": [
+            "owner_carpenter"
+          ],
+          "riddle_3": [
+            "rowena_ironwood"
+          ]
+        }
+      }
+    },
+    {
+      "name": "authored: the mill puzzle is usable; the final lock and prompts as authored, a default prompt where none is",
+      "op": "authored",
+      "input": {
+        "puzzle": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?"
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop"
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "loft",
+          "maxAttempts": 2
+        }
+      },
+      "expected": {
+        "issues": [],
+        "definition": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?",
+              "clues": []
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "prompt": "occupation of ada?",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop",
+              "prompt": "owner of ghost_shop?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "loft",
+          "maxAttempts": 2,
+          "clueTexts": [],
+          "source": "authored",
+          "notes": []
+        }
+      }
+    },
+    {
+      "name": "authored: no final lock named is the last lock",
+      "op": "authored",
+      "input": {
+        "puzzle": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?"
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop"
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "maxAttempts": 2
+        }
+      },
+      "expected": {
+        "issues": [],
+        "definition": {
+          "riddles": [
+            {
+              "id": "keeper",
+              "relation": "owner_of",
+              "subject": "the_mill",
+              "prompt": "Who keeps the mill?",
+              "clues": []
+            },
+            {
+              "id": "trade",
+              "relation": "occupation_of",
+              "subject": "ada",
+              "prompt": "occupation of ada?",
+              "clues": [
+                "ledger"
+              ]
+            },
+            {
+              "id": "ghost",
+              "relation": "owner_of",
+              "subject": "ghost_shop",
+              "prompt": "owner of ghost_shop?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "hatch",
+              "target": "mill_chest",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "keeper"
+                }
+              ],
+              "holds": [
+                "brass_key",
+                "flour"
+              ]
+            },
+            {
+              "id": "loft",
+              "target": "loft_chest",
+              "needs": [
+                {
+                  "kind": "lock",
+                  "ref": "hatch"
+                },
+                {
+                  "kind": "item",
+                  "ref": "brass_key"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "trade"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "loft",
+          "maxAttempts": 2,
+          "clueTexts": [],
+          "source": "authored",
+          "notes": []
+        }
+      }
+    },
+    {
+      "name": "authored: every problem is named and nothing is defined",
+      "op": "authored",
+      "input": {
+        "puzzle": {
+          "riddles": [
+            {
+              "id": "r1",
+              "relation": "owner_of",
+              "subject": "x"
+            },
+            {
+              "id": "r1",
+              "relation": "owner_of",
+              "subject": "y"
+            },
+            {
+              "id": "r2",
+              "relation": "favourite_colour_of",
+              "subject": "x"
+            }
+          ],
+          "locks": [
+            {
+              "id": "l1",
+              "target": "c1",
+              "needs": []
+            },
+            {
+              "id": "l2",
+              "target": "c2",
+              "needs": [
+                {
+                  "kind": "riddle",
+                  "ref": "r9"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "l2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "l7"
+                }
+              ]
+            },
+            {
+              "id": "l2",
+              "target": "c3",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "k"
+                }
+              ]
+            }
+          ],
+          "finalLock": "l9"
+        }
+      },
+      "expected": {
+        "issues": [
+          "riddle \"r1\" is authored twice",
+          "riddle \"r2\" names relation \"favourite_colour_of\", which is not one of owner_of, trade_of, resident_of, home_of, spouse_of, parent_of, child_of, occupation_of, subject_of, author_of",
+          "lock \"l1\" needs nothing, so it is not a lock",
+          "lock \"l2\" is authored twice",
+          "lock \"l2\" needs riddle \"r9\", which is not authored",
+          "lock \"l2\" needs itself",
+          "lock \"l2\" needs lock \"l7\", which is not authored",
+          "finalLock \"l9\" is not an authored lock"
+        ],
+        "definition": null
+      }
+    },
+    {
+      "name": "choices: the right answer among the world's other people, trades and occupations",
+      "op": "choices",
+      "input": {
+        "world": "thistlecombe"
+      },
+      "expected": {
+        "riddle_1": [
+          "adrienne_xanthis",
+          "aislinn_ashford",
+          "aldric_underwood",
+          "rowena_ironwood"
+        ],
+        "riddle_2": [
+          "baker",
+          "blacksmith",
+          "carpenter",
+          "owner_carpenter"
+        ],
+        "riddle_3": [
+          "adrienne_xanthis",
+          "aislinn_ashford",
+          "aldric_underwood",
+          "rowena_ironwood"
+        ]
+      }
+    },
+    {
+      "name": "choices: two to choose between",
+      "op": "choices",
+      "input": {
+        "world": "thistlecombe",
+        "count": 2
+      },
+      "expected": {
+        "riddle_1": [
+          "adrienne_xanthis",
+          "rowena_ironwood"
+        ],
+        "riddle_2": [
+          "baker",
+          "owner_carpenter"
+        ],
+        "riddle_3": [
+          "adrienne_xanthis",
+          "rowena_ironwood"
+        ]
+      }
+    }
+  ]
+}

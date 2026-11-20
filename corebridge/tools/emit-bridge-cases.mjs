@@ -1750,6 +1750,173 @@ function language(root, coreCommit) {
 	return out;
 }
 
+// ── genre systems: conformance/puzzle/ (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) ──
+// PL.native-genre-rows slice 1. Each case is its op composed from the rows as core's runner
+// composes core's functions. A `world` input goes through genre.world.of (core's worldOf) over
+// the committed slices, which every case names by `$file` (the vendored slice beside these
+// cases) instead of copying 181 KB into each one. The runner's steps are `{ step, ...outcome }`;
+// each is the matching director row's answer, stated exactly. A run reaches core's
+// PuzzleDirector over a KB (module activation's puzzle pack on the native Prolog seam), which
+// the JS leg does not have, so those cases are C-only; everything else runs on both legs.
+
+export const GENRE_CASE_FILES = ['puzzle/definition', 'puzzle/run', 'puzzle/save'];
+
+/** The committed world slices core's runner is handed, as the case reads them: `$file`s beside the case files. */
+export const GENRE_SLICES = { thistlecombe: 'conformance/genre-mechanics/thistlecombe.world-slice.json' };
+const genreSlicesArg = () => Object.fromEntries(Object.entries(GENRE_SLICES).map(([name, rel]) => [name, { $file: `../${rel}`, $path: 'world' }]));
+
+const GENRE_KB_LEGS = {
+	legs: ['c'],
+	why: "it drives core's PuzzleDirector over a KB (GamePrologEngine's puzzle pack on the native Prolog seam), which the JS leg does not have",
+};
+
+/** The director row each puzzle run step calls, and the args it takes from the step (actor `player` unless named). */
+const PUZZLE_STEP_ROWS = {
+	clue: ['puzzle.director.findClue', [['text', 'text']]],
+	answer: ['puzzle.director.answer', [['riddle', 'riddle'], ['given', 'given']]],
+	unlock: ['puzzle.director.unlock', [['lock', 'lock']]],
+	take: ['puzzle.director.take', [['item', 'item']]],
+	view: ['puzzle.director.view', [['riddle', 'riddle']]],
+	progress: ['puzzle.director.progress', []],
+	complete: ['puzzle.director.isComplete', []],
+};
+const genreCheck = (ok, where, what) => {
+	if (!ok) throw new Error(`emit-bridge-cases: ${where}: ${what}`);
+};
+const withoutStep = (x) => Object.fromEntries(Object.entries(x).filter(([k]) => k !== 'step'));
+
+/** core's puzzleRun: create (published), restore the read value first when given, the steps, serialize, dispose. */
+function puzzleRunSteps(S, input, expected, restoreFrom) {
+	const where = S.where;
+	const sess = { $ref: 's.session' };
+	const steps = [];
+	steps.push({ call: 'puzzle.director.create', args: { definition: input.definition, worldFacts: input.worldFacts ?? [] }, expect: { session: { $type: 'number' }, published: expected.published }, bind: 's' });
+	const results = expected.steps;
+	let k = 0;
+	if (restoreFrom) {
+		genreCheck(results[0]?.step === 'restore', where, 'a restored run starts with its restore');
+		steps.push({ call: 'puzzle.director.restore', args: { session: sess, state: restoreFrom }, expect: withoutStep(results[0]) });
+		k = 1;
+	}
+	const given = input.steps ?? [];
+	genreCheck(results.length === given.length + k, where, 'one answer per step');
+	given.forEach((st, i) => {
+		const x = results[i + k];
+		genreCheck(x.step === st.step, where, `step ${i} answers ${x.step}, not ${st.step}`);
+		const actor = st.actor === undefined ? 'player' : st.actor;
+		if (st.step === 'restore') {
+			steps.push({ call: 'puzzle.director.restore', args: { session: sess, state: st.state }, expect: withoutStep(x) });
+			return;
+		}
+		if (st.step === 'state') {
+			steps.push({ call: 'puzzle.director.serialize', args: { session: sess }, expect: { state: x.state } });
+			return;
+		}
+		const row = PUZZLE_STEP_ROWS[st.step];
+		genreCheck(row !== undefined, where, `puzzle run step ${st.step} has no transcription`);
+		const args = { session: sess, actor };
+		for (const [from, to] of row[1]) args[to] = st[from];
+		const expect = st.step === 'view' ? { view: x.view } : st.step === 'progress' ? { progress: x.progress } : st.step === 'complete' ? { complete: x.complete } : withoutStep(x);
+		steps.push({ call: row[0], args, expect });
+	});
+	steps.push({ call: 'puzzle.director.serialize', args: { session: sess }, expect: { state: expected.state } });
+	steps.push({ call: 'session.dispose', args: { session: sess }, expect: { disposed: true } });
+	return steps;
+}
+
+/** One case of conformance/puzzle/<file>.json as bridge steps, and whether it reaches the KB. */
+function puzzleCase(file, c, where) {
+	const i = c.input;
+	const e = c.expected;
+	const S = { where };
+	const max = 'maxAttempts' in i ? { maxAttempts: i.maxAttempts } : {};
+	const world = () => ({ call: 'genre.world.of', args: { world: i.world, slices: genreSlicesArg() }, bind: 'w' });
+	if (file === 'puzzle/definition') {
+		if (c.op === 'generate') {
+			return [[
+				world(),
+				{ call: 'puzzle.forWorld', args: { world: { $ref: 'w.world' }, puzzle: i.puzzle ?? null, ...max }, expect: { definition: e.definition }, bind: 'd' },
+				{ call: 'puzzle.facts', args: { definition: { $ref: 'd.definition' } }, expect: { facts: e.facts } },
+				{ call: 'puzzle.worldFacts', args: { world: { $ref: 'w.world' }, definition: { $ref: 'd.definition' } }, expect: { facts: e.worldFacts } },
+				{ call: 'puzzle.answerKey', args: { world: { $ref: 'w.world' }, definition: { $ref: 'd.definition' } }, expect: { answerKey: e.answerKey } },
+			], false];
+		}
+		if (c.op === 'authored') {
+			const steps = [{ call: 'puzzle.issues', args: 'puzzle' in i ? { puzzle: i.puzzle } : {}, expect: { issues: e.issues } }];
+			if (e.issues.length === 0) steps.push({ call: 'puzzle.fromIR', args: { ...('puzzle' in i ? { puzzle: i.puzzle } : {}), ...max }, expect: { definition: e.definition } });
+			else genreCheck(e.definition === null, where, 'a section with issues defines nothing');
+			return [steps, false];
+		}
+		if (c.op === 'choices') {
+			const ids = Object.keys(e);
+			const steps = [
+				world(),
+				{ call: 'puzzle.forWorld', args: { world: { $ref: 'w.world' }, puzzle: i.puzzle ?? null }, expect: sub({ definition: sub({ riddles: { $ids: ids, $key: 'id' } }) }), bind: 'd' },
+			];
+			ids.forEach((id, k) => {
+				steps.push({ call: 'puzzle.choices', args: { world: { $ref: 'w.world' }, riddle: { $ref: `d.definition.riddles.${k}` }, count: i.count === undefined ? 4 : i.count }, expect: { choices: e[id] } });
+			});
+			return [steps, false];
+		}
+	}
+	if (file === 'puzzle/run') {
+		genreCheck(c.op === 'run', where, `puzzle run op ${c.op} has no transcription`);
+		return [puzzleRunSteps(S, i, e, null), true];
+	}
+	if (file === 'puzzle/save') {
+		if (c.op === 'block') {
+			return [[
+				{ call: 'puzzle.save.block', args: { state: i.state }, expect: { block: { $type: 'object' } }, bind: 'b' },
+				{ call: 'puzzle.save.blockOf', args: { block: { $ref: 'b.block' } }, expect: { block: e } },
+			], false];
+		}
+		const read = { call: 'puzzle.save.read', args: 'block' in i ? { block: i.block } : {} };
+		const readOf = (r) => {
+			if (!r.ok) return [{ ...read, expect: r }];
+			if (r.value === null) return [{ ...read, expect: { ok: true, value: null } }];
+			return [
+				{ ...read, expect: { ok: true, value: { $type: 'object' } }, bind: 'r' },
+				{ call: 'puzzle.save.blockOf', args: { block: { $ref: 'r.value' } }, expect: { block: r.value } },
+			];
+		};
+		if (c.op === 'read') return [readOf(e), false];
+		if (c.op === 'restore') {
+			const steps = readOf(e.read);
+			if (!e.read.ok || e.read.value === null) {
+				genreCheck(!('run' in e), where, 'nothing runs without a read block');
+				return [steps, false];
+			}
+			return [[...steps, ...puzzleRunSteps(S, i, e.run, { $ref: 'r.value' })], true];
+		}
+	}
+	throw new Error(`emit-bridge-cases: ${where}: ${file} op ${c.op} has no transcription`);
+}
+
+/** One case file per puzzle corpus file: `core-genre-puzzle-<file>.json`. */
+function genreSystems(root, coreCommit) {
+	const out = {};
+	for (const file of GENRE_CASE_FILES) {
+		const r = reader(root);
+		const doc = r.json(`conformance/${file}.json`);
+		for (const rel of Object.values(GENRE_SLICES)) r.json(rel);
+		if (doc.schema !== 'insimul.conformance.genre-systems/1' || doc.file !== file) throw new Error(`emit-bridge-cases: conformance/${file}.json is not core's ${file} corpus`);
+		const cases = doc.cases.map((c) => {
+			const name = `${file} ${c.op}: ${c.name}`;
+			const [steps, kb] = puzzleCase(file, c, name);
+			return { name, ...(kb ? GENRE_KB_LEGS : {}), steps };
+		});
+		out[`core-genre-${file.replace('/', '-')}.json`] = caseFile(
+			`genre-${file.replace('/', '-')}`,
+			`core's genre systems corpus conformance/${file}.json (P9j.core) through the genre.world.of and puzzle.* rows, each op as ` +
+				"core's reference runner (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes it.",
+			coreCommit,
+			r.files,
+			cases,
+		);
+	}
+	return out;
+}
+
 /** Every generated case file, keyed by file name. */
 export function emitBridgeCases(root, coreCommit) {
 	return {
@@ -1764,5 +1931,6 @@ export function emitBridgeCases(root, coreCommit) {
 		'core-weather-progression.json': weather(root, coreCommit),
 		...genres(root, coreCommit),
 		...language(root, coreCommit),
+		...genreSystems(root, coreCommit),
 	};
 }

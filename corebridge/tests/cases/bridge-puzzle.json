@@ -1,0 +1,7931 @@
+{
+ "area": "puzzle",
+ "description": "Hand cases for the genre.world.of and puzzle.* rows (PL.native-genre-rows slice 1): what core's corpora conformance/puzzle/ leave unpinned — the contract, puzzle.generate, the row's `puzzle` over a world's own section, a section with issues, ids naming Object.prototype members, stateFacts, the save block's defaults, worldOf's forms, the [invalid-input] boundary of every argument, and a director over its own KB with a host program. Every expectation is computed by core's own functions at the pin (gen-bridge-puzzle-cases.mts, kept with the builder's record).",
+ "cases": [
+  {
+   "name": "puzzle.contract states core's constants: relations, the world and pack predicates, the attempt limit, the tuning and the save block",
+   "steps": [
+    {
+     "call": "puzzle.contract",
+     "args": {},
+     "expect": {
+      "relations": [
+       "owner_of",
+       "trade_of",
+       "resident_of",
+       "home_of",
+       "spouse_of",
+       "parent_of",
+       "child_of",
+       "occupation_of",
+       "subject_of",
+       "author_of"
+      ],
+      "worldPredicates": [
+       "business/1",
+       "business_name/2",
+       "business_owner/2",
+       "business_type/2",
+       "lives_at/2",
+       "married_to/2",
+       "parent_of/2",
+       "occupation/2",
+       "first_name/2",
+       "last_name/2",
+       "truth_type/2",
+       "truth_about/2",
+       "truth_title/2",
+       "game_text/1",
+       "text_title/2",
+       "text_clue/2",
+       "text_author/2",
+       "item/1",
+       "item_name/2",
+       "item_base_type/2"
+      ],
+      "authoredPredicates": [
+       "puzzle_riddle/3",
+       "puzzle_riddle_prompt/2",
+       "puzzle_riddle_clue/2",
+       "puzzle_lock/2",
+       "puzzle_lock_needs/2",
+       "puzzle_lock_holds/2",
+       "puzzle_final/1",
+       "puzzle_max_attempts/1"
+      ],
+      "runtimePredicates": [
+       "puzzle_clue_found/2",
+       "puzzle_solved/2",
+       "puzzle_attempts/3",
+       "puzzle_opened/2"
+      ],
+      "writtenPredicates": [
+       "puzzle_clue_found/2",
+       "puzzle_solved/2",
+       "puzzle_attempts/3",
+       "puzzle_opened/2",
+       "has_item/3"
+      ],
+      "defaultMaxAttempts": 3,
+      "tuning": {
+       "maxAttempts": 3
+      },
+      "extensionKey": "puzzle",
+      "blockMembers": [
+       "actors"
+      ],
+      "actorKeys": [
+       "actor",
+       "clues",
+       "solved",
+       "attempts",
+       "opened",
+       "taken"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "a hand world: generated, its facts, the world facts and answer key its riddles read, and the choices with and without a count",
+   "steps": [
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.generate",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.generate",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "maxAttempts": null
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": null,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.generate",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "maxAttempts": 7
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 7,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.facts",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     },
+     "expect": {
+      "facts": [
+       "puzzle_riddle(riddle_1, owner_of, bakery).",
+       "puzzle_riddle_prompt(riddle_1, 'Who keeps Bakery?').",
+       "puzzle_riddle_clue(riddle_1, note1).",
+       "puzzle_riddle(riddle_2, occupation_of, bo).",
+       "puzzle_riddle_prompt(riddle_2, 'What does Bo do for a living?').",
+       "puzzle_lock(lock_1, chest_c).",
+       "puzzle_lock_needs(lock_1, clue(note1)).",
+       "puzzle_lock_needs(lock_1, riddle(riddle_1)).",
+       "puzzle_lock_holds(lock_1, key_a).",
+       "puzzle_lock(lock_2, chest_a).",
+       "puzzle_lock_needs(lock_2, item(key_a)).",
+       "puzzle_lock_needs(lock_2, riddle(riddle_2)).",
+       "puzzle_lock_holds(lock_2, key_b).",
+       "puzzle_final(lock_2).",
+       "puzzle_max_attempts(3)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.worldFacts",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     },
+     "expect": {
+      "facts": [
+       "business_owner(bakery, bo).",
+       "occupation(bo, baker)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.answerKey",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     },
+     "expect": {
+      "answerKey": {
+       "riddle_1": [
+        "bo"
+       ],
+       "riddle_2": [
+        "baker"
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.choices",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "riddle": {
+       "id": "riddle_1",
+       "relation": "owner_of",
+       "subject": "bakery",
+       "prompt": "Who keeps Bakery?",
+       "clues": [
+        "note1"
+       ]
+      }
+     },
+     "expect": {
+      "choices": [
+       "ada",
+       "bo",
+       "cy"
+      ]
+     }
+    },
+    {
+     "call": "puzzle.choices",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "riddle": {
+       "id": "riddle_2",
+       "relation": "occupation_of",
+       "subject": "bo",
+       "prompt": "What does Bo do for a living?",
+       "clues": []
+      }
+     },
+     "expect": {
+      "choices": [
+       "baker",
+       "miller"
+      ]
+     }
+    },
+    {
+     "call": "puzzle.choices",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "riddle": {
+       "id": "riddle_1",
+       "relation": "owner_of",
+       "subject": "bakery",
+       "prompt": "Who keeps Bakery?",
+       "clues": [
+        "note1"
+       ]
+      },
+      "count": null
+     },
+     "expect": {
+      "choices": [
+       "ada",
+       "bo",
+       "cy"
+      ]
+     }
+    },
+    {
+     "call": "puzzle.choices",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "riddle": {
+       "id": "riddle_1",
+       "relation": "owner_of",
+       "subject": "bakery",
+       "prompt": "Who keeps Bakery?",
+       "clues": [
+        "note1"
+       ]
+      },
+      "count": 2
+     },
+     "expect": {
+      "choices": [
+       "ada",
+       "bo"
+      ]
+     }
+    },
+    {
+     "call": "puzzle.choices",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "riddle": {
+       "id": "riddle_1",
+       "relation": "owner_of",
+       "subject": "bakery",
+       "prompt": "Who keeps Bakery?",
+       "clues": [
+        "note1"
+       ]
+      },
+      "count": 0
+     },
+     "expect": {
+      "choices": [
+       "bo"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "a world's own puzzle section is read; the row's `puzzle` stands over it, null for none; generate never reads it",
+   "steps": [
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       },
+       "puzzle": {
+        "riddles": [
+         {
+          "id": "keeper",
+          "relation": "owner_of",
+          "subject": "the_mill",
+          "prompt": "Who keeps the mill?"
+         },
+         {
+          "id": "trade",
+          "relation": "occupation_of",
+          "subject": "ada",
+          "clues": [
+           "note1"
+          ]
+         }
+        ],
+        "locks": [
+         {
+          "id": "hatch",
+          "target": "chest_a",
+          "needs": [
+           {
+            "kind": "riddle",
+            "ref": "keeper"
+           }
+          ],
+          "holds": [
+           "key_a"
+          ]
+         },
+         {
+          "id": "loft",
+          "target": "chest_b",
+          "needs": [
+           {
+            "kind": "lock",
+            "ref": "hatch"
+           },
+           {
+            "kind": "item",
+            "ref": "key_a"
+           },
+           {
+            "kind": "riddle",
+            "ref": "trade"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": 3,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       },
+       "puzzle": {
+        "riddles": [
+         {
+          "id": "keeper",
+          "relation": "owner_of",
+          "subject": "the_mill",
+          "prompt": "Who keeps the mill?"
+         },
+         {
+          "id": "trade",
+          "relation": "occupation_of",
+          "subject": "ada",
+          "clues": [
+           "note1"
+          ]
+         }
+        ],
+        "locks": [
+         {
+          "id": "hatch",
+          "target": "chest_a",
+          "needs": [
+           {
+            "kind": "riddle",
+            "ref": "keeper"
+           }
+          ],
+          "holds": [
+           "key_a"
+          ]
+         },
+         {
+          "id": "loft",
+          "target": "chest_b",
+          "needs": [
+           {
+            "kind": "lock",
+            "ref": "hatch"
+           },
+           {
+            "kind": "item",
+            "ref": "key_a"
+           },
+           {
+            "kind": "riddle",
+            "ref": "trade"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "puzzle": null
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "puzzle": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?"
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ]
+        }
+       ]
+      },
+      "maxAttempts": 7
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": 7,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "puzzle": {
+       "maxAttempts": null
+      }
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": null,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.generate",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       },
+       "puzzle": {
+        "riddles": [
+         {
+          "id": "keeper",
+          "relation": "owner_of",
+          "subject": "the_mill",
+          "prompt": "Who keeps the mill?"
+         },
+         {
+          "id": "trade",
+          "relation": "occupation_of",
+          "subject": "ada",
+          "clues": [
+           "note1"
+          ]
+         }
+        ],
+        "locks": [
+         {
+          "id": "hatch",
+          "target": "chest_a",
+          "needs": [
+           {
+            "kind": "riddle",
+            "ref": "keeper"
+           }
+          ],
+          "holds": [
+           "key_a"
+          ]
+         },
+         {
+          "id": "loft",
+          "target": "chest_b",
+          "needs": [
+           {
+            "kind": "lock",
+            "ref": "hatch"
+           },
+           {
+            "kind": "item",
+            "ref": "key_a"
+           },
+           {
+            "kind": "riddle",
+            "ref": "trade"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "issues and fromIR: none for no section, every problem named, a section with problems is core's error, an authored null limit",
+   "steps": [
+    {
+     "call": "puzzle.issues",
+     "args": {},
+     "expect": {
+      "issues": []
+     }
+    },
+    {
+     "call": "puzzle.issues",
+     "args": {
+      "puzzle": null
+     },
+     "expect": {
+      "issues": []
+     }
+    },
+    {
+     "call": "puzzle.issues",
+     "args": {
+      "puzzle": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?"
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "issues": []
+     }
+    },
+    {
+     "call": "puzzle.issues",
+     "args": {
+      "puzzle": {
+       "riddles": [
+        {
+         "id": "r",
+         "relation": "colour_of",
+         "subject": "x"
+        }
+       ],
+       "locks": [
+        {
+         "id": "l",
+         "target": "t",
+         "needs": []
+        }
+       ],
+       "finalLock": "nope"
+      }
+     },
+     "expect": {
+      "issues": [
+       "riddle \"r\" names relation \"colour_of\", which is not one of owner_of, trade_of, resident_of, home_of, spouse_of, parent_of, child_of, occupation_of, subject_of, author_of",
+       "lock \"l\" needs nothing, so it is not a lock",
+       "finalLock \"nope\" is not an authored lock"
+      ]
+     }
+    },
+    {
+     "call": "puzzle.fromIR",
+     "args": {
+      "puzzle": {
+       "riddles": [
+        {
+         "id": "r",
+         "relation": "colour_of",
+         "subject": "x"
+        }
+       ],
+       "locks": [
+        {
+         "id": "l",
+         "target": "t",
+         "needs": []
+        }
+       ],
+       "finalLock": "nope"
+      }
+     },
+     "expectError": "the puzzle section is not usable"
+    },
+    {
+     "call": "puzzle.fromIR",
+     "args": {
+      "puzzle": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?"
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": 3,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.fromIR",
+     "args": {
+      "puzzle": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?"
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ]
+        }
+       ]
+      },
+      "maxAttempts": null
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": null,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.fromIR",
+     "args": {
+      "puzzle": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?"
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ]
+        }
+       ],
+       "maxAttempts": 1
+      },
+      "maxAttempts": 9
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": 1,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "riddle and lock ids naming Object.prototype members: the answer key keeps them as its own keys; choices and facts as core answers",
+   "steps": [
+    {
+     "call": "puzzle.fromIR",
+     "args": {
+      "puzzle": {
+       "riddles": [
+        {
+         "id": "__proto__",
+         "relation": "owner_of",
+         "subject": "the_mill"
+        },
+        {
+         "id": "constructor",
+         "relation": "spouse_of",
+         "subject": "ada"
+        }
+       ],
+       "locks": [
+        {
+         "id": "toString",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "__proto__"
+          },
+          {
+           "kind": "riddle",
+           "ref": "constructor"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "__proto__",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "owner of the_mill?",
+         "clues": []
+        },
+        {
+         "id": "constructor",
+         "relation": "spouse_of",
+         "subject": "ada",
+         "prompt": "spouse of ada?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "toString",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "__proto__"
+          },
+          {
+           "kind": "riddle",
+           "ref": "constructor"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "toString",
+       "maxAttempts": 3,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.answerKey",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "definition": {
+       "riddles": [
+        {
+         "id": "__proto__",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "owner of the_mill?",
+         "clues": []
+        },
+        {
+         "id": "constructor",
+         "relation": "spouse_of",
+         "subject": "ada",
+         "prompt": "spouse of ada?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "toString",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "__proto__"
+          },
+          {
+           "kind": "riddle",
+           "ref": "constructor"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "toString",
+       "maxAttempts": 3,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      }
+     },
+     "expect": {
+      "answerKey": {
+       "__proto__": [
+        "ada"
+       ],
+       "constructor": [
+        "cy"
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.facts",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "__proto__",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "owner of the_mill?",
+         "clues": []
+        },
+        {
+         "id": "constructor",
+         "relation": "spouse_of",
+         "subject": "ada",
+         "prompt": "spouse of ada?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "toString",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "__proto__"
+          },
+          {
+           "kind": "riddle",
+           "ref": "constructor"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "toString",
+       "maxAttempts": 3,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      }
+     },
+     "expect": {
+      "facts": [
+       "puzzle_riddle('__proto__', owner_of, the_mill).",
+       "puzzle_riddle_prompt('__proto__', 'owner of the_mill?').",
+       "puzzle_riddle(constructor, spouse_of, ada).",
+       "puzzle_riddle_prompt(constructor, 'spouse of ada?').",
+       "puzzle_lock(toString, chest_a).",
+       "puzzle_lock_needs(toString, riddle('__proto__')).",
+       "puzzle_lock_needs(toString, riddle(constructor)).",
+       "puzzle_final(toString).",
+       "puzzle_max_attempts(3)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.worldFacts",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "definition": {
+       "riddles": [
+        {
+         "id": "__proto__",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "owner of the_mill?",
+         "clues": []
+        },
+        {
+         "id": "constructor",
+         "relation": "spouse_of",
+         "subject": "ada",
+         "prompt": "spouse of ada?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "toString",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "__proto__"
+          },
+          {
+           "kind": "riddle",
+           "ref": "constructor"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "toString",
+       "maxAttempts": 3,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      }
+     },
+     "expect": {
+      "facts": [
+       "business_owner(the_mill, ada).",
+       "married_to(ada, cy)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.choices",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "riddle": {
+       "id": "constructor",
+       "relation": "spouse_of",
+       "subject": "ada",
+       "prompt": "spouse of ada?",
+       "clues": []
+      }
+     },
+     "expect": {
+      "choices": [
+       "ada",
+       "bo",
+       "cy"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "the save block and the state's facts: a block from a state, no state no block, blockOf sorts, read names every unreadable key",
+   "steps": [
+    {
+     "call": "puzzle.director.stateFacts",
+     "args": {
+      "state": {
+       "actors": [
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "player",
+         "clues": [
+          "note1"
+         ],
+         "solved": [
+          "keeper"
+         ],
+         "attempts": [
+          [
+           "trade",
+           1
+          ]
+         ],
+         "opened": [
+          "hatch"
+         ],
+         "taken": [
+          "key_a"
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "facts": [
+       "puzzle_attempts(rival, keeper, 2).",
+       "puzzle_clue_found(player, note1).",
+       "puzzle_solved(player, keeper).",
+       "puzzle_attempts(player, trade, 1).",
+       "puzzle_opened(player, hatch).",
+       "has_item(player, key_a, 1)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.save.block",
+     "args": {
+      "state": {
+       "actors": [
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "player",
+         "clues": [
+          "note1"
+         ],
+         "solved": [
+          "keeper"
+         ],
+         "attempts": [
+          [
+           "trade",
+           1
+          ]
+         ],
+         "opened": [
+          "hatch"
+         ],
+         "taken": [
+          "key_a"
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "block": {
+       "actors": [
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "player",
+         "clues": [
+          "note1"
+         ],
+         "solved": [
+          "keeper"
+         ],
+         "attempts": [
+          [
+           "trade",
+           1
+          ]
+         ],
+         "opened": [
+          "hatch"
+         ],
+         "taken": [
+          "key_a"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.save.block",
+     "args": {},
+     "expect": {
+      "block": null
+     }
+    },
+    {
+     "call": "puzzle.save.block",
+     "args": {
+      "state": null
+     },
+     "expect": {
+      "block": null
+     }
+    },
+    {
+     "call": "puzzle.save.blockOf",
+     "args": {
+      "block": {
+       "actors": [
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "player",
+         "clues": [
+          "note1"
+         ],
+         "solved": [
+          "keeper"
+         ],
+         "attempts": [
+          [
+           "trade",
+           1
+          ]
+         ],
+         "opened": [
+          "hatch"
+         ],
+         "taken": [
+          "key_a"
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "block": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "note1"
+         ],
+         "solved": [
+          "keeper"
+         ],
+         "attempts": [
+          [
+           "trade",
+           1
+          ]
+         ],
+         "opened": [
+          "hatch"
+         ],
+         "taken": [
+          "key_a"
+         ]
+        },
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.save.read",
+     "args": {},
+     "expect": {
+      "ok": true,
+      "value": null
+     }
+    },
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": {
+       "actors": [
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "player",
+         "clues": [
+          "note1"
+         ],
+         "solved": [
+          "keeper"
+         ],
+         "attempts": [
+          [
+           "trade",
+           1
+          ]
+         ],
+         "opened": [
+          "hatch"
+         ],
+         "taken": [
+          "key_a"
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "actors": [
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "player",
+         "clues": [
+          "note1"
+         ],
+         "solved": [
+          "keeper"
+         ],
+         "attempts": [
+          [
+           "trade",
+           1
+          ]
+         ],
+         "opened": [
+          "hatch"
+         ],
+         "taken": [
+          "key_a"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": {
+       "actors": [
+        {
+         "actor": "constructor"
+        },
+        {
+         "actor": "__proto__",
+         "clues": [
+          "a"
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "actors": [
+        {
+         "actor": "constructor",
+         "clues": [],
+         "solved": [],
+         "attempts": [],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "__proto__",
+         "clues": [
+          "a"
+         ],
+         "solved": [],
+         "attempts": [],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.save.read",
+     "args": {
+      "block": "x"
+     },
+     "expect": {
+      "ok": false,
+      "keys": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre.world.of: an inline world, a slice by name, a slice with KB predicates or entity lists dropped and its player replaced",
+   "steps": [
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      }
+     },
+     "expect": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": "hand",
+      "slices": {
+       "hand": {
+        "meta": {
+         "worldId": "hand",
+         "worldName": "Mill End",
+         "genreConfig": {
+          "id": "puzzle"
+         }
+        },
+        "geography": {
+         "settlements": [
+          {
+           "id": "s1",
+           "name": "Mill End",
+           "lots": [
+            {
+             "id": "lot1",
+             "address": "1 Mill Lane"
+            },
+            {
+             "id": "lot2",
+             "address": "2 Mill Lane",
+             "streetName": null
+            }
+           ]
+          }
+         ]
+        },
+        "entities": {
+         "characters": [
+          {
+           "id": "c1",
+           "firstName": "Ada",
+           "lastName": null,
+           "isAlive": true
+          }
+         ],
+         "businesses": [
+          {
+           "id": "b1",
+           "name": "The Mill",
+           "ownerId": null
+          },
+          {
+           "id": "b2",
+           "name": "Bakery"
+          }
+         ],
+         "buildings": [
+          {
+           "id": "bd1",
+           "businessId": "b1"
+          },
+          {
+           "id": "bd2",
+           "businessId": "b2"
+          },
+          {
+           "id": "bd3",
+           "lotId": "lot1",
+           "occupantIds": [
+            "c1"
+           ]
+          }
+         ],
+         "containers": [
+          {
+           "id": "chest_a",
+           "buildingId": "bd1"
+          },
+          {
+           "id": "chest_b",
+           "buildingId": "bd3"
+          },
+          {
+           "id": "chest_c",
+           "buildingId": "bd2",
+           "containerType": null
+          }
+         ]
+        },
+        "systems": {
+         "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+        },
+        "player": {
+         "startPosition": {
+          "x": 1,
+          "z": 2
+         }
+        }
+       }
+      }
+     },
+     "expect": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": {
+       "slice": "hand",
+       "dropFacts": [
+        "business_owner/2",
+        "text_clue/2"
+       ]
+      },
+      "slices": {
+       "hand": {
+        "meta": {
+         "worldId": "hand",
+         "worldName": "Mill End",
+         "genreConfig": {
+          "id": "puzzle"
+         }
+        },
+        "geography": {
+         "settlements": [
+          {
+           "id": "s1",
+           "name": "Mill End",
+           "lots": [
+            {
+             "id": "lot1",
+             "address": "1 Mill Lane"
+            },
+            {
+             "id": "lot2",
+             "address": "2 Mill Lane",
+             "streetName": null
+            }
+           ]
+          }
+         ]
+        },
+        "entities": {
+         "characters": [
+          {
+           "id": "c1",
+           "firstName": "Ada",
+           "lastName": null,
+           "isAlive": true
+          }
+         ],
+         "businesses": [
+          {
+           "id": "b1",
+           "name": "The Mill",
+           "ownerId": null
+          },
+          {
+           "id": "b2",
+           "name": "Bakery"
+          }
+         ],
+         "buildings": [
+          {
+           "id": "bd1",
+           "businessId": "b1"
+          },
+          {
+           "id": "bd2",
+           "businessId": "b2"
+          },
+          {
+           "id": "bd3",
+           "lotId": "lot1",
+           "occupantIds": [
+            "c1"
+           ]
+          }
+         ],
+         "containers": [
+          {
+           "id": "chest_a",
+           "buildingId": "bd1"
+          },
+          {
+           "id": "chest_b",
+           "buildingId": "bd3"
+          },
+          {
+           "id": "chest_c",
+           "buildingId": "bd2",
+           "containerType": null
+          }
+         ]
+        },
+        "systems": {
+         "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+        },
+        "player": {
+         "startPosition": {
+          "x": 1,
+          "z": 2
+         }
+        }
+       }
+      }
+     },
+     "expect": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ngame_text(note2).\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": {
+       "slice": "hand",
+       "dropEntities": [
+        "containers",
+        "buildings"
+       ],
+       "player": null
+      },
+      "slices": {
+       "hand": {
+        "meta": {
+         "worldId": "hand",
+         "worldName": "Mill End",
+         "genreConfig": {
+          "id": "puzzle"
+         }
+        },
+        "geography": {
+         "settlements": [
+          {
+           "id": "s1",
+           "name": "Mill End",
+           "lots": [
+            {
+             "id": "lot1",
+             "address": "1 Mill Lane"
+            },
+            {
+             "id": "lot2",
+             "address": "2 Mill Lane",
+             "streetName": null
+            }
+           ]
+          }
+         ]
+        },
+        "entities": {
+         "characters": [
+          {
+           "id": "c1",
+           "firstName": "Ada",
+           "lastName": null,
+           "isAlive": true
+          }
+         ],
+         "businesses": [
+          {
+           "id": "b1",
+           "name": "The Mill",
+           "ownerId": null
+          },
+          {
+           "id": "b2",
+           "name": "Bakery"
+          }
+         ],
+         "buildings": [
+          {
+           "id": "bd1",
+           "businessId": "b1"
+          },
+          {
+           "id": "bd2",
+           "businessId": "b2"
+          },
+          {
+           "id": "bd3",
+           "lotId": "lot1",
+           "occupantIds": [
+            "c1"
+           ]
+          }
+         ],
+         "containers": [
+          {
+           "id": "chest_a",
+           "buildingId": "bd1"
+          },
+          {
+           "id": "chest_b",
+           "buildingId": "bd3"
+          },
+          {
+           "id": "chest_c",
+           "buildingId": "bd2",
+           "containerType": null
+          }
+         ]
+        },
+        "systems": {
+         "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+        },
+        "player": {
+         "startPosition": {
+          "x": 1,
+          "z": 2
+         }
+        }
+       }
+      }
+     },
+     "expect": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [],
+        "containers": []
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": null
+      }
+     }
+    },
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": {
+       "slice": "hand",
+       "dropFacts": null,
+       "player": {
+        "startPosition": {
+         "x": 5,
+         "y": 1,
+         "z": 6
+        }
+       }
+      },
+      "slices": {
+       "hand": {
+        "meta": {
+         "worldId": "hand",
+         "worldName": "Mill End",
+         "genreConfig": {
+          "id": "puzzle"
+         }
+        },
+        "geography": {
+         "settlements": [
+          {
+           "id": "s1",
+           "name": "Mill End",
+           "lots": [
+            {
+             "id": "lot1",
+             "address": "1 Mill Lane"
+            },
+            {
+             "id": "lot2",
+             "address": "2 Mill Lane",
+             "streetName": null
+            }
+           ]
+          }
+         ]
+        },
+        "entities": {
+         "characters": [
+          {
+           "id": "c1",
+           "firstName": "Ada",
+           "lastName": null,
+           "isAlive": true
+          }
+         ],
+         "businesses": [
+          {
+           "id": "b1",
+           "name": "The Mill",
+           "ownerId": null
+          },
+          {
+           "id": "b2",
+           "name": "Bakery"
+          }
+         ],
+         "buildings": [
+          {
+           "id": "bd1",
+           "businessId": "b1"
+          },
+          {
+           "id": "bd2",
+           "businessId": "b2"
+          },
+          {
+           "id": "bd3",
+           "lotId": "lot1",
+           "occupantIds": [
+            "c1"
+           ]
+          }
+         ],
+         "containers": [
+          {
+           "id": "chest_a",
+           "buildingId": "bd1"
+          },
+          {
+           "id": "chest_b",
+           "buildingId": "bd3"
+          },
+          {
+           "id": "chest_c",
+           "buildingId": "bd2",
+           "containerType": null
+          }
+         ]
+        },
+        "systems": {
+         "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+        },
+        "player": {
+         "startPosition": {
+          "x": 1,
+          "z": 2
+         }
+        }
+       }
+      }
+     },
+     "expect": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 5,
+         "y": 1,
+         "z": 6
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": {
+       "slice": "hand",
+       "dropEntities": [
+        "ghosts"
+       ]
+      },
+      "slices": {
+       "hand": {
+        "meta": {
+         "worldId": "hand",
+         "worldName": "Mill End",
+         "genreConfig": {
+          "id": "puzzle"
+         }
+        },
+        "geography": {
+         "settlements": [
+          {
+           "id": "s1",
+           "name": "Mill End",
+           "lots": [
+            {
+             "id": "lot1",
+             "address": "1 Mill Lane"
+            },
+            {
+             "id": "lot2",
+             "address": "2 Mill Lane",
+             "streetName": null
+            }
+           ]
+          }
+         ]
+        },
+        "entities": {
+         "characters": [
+          {
+           "id": "c1",
+           "firstName": "Ada",
+           "lastName": null,
+           "isAlive": true
+          }
+         ],
+         "businesses": [
+          {
+           "id": "b1",
+           "name": "The Mill",
+           "ownerId": null
+          },
+          {
+           "id": "b2",
+           "name": "Bakery"
+          }
+         ],
+         "buildings": [
+          {
+           "id": "bd1",
+           "businessId": "b1"
+          },
+          {
+           "id": "bd2",
+           "businessId": "b2"
+          },
+          {
+           "id": "bd3",
+           "lotId": "lot1",
+           "occupantIds": [
+            "c1"
+           ]
+          }
+         ],
+         "containers": [
+          {
+           "id": "chest_a",
+           "buildingId": "bd1"
+          },
+          {
+           "id": "chest_b",
+           "buildingId": "bd3"
+          },
+          {
+           "id": "chest_c",
+           "buildingId": "bd2",
+           "containerType": null
+          }
+         ]
+        },
+        "systems": {
+         "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+        },
+        "player": {
+         "startPosition": {
+          "x": 1,
+          "z": 2
+         }
+        }
+       }
+      }
+     },
+     "expectError": "genre corpus: unknown entity list ghosts"
+    }
+   ]
+  },
+  {
+   "name": "the [invalid-input] boundary: worlds, sections, definitions, riddles, states and slices outside core's declared types",
+   "steps": [
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": 5
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `world` must be a JSON object"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "systems": {
+        "knowledgeBase": 5
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `world.systems.knowledgeBase` must be a string"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": null
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `world.meta.worldId` must not be null"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "entities": {
+        "containers": [
+         {
+          "buildingId": "bd1"
+         }
+        ]
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `world.entities.containers[0].id` is missing"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "entities": {
+        "businesses": [
+         {
+          "id": "b1"
+         }
+        ]
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `world.entities.businesses[0].name` is missing"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "geography": {
+        "settlements": [
+         {
+          "id": "s",
+          "name": "S",
+          "lots": [
+           {
+            "id": "l",
+            "address": 7
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `world.geography.settlements[0].lots[0].address` must be a string"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "player": {
+        "startPosition": {
+         "x": 1
+        }
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `world.player.startPosition.z` is missing"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "y": null,
+         "z": 2
+        }
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `world.player.startPosition.y` must not be null"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "puzzle": {
+       "riddles": [
+        {
+         "id": "r",
+         "relation": 5,
+         "subject": "s"
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `puzzle.riddles[0].relation` must be a string"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "puzzle": {
+       "riddles": null
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `puzzle.riddles` must not be null"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "puzzle": {
+       "locks": [
+        {
+         "id": "l",
+         "target": "t",
+         "needs": [
+          {
+           "kind": "key",
+           "ref": "k"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `puzzle.locks[0].needs[0].kind` must be one of riddle, item, clue, lock"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       },
+       "puzzle": {
+        "finalLock": 3
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `world.puzzle.finalLock` must be a string"
+    },
+    {
+     "call": "puzzle.forWorld",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "maxAttempts": "3"
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.forWorld: `maxAttempts` must be a finite number"
+    },
+    {
+     "call": "puzzle.generate",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "maxAttempts": true
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.generate: `maxAttempts` must be a finite number"
+    },
+    {
+     "call": "puzzle.issues",
+     "args": {
+      "puzzle": []
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.issues: `puzzle` must be a JSON object"
+    },
+    {
+     "call": "puzzle.fromIR",
+     "args": {},
+     "expectError": "[invalid-input] insimulcore: puzzle.fromIR: `puzzle` must be a JSON object"
+    },
+    {
+     "call": "puzzle.facts",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.facts: `definition.source` is missing"
+    },
+    {
+     "call": "puzzle.facts",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "found",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.facts: `definition.source` must be one of authored, generated, empty"
+    },
+    {
+     "call": "puzzle.facts",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.facts: `definition.finalLock` is missing"
+    },
+    {
+     "call": "puzzle.facts",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "bo",
+         "prompt": "What does Bo do for a living?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": "3",
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.facts: `definition.maxAttempts` must be a finite number"
+    },
+    {
+     "call": "puzzle.worldFacts",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "colour_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.worldFacts: `definition.riddles[0].relation` must be one of"
+    },
+    {
+     "call": "puzzle.answerKey",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "bakery",
+         "prompt": "Who keeps Bakery?",
+         "clues": null
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "chest_c",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "note1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key_b"
+         ]
+        }
+       ],
+       "finalLock": "lock_2",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "note1",
+         "clue": "look under the wheel"
+        }
+       ],
+       "source": "generated",
+       "notes": [
+        "Bo's home has no container, so the second lock is at the next business",
+        "no further container to lock, so the chain ends at the second lock"
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.answerKey: `definition.riddles[0].clues` must not be null"
+    },
+    {
+     "call": "puzzle.choices",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "riddle": {
+       "id": "riddle_1",
+       "relation": "toString",
+       "subject": "bakery",
+       "prompt": "Who keeps Bakery?",
+       "clues": [
+        "note1"
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.choices: `riddle.relation` must be one of"
+    },
+    {
+     "call": "puzzle.choices",
+     "args": {
+      "world": {
+       "meta": {
+        "worldId": "hand",
+        "worldName": "Mill End",
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       },
+       "geography": {
+        "settlements": [
+         {
+          "id": "s1",
+          "name": "Mill End",
+          "lots": [
+           {
+            "id": "lot1",
+            "address": "1 Mill Lane"
+           },
+           {
+            "id": "lot2",
+            "address": "2 Mill Lane",
+            "streetName": null
+           }
+          ]
+         }
+        ]
+       },
+       "entities": {
+        "characters": [
+         {
+          "id": "c1",
+          "firstName": "Ada",
+          "lastName": null,
+          "isAlive": true
+         }
+        ],
+        "businesses": [
+         {
+          "id": "b1",
+          "name": "The Mill",
+          "ownerId": null
+         },
+         {
+          "id": "b2",
+          "name": "Bakery"
+         }
+        ],
+        "buildings": [
+         {
+          "id": "bd1",
+          "businessId": "b1"
+         },
+         {
+          "id": "bd2",
+          "businessId": "b2"
+         },
+         {
+          "id": "bd3",
+          "lotId": "lot1",
+          "occupantIds": [
+           "c1"
+          ]
+         }
+        ],
+        "containers": [
+         {
+          "id": "chest_a",
+          "buildingId": "bd1"
+         },
+         {
+          "id": "chest_b",
+          "buildingId": "bd3"
+         },
+         {
+          "id": "chest_c",
+          "buildingId": "bd2",
+          "containerType": null
+         }
+        ]
+       },
+       "systems": {
+        "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+       },
+       "player": {
+        "startPosition": {
+         "x": 1,
+         "z": 2
+        }
+       }
+      },
+      "riddle": {
+       "id": "riddle_1",
+       "relation": "owner_of",
+       "subject": "bakery",
+       "prompt": "Who keeps Bakery?",
+       "clues": [
+        "note1"
+       ]
+      },
+      "count": "x"
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.choices: `count` must be a finite number"
+    },
+    {
+     "call": "puzzle.director.stateFacts",
+     "args": {
+      "state": {
+       "actors": [
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper"
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.director.stateFacts: `state.actors[0].attempts[0]` must be a [riddle, count] pair"
+    },
+    {
+     "call": "puzzle.director.stateFacts",
+     "args": {
+      "state": {
+       "actors": [
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper",
+           "2"
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.director.stateFacts: `state.actors[0].attempts[0][1]` must be a finite number"
+    },
+    {
+     "call": "puzzle.save.block",
+     "args": {
+      "state": {
+       "actors": [
+        {
+         "actor": "p"
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.save.block: `state.actors[0].clues` is missing"
+    },
+    {
+     "call": "puzzle.save.blockOf",
+     "args": {
+      "block": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "note1"
+         ],
+         "solved": [
+          "keeper"
+         ],
+         "attempts": [
+          [
+           "trade",
+           1
+          ]
+         ],
+         "opened": [
+          "hatch"
+         ],
+         "taken": [
+          7
+         ]
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.save.blockOf: `block.actors[0].taken[0]` must be a string"
+    },
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": "toString",
+      "slices": {}
+     },
+     "expectError": "[invalid-input] insimulcore: genre.world.of: `world` names no slice of `slices`"
+    },
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": {
+       "slice": "constructor"
+      },
+      "slices": {
+       "hand": {
+        "meta": {
+         "worldId": "hand",
+         "worldName": "Mill End",
+         "genreConfig": {
+          "id": "puzzle"
+         }
+        },
+        "geography": {
+         "settlements": [
+          {
+           "id": "s1",
+           "name": "Mill End",
+           "lots": [
+            {
+             "id": "lot1",
+             "address": "1 Mill Lane"
+            },
+            {
+             "id": "lot2",
+             "address": "2 Mill Lane",
+             "streetName": null
+            }
+           ]
+          }
+         ]
+        },
+        "entities": {
+         "characters": [
+          {
+           "id": "c1",
+           "firstName": "Ada",
+           "lastName": null,
+           "isAlive": true
+          }
+         ],
+         "businesses": [
+          {
+           "id": "b1",
+           "name": "The Mill",
+           "ownerId": null
+          },
+          {
+           "id": "b2",
+           "name": "Bakery"
+          }
+         ],
+         "buildings": [
+          {
+           "id": "bd1",
+           "businessId": "b1"
+          },
+          {
+           "id": "bd2",
+           "businessId": "b2"
+          },
+          {
+           "id": "bd3",
+           "lotId": "lot1",
+           "occupantIds": [
+            "c1"
+           ]
+          }
+         ],
+         "containers": [
+          {
+           "id": "chest_a",
+           "buildingId": "bd1"
+          },
+          {
+           "id": "chest_b",
+           "buildingId": "bd3"
+          },
+          {
+           "id": "chest_c",
+           "buildingId": "bd2",
+           "containerType": null
+          }
+         ]
+        },
+        "systems": {
+         "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+        },
+        "player": {
+         "startPosition": {
+          "x": 1,
+          "z": 2
+         }
+        }
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: genre.world.of: `world.slice` names no slice of `slices`"
+    },
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": "hand",
+      "slices": {
+       "hand": {
+        "systems": {
+         "knowledgeBase": 1
+        }
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: genre.world.of: `slices.hand.systems.knowledgeBase` must be a string"
+    },
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": {
+       "slice": "hand",
+       "dropFacts": [
+        3
+       ]
+      },
+      "slices": {
+       "hand": {
+        "meta": {
+         "worldId": "hand",
+         "worldName": "Mill End",
+         "genreConfig": {
+          "id": "puzzle"
+         }
+        },
+        "geography": {
+         "settlements": [
+          {
+           "id": "s1",
+           "name": "Mill End",
+           "lots": [
+            {
+             "id": "lot1",
+             "address": "1 Mill Lane"
+            },
+            {
+             "id": "lot2",
+             "address": "2 Mill Lane",
+             "streetName": null
+            }
+           ]
+          }
+         ]
+        },
+        "entities": {
+         "characters": [
+          {
+           "id": "c1",
+           "firstName": "Ada",
+           "lastName": null,
+           "isAlive": true
+          }
+         ],
+         "businesses": [
+          {
+           "id": "b1",
+           "name": "The Mill",
+           "ownerId": null
+          },
+          {
+           "id": "b2",
+           "name": "Bakery"
+          }
+         ],
+         "buildings": [
+          {
+           "id": "bd1",
+           "businessId": "b1"
+          },
+          {
+           "id": "bd2",
+           "businessId": "b2"
+          },
+          {
+           "id": "bd3",
+           "lotId": "lot1",
+           "occupantIds": [
+            "c1"
+           ]
+          }
+         ],
+         "containers": [
+          {
+           "id": "chest_a",
+           "buildingId": "bd1"
+          },
+          {
+           "id": "chest_b",
+           "buildingId": "bd3"
+          },
+          {
+           "id": "chest_c",
+           "buildingId": "bd2",
+           "containerType": null
+          }
+         ]
+        },
+        "systems": {
+         "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+        },
+        "player": {
+         "startPosition": {
+          "x": 1,
+          "z": 2
+         }
+        }
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: genre.world.of: `world.dropFacts[0]` must be a string"
+    },
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": {
+       "slice": "hand",
+       "player": {
+        "startPosition": 4
+       }
+      },
+      "slices": {
+       "hand": {
+        "meta": {
+         "worldId": "hand",
+         "worldName": "Mill End",
+         "genreConfig": {
+          "id": "puzzle"
+         }
+        },
+        "geography": {
+         "settlements": [
+          {
+           "id": "s1",
+           "name": "Mill End",
+           "lots": [
+            {
+             "id": "lot1",
+             "address": "1 Mill Lane"
+            },
+            {
+             "id": "lot2",
+             "address": "2 Mill Lane",
+             "streetName": null
+            }
+           ]
+          }
+         ]
+        },
+        "entities": {
+         "characters": [
+          {
+           "id": "c1",
+           "firstName": "Ada",
+           "lastName": null,
+           "isAlive": true
+          }
+         ],
+         "businesses": [
+          {
+           "id": "b1",
+           "name": "The Mill",
+           "ownerId": null
+          },
+          {
+           "id": "b2",
+           "name": "Bakery"
+          }
+         ],
+         "buildings": [
+          {
+           "id": "bd1",
+           "businessId": "b1"
+          },
+          {
+           "id": "bd2",
+           "businessId": "b2"
+          },
+          {
+           "id": "bd3",
+           "lotId": "lot1",
+           "occupantIds": [
+            "c1"
+           ]
+          }
+         ],
+         "containers": [
+          {
+           "id": "chest_a",
+           "buildingId": "bd1"
+          },
+          {
+           "id": "chest_b",
+           "buildingId": "bd3"
+          },
+          {
+           "id": "chest_c",
+           "buildingId": "bd2",
+           "containerType": null
+          }
+         ]
+        },
+        "systems": {
+         "knowledgeBase": "business(the_mill).\nbusiness_name(the_mill, 'The Mill').\nbusiness_owner(the_mill, ada).\nbusiness_type(the_mill, mill).\nbusiness(bakery).\nbusiness_name(bakery, 'Bakery').\nbusiness_owner(bakery, bo).\nbusiness_type(bakery, bakery).\nfirst_name(ada, 'Ada').\nlast_name(ada, 'Stone').\nmarried_to(ada, cy).\nlives_at(ada, n1_mill_lane).\noccupation(ada, miller).\nfirst_name(bo, 'Bo').\nlives_at(bo, n2_mill_lane).\noccupation(bo, baker).\nfirst_name(cy, 'Cy').\ntruth_type(t1, secret).\ntruth_about(t1, cy).\ntruth_title(t1, 'The flood').\ngame_text(note1).\ntext_clue(note1, 'look under the wheel').\ngame_text(note2).\ntext_clue(note2, 'the oven is warm').\nitem(key_a).\nitem_base_type(key_a, key).\nitem(key_b).\nitem_base_type(key_b, key)."
+        },
+        "player": {
+         "startPosition": {
+          "x": 1,
+          "z": 2
+         }
+        }
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: genre.world.of: `world.player.startPosition` must be a JSON object"
+    },
+    {
+     "call": "genre.world.of",
+     "args": {
+      "world": {
+       "entities": {
+        "npcs": [
+         {}
+        ]
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: genre.world.of: `world.entities.npcs[0].characterId` is missing"
+    }
+   ]
+  },
+  {
+   "name": "a director over its own KB: a host program consulted, refusals as values, an unknown riddle's null view, a restore refused once it has actors, the boundary, the KB released",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's PuzzleDirector over a KB (GamePrologEngine's puzzle pack on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "puzzle.director.create",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": 3,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      },
+      "worldFacts": [
+       "business_owner(the_mill, ada).",
+       "occupation(ada, miller)."
+      ],
+      "kb": [
+       "puzzle_hand_note(mill_end)."
+      ]
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      },
+      "published": 16
+     },
+     "bind": "s"
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "trade"
+     },
+     "expect": {
+      "view": {
+       "id": "trade",
+       "prompt": "occupation of ada?",
+       "open": false,
+       "solved": false,
+       "attemptsLeft": 3,
+       "missingClues": [
+        "note1"
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "ghost"
+     },
+     "expect": {
+      "view": null
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper",
+      "given": "bo"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, keeper, 1)."
+      ],
+      "correct": false,
+      "attemptsLeft": 2
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper",
+      "given": "ada"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, keeper, 1).",
+       "puzzle_solved(player, keeper)."
+      ],
+      "correct": true,
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "loft"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "locked",
+      "reason": "loft still needs lock hatch, item key_a, riddle trade",
+      "applied": [],
+      "unmet": [
+       {
+        "kind": "lock",
+        "ref": "hatch"
+       },
+       {
+        "kind": "item",
+        "ref": "key_a"
+       },
+       {
+        "kind": "riddle",
+        "ref": "trade"
+       }
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "hatch"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_opened(player, hatch)."
+      ],
+      "unmet": [],
+      "order": {
+       "agent": "player",
+       "action": "open_container",
+       "target": "chest_a",
+       "tick": 1,
+       "animation": "handle",
+       "utility": 0
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.take",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "item": "key_a"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "has_item(player, key_a, 1)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.findClue",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "text": "note1"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_clue_found(player, note1)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "trade",
+      "given": "miller"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_solved(player, trade)."
+      ],
+      "correct": true,
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "loft"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_opened(player, loft)."
+      ],
+      "unmet": [],
+      "order": {
+       "agent": "player",
+       "action": "open_container",
+       "target": "chest_b",
+       "tick": 2,
+       "animation": "handle",
+       "utility": 0
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.isComplete",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player"
+     },
+     "expect": {
+      "complete": true
+     }
+    },
+    {
+     "call": "puzzle.director.progress",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player"
+     },
+     "expect": {
+      "progress": {
+       "cluesFound": 1,
+       "cluesTotal": 1,
+       "riddlesSolved": 2,
+       "riddlesTotal": 2,
+       "locksOpened": 2,
+       "locksTotal": 2,
+       "complete": true
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.progress",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "constructor"
+     },
+     "expect": {
+      "progress": {
+       "cluesFound": 0,
+       "cluesTotal": 1,
+       "riddlesSolved": 0,
+       "riddlesTotal": 2,
+       "locksOpened": 0,
+       "locksTotal": 2,
+       "complete": false
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "actors": [
+        {
+         "actor": "constructor",
+         "clues": [],
+         "solved": [],
+         "attempts": [],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "player",
+         "clues": [
+          "note1"
+         ],
+         "solved": [
+          "keeper",
+          "trade"
+         ],
+         "attempts": [],
+         "opened": [
+          "hatch",
+          "loft"
+         ],
+         "taken": [
+          "key_a"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.restore",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "state": {
+       "actors": [
+        {
+         "actor": "rival",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "player",
+         "clues": [
+          "note1"
+         ],
+         "solved": [
+          "keeper"
+         ],
+         "attempts": [
+          [
+           "trade",
+           1
+          ]
+         ],
+         "opened": [
+          "hatch"
+         ],
+         "taken": [
+          "key_a"
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "schema",
+      "reason": "restore() is for a fresh director; this one already has actors",
+      "applied": []
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "riddle": "keeper",
+      "given": "ada"
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.director.answer: `actor` must be a string"
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper"
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.director.answer: `given` must be a string"
+    },
+    {
+     "call": "puzzle.director.restore",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "state": {
+       "actors": "x"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.director.restore: `state.actors` must be an array"
+    },
+    {
+     "call": "puzzle.director.findClue",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player"
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.director.findClue: `text` must be a string"
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper"
+     },
+     "expectError": "no open session"
+    },
+    {
+     "call": "puzzle.director.create",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": 3,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      },
+      "kb": "not prolog ("
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.director.create: the KB refused `kb`"
+    },
+    {
+     "call": "puzzle.director.create",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "x"
+        }
+       ],
+       "source": "authored",
+       "notes": []
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.director.create: `definition.clueTexts[0].clue` is missing"
+    },
+    {
+     "call": "puzzle.director.create",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "note1"
+         ]
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "chest_a",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "key_a"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "chest_b",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "key_a"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": 3,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      },
+      "worldFacts": "x"
+     },
+     "expectError": "[invalid-input] insimulcore: puzzle.director.create: `worldFacts` must be an array"
+    },
+    {
+     "call": "session.list",
+     "args": {},
+     "expect": {
+      "sessions": []
+     }
+    }
+   ]
+  }
+ ]
+}

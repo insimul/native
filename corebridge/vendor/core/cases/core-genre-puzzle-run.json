@@ -1,0 +1,2363 @@
+{
+ "area": "genre-puzzle-run",
+ "description": "core's genre systems corpus conformance/puzzle/run.json (P9j.core) through the genre.world.of and puzzle.* rows, each op as core's reference runner (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/genre-mechanics/thistlecombe.world-slice.json": "2dccd06611aa6325c6a7ea9d3c4ae18135252f039a8cb3ba61173d95608376cb",
+   "conformance/puzzle/run.json": "fb8fc0d3f9c13e37fc1bc659667c7904c8b5290eddc0cfdfdb93fc00827a4a03"
+  }
+ },
+ "cases": [
+  {
+   "name": "puzzle/run run: thistlecombe: every clue found, every riddle answered, every key taken, the last lock opened",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's PuzzleDirector over a KB (GamePrologEngine's puzzle pack on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "puzzle.director.create",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "ironwood_s_builders",
+         "prompt": "Who keeps Ironwood's Builders?",
+         "clues": [
+          "avis_de_disparition"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "rowena_ironwood",
+         "prompt": "What does Rowena Ironwood do for a living?",
+         "clues": []
+        },
+        {
+         "id": "riddle_3",
+         "relation": "subject_of",
+         "subject": "bigger_dreams",
+         "prompt": "Whose secret is \"Bigger Dreams\"?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "avis_de_disparition"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key1"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key2"
+         ]
+        },
+        {
+         "id": "lock_3",
+         "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key2"
+          },
+          {
+           "kind": "lock",
+           "ref": "lock_2"
+          },
+          {
+           "kind": "clue",
+           "ref": "carnet_mouille_notes_de_recherche"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_3"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "lock_3",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "avis_de_disparition",
+         "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+        },
+        {
+         "id": "carnet_mouille_notes_de_recherche",
+         "clue": "Research notes about the founding families, found in a cave."
+        }
+       ],
+       "source": "generated",
+       "notes": []
+      },
+      "worldFacts": [
+       "business_owner(ironwood_s_builders, rowena_ironwood).",
+       "occupation(rowena_ironwood, owner_carpenter).",
+       "truth_about(bigger_dreams, rowena_ironwood)."
+      ]
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      },
+      "published": 25
+     },
+     "bind": "s"
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_1"
+     },
+     "expect": {
+      "view": {
+       "id": "riddle_1",
+       "prompt": "Who keeps Ironwood's Builders?",
+       "open": false,
+       "solved": false,
+       "attemptsLeft": 3,
+       "missingClues": [
+        "avis_de_disparition"
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_1",
+      "given": "rowena_ironwood"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "clue_missing",
+      "reason": "riddle_1 waits on a clue player has not found",
+      "applied": [],
+      "correct": false,
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "puzzle.director.findClue",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "text": "not_a_clue"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "unknown_clue",
+      "reason": "\"not_a_clue\" is not a clue in this puzzle",
+      "applied": []
+     }
+    },
+    {
+     "call": "puzzle.director.findClue",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "text": "avis_de_disparition"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_clue_found(player, avis_de_disparition)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.findClue",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "text": "avis_de_disparition"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": []
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_1"
+     },
+     "expect": {
+      "view": {
+       "id": "riddle_1",
+       "prompt": "Who keeps Ironwood's Builders?",
+       "open": true,
+       "solved": false,
+       "attemptsLeft": 3,
+       "missingClues": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_1",
+      "given": "aldric_underwood"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, riddle_1, 1)."
+      ],
+      "correct": false,
+      "attemptsLeft": 2
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_1",
+      "given": "rowena_ironwood"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, riddle_1, 1).",
+       "puzzle_solved(player, riddle_1)."
+      ],
+      "correct": true,
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_1",
+      "given": "rowena_ironwood"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "already_solved",
+      "reason": "player has already solved riddle_1",
+      "applied": [],
+      "correct": false,
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "lock_2"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "locked",
+      "reason": "lock_2 still needs item key1, riddle riddle_2",
+      "applied": [],
+      "unmet": [
+       {
+        "kind": "item",
+        "ref": "key1"
+       },
+       {
+        "kind": "riddle",
+        "ref": "riddle_2"
+       }
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "lock_1"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_opened(player, lock_1)."
+      ],
+      "unmet": [],
+      "order": {
+       "agent": "player",
+       "action": "open_container",
+       "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+       "tick": 1,
+       "animation": "handle",
+       "utility": 0
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "lock_1"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "already_open",
+      "reason": "player has already opened lock_1",
+      "applied": [],
+      "unmet": []
+     }
+    },
+    {
+     "call": "puzzle.director.take",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "item": "key2"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "not_available",
+      "reason": "key2 is not behind a lock player has opened, or is already held",
+      "applied": []
+     }
+    },
+    {
+     "call": "puzzle.director.take",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "item": "key1"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "has_item(player, key1, 1)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.take",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "item": "key1"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "not_available",
+      "reason": "key1 is not behind a lock player has opened, or is already held",
+      "applied": []
+     }
+    },
+    {
+     "call": "puzzle.director.progress",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player"
+     },
+     "expect": {
+      "progress": {
+       "cluesFound": 1,
+       "cluesTotal": 2,
+       "riddlesSolved": 1,
+       "riddlesTotal": 3,
+       "locksOpened": 1,
+       "locksTotal": 3,
+       "complete": false
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_2",
+      "given": "owner_carpenter"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_solved(player, riddle_2)."
+      ],
+      "correct": true,
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "lock_2"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_opened(player, lock_2)."
+      ],
+      "unmet": [],
+      "order": {
+       "agent": "player",
+       "action": "open_container",
+       "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+       "tick": 2,
+       "animation": "handle",
+       "utility": 0
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.take",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "item": "key2"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "has_item(player, key2, 1)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_3",
+      "given": "rowena_ironwood"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_solved(player, riddle_3)."
+      ],
+      "correct": true,
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "lock_3"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "locked",
+      "reason": "lock_3 still needs clue carnet_mouille_notes_de_recherche",
+      "applied": [],
+      "unmet": [
+       {
+        "kind": "clue",
+        "ref": "carnet_mouille_notes_de_recherche"
+       }
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.isComplete",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player"
+     },
+     "expect": {
+      "complete": false
+     }
+    },
+    {
+     "call": "puzzle.director.findClue",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "text": "carnet_mouille_notes_de_recherche"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_clue_found(player, carnet_mouille_notes_de_recherche)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "lock_3"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_opened(player, lock_3)."
+      ],
+      "unmet": [],
+      "order": {
+       "agent": "player",
+       "action": "open_container",
+       "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+       "tick": 3,
+       "animation": "handle",
+       "utility": 0
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.isComplete",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player"
+     },
+     "expect": {
+      "complete": true
+     }
+    },
+    {
+     "call": "puzzle.director.progress",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player"
+     },
+     "expect": {
+      "progress": {
+       "cluesFound": 2,
+       "cluesTotal": 2,
+       "riddlesSolved": 3,
+       "riddlesTotal": 3,
+       "locksOpened": 3,
+       "locksTotal": 3,
+       "complete": true
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "avis_de_disparition",
+          "carnet_mouille_notes_de_recherche"
+         ],
+         "solved": [
+          "riddle_1",
+          "riddle_2",
+          "riddle_3"
+         ],
+         "attempts": [],
+         "opened": [
+          "lock_1",
+          "lock_2",
+          "lock_3"
+         ],
+         "taken": [
+          "key1",
+          "key2"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/run run: thistlecombe: two players keep separate progress; the rival has solved nothing",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's PuzzleDirector over a KB (GamePrologEngine's puzzle pack on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "puzzle.director.create",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "riddle_1",
+         "relation": "owner_of",
+         "subject": "ironwood_s_builders",
+         "prompt": "Who keeps Ironwood's Builders?",
+         "clues": [
+          "avis_de_disparition"
+         ]
+        },
+        {
+         "id": "riddle_2",
+         "relation": "occupation_of",
+         "subject": "rowena_ironwood",
+         "prompt": "What does Rowena Ironwood do for a living?",
+         "clues": []
+        },
+        {
+         "id": "riddle_3",
+         "relation": "subject_of",
+         "subject": "bigger_dreams",
+         "prompt": "Whose secret is \"Bigger Dreams\"?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "lock_1",
+         "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+         "needs": [
+          {
+           "kind": "clue",
+           "ref": "avis_de_disparition"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_1"
+          }
+         ],
+         "holds": [
+          "key1"
+         ]
+        },
+        {
+         "id": "lock_2",
+         "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key1"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_2"
+          }
+         ],
+         "holds": [
+          "key2"
+         ]
+        },
+        {
+         "id": "lock_3",
+         "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+         "needs": [
+          {
+           "kind": "item",
+           "ref": "key2"
+          },
+          {
+           "kind": "lock",
+           "ref": "lock_2"
+          },
+          {
+           "kind": "clue",
+           "ref": "carnet_mouille_notes_de_recherche"
+          },
+          {
+           "kind": "riddle",
+           "ref": "riddle_3"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "lock_3",
+       "maxAttempts": 3,
+       "clueTexts": [
+        {
+         "id": "avis_de_disparition",
+         "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+        },
+        {
+         "id": "carnet_mouille_notes_de_recherche",
+         "clue": "Research notes about the founding families, found in a cave."
+        }
+       ],
+       "source": "generated",
+       "notes": []
+      },
+      "worldFacts": [
+       "business_owner(ironwood_s_builders, rowena_ironwood).",
+       "occupation(rowena_ironwood, owner_carpenter).",
+       "truth_about(bigger_dreams, rowena_ironwood)."
+      ]
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      },
+      "published": 25
+     },
+     "bind": "s"
+    },
+    {
+     "call": "puzzle.director.findClue",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "text": "avis_de_disparition"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_clue_found(player, avis_de_disparition)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "riddle_1",
+      "given": "rowena_ironwood"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_solved(player, riddle_1)."
+      ],
+      "correct": true,
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "rival",
+      "lock": "lock_1"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "locked",
+      "reason": "lock_1 still needs clue avis_de_disparition, riddle riddle_1",
+      "applied": [],
+      "unmet": [
+       {
+        "kind": "clue",
+        "ref": "avis_de_disparition"
+       },
+       {
+        "kind": "riddle",
+        "ref": "riddle_1"
+       }
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "rival",
+      "riddle": "riddle_1",
+      "given": "rowena_ironwood"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "clue_missing",
+      "reason": "riddle_1 waits on a clue rival has not found",
+      "applied": [],
+      "correct": false,
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "puzzle.director.findClue",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "rival",
+      "text": "avis_de_disparition"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_clue_found(rival, avis_de_disparition)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "rival",
+      "riddle": "riddle_1",
+      "given": "maeve_oakfield"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(rival, riddle_1, 1)."
+      ],
+      "correct": false,
+      "attemptsLeft": 2
+     }
+    },
+    {
+     "call": "puzzle.director.progress",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "rival"
+     },
+     "expect": {
+      "progress": {
+       "cluesFound": 1,
+       "cluesTotal": 2,
+       "riddlesSolved": 0,
+       "riddlesTotal": 3,
+       "locksOpened": 0,
+       "locksTotal": 3,
+       "complete": false
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.isComplete",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "rival"
+     },
+     "expect": {
+      "complete": false
+     }
+    },
+    {
+     "call": "puzzle.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "avis_de_disparition"
+         ],
+         "solved": [
+          "riddle_1"
+         ],
+         "attempts": [],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "rival",
+         "clues": [
+          "avis_de_disparition"
+         ],
+         "solved": [],
+         "attempts": [
+          [
+           "riddle_1",
+           1
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "avis_de_disparition"
+         ],
+         "solved": [
+          "riddle_1"
+         ],
+         "attempts": [],
+         "opened": [],
+         "taken": []
+        },
+        {
+         "actor": "rival",
+         "clues": [
+          "avis_de_disparition"
+         ],
+         "solved": [],
+         "attempts": [
+          [
+           "riddle_1",
+           1
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/run run: mill: two wrong answers spend a riddle; a riddle the world cannot answer is never put",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's PuzzleDirector over a KB (GamePrologEngine's puzzle pack on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "puzzle.director.create",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "ledger"
+         ]
+        },
+        {
+         "id": "ghost",
+         "relation": "owner_of",
+         "subject": "ghost_shop",
+         "prompt": "owner of ghost_shop?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "mill_chest",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "brass_key",
+          "flour"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "loft_chest",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "brass_key"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": 2,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      },
+      "worldFacts": [
+       "business_owner(the_mill, ada).",
+       "business_owner(the_mill, bryn).",
+       "occupation(ada, miller)."
+      ]
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      },
+      "published": 20
+     },
+     "bind": "s"
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper",
+      "given": "cora"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, keeper, 1)."
+      ],
+      "correct": false,
+      "attemptsLeft": 1
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper"
+     },
+     "expect": {
+      "view": {
+       "id": "keeper",
+       "prompt": "Who keeps the mill?",
+       "open": true,
+       "solved": false,
+       "attemptsLeft": 1,
+       "missingClues": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper",
+      "given": "dell"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, keeper, 1).",
+       "puzzle_attempts(player, keeper, 2)."
+      ],
+      "correct": false,
+      "attemptsLeft": 0
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper"
+     },
+     "expect": {
+      "view": {
+       "id": "keeper",
+       "prompt": "Who keeps the mill?",
+       "open": false,
+       "solved": false,
+       "attemptsLeft": 0,
+       "missingClues": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper",
+      "given": "ada"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "spent",
+      "reason": "keeper has had all the wrong answers it allows",
+      "applied": [],
+      "correct": false,
+      "attemptsLeft": 0
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "ghost",
+      "given": "ada"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "unanswerable",
+      "reason": "nothing in this world answers ghost",
+      "applied": [],
+      "correct": false,
+      "attemptsLeft": 2
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "ghost"
+     },
+     "expect": {
+      "view": {
+       "id": "ghost",
+       "prompt": "owner of ghost_shop?",
+       "open": true,
+       "solved": false,
+       "attemptsLeft": 2,
+       "missingClues": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "nonesuch",
+      "given": "ada"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "unknown_riddle",
+      "reason": "\"nonesuch\" is not a riddle in this puzzle",
+      "applied": [],
+      "correct": false,
+      "attemptsLeft": 2
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "nonesuch"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "unknown_lock",
+      "reason": "\"nonesuch\" is not a lock in this puzzle",
+      "applied": [],
+      "unmet": []
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "nonesuch"
+     },
+     "expect": {
+      "view": null
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "hatch"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "locked",
+      "reason": "hatch still needs riddle keeper",
+      "applied": [],
+      "unmet": [
+       {
+        "kind": "riddle",
+        "ref": "keeper"
+       }
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [],
+         "solved": [],
+         "attempts": [
+          [
+           "keeper",
+           2
+          ]
+         ],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/run run: mill: a riddle with two keepers takes either; a lock needs another lock, an item and a riddle",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's PuzzleDirector over a KB (GamePrologEngine's puzzle pack on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "puzzle.director.create",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "ledger"
+         ]
+        },
+        {
+         "id": "ghost",
+         "relation": "owner_of",
+         "subject": "ghost_shop",
+         "prompt": "owner of ghost_shop?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "mill_chest",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "brass_key",
+          "flour"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "loft_chest",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "brass_key"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": 2,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      },
+      "worldFacts": [
+       "business_owner(the_mill, ada).",
+       "business_owner(the_mill, bryn).",
+       "occupation(ada, miller)."
+      ]
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      },
+      "published": 20
+     },
+     "bind": "s"
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper",
+      "given": "bryn"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_solved(player, keeper)."
+      ],
+      "correct": true,
+      "attemptsLeft": 2
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "loft"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "locked",
+      "reason": "loft still needs lock hatch, item brass_key, riddle trade",
+      "applied": [],
+      "unmet": [
+       {
+        "kind": "lock",
+        "ref": "hatch"
+       },
+       {
+        "kind": "item",
+        "ref": "brass_key"
+       },
+       {
+        "kind": "riddle",
+        "ref": "trade"
+       }
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "hatch"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_opened(player, hatch)."
+      ],
+      "unmet": [],
+      "order": {
+       "agent": "player",
+       "action": "open_container",
+       "target": "mill_chest",
+       "tick": 1,
+       "animation": "handle",
+       "utility": 0
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.take",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "item": "flour"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "has_item(player, flour, 1)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "loft"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "locked",
+      "reason": "loft still needs item brass_key, riddle trade",
+      "applied": [],
+      "unmet": [
+       {
+        "kind": "item",
+        "ref": "brass_key"
+       },
+       {
+        "kind": "riddle",
+        "ref": "trade"
+       }
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.take",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "item": "brass_key"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "has_item(player, brass_key, 1)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "trade"
+     },
+     "expect": {
+      "view": {
+       "id": "trade",
+       "prompt": "occupation of ada?",
+       "open": false,
+       "solved": false,
+       "attemptsLeft": 2,
+       "missingClues": [
+        "ledger"
+       ]
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.findClue",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "text": "ledger"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_clue_found(player, ledger)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "trade",
+      "given": "miller"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_solved(player, trade)."
+      ],
+      "correct": true,
+      "attemptsLeft": 2
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "loft"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_opened(player, loft)."
+      ],
+      "unmet": [],
+      "order": {
+       "agent": "player",
+       "action": "open_container",
+       "target": "loft_chest",
+       "tick": 2,
+       "animation": "handle",
+       "utility": 0
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.isComplete",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player"
+     },
+     "expect": {
+      "complete": true
+     }
+    },
+    {
+     "call": "puzzle.director.progress",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player"
+     },
+     "expect": {
+      "progress": {
+       "cluesFound": 1,
+       "cluesTotal": 1,
+       "riddlesSolved": 2,
+       "riddlesTotal": 3,
+       "locksOpened": 2,
+       "locksTotal": 2,
+       "complete": true
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "ledger"
+         ],
+         "solved": [
+          "keeper",
+          "trade"
+         ],
+         "attempts": [],
+         "opened": [
+          "hatch",
+          "loft"
+         ],
+         "taken": [
+          "brass_key",
+          "flour"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/run run: mill: with no attempt limit a riddle is never spent",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's PuzzleDirector over a KB (GamePrologEngine's puzzle pack on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "puzzle.director.create",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "ledger"
+         ]
+        },
+        {
+         "id": "ghost",
+         "relation": "owner_of",
+         "subject": "ghost_shop",
+         "prompt": "owner of ghost_shop?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "mill_chest",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "brass_key",
+          "flour"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "loft_chest",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "brass_key"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": null,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      },
+      "worldFacts": [
+       "business_owner(the_mill, ada).",
+       "business_owner(the_mill, bryn).",
+       "occupation(ada, miller)."
+      ]
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      },
+      "published": 19
+     },
+     "bind": "s"
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper",
+      "given": "cora"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, keeper, 1)."
+      ],
+      "correct": false,
+      "attemptsLeft": null
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper",
+      "given": "dell"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, keeper, 1).",
+       "puzzle_attempts(player, keeper, 2)."
+      ],
+      "correct": false,
+      "attemptsLeft": null
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper",
+      "given": "eve"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, keeper, 2).",
+       "puzzle_attempts(player, keeper, 3)."
+      ],
+      "correct": false,
+      "attemptsLeft": null
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper"
+     },
+     "expect": {
+      "view": {
+       "id": "keeper",
+       "prompt": "Who keeps the mill?",
+       "open": true,
+       "solved": false,
+       "attemptsLeft": null,
+       "missingClues": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper",
+      "given": "ada"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, keeper, 3).",
+       "puzzle_solved(player, keeper)."
+      ],
+      "correct": true,
+      "attemptsLeft": null
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "keeper"
+     },
+     "expect": {
+      "view": {
+       "id": "keeper",
+       "prompt": "Who keeps the mill?",
+       "open": false,
+       "solved": true,
+       "attemptsLeft": null,
+       "missingClues": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [],
+         "solved": [
+          "keeper"
+         ],
+         "attempts": [],
+         "opened": [],
+         "taken": []
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle/run run: mill: restore puts a saved actor back; a second restore is refused",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's PuzzleDirector over a KB (GamePrologEngine's puzzle pack on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "puzzle.director.create",
+     "args": {
+      "definition": {
+       "riddles": [
+        {
+         "id": "keeper",
+         "relation": "owner_of",
+         "subject": "the_mill",
+         "prompt": "Who keeps the mill?",
+         "clues": []
+        },
+        {
+         "id": "trade",
+         "relation": "occupation_of",
+         "subject": "ada",
+         "prompt": "occupation of ada?",
+         "clues": [
+          "ledger"
+         ]
+        },
+        {
+         "id": "ghost",
+         "relation": "owner_of",
+         "subject": "ghost_shop",
+         "prompt": "owner of ghost_shop?",
+         "clues": []
+        }
+       ],
+       "locks": [
+        {
+         "id": "hatch",
+         "target": "mill_chest",
+         "needs": [
+          {
+           "kind": "riddle",
+           "ref": "keeper"
+          }
+         ],
+         "holds": [
+          "brass_key",
+          "flour"
+         ]
+        },
+        {
+         "id": "loft",
+         "target": "loft_chest",
+         "needs": [
+          {
+           "kind": "lock",
+           "ref": "hatch"
+          },
+          {
+           "kind": "item",
+           "ref": "brass_key"
+          },
+          {
+           "kind": "riddle",
+           "ref": "trade"
+          }
+         ],
+         "holds": []
+        }
+       ],
+       "finalLock": "loft",
+       "maxAttempts": 2,
+       "clueTexts": [],
+       "source": "authored",
+       "notes": []
+      },
+      "worldFacts": [
+       "business_owner(the_mill, ada).",
+       "business_owner(the_mill, bryn).",
+       "occupation(ada, miller)."
+      ]
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      },
+      "published": 20
+     },
+     "bind": "s"
+    },
+    {
+     "call": "puzzle.director.restore",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "state": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "ledger"
+         ],
+         "solved": [
+          "keeper"
+         ],
+         "attempts": [
+          [
+           "trade",
+           1
+          ]
+         ],
+         "opened": [
+          "hatch"
+         ],
+         "taken": [
+          "brass_key"
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_clue_found(player, ledger).",
+       "puzzle_solved(player, keeper).",
+       "puzzle_attempts(player, trade, 1).",
+       "puzzle_opened(player, hatch).",
+       "has_item(player, brass_key, 1)."
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.view",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "trade"
+     },
+     "expect": {
+      "view": {
+       "id": "trade",
+       "prompt": "occupation of ada?",
+       "open": true,
+       "solved": false,
+       "attemptsLeft": 1,
+       "missingClues": []
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "loft"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "locked",
+      "reason": "loft still needs riddle trade",
+      "applied": [],
+      "unmet": [
+       {
+        "kind": "riddle",
+        "ref": "trade"
+       }
+      ]
+     }
+    },
+    {
+     "call": "puzzle.director.answer",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "riddle": "trade",
+      "given": "miller"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_attempts(player, trade, 1).",
+       "puzzle_solved(player, trade)."
+      ],
+      "correct": true,
+      "attemptsLeft": 2
+     }
+    },
+    {
+     "call": "puzzle.director.unlock",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player",
+      "lock": "loft"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "puzzle_opened(player, loft)."
+      ],
+      "unmet": [],
+      "order": {
+       "agent": "player",
+       "action": "open_container",
+       "target": "loft_chest",
+       "tick": 1,
+       "animation": "handle",
+       "utility": 0
+      }
+     }
+    },
+    {
+     "call": "puzzle.director.isComplete",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "actor": "player"
+     },
+     "expect": {
+      "complete": true
+     }
+    },
+    {
+     "call": "puzzle.director.restore",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "state": {
+       "actors": []
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "schema",
+      "reason": "restore() is for a fresh director; this one already has actors",
+      "applied": []
+     }
+    },
+    {
+     "call": "puzzle.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "actors": [
+        {
+         "actor": "player",
+         "clues": [
+          "ledger"
+         ],
+         "solved": [
+          "keeper",
+          "trade"
+         ],
+         "attempts": [],
+         "opened": [
+          "hatch",
+          "loft"
+         ],
+         "taken": [
+          "brass_key"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  }
+ ]
+}

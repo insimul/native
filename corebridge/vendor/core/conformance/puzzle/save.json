@@ -1,0 +1,966 @@
+{
+  "schema": "insimul.conformance.genre-systems/1",
+  "area": "puzzle",
+  "file": "puzzle/save",
+  "phase": "P9j",
+  "description": "The puzzle save block (currentState.extensions.puzzle, src/puzzle/puzzle-save.ts): block = puzzleBlockOf(puzzleSaveBlock(state)); read = readPuzzleBlock (the value as puzzleBlockOf writes it, or the unreadable members in ascending order); restore = read, then a fresh director over the case's definition restored from the value (its outcome is the first step) and the case's steps, as in run.json.",
+  "sources": [
+    "Rules: core's puzzle, platformer and strategy modules (src/puzzle, src/platformer, src/strategy) and their directors (src/game-engine/logic/{Puzzle,Platformer,Strategy}Director.ts), unchanged by this corpus; their predicate packs are pinned clause by clause by conformance/prolog/mechanic-{puzzle,platformer,strategy}.json.",
+    "Worlds: the committed slice of Thistlecombe (Unity closing-wave export, conformance/genre-mechanics/thistlecombe.world-slice.json) and synthetic worlds written in src/genre-systems/systems-corpus-cases.ts."
+  ],
+  "runner": "src/genre-systems/systems-corpus.ts (runGenreSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "puzzle-rule-module"
+  ],
+  "ops": [
+    "block",
+    "read",
+    "restore"
+  ],
+  "steps": [
+    "restore",
+    "clue",
+    "answer",
+    "unlock",
+    "take",
+    "view",
+    "progress",
+    "complete",
+    "state"
+  ],
+  "cases": [
+    {
+      "name": "block: the director's state, rows by actor and every list in canonical order",
+      "op": "block",
+      "input": {
+        "state": {
+          "actors": [
+            {
+              "actor": "rival",
+              "clues": [],
+              "solved": [],
+              "attempts": [
+                [
+                  "riddle_1",
+                  2
+                ]
+              ],
+              "opened": [],
+              "taken": []
+            },
+            {
+              "actor": "player",
+              "clues": [
+                "carnet_mouille_notes_de_recherche",
+                "avis_de_disparition"
+              ],
+              "solved": [
+                "riddle_2",
+                "riddle_1"
+              ],
+              "attempts": [
+                [
+                  "riddle_3",
+                  1
+                ]
+              ],
+              "opened": [
+                "lock_2",
+                "lock_1"
+              ],
+              "taken": [
+                "key2",
+                "key1"
+              ]
+            }
+          ]
+        }
+      },
+      "expected": {
+        "actors": [
+          {
+            "actor": "player",
+            "clues": [
+              "avis_de_disparition",
+              "carnet_mouille_notes_de_recherche"
+            ],
+            "solved": [
+              "riddle_1",
+              "riddle_2"
+            ],
+            "attempts": [
+              [
+                "riddle_3",
+                1
+              ]
+            ],
+            "opened": [
+              "lock_1",
+              "lock_2"
+            ],
+            "taken": [
+              "key1",
+              "key2"
+            ]
+          },
+          {
+            "actor": "rival",
+            "clues": [],
+            "solved": [],
+            "attempts": [
+              [
+                "riddle_1",
+                2
+              ]
+            ],
+            "opened": [],
+            "taken": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "block: an empty director",
+      "op": "block",
+      "input": {
+        "state": {
+          "actors": []
+        }
+      },
+      "expected": {
+        "actors": []
+      }
+    },
+    {
+      "name": "read: a block as written reads back unchanged",
+      "op": "read",
+      "input": {
+        "block": {
+          "actors": [
+            {
+              "actor": "rival",
+              "clues": [],
+              "solved": [],
+              "attempts": [
+                [
+                  "riddle_1",
+                  2
+                ]
+              ],
+              "opened": [],
+              "taken": []
+            },
+            {
+              "actor": "player",
+              "clues": [
+                "carnet_mouille_notes_de_recherche",
+                "avis_de_disparition"
+              ],
+              "solved": [
+                "riddle_2",
+                "riddle_1"
+              ],
+              "attempts": [
+                [
+                  "riddle_3",
+                  1
+                ]
+              ],
+              "opened": [
+                "lock_2",
+                "lock_1"
+              ],
+              "taken": [
+                "key2",
+                "key1"
+              ]
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "actors": [
+            {
+              "actor": "player",
+              "clues": [
+                "avis_de_disparition",
+                "carnet_mouille_notes_de_recherche"
+              ],
+              "solved": [
+                "riddle_1",
+                "riddle_2"
+              ],
+              "attempts": [
+                [
+                  "riddle_3",
+                  1
+                ]
+              ],
+              "opened": [
+                "lock_1",
+                "lock_2"
+              ],
+              "taken": [
+                "key1",
+                "key2"
+              ]
+            },
+            {
+              "actor": "rival",
+              "clues": [],
+              "solved": [],
+              "attempts": [
+                [
+                  "riddle_1",
+                  2
+                ]
+              ],
+              "opened": [],
+              "taken": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "read: absent lists read as empty",
+      "op": "read",
+      "input": {
+        "block": {
+          "actors": [
+            {
+              "actor": "player"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "actors": [
+            {
+              "actor": "player",
+              "clues": [],
+              "solved": [],
+              "attempts": [],
+              "opened": [],
+              "taken": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "read: no block (absent or null) is no puzzle",
+      "op": "read",
+      "input": {
+        "block": null
+      },
+      "expected": {
+        "ok": true,
+        "value": null
+      }
+    },
+    {
+      "name": "read refused: a block that is not an object",
+      "op": "read",
+      "input": {
+        "block": [
+          "player"
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "keys": []
+      }
+    },
+    {
+      "name": "read refused: actors that is not a list",
+      "op": "read",
+      "input": {
+        "block": {
+          "actors": "player"
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "actors"
+        ]
+      }
+    },
+    {
+      "name": "read refused: every unreadable member, in ascending order",
+      "op": "read",
+      "input": {
+        "block": {
+          "actors": [
+            {
+              "actor": "player",
+              "clues": [
+                "a",
+                "a"
+              ],
+              "solved": [
+                "r1"
+              ],
+              "attempts": [
+                [
+                  "r1",
+                  1
+                ]
+              ],
+              "opened": "lock_1",
+              "taken": [
+                7
+              ]
+            },
+            {
+              "actor": "player"
+            },
+            {
+              "actor": ""
+            },
+            "rival",
+            {
+              "actor": "rival",
+              "attempts": [
+                [
+                  "r2",
+                  0
+                ]
+              ]
+            },
+            {
+              "actor": "third",
+              "attempts": [
+                [
+                  "r3",
+                  1
+                ],
+                [
+                  "r3",
+                  2
+                ]
+              ]
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "actors[0].attempts",
+          "actors[0].clues",
+          "actors[0].opened",
+          "actors[0].taken",
+          "actors[1]",
+          "actors[2]",
+          "actors[3]",
+          "actors[4].attempts",
+          "actors[5].attempts"
+        ]
+      }
+    },
+    {
+      "name": "restore: a saved player comes back mid-puzzle and finishes it",
+      "op": "restore",
+      "input": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            },
+            {
+              "id": "riddle_2",
+              "relation": "occupation_of",
+              "subject": "rowena_ironwood",
+              "prompt": "What does Rowena Ironwood do for a living?",
+              "clues": []
+            },
+            {
+              "id": "riddle_3",
+              "relation": "subject_of",
+              "subject": "bigger_dreams",
+              "prompt": "Whose secret is \"Bigger Dreams\"?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            },
+            {
+              "id": "lock_3",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "lock_2"
+                },
+                {
+                  "kind": "clue",
+                  "ref": "carnet_mouille_notes_de_recherche"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_3",
+          "maxAttempts": 3,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            },
+            {
+              "id": "carnet_mouille_notes_de_recherche",
+              "clue": "Research notes about the founding families, found in a cave."
+            }
+          ],
+          "source": "generated",
+          "notes": []
+        },
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "occupation(rowena_ironwood, owner_carpenter).",
+          "truth_about(bigger_dreams, rowena_ironwood)."
+        ],
+        "block": {
+          "actors": [
+            {
+              "actor": "player",
+              "clues": [
+                "avis_de_disparition"
+              ],
+              "solved": [
+                "riddle_1",
+                "riddle_2"
+              ],
+              "attempts": [
+                [
+                  "riddle_3",
+                  2
+                ]
+              ],
+              "opened": [
+                "lock_1",
+                "lock_2"
+              ],
+              "taken": [
+                "key1",
+                "key2"
+              ]
+            }
+          ]
+        },
+        "steps": [
+          {
+            "step": "progress"
+          },
+          {
+            "step": "view",
+            "riddle": "riddle_3"
+          },
+          {
+            "step": "answer",
+            "riddle": "riddle_3",
+            "given": "maeve_oakfield"
+          },
+          {
+            "step": "view",
+            "riddle": "riddle_3"
+          },
+          {
+            "step": "unlock",
+            "lock": "lock_3"
+          },
+          {
+            "step": "state"
+          }
+        ]
+      },
+      "expected": {
+        "read": {
+          "ok": true,
+          "value": {
+            "actors": [
+              {
+                "actor": "player",
+                "clues": [
+                  "avis_de_disparition"
+                ],
+                "solved": [
+                  "riddle_1",
+                  "riddle_2"
+                ],
+                "attempts": [
+                  [
+                    "riddle_3",
+                    2
+                  ]
+                ],
+                "opened": [
+                  "lock_1",
+                  "lock_2"
+                ],
+                "taken": [
+                  "key1",
+                  "key2"
+                ]
+              }
+            ]
+          }
+        },
+        "run": {
+          "published": 25,
+          "steps": [
+            {
+              "step": "restore",
+              "ok": true,
+              "reason": null,
+              "applied": [
+                "puzzle_clue_found(player, avis_de_disparition).",
+                "puzzle_solved(player, riddle_1).",
+                "puzzle_solved(player, riddle_2).",
+                "puzzle_attempts(player, riddle_3, 2).",
+                "puzzle_opened(player, lock_1).",
+                "puzzle_opened(player, lock_2).",
+                "has_item(player, key1, 1).",
+                "has_item(player, key2, 1)."
+              ]
+            },
+            {
+              "step": "progress",
+              "progress": {
+                "cluesFound": 1,
+                "cluesTotal": 2,
+                "riddlesSolved": 2,
+                "riddlesTotal": 3,
+                "locksOpened": 2,
+                "locksTotal": 3,
+                "complete": false
+              }
+            },
+            {
+              "step": "view",
+              "view": {
+                "id": "riddle_3",
+                "prompt": "Whose secret is \"Bigger Dreams\"?",
+                "open": true,
+                "solved": false,
+                "attemptsLeft": 1,
+                "missingClues": []
+              }
+            },
+            {
+              "step": "answer",
+              "ok": true,
+              "reason": null,
+              "applied": [
+                "puzzle_attempts(player, riddle_3, 2).",
+                "puzzle_attempts(player, riddle_3, 3)."
+              ],
+              "correct": false,
+              "attemptsLeft": 0
+            },
+            {
+              "step": "view",
+              "view": {
+                "id": "riddle_3",
+                "prompt": "Whose secret is \"Bigger Dreams\"?",
+                "open": false,
+                "solved": false,
+                "attemptsLeft": 0,
+                "missingClues": []
+              }
+            },
+            {
+              "step": "unlock",
+              "ok": false,
+              "refusal": "locked",
+              "reason": "lock_3 still needs clue carnet_mouille_notes_de_recherche, riddle riddle_3",
+              "applied": [],
+              "unmet": [
+                {
+                  "kind": "clue",
+                  "ref": "carnet_mouille_notes_de_recherche"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ]
+            },
+            {
+              "step": "state",
+              "state": {
+                "actors": [
+                  {
+                    "actor": "player",
+                    "clues": [
+                      "avis_de_disparition"
+                    ],
+                    "solved": [
+                      "riddle_1",
+                      "riddle_2"
+                    ],
+                    "attempts": [
+                      [
+                        "riddle_3",
+                        3
+                      ]
+                    ],
+                    "opened": [
+                      "lock_1",
+                      "lock_2"
+                    ],
+                    "taken": [
+                      "key1",
+                      "key2"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "state": {
+            "actors": [
+              {
+                "actor": "player",
+                "clues": [
+                  "avis_de_disparition"
+                ],
+                "solved": [
+                  "riddle_1",
+                  "riddle_2"
+                ],
+                "attempts": [
+                  [
+                    "riddle_3",
+                    3
+                  ]
+                ],
+                "opened": [
+                  "lock_1",
+                  "lock_2"
+                ],
+                "taken": [
+                  "key1",
+                  "key2"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "restore refused: an unreadable block restores nothing",
+      "op": "restore",
+      "input": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            },
+            {
+              "id": "riddle_2",
+              "relation": "occupation_of",
+              "subject": "rowena_ironwood",
+              "prompt": "What does Rowena Ironwood do for a living?",
+              "clues": []
+            },
+            {
+              "id": "riddle_3",
+              "relation": "subject_of",
+              "subject": "bigger_dreams",
+              "prompt": "Whose secret is \"Bigger Dreams\"?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            },
+            {
+              "id": "lock_3",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "lock_2"
+                },
+                {
+                  "kind": "clue",
+                  "ref": "carnet_mouille_notes_de_recherche"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_3",
+          "maxAttempts": 3,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            },
+            {
+              "id": "carnet_mouille_notes_de_recherche",
+              "clue": "Research notes about the founding families, found in a cave."
+            }
+          ],
+          "source": "generated",
+          "notes": []
+        },
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "occupation(rowena_ironwood, owner_carpenter).",
+          "truth_about(bigger_dreams, rowena_ironwood)."
+        ],
+        "block": {
+          "actors": [
+            {
+              "actor": "player",
+              "solved": [
+                "riddle_1"
+              ],
+              "attempts": [
+                [
+                  "riddle_1",
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        "steps": []
+      },
+      "expected": {
+        "read": {
+          "ok": false,
+          "keys": [
+            "actors[0].attempts"
+          ]
+        }
+      }
+    },
+    {
+      "name": "restore: no block is a fresh puzzle",
+      "op": "restore",
+      "input": {
+        "definition": {
+          "riddles": [
+            {
+              "id": "riddle_1",
+              "relation": "owner_of",
+              "subject": "ironwood_s_builders",
+              "prompt": "Who keeps Ironwood's Builders?",
+              "clues": [
+                "avis_de_disparition"
+              ]
+            },
+            {
+              "id": "riddle_2",
+              "relation": "occupation_of",
+              "subject": "rowena_ironwood",
+              "prompt": "What does Rowena Ironwood do for a living?",
+              "clues": []
+            },
+            {
+              "id": "riddle_3",
+              "relation": "subject_of",
+              "subject": "bigger_dreams",
+              "prompt": "Whose secret is \"Bigger Dreams\"?",
+              "clues": []
+            }
+          ],
+          "locks": [
+            {
+              "id": "lock_1",
+              "target": "container_bld_6abb8ff3078b40088ad4dea8_0",
+              "needs": [
+                {
+                  "kind": "clue",
+                  "ref": "avis_de_disparition"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_1"
+                }
+              ],
+              "holds": [
+                "key1"
+              ]
+            },
+            {
+              "id": "lock_2",
+              "target": "container_bld_6abb8fae078b40088ad4da66_12_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key1"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_2"
+                }
+              ],
+              "holds": [
+                "key2"
+              ]
+            },
+            {
+              "id": "lock_3",
+              "target": "container_bld_6abb8ff3078b40088ad4dea9_0",
+              "needs": [
+                {
+                  "kind": "item",
+                  "ref": "key2"
+                },
+                {
+                  "kind": "lock",
+                  "ref": "lock_2"
+                },
+                {
+                  "kind": "clue",
+                  "ref": "carnet_mouille_notes_de_recherche"
+                },
+                {
+                  "kind": "riddle",
+                  "ref": "riddle_3"
+                }
+              ],
+              "holds": []
+            }
+          ],
+          "finalLock": "lock_3",
+          "maxAttempts": 3,
+          "clueTexts": [
+            {
+              "id": "avis_de_disparition",
+              "clue": "A missing person notice for Jean-Luc Moreau, posted three weeks ago. Mentions last seen near the old quarter."
+            },
+            {
+              "id": "carnet_mouille_notes_de_recherche",
+              "clue": "Research notes about the founding families, found in a cave."
+            }
+          ],
+          "source": "generated",
+          "notes": []
+        },
+        "worldFacts": [
+          "business_owner(ironwood_s_builders, rowena_ironwood).",
+          "occupation(rowena_ironwood, owner_carpenter).",
+          "truth_about(bigger_dreams, rowena_ironwood)."
+        ],
+        "block": null,
+        "steps": [
+          {
+            "step": "progress"
+          }
+        ]
+      },
+      "expected": {
+        "read": {
+          "ok": true,
+          "value": null
+        }
+      }
+    }
+  ]
+}

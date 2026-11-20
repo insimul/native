@@ -776,6 +776,46 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   types, their categories and objectives as ids; a template as its objective templates'
   type and count and its parameters' names), exact comparison, key sets included. `chat-strip.json` (the NPC reply's marker strip,
   which `InsimulChatCefr` holds) is not this row's: it goes with PL.native-chat-cefr-rows.
+- **The puzzle, slice 1 of PL.native-genre-rows (Unreal's `P9j.unreal.retire-puzzle-copy`;
+  U115, U128).** Core's P9j puzzle module is the `puzzle.*` rows (`README.md`, "The genre
+  systems rows"). The retirement row binds them in place of the interim copy on unreal main
+  (`8568cf5c`, read only): `Portable/InsimulPuzzle.{h,cpp}` (101 + 901 lines), held to core's
+  puzzle corpus by its `puzzle_corpus` (+ `_negative`). The definition rows are stateless;
+  the director is a session (`puzzle.director.create` → `{ session, published }`), whose KB
+  is its OWN: `GamePrologEngine` with genre `puzzle` (the pack consulted, its runtime
+  predicates declared) on the library's native KB, as core's runner builds it. Unreal's
+  copy asks the game's KB (`FScopedKb`); a binding that wants the director to see the
+  world's whole knowledge base passes it as `kb` (a program, or a list of clauses), and
+  one that does not passes `worldFacts` (`puzzle.worldFacts`), as the corpus does.
+
+  | Unreal's interim copy (`insimul::puzzle`) | Row |
+  |---|---|
+  | `kRelations`, `kRuntimePredicates`, `kWrittenPredicates`, `kDefaultMaxAttempts` | `puzzle.contract {}` (`relations`, `runtimePredicates`, `writtenPredicates`, `defaultMaxAttempts`; also the world and authored predicates, the pack tuning and the save block's key and members) |
+  | `PuzzleIssues(Ir)` (nullptr or null: none) | `puzzle.issues { puzzle? }` → `{ issues }` |
+  | `PuzzleFromIR(Ir, MaxAttempts)` (nullptr = undefined) | `puzzle.fromIR { puzzle, maxAttempts? }` → `{ definition }` (omit the key for undefined; null is never spent) |
+  | `GeneratePuzzle(World, MaxAttempts)` | `puzzle.generate { world, maxAttempts? }` |
+  | `PuzzleForWorld(World, Puzzle, MaxAttempts)` (Puzzle nullptr or null: none authored) | `puzzle.forWorld { world, puzzle, maxAttempts? }` (send `puzzle: null` for none: absent, the row reads the world's own `puzzle`) |
+  | `PuzzleFacts(Def)`, `PuzzleWorldFacts(World, Def)`, `PuzzleChoices(World, Riddle, Count)`, `PuzzleAnswerKey(World, Def)` | `puzzle.facts`, `puzzle.worldFacts`, `puzzle.choices { world, riddle, count? }`, `puzzle.answerKey` |
+  | `FPuzzleDirector(Def, Kb, WorldFacts)` + `Publish()` | `puzzle.director.create { definition, worldFacts?, kb? }` → `{ session, published }` |
+  | `FindClue`, `View` (nullptr: undefined), `Answer`, `Unlock`, `Take`, `IsComplete`, `Progress`, `Serialize`, `Restore`, `StateFacts` | `puzzle.director.findClue`, `.view` (`{ view: null }`), `.answer`, `.unlock`, `.take`, `.isComplete` (`{ complete }`), `.progress` (`{ progress }`), `.serialize` (`{ state }`), `.restore`; `puzzle.director.stateFacts { state }` |
+  | `LastOrder()` (the `open_container` order told to the host) | the `order` member of `.unlock`'s outcome when the lock opened |
+  | `Definition()` | the binding keeps the definition it created the session with |
+  | the village save's own reader (`GenreRunBlockRead` for `extensions.puzzle`) | `puzzle.save.read`, `puzzle.save.block`, `puzzle.save.blockOf` for a binding that shows the block between saves; the save itself carries it through `save.village.write`/`.read` |
+
+  Re-vendor `conformance/puzzle/{definition,run,save}.json` and
+  `conformance/genre-mechanics/thistlecombe.world-slice.json` from core at this library's pin
+  and drive each case as `tests/genre_systems_corpus.cpp` does: a `world` through
+  `genre.world.of { world, slices }` (core's `worldOf`; the slices by name, from
+  `<name>.world-slice.json`'s `world`); generate as `puzzle.forWorld` (`puzzle ?? null`, the
+  case's `maxAttempts` when it has the key, null included), `.facts`, `.worldFacts` and
+  `.answerKey`; authored as `puzzle.issues`, then `puzzle.fromIR` when there are none; choices
+  as `puzzle.forWorld` then `puzzle.choices` per riddle (count 4 unless given); a run as
+  `puzzle.director.create` (worldFacts ?? []), each step's row with the actor `player`
+  unless named, a final `.serialize` and `session.dispose`; a save's block as
+  `puzzle.save.block` then `.blockOf`; a read as `puzzle.save.read` then `.blockOf` of a
+  value; a restore as the read, then the run with the READ value restored first. Exact
+  comparison, key sets included; an unknown op or step is an error.
+  `conformance/prolog/mechanic-puzzle.json` stays with PL.native-prolog-mirror-full (U120(9)).
 - **Run 22's cases, from the 45409ed pin** (PL.native-bundle-core-r2; U124, U126). What
   each Unreal cell binds, and what it does not get here:
   - **One E press, one object** (`P6.unreal.interact-press`; core's

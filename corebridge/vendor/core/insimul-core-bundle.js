@@ -15,12 +15,12 @@
     }
     /** @param {string} input @returns {Uint8Array} */
     encode(input = "") {
-      const str11 = String(input);
+      const str12 = String(input);
       const bytes = [];
-      for (let i = 0; i < str11.length; i++) {
-        let code = str11.charCodeAt(i);
+      for (let i = 0; i < str12.length; i++) {
+        let code = str12.charCodeAt(i);
         if (code >= 55296 && code <= 56319) {
-          const next = i + 1 < str11.length ? str11.charCodeAt(i + 1) : 0;
+          const next = i + 1 < str12.length ? str12.charCodeAt(i + 1) : 0;
           if (next >= 56320 && next <= 57343) {
             code = 65536 + (code - 55296 << 10) + (next - 56320);
             i++;
@@ -340,10 +340,10 @@
       } catch (err) {
         return { success: false, bindings: [], error: String(err && err.message ? err.message : err) };
       }
-      const solutions = JSON.parse(raw);
+      const solutions2 = JSON.parse(raw);
       return {
         success: true,
-        bindings: solutions.map((sol) => {
+        bindings: solutions2.map((sol) => {
           const out = {};
           for (const key of Object.keys(sol)) out[key] = collapseTerm(sol[key]);
           return out;
@@ -922,10 +922,10 @@
     if (tpl.preconditions.length === 0) return [];
     const goal = tpl.preconditions.map((p) => p.goalText).join(", ");
     const slotVars = tpl.preconditions.map((p) => ({ slot: p.slot, varName: slotVar(p.slot) }));
-    const solutions = await solveAll(engine, goal);
+    const solutions2 = await solveAll(engine, goal);
     const seen = /* @__PURE__ */ new Set();
     const projected = [];
-    for (const sol of solutions) {
+    for (const sol of solutions2) {
       const row = {};
       let complete = true;
       for (const { slot, varName } of slotVars) {
@@ -1347,15 +1347,15 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         }
       };
     }
-    const refused = options.check?.(e.saveFile);
-    if (refused) {
-      const named = envelopeCodeOfLoadRefusal(refused.code) !== null;
+    const refused2 = options.check?.(e.saveFile);
+    if (refused2) {
+      const named = envelopeCodeOfLoadRefusal(refused2.code) !== null;
       return {
         ok: false,
         error: {
           code: "invalid_format",
-          message: typeof refused.message === "string" && refused.message.length > 0 ? refused.message : `the save was refused: ${String(refused.code)}`,
-          ...named ? { refusal: refused.code } : {}
+          message: typeof refused2.message === "string" && refused2.message.length > 0 ? refused2.message : `the save was refused: ${String(refused2.code)}`,
+          ...named ? { refusal: refused2.code } : {}
         }
       };
     }
@@ -3819,7 +3819,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     return { ok: true, value: { nodes, actions, production, business } };
   }
   function readBusiness(b, bad3) {
-    const list2 = (key, row) => {
+    const list3 = (key, row) => {
       const out = [];
       const v = b[key];
       if (v === void 0) return out;
@@ -3834,7 +3834,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       });
       return out;
     };
-    const businesses = list2("businesses", (r) => {
+    const businesses = list3("businesses", (r) => {
       if (!isObj2(r)) return null;
       const staffOk = Array.isArray(r.staff) && r.staff.every((p) => Array.isArray(p) && p.length === 2 && str(p[0]) && str(p[1]));
       const ok = str(r.id) && str(r.type) && str(r.owner) && (r.settlement === void 0 || str(r.settlement)) && fin2(r.foundedDay) && (r.closedDay === void 0 || fin2(r.closedDay)) && fin2(r.capital) && fin2(r.arrears) && r.arrears >= 0 && typeof r.shut === "boolean" && staffOk;
@@ -3852,7 +3852,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         staff: r.staff.map(([who, role]) => [who, role])
       };
     });
-    const purses = list2("purses", (r) => Array.isArray(r) && r.length === 2 && str(r[0]) && fin2(r[1]) ? [r[0], r[1]] : null);
+    const purses = list3("purses", (r) => Array.isArray(r) && r.length === 2 && str(r[0]) && fin2(r[1]) ? [r[0], r[1]] : null);
     let day = 0;
     if (b.day !== void 0) {
       if (fin2(b.day)) day = b.day;
@@ -3861,7 +3861,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     return { businesses, purses, day };
   }
   function readProduction(p, bad3) {
-    const list2 = (key, row) => {
+    const list3 = (key, row) => {
       const out = [];
       const v = p[key];
       if (v === void 0) return out;
@@ -3877,13 +3877,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       return out;
     };
     const pair = (r) => Array.isArray(r) && r.length === 2 && str(r[0]) && fin2(r[1]) ? [r[0], r[1]] : null;
-    const plots = list2(
+    const plots = list3(
       "plots",
       (r) => Array.isArray(r) && r.length === 4 && str(r[0]) && str(r[1]) && fin2(r[2]) && fin2(r[3]) ? [r[0], r[1], r[2], r[3]] : null
     );
-    const spots = list2("spots", pair);
-    const veins = list2("veins", pair);
-    const carried = list2("carried", (r) => {
+    const spots = list3("spots", pair);
+    const veins = list3("veins", pair);
+    const carried = list3("carried", (r) => {
       if (!Array.isArray(r) || r.length !== 2 || !str(r[0]) || !Array.isArray(r[1])) return null;
       const bag = r[1].map(pair);
       return bag.every((x) => x !== null) ? [r[0], bag] : null;
@@ -4120,7 +4120,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (v === void 0 || v === null) return { ok: true, value: null };
     if (!isObj3(v)) return { ok: false, keys: [] };
     const bad3 = [];
-    const list2 = (owner, at, key, row) => {
+    const list3 = (owner, at, key, row) => {
       const out = [];
       const value = owner[key];
       if (value === void 0) return out;
@@ -4147,7 +4147,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     let planner = null;
     const p = member("planner");
     if (p) {
-      const actors = list2(p, "planner", "actors", (r) => {
+      const actors = list3(p, "planner", "actors", (r) => {
         if (!isObj3(r) || !str2(r.id) || !str2(r.location)) return null;
         if (r.modes !== void 0 && !strList(r.modes)) return null;
         const modes = r.modes === void 0 ? ["walk"] : [...r.modes];
@@ -4159,13 +4159,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         }
         return copyActor({ id: r.id, location: r.location, modes, ...r.lent !== void 0 ? { lent: r.lent } : {} });
       });
-      const blocked = list2(p, "planner", "blocked", (r) => isObj3(r) && str2(r.from) && str2(r.to) ? { from: r.from, to: r.to } : null);
+      const blocked = list3(p, "planner", "blocked", (r) => isObj3(r) && str2(r.from) && str2(r.to) ? { from: r.from, to: r.to } : null);
       planner = { actors, blocked };
     }
     let vehicles = null;
     const vs = member("vehicles");
     if (vs) {
-      const rows = list2(vs, "vehicles", "vehicles", (r) => {
+      const rows = list3(vs, "vehicles", "vehicles", (r) => {
         if (!isObj3(r) || !str2(r.id) || !str2(r.location)) return null;
         if (r.occupants !== void 0 && !strList(r.occupants)) return null;
         if (r.owner !== void 0 && !str2(r.owner)) return null;
@@ -4542,7 +4542,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (v === void 0 || v === null) return { ok: true, value: null };
     if (!isObj4(v)) return { ok: false, keys: [] };
     const bad3 = [];
-    const list2 = (owner, at, key, row) => {
+    const list3 = (owner, at, key, row) => {
       const out = [];
       const value = owner[key];
       if (value === void 0) return out;
@@ -4591,7 +4591,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         if (whole2(ro.timestep)) timestep = ro.timestep;
         else bad3.push("romance.timestep");
       }
-      const tracks = list2(ro, "romance", "tracks", (r, seen) => {
+      const tracks = list3(ro, "romance", "tracks", (r, seen) => {
         const t = readTrack(r);
         if (!t || seen.has(t.npcId)) return null;
         seen.add(t.npcId);
@@ -4602,7 +4602,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     let reputation = null;
     const re = member("reputation");
     if (re) {
-      const entries = list2(re, "reputation", "entries", (r, seen) => {
+      const entries = list3(re, "reputation", "entries", (r, seen) => {
         const e = readEntry(r);
         if (!e) return null;
         const k = `${e.entityType}:${e.entityId}`;
@@ -4616,12 +4616,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     let volition = null;
     const vo = member("volition");
     if (vo) {
-      const agents = list2(vo, "volition", "agents", (r) => {
+      const agents = list3(vo, "volition", "agents", (r) => {
         if (!isObj4(r) || !str3(r.agent) || !numObj(r.motives) || !numObj(r.appeals)) return null;
         if (!Array.isArray(r.spent) || !r.spent.every(str3)) return null;
         return { agent: r.agent, motives: { ...r.motives }, appeals: { ...r.appeals }, spent: [...r.spent] };
       });
-      const pairs = list2(vo, "volition", "pairs", (r) => {
+      const pairs = list3(vo, "volition", "pairs", (r) => {
         if (!isObj4(r) || !str3(r.agent) || !str3(r.other) || !intIn(r.spark, 0, 100)) return null;
         if (!(r.status === null || str3(r.status))) return null;
         return { agent: r.agent, other: r.other, spark: r.spark, status: r.status };
@@ -5292,7 +5292,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (v === void 0 || v === null) return { ok: true, value: null };
     if (!isObj6(v)) return { ok: false, keys: [] };
     const bad3 = [];
-    const list2 = (owner, at, key, row) => {
+    const list3 = (owner, at, key, row) => {
       const out = [];
       const value = owner[key];
       if (value === void 0) return out;
@@ -5333,13 +5333,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       return value;
     };
     const r = member("routines");
-    const routines = r ? { agents: list2(r, "routines", "agents", readRoutineRow) } : null;
+    const routines = r ? { agents: list3(r, "routines", "agents", readRoutineRow) } : null;
     const l = member("locomotion");
-    const locomotion = l ? { actors: list2(l, "locomotion", "actors", readActorRow) } : null;
+    const locomotion = l ? { actors: list3(l, "locomotion", "actors", readActorRow) } : null;
     const p = member("planner");
     const planner = p ? { cursors: map(p, "planner", "cursors", readCursor) } : null;
-    const escorts = list2(v, "", "escorts", readEscort);
-    const posts = list2(v, "", "posts", readPost);
+    const escorts = list3(v, "", "escorts", readEscort);
+    const posts = list3(v, "", "posts", readPost);
     const movers = map(v, "", "movers", readMover);
     if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
     return { ok: true, value: { routines, locomotion, planner, escorts, posts, movers } };
@@ -6000,6 +6000,88 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
 
   // @insimul/core/src/genre-mechanics/world-facts.ts
+  function worldAtom(name) {
+    const folded = name.normalize("NFKD").replace(/[̀-ͯ]/g, "");
+    const slug = folded.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    if (slug.length === 0) return "unnamed";
+    return /^[0-9]/.test(slug) ? `n${slug}` : slug;
+  }
+  function groundArgs(text4) {
+    const args = [];
+    let i = 0;
+    const skipSpace = () => {
+      while (i < text4.length && /\s/.test(text4[i])) i += 1;
+    };
+    skipSpace();
+    if (i === text4.length) return null;
+    while (i < text4.length) {
+      skipSpace();
+      const c = text4[i];
+      if (c === "'") {
+        let value = "";
+        i += 1;
+        let closed = false;
+        while (i < text4.length) {
+          const ch = text4[i];
+          if (ch === "\\" && i + 1 < text4.length) {
+            const next = text4[i + 1];
+            value += next === "n" ? "\n" : next === "t" ? "	" : next;
+            i += 2;
+            continue;
+          }
+          if (ch === "'") {
+            if (text4[i + 1] === "'") {
+              value += "'";
+              i += 2;
+              continue;
+            }
+            i += 1;
+            closed = true;
+            break;
+          }
+          value += ch;
+          i += 1;
+        }
+        if (!closed) return null;
+        args.push(value);
+      } else {
+        const m = /^(-?\d+(?:\.\d+)?)(?![\w(])|^([a-z][A-Za-z0-9_]*)(?![\w(\[])/.exec(text4.slice(i));
+        if (!m) return null;
+        args.push(m[1] !== void 0 ? Number(m[1]) : m[2]);
+        i += m[0].length;
+      }
+      skipSpace();
+      if (i === text4.length) break;
+      if (text4[i] !== ",") return null;
+      i += 1;
+    }
+    return args;
+  }
+  function readWorldFacts(knowledgeBase, signatures) {
+    const wanted = new Set(signatures);
+    const out = /* @__PURE__ */ new Map();
+    for (const signature of signatures) out.set(signature, []);
+    if (!knowledgeBase) return out;
+    for (const raw of knowledgeBase.split(/\r?\n/)) {
+      const fact = parseGroundFact(raw);
+      if (!fact || !wanted.has(fact.signature)) continue;
+      out.get(fact.signature).push(fact.args);
+    }
+    return out;
+  }
+  function parseGroundFact(line) {
+    const head = /^([a-z][A-Za-z0-9_]*)\((.*)\)\.$/.exec(line.trim());
+    if (!head || head[2].includes(":-")) return null;
+    const args = groundArgs(head[2]);
+    if (!args) return null;
+    return { signature: `${head[1]}/${args.length}`, args };
+  }
+  function factsOf(facts, signature) {
+    return facts.get(signature) ?? [];
+  }
+  function firstValueOf(facts, signature, key) {
+    return factsOf(facts, signature).find((t) => t[0] === key)?.[1];
+  }
   function canonical(a, b) {
     return a === b ? 0 : a < b ? -1 : 1;
   }
@@ -6056,6 +6138,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     });
     if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
     return { ok: true, value: { actors } };
+  }
+  function puzzleSaveBlock(state) {
+    return state ? { actors: state.actors.map((a) => ({ ...a })) } : null;
   }
   function puzzleBlockOf(b) {
     const sorted = (l) => [...l].sort(canonical);
@@ -6147,7 +6232,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     const bad3 = [];
     const turn2 = b.turn === void 0 ? 0 : b.turn;
     if (typeof turn2 !== "number" || !Number.isInteger(turn2) || turn2 < 0) bad3.push("turn");
-    const list2 = (k) => {
+    const list3 = (k) => {
       const v = b[k];
       if (v === void 0) return [];
       if (!Array.isArray(v)) {
@@ -6158,7 +6243,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     };
     const holders = [];
     const held = /* @__PURE__ */ new Set();
-    list2("holders").forEach((row, i) => {
+    list3("holders").forEach((row, i) => {
       if (!Array.isArray(row) || row.length !== 2 || !id3(row[0]) || !id3(row[1]) || held.has(row[0])) {
         bad3.push(`holders[${i}]`);
         return;
@@ -6168,7 +6253,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     });
     const stock = [];
     const stocked = /* @__PURE__ */ new Set();
-    list2("stock").forEach((row, i) => {
+    list3("stock").forEach((row, i) => {
       const key = Array.isArray(row) ? `${String(row[0])}\0${String(row[1])}` : "";
       if (!Array.isArray(row) || row.length !== 3 || !id3(row[0]) || !id3(row[1]) || !Number.isInteger(row[2]) || row[2] < 1 || stocked.has(key)) {
         bad3.push(`stock[${i}]`);
@@ -6179,7 +6264,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     });
     const workers = [];
     const working = /* @__PURE__ */ new Set();
-    list2("workers").forEach((row, i) => {
+    list3("workers").forEach((row, i) => {
       if (!Array.isArray(row) || row.length !== 2 || !id3(row[0]) || !id3(row[1]) || working.has(row[0]) || !held.has(row[1])) {
         bad3.push(`workers[${i}]`);
         return;
@@ -7515,26 +7600,26 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   var FEATURE_MODULE_REFUSALS = Object.freeze(["unimplemented", "port_later", "unknown_module", "duplicate"]);
   function resolveFeatureModules(ids, bundleId = null) {
     const enabled = [];
-    const refused = [];
+    const refused2 = [];
     const seen = /* @__PURE__ */ new Set();
     for (const raw of ids) {
       const id4 = String(raw);
       if (typeof raw !== "string") {
-        refused.push({ id: id4, code: "unknown_module", reason: `${JSON.stringify(raw)} is not a feature module id` });
+        refused2.push({ id: id4, code: "unknown_module", reason: `${JSON.stringify(raw)} is not a feature module id` });
         continue;
       }
       if (seen.has(id4)) {
-        refused.push({ id: id4, code: "duplicate", reason: `'${id4}' is listed more than once` });
+        refused2.push({ id: id4, code: "duplicate", reason: `'${id4}' is listed more than once` });
         continue;
       }
       seen.add(id4);
       const v = featureModuleVerdict(raw);
       if (!v) {
-        refused.push({ id: id4, code: "unknown_module", reason: `'${id4}' is not a feature module id` });
+        refused2.push({ id: id4, code: "unknown_module", reason: `'${id4}' is not a feature module id` });
       } else if (v.verdict === "port-later") {
-        refused.push({ id: id4, code: "port_later", reason: `'${id4}' is approved for after parity (${v.servedBy}); nothing runs it yet` });
+        refused2.push({ id: id4, code: "port_later", reason: `'${id4}' is approved for after parity (${v.servedBy}); nothing runs it yet` });
       } else if (v.verdict === "unimplemented") {
-        refused.push({ id: id4, code: "unimplemented", reason: `no repository implements '${id4}'; core defines it before any engine shows it (${v.catalog}, core-only)` });
+        refused2.push({ id: id4, code: "unimplemented", reason: `no repository implements '${id4}'; core defines it before any engine shows it (${v.catalog}, core-only)` });
       } else {
         enabled.push(v.id);
       }
@@ -7544,7 +7629,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     const dims = enabled.includes("proficiency") ? bundle?.moduleConfigs.proficiency?.dimensions ?? [] : [];
     return {
       enabled,
-      refused,
+      refused: refused2,
       contributes: {
         genreFeatureFlags: defs.flatMap((d) => d.genreFeatureFlags),
         questObjectiveTypes: defs.flatMap((d) => d.questObjectiveTypes),
@@ -8551,9 +8636,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     eventTypeIndex = /* @__PURE__ */ new Map();
     objectiveTypeIndex = /* @__PURE__ */ new Map();
     for (const mapping of mappings) {
-      const list2 = eventTypeIndex.get(mapping.eventType) || [];
-      list2.push(mapping);
-      eventTypeIndex.set(mapping.eventType, list2);
+      const list3 = eventTypeIndex.get(mapping.eventType) || [];
+      list3.push(mapping);
+      eventTypeIndex.set(mapping.eventType, list3);
       if (!objectiveTypeIndex.has(mapping.objectiveType)) {
         objectiveTypeIndex.set(mapping.objectiveType, mapping);
       }
@@ -13824,6 +13909,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
 
   // @insimul/core/src/game-engine/host-contracts.ts
+  var NULL_DEBUG_SINK = {
+    isEnabled: () => false,
+    emit: () => {
+    }
+  };
   var MOVEMENT_URGENCIES = Object.freeze([
     "idle",
     "ordinary",
@@ -13857,6 +13947,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "stagger",
     "collapse"
   ]);
+  var DEFAULT_ANIMATION_INTENT = "idle";
   var INFERENCE_REQUEST_KINDS = Object.freeze(["proposal", "utterance"]);
   var MODEL_RESIDENCIES = Object.freeze(["resident", "on-demand", "absent"]);
   var INFERENCE_STATUSES = Object.freeze([
@@ -13866,6 +13957,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "unknown"
   ]);
   var NULL_HOST_ADAPTER = Object.freeze({});
+  function hostDebugSink(host) {
+    return host?.debug ?? NULL_DEBUG_SINK;
+  }
+  function debugEvent(category, level, tag, summary, detail = "", timestamp = Date.now()) {
+    return { timestamp, category, level, tag, summary, detail, source: "client" };
+  }
 
   // @insimul/core/src/game-engine/action-matrix.ts
   var ACTION_MATRIX = [
@@ -15627,26 +15724,29 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   var eventToActionsIndex = /* @__PURE__ */ new Map();
   for (const entry of ACTION_MATRIX) {
     for (const eventType of entry.eventTypes) {
-      const list2 = eventToActionsIndex.get(eventType) || [];
-      list2.push(entry);
-      eventToActionsIndex.set(eventType, list2);
+      const list3 = eventToActionsIndex.get(eventType) || [];
+      list3.push(entry);
+      eventToActionsIndex.set(eventType, list3);
     }
   }
   var objectiveToActionsIndex = /* @__PURE__ */ new Map();
   for (const entry of ACTION_MATRIX) {
     for (const objType of entry.objectiveTypes) {
-      const list2 = objectiveToActionsIndex.get(objType) || [];
-      list2.push(entry);
-      objectiveToActionsIndex.set(objType, list2);
+      const list3 = objectiveToActionsIndex.get(objType) || [];
+      list3.push(entry);
+      objectiveToActionsIndex.set(objType, list3);
     }
   }
   var childrenIndex = /* @__PURE__ */ new Map();
   for (const entry of ACTION_MATRIX) {
     if (entry.parentAction) {
-      const list2 = childrenIndex.get(entry.parentAction) || [];
-      list2.push(entry);
-      childrenIndex.set(entry.parentAction, list2);
+      const list3 = childrenIndex.get(entry.parentAction) || [];
+      list3.push(entry);
+      childrenIndex.set(entry.parentAction, list3);
     }
+  }
+  function getActionAnimation(actionId) {
+    return actionIndex.get(actionId)?.animation;
   }
 
   // @insimul/core/src/ai/action-selection.ts
@@ -26920,7 +27020,7 @@ words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C),
         throw new Error(`skill KB: the skill pack and the world's program failed to consult: ${consulted.error ?? ""}`);
       }
       let held = [...live];
-      const refused = [];
+      const refused2 = [];
       if (live.length > 0 && !await engine.assertFacts(live.map(bare))) {
         for (const f of live) await engine.retractFact(bare(f));
         held = [];
@@ -26928,13 +27028,13 @@ words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C),
           if (await engine.assertFact(bare(f))) held.push(f);
           else {
             await engine.retractFact(bare(f));
-            refused.push(f);
+            refused2.push(f);
           }
         }
       }
       const progression = new SkillProgression({ engine, skills: world2.skills, trees: world2.trees, tuning: world2.tuning, ...skills ? { state: skills } : {} });
       await progression.publishActors();
-      return { engine, progression, held, refused };
+      return { engine, progression, held, refused: refused2 };
     }
     /** The decision layer over the current KB. A load replaces it. */
     get progression() {
@@ -26986,16 +27086,16 @@ words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C),
     async load(currentState) {
       const r = skillKbLoadOf(currentState);
       if (!r.ok) return { ok: false, refusal: r.refusal };
-      const { engine, progression, held, refused } = await _SkillKbSession.compose(this.world, r.live, r.skills);
+      const { engine, progression, held, refused: refused2 } = await _SkillKbSession.compose(this.world, r.live, r.skills);
       this.engine.destroy?.();
       this.engine = engine;
       this.current = progression;
       this.live.clear();
       for (const f of held) this.live.set(f.clause, f);
-      if (refused.length === 0) return { ok: true, dropped: r.dropped };
+      if (refused2.length === 0) return { ok: true, dropped: r.dropped };
       const facts = currentState.prologFacts;
       const out = [...r.dropped];
-      for (const f of refused) {
+      for (const f of refused2) {
         const i = facts.findIndex((x) => {
           const v = skillKbLiveFactOf(x);
           return v.ok && v.live.clause === f.clause;
@@ -31031,18 +31131,22 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     return typeof id4 === "string" && MECHANIC_IDS.has(id4);
   }
   function resolveWorldActivation(genreId, enabledModules) {
-    const list2 = Array.isArray(enabledModules) ? enabledModules : [];
+    const list3 = Array.isArray(enabledModules) ? enabledModules : [];
     const unknownModules = [
-      ...new Set(list2.filter((id4) => !isMechanicModuleId(id4) && id4 !== NO_MECHANIC_MODULES).map((id4) => String(id4)))
+      ...new Set(list3.filter((id4) => !isMechanicModuleId(id4) && id4 !== NO_MECHANIC_MODULES).map((id4) => String(id4)))
     ];
-    const selected = list2.filter(isMechanicModuleId);
-    if (selected.length > 0 || list2.includes(NO_MECHANIC_MODULES)) {
+    const selected = list3.filter(isMechanicModuleId);
+    if (selected.length > 0 || list3.includes(NO_MECHANIC_MODULES)) {
       return Object.freeze({ ...resolveModuleSet(genreId, selected), source: "enabledModules", unknownModules: Object.freeze(unknownModules) });
     }
     return Object.freeze({ ...resolveActiveModules(genreId), source: "genre", unknownModules: Object.freeze(unknownModules) });
   }
   function activeModulesForWorld(ir) {
     return resolveWorldActivation(ir.meta.genreConfig.id, ir.meta.enabledModules);
+  }
+  function packAreasForModules(moduleIds) {
+    const wanted = new Set(moduleIds);
+    return packsFor(INSIMUL_MODULES.filter((m) => wanted.has(m.id)).map(describe));
   }
   var MODULE_ACTIVATION_TABLE = Object.freeze(
     Object.fromEntries(Object.keys(GENRE_BUNDLES).map((id4) => [id4, resolveActiveModules(id4)]))
@@ -31091,15 +31195,15 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     if (!Array.isArray(enabledModules)) {
       return { form: "absent", selects: false, mechanic: [], feature: [], aliases: [], refused: [] };
     }
-    const list2 = enabledModules;
+    const list3 = enabledModules;
     const mechanicSet = /* @__PURE__ */ new Set();
     const feature = [];
     const aliases = [];
-    const refused = [];
+    const refused2 = [];
     let token = false;
     const seenStrings = /* @__PURE__ */ new Set();
     const seenOthers = /* @__PURE__ */ new Set();
-    for (const raw of list2) {
+    for (const raw of list3) {
       if (isMechanicModuleId(raw)) {
         mechanicSet.add(raw);
         continue;
@@ -31113,7 +31217,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
       if (seen.has(id4)) continue;
       seen.add(id4);
       if (typeof raw !== "string") {
-        refused.push({
+        refused2.push({
           id: id4,
           code: "refused-not-an-id",
           reason: `${JSON.stringify(raw) ?? id4} is not a module id (meta.enabledModules holds strings)`,
@@ -31122,14 +31226,14 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
       } else if (isFeatureModuleId(raw)) {
         const r = featureModuleRefusal(raw);
         if (r) {
-          refused.push({ id: id4, code: "refused-feature-module", reason: `feature module '${raw}': ${r.reason} (${r.code})`, nearest: null });
+          refused2.push({ id: id4, code: "refused-feature-module", reason: `feature module '${raw}': ${r.reason} (${r.code})`, nearest: null });
         } else {
           feature.push(raw);
           aliases.push({ id: raw, family: "feature", mechanic: [], readBy: featureReadBy(raw) });
         }
       } else {
         const nearest = nearestEnabledModuleId(raw);
-        refused.push({
+        refused2.push({
           id: id4,
           code: "refused-unknown-module",
           reason: `'${raw}' is neither a mechanic module id nor a feature-module id nor '${NO_MECHANIC_MODULES}'` + (nearest ? `; ids are exact (did you mean '${nearest}'?)` : ""),
@@ -31139,8 +31243,8 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     }
     const mechanic = ENABLED_MODULES_VOCABULARY.mechanic.filter((m) => mechanicSet.has(m));
     const selects = mechanic.length > 0 || token;
-    const form = list2.length === 0 ? "empty" : mechanic.length > 0 ? "selection" : token ? "none" : "no-selection";
-    return { form, selects, mechanic, feature, aliases, refused };
+    const form = list3.length === 0 ? "empty" : mechanic.length > 0 ? "selection" : token ? "none" : "no-selection";
+    return { form, selects, mechanic, feature, aliases, refused: refused2 };
   }
 
   // @insimul/core/src/game-genres/resolution.ts
@@ -31252,34 +31356,34 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     }
     return { mode, source, notes };
   }
-  function bundleFor(genreId, refused) {
+  function bundleFor(genreId, refused2) {
     const bundle = genreId === null ? void 0 : getGenreBundle(genreId);
     if (!bundle) return { id: null, featureModules: [] };
     const featureModules = [];
     for (const id4 of bundle.defaultModules) {
       const r = featureModuleRefusal(id4);
-      if (r) refused.push({ kind: "module", id: id4, from: "bundle", ...r });
+      if (r) refused2.push({ kind: "module", id: id4, from: "bundle", ...r });
       else featureModules.push(id4);
     }
     return { id: bundle.id, featureModules };
   }
-  function refuseFeatures(config, refused) {
+  function refuseFeatures(config, refused2) {
     const features = config.features;
     if (features === null || typeof features !== "object") return;
     for (const flag of Object.keys(GENRE_FEATURE_VERDICTS)) {
       const r = genreFeatureRefusal(flag);
       if (r && features[flag] === true) {
         features[flag] = false;
-        refused.push({ kind: "feature", id: flag, from: "settings", ...r });
+        refused2.push({ kind: "feature", id: flag, from: "settings", ...r });
       }
     }
   }
-  function refuseWorldModules(listed, refused) {
+  function refuseWorldModules(listed, refused2) {
     for (const r of readEnabledModules(listed).refused) {
       const feature = r.code === "refused-feature-module" ? featureModuleRefusal(r.id) : null;
-      if (feature) refused.push({ kind: "module", id: r.id, from: "world-modules", ...feature });
+      if (feature) refused2.push({ kind: "module", id: r.id, from: "world-modules", ...feature });
       else if (r.code !== "refused-feature-module") {
-        refused.push({ kind: "module", id: r.id, from: "world-modules", code: r.code, reason: r.reason });
+        refused2.push({ kind: "module", id: r.id, from: "world-modules", code: r.code, reason: r.reason });
       }
     }
   }
@@ -31297,11 +31401,11 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     return typeof id4 === "string" && id4.length > 0;
   }
   function resolveGenre(requested) {
-    const refused = [];
+    const refused2 = [];
     if (isGenreId(requested) && hasOwn(GENRE_REGISTRY, requested)) {
       const config2 = clone2(GENRE_REGISTRY[requested]);
-      refuseFeatures(config2, refused);
-      const bundle = bundleFor(requested, refused);
+      refuseFeatures(config2, refused2);
+      const bundle = bundleFor(requested, refused2);
       return {
         requested,
         known: true,
@@ -31310,12 +31414,12 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
         fallback: null,
         bundle,
         activation: activationFor(requested),
-        refused
+        refused: refused2
       };
     }
     const asked = isGenreId(requested) ? requested : null;
     const config = clone2(GENRE_REGISTRY[DEFAULT_GENRE_ID]);
-    refuseFeatures(config, refused);
+    refuseFeatures(config, refused2);
     return {
       requested: asked,
       known: false,
@@ -31326,7 +31430,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
       // The id that was asked for, not rpg's: an unknown genre gets no mechanics.
       // With no id at all there is still nothing to activate; '' resolves as unknown.
       activation: activationFor(asked ?? ""),
-      refused
+      refused: refused2
     };
   }
   function applyOverride(config, override, recipeId) {
@@ -31516,7 +31620,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
         });
       }
     }
-    const declared = fallback ? fallback.requested ?? "" : config.id;
+    const declared2 = fallback ? fallback.requested ?? "" : config.id;
     const known = fallback === null && hasOwn(GENRE_REGISTRY, config.id);
     if (!known && configSource === "world") {
       notes.push({
@@ -31537,11 +31641,11 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     const rawModules = world2?.meta?.enabledModules;
     const listed = Array.isArray(rawModules) ? rawModules : [];
     const worldsGame = configSource !== "recipe";
-    const activation = activationFor(declared, worldsGame ? listed : null);
-    const refused = [];
-    refuseFeatures(config, refused);
-    const bundle = known ? bundleFor(config.id, refused) : { id: null, featureModules: [] };
-    if (worldsGame) refuseWorldModules(listed, refused);
+    const activation = activationFor(declared2, worldsGame ? listed : null);
+    const refused2 = [];
+    refuseFeatures(config, refused2);
+    const bundle = known ? bundleFor(config.id, refused2) : { id: null, featureModules: [] };
+    if (worldsGame) refuseWorldModules(listed, refused2);
     if (listed.length > 0) {
       const mechanic = listed.filter(isMechanicModuleId);
       const shown = listed.map((id4) => String(id4)).join(", ");
@@ -31583,7 +31687,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
       camera: { mode, policy: policy2, source, worldPerspective },
       bundle,
       activation,
-      refused,
+      refused: refused2,
       notes
     };
   }
@@ -32087,8 +32191,8 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
   function roundHalfUp(value) {
     return Math.floor(value + 0.5);
   }
-  function has2(list2, value) {
-    return value !== void 0 && list2 !== void 0 && list2.includes(value);
+  function has2(list3, value) {
+    return value !== void 0 && list3 !== void 0 && list3.includes(value);
   }
   function refusal2(input, outcome, reason, spent = 0) {
     return {
@@ -32197,7 +32301,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     const { actor, action } = input;
     const profile = action.defense;
     const staminaCost = Math.max(0, Math.floor(action.staminaCost ?? 0));
-    const refused = (outcome, reason) => ({
+    const refused2 = (outcome, reason) => ({
       actorId: actor.id,
       actionId: action.id,
       outcome,
@@ -32212,13 +32316,13 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
       actorStaminaAfter: actor.stamina?.current
     });
     if (input.legality && !input.legality.permitted) {
-      return refused("refused", input.legality.reason ?? "not_permitted");
+      return refused2("refused", input.legality.reason ?? "not_permitted");
     }
-    if (!profile) return refused("refused", "not_a_defense");
-    if (!actor.alive) return refused("refused", "actor_dead");
-    if (actor.incapacitated) return refused("refused", "actor_incapacitated");
+    if (!profile) return refused2("refused", "not_a_defense");
+    if (!actor.alive) return refused2("refused", "actor_dead");
+    if (actor.incapacitated) return refused2("refused", "actor_incapacitated");
     if (staminaCost > 0 && actor.stamina !== void 0 && !canAffordStamina(actor.stamina.current, staminaCost)) {
-      return refused("exhausted", "insufficient_stamina");
+      return refused2("exhausted", "insufficient_stamina");
     }
     const evasionBonus = Math.max(0, profile.evasionBonus);
     return {
@@ -33031,14 +33135,14 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     const facts = [];
     for (const id4 of ids) {
       const percept = perceptsById.get(id4);
-      const atom3 = prologAtom(id4);
+      const atom4 = prologAtom(id4);
       if (perceived.has(id4)) {
         facts.push(
-          `percept(${atom3}, ${formatIdTerm(percept.subject)}, ${prologAtom(percept.predicate)}, ${formatIdTerm(percept.object)}).`
+          `percept(${atom4}, ${formatIdTerm(percept.subject)}, ${prologAtom(percept.predicate)}, ${formatIdTerm(percept.object)}).`
         );
       }
-      facts.push(`percept_channel(${atom3}, ${percept.channel}).`);
-      if (percept.actor) facts.push(`percept_actor(${atom3}, ${formatIdTerm(percept.actor)}).`);
+      facts.push(`percept_channel(${atom4}, ${percept.channel}).`);
+      if (percept.actor) facts.push(`percept_actor(${atom4}, ${formatIdTerm(percept.actor)}).`);
     }
     return facts;
   }
@@ -35865,8 +35969,8 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     delete(slot) {
       if (this.pending) return NO("busy");
       if (this.confirming !== null) return NO("confirm_open");
-      const refused = this.refuseDelete(slot);
-      return refused ?? this.startDelete(slot);
+      const refused2 = this.refuseDelete(slot);
+      return refused2 ?? this.startDelete(slot);
     }
     /**
      * The slot list's Delete: open the prompt for `slot` ({@link SaveSlotsView.confirm}). Refused as
@@ -35875,8 +35979,8 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     askDelete(slot) {
       if (this.pending) return NO("busy");
       if (this.confirming !== null) return NO("confirm_open");
-      const refused = this.refuseDelete(slot);
-      if (refused) return refused;
+      const refused2 = this.refuseDelete(slot);
+      if (refused2) return refused2;
       this.confirming = slot;
       return OK3();
     }
@@ -38313,8 +38417,8 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     const dist = (p) => Math.hypot(p.x - at.x, p.z - at.z);
     const actions = [];
     const looks = [];
-    const offer = (list2, t, range) => {
-      if (t.distance !== null && t.distance <= range) list2.push(t);
+    const offer = (list3, t, range) => {
+      if (t.distance !== null && t.distance <= range) list3.push(t);
     };
     const v = input.villager;
     if (v && nonEmpty3(v.id) && finitePoint2(v.position)) {
@@ -38356,9 +38460,9 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
         offer(actions, { action: "perform", kind: "hotspot", id: h.id, prompt: actionPrompt(table2, h.actionType), distance: dist(h.position) }, reach.perform);
       }
     }
-    const nearest = (list2) => {
+    const nearest = (list3) => {
       let best = null;
-      for (const c of list2) if (best === null || c.distance < best.distance) best = c;
+      for (const c of list3) if (best === null || c.distance < best.distance) best = c;
       return best === null ? null : { ...best, distance: round2(best.distance) };
     };
     const found = nearest(actions) ?? nearest(looks);
@@ -39660,8 +39764,8 @@ After asking each question, wait for the player's response before moving to the 
   }
   function keyed(...lists) {
     const m = /* @__PURE__ */ new Map();
-    for (const list2 of lists) {
-      for (const w of list2) {
+    for (const list3 of lists) {
+      for (const w of list3) {
         const k = chatKey(w);
         if (k.length > 0 && !m.has(k)) m.set(k, w);
       }
@@ -43639,6 +43743,1118 @@ Return JSON format:
     return QUEST_TEMPLATES.filter((t) => t.category === category);
   }
 
+  // @insimul/core/src/puzzle/puzzle.ts
+  var DEFAULT_PUZZLE_MAX_ATTEMPTS = 3;
+  var PUZZLE_TUNING = Object.freeze({ maxAttempts: DEFAULT_PUZZLE_MAX_ATTEMPTS });
+  var PUZZLE_WORLD_PREDICATES = Object.freeze([
+    "business/1",
+    "business_name/2",
+    "business_owner/2",
+    "business_type/2",
+    "lives_at/2",
+    "married_to/2",
+    "parent_of/2",
+    "occupation/2",
+    "first_name/2",
+    "last_name/2",
+    "truth_type/2",
+    "truth_about/2",
+    "truth_title/2",
+    "game_text/1",
+    "text_title/2",
+    "text_clue/2",
+    "text_author/2",
+    "item/1",
+    "item_name/2",
+    "item_base_type/2"
+  ]);
+  var RELATION_SOURCE = {
+    owner_of: { signature: "business_owner/2", subject: 0 },
+    trade_of: { signature: "business_type/2", subject: 0 },
+    resident_of: { signature: "lives_at/2", subject: 1 },
+    home_of: { signature: "lives_at/2", subject: 0 },
+    spouse_of: { signature: "married_to/2", subject: 0 },
+    parent_of: { signature: "parent_of/2", subject: 1 },
+    child_of: { signature: "parent_of/2", subject: 0 },
+    occupation_of: { signature: "occupation/2", subject: 0 },
+    subject_of: { signature: "truth_about/2", subject: 0 },
+    author_of: { signature: "text_author/2", subject: 0 }
+  };
+  function answersFor(facts, relation, subject) {
+    const { signature, subject: at } = RELATION_SOURCE[relation];
+    const out = [];
+    for (const tuple of factsOf(facts, signature)) {
+      if (tuple[at] !== subject) continue;
+      const answer2 = String(tuple[at === 0 ? 1 : 0]);
+      if (!out.includes(answer2)) out.push(answer2);
+    }
+    return out;
+  }
+  function isRelation(value) {
+    return PUZZLE_RELATIONS.includes(value);
+  }
+  function puzzleIssues(ir) {
+    if (!ir) return [];
+    const issues = [];
+    const riddleIds = /* @__PURE__ */ new Set();
+    const lockIds = /* @__PURE__ */ new Set();
+    for (const r of ir.riddles ?? []) {
+      if (riddleIds.has(r.id)) issues.push(`riddle "${r.id}" is authored twice`);
+      riddleIds.add(r.id);
+      if (!isRelation(r.relation)) {
+        issues.push(`riddle "${r.id}" names relation "${r.relation}", which is not one of ${PUZZLE_RELATIONS.join(", ")}`);
+      }
+    }
+    for (const l of ir.locks ?? []) {
+      if (lockIds.has(l.id)) issues.push(`lock "${l.id}" is authored twice`);
+      lockIds.add(l.id);
+      if ((l.needs ?? []).length === 0) issues.push(`lock "${l.id}" needs nothing, so it is not a lock`);
+    }
+    for (const l of ir.locks ?? []) {
+      for (const need of l.needs ?? []) {
+        if (need.kind === "riddle" && !riddleIds.has(need.ref)) {
+          issues.push(`lock "${l.id}" needs riddle "${need.ref}", which is not authored`);
+        }
+        if (need.kind === "lock" && !lockIds.has(need.ref)) {
+          issues.push(`lock "${l.id}" needs lock "${need.ref}", which is not authored`);
+        }
+        if (need.kind === "lock" && need.ref === l.id) issues.push(`lock "${l.id}" needs itself`);
+      }
+    }
+    if (ir.finalLock && !lockIds.has(ir.finalLock)) {
+      issues.push(`finalLock "${ir.finalLock}" is not an authored lock`);
+    }
+    return issues;
+  }
+  function puzzleFromIR(ir, options = {}) {
+    const issues = puzzleIssues(ir);
+    if (issues.length > 0) throw new Error(`the puzzle section is not usable: ${issues.join("; ")}`);
+    const locks = (ir.locks ?? []).map((l) => ({
+      id: l.id,
+      target: l.target,
+      needs: (l.needs ?? []).map((n) => ({ kind: n.kind, ref: n.ref })),
+      holds: [...l.holds ?? []]
+    }));
+    return {
+      riddles: (ir.riddles ?? []).map((r) => ({
+        id: r.id,
+        relation: r.relation,
+        subject: r.subject,
+        prompt: r.prompt ?? `${r.relation.replace(/_/g, " ")} ${r.subject}?`,
+        clues: [...r.clues ?? []]
+      })),
+      locks,
+      finalLock: ir.finalLock ?? (locks.length > 0 ? locks[locks.length - 1].id : null),
+      maxAttempts: ir.maxAttempts !== void 0 ? ir.maxAttempts : options.maxAttempts !== void 0 ? options.maxAttempts : DEFAULT_PUZZLE_MAX_ATTEMPTS,
+      clueTexts: [],
+      source: "authored",
+      notes: []
+    };
+  }
+  function personName(facts, atom4) {
+    const first = firstValueOf(facts, "first_name/2", atom4);
+    const last = firstValueOf(facts, "last_name/2", atom4);
+    if (first === void 0 && last === void 0) return atom4;
+    return [first, last].filter((p) => p !== void 0).join(" ");
+  }
+  function containerIn(world2, buildingIds) {
+    const wanted = new Set(buildingIds);
+    const ids = (world2.entities?.containers ?? []).filter((c) => c.buildingId && wanted.has(c.buildingId)).map((c) => worldAtom(c.id)).sort(canonical);
+    return ids[0] ?? null;
+  }
+  function buildingsOfBusiness(world2, businessAtom) {
+    const business = (world2.entities?.businesses ?? []).find((b) => worldAtom(b.name) === businessAtom);
+    if (!business) return [];
+    return (world2.entities?.buildings ?? []).filter((b) => b.businessId === business.id).map((b) => b.id);
+  }
+  function buildingsOfResidence(world2, residenceAtom) {
+    const lots = /* @__PURE__ */ new Set();
+    for (const s of world2.geography?.settlements ?? []) {
+      for (const lot of s.lots ?? []) {
+        if (lot.address && worldAtom(lot.address) === residenceAtom) lots.add(lot.id);
+      }
+    }
+    return (world2.entities?.buildings ?? []).filter((b) => b.lotId && lots.has(b.lotId)).map((b) => b.id);
+  }
+  function generatePuzzle(world2, options = {}) {
+    const facts = readWorldFacts(world2.systems?.knowledgeBase, PUZZLE_WORLD_PREDICATES);
+    const notes = [];
+    const maxAttempts = options.maxAttempts === void 0 ? DEFAULT_PUZZLE_MAX_ATTEMPTS : options.maxAttempts;
+    const empty = (why) => ({
+      riddles: [],
+      locks: [],
+      finalLock: null,
+      maxAttempts,
+      clueTexts: [],
+      source: "empty",
+      notes: [...notes, why]
+    });
+    const businesses = factsOf(facts, "business/1").map((t) => String(t[0])).filter((b) => answersFor(facts, "owner_of", b).length > 0).sort(canonical);
+    if (businesses.length === 0) return empty("the world names no business with a keeper, so there is nothing to ask");
+    const clueTexts = factsOf(facts, "text_clue/2").map((t) => ({ id: String(t[0]), clue: String(t[1]) })).sort((a, b) => canonical(a.id, b.id));
+    const keys = factsOf(facts, "item_base_type/2").filter((t) => t[1] === "key").map((t) => String(t[0])).sort(canonical);
+    const first = businesses[0];
+    const keeper = answersFor(facts, "owner_of", first).sort(canonical)[0];
+    const keeperName = personName(facts, keeper);
+    const firstName = String(firstValueOf(facts, "business_name/2", first) ?? first);
+    const riddles = [];
+    const locks = [];
+    const clue1 = clueTexts[0];
+    if (!clue1) notes.push("the world has no text carrying a clue, so no lock waits on reading one");
+    riddles.push({
+      id: "riddle_1",
+      relation: "owner_of",
+      subject: first,
+      prompt: `Who keeps ${firstName}?`,
+      clues: clue1 ? [clue1.id] : []
+    });
+    const target1 = containerIn(world2, buildingsOfBusiness(world2, first));
+    if (!target1) return empty(`no container stands inside ${firstName}, so there is nothing to lock`);
+    const key1 = keys[0];
+    locks.push({
+      id: "lock_1",
+      target: target1,
+      needs: [...clue1 ? [{ kind: "clue", ref: clue1.id }] : [], { kind: "riddle", ref: "riddle_1" }],
+      holds: key1 ? [key1] : []
+    });
+    if (!key1) {
+      notes.push("the item catalogue has no key, so the chain ends at the first lock");
+      return { riddles, locks, finalLock: "lock_1", maxAttempts, clueTexts: clue1 ? [clue1] : [], source: "generated", notes };
+    }
+    const spouses = answersFor(facts, "spouse_of", keeper).sort(canonical);
+    const occupations = answersFor(facts, "occupation_of", keeper);
+    if (spouses.length > 0) {
+      riddles.push({ id: "riddle_2", relation: "spouse_of", subject: keeper, prompt: `Whom did ${keeperName} marry?`, clues: [] });
+    } else if (occupations.length > 0) {
+      riddles.push({ id: "riddle_2", relation: "occupation_of", subject: keeper, prompt: `What does ${keeperName} do for a living?`, clues: [] });
+    } else {
+      riddles.push({ id: "riddle_2", relation: "trade_of", subject: first, prompt: `What trade is plied at ${firstName}?`, clues: [] });
+    }
+    const homes = answersFor(facts, "home_of", keeper).sort(canonical);
+    const homeTarget = homes.length > 0 ? containerIn(world2, buildingsOfResidence(world2, homes[0])) : null;
+    const second = businesses[1];
+    const target2 = homeTarget ?? (second ? containerIn(world2, buildingsOfBusiness(world2, second)) : null);
+    if (!homeTarget) notes.push(`${keeperName}'s home has no container, so the second lock is at the next business`);
+    if (!target2) {
+      notes.push("no second container to lock, so the chain ends at the first lock");
+      return { riddles: riddles.slice(0, 1), locks, finalLock: "lock_1", maxAttempts, clueTexts: clue1 ? [clue1] : [], source: "generated", notes };
+    }
+    const key2 = keys[1];
+    locks.push({
+      id: "lock_2",
+      target: target2,
+      needs: [{ kind: "item", ref: key1 }, { kind: "riddle", ref: "riddle_2" }],
+      holds: key2 ? [key2] : []
+    });
+    const household = /* @__PURE__ */ new Set([keeper, ...spouses]);
+    const secrets = factsOf(facts, "truth_type/2").filter((t) => t[1] === "secret").map((t) => String(t[0])).filter((t) => answersFor(facts, "subject_of", t).length > 0).sort(canonical);
+    const secret = secrets.find((t) => answersFor(facts, "subject_of", t).some((who) => household.has(who))) ?? secrets[0];
+    const target3 = second ? containerIn(world2, buildingsOfBusiness(world2, second)) : null;
+    if (!key2 || !secret || !target3 || target3 === target2) {
+      notes.push(
+        !key2 ? "the catalogue has only one key, so the chain ends at the second lock" : !secret ? "the world keeps no secret truth about anybody, so the chain ends at the second lock" : "no further container to lock, so the chain ends at the second lock"
+      );
+      const clues = clue1 ? [clue1] : [];
+      return { riddles, locks, finalLock: "lock_2", maxAttempts, clueTexts: clues, source: "generated", notes };
+    }
+    const title = String(firstValueOf(facts, "truth_title/2", secret) ?? secret);
+    const clue2 = clueTexts[1];
+    riddles.push({ id: "riddle_3", relation: "subject_of", subject: secret, prompt: `Whose secret is "${title}"?`, clues: [] });
+    locks.push({
+      id: "lock_3",
+      target: target3,
+      needs: [
+        { kind: "item", ref: key2 },
+        { kind: "lock", ref: "lock_2" },
+        ...clue2 ? [{ kind: "clue", ref: clue2.id }] : [],
+        { kind: "riddle", ref: "riddle_3" }
+      ],
+      holds: []
+    });
+    return {
+      riddles,
+      locks,
+      finalLock: "lock_3",
+      maxAttempts,
+      clueTexts: [clue1, clue2].filter((c) => c !== void 0),
+      source: "generated",
+      notes
+    };
+  }
+  function puzzleForWorld(world2, options = {}) {
+    if (world2.puzzle && (world2.puzzle.riddles ?? []).length > 0) return puzzleFromIR(world2.puzzle, options);
+    return generatePuzzle(world2, {
+      ...options,
+      ...world2.puzzle?.maxAttempts !== void 0 ? { maxAttempts: world2.puzzle.maxAttempts } : {}
+    });
+  }
+  function needTerm(need) {
+    return `${need.kind}(${prologAtom(need.ref)})`;
+  }
+  function puzzleFacts(def2) {
+    const facts = [];
+    for (const r of def2.riddles) {
+      facts.push(`puzzle_riddle(${prologAtom(r.id)}, ${r.relation}, ${prologAtom(r.subject)}).`);
+      facts.push(`puzzle_riddle_prompt(${prologAtom(r.id)}, ${prologAtom(r.prompt)}).`);
+      for (const t of r.clues) facts.push(`puzzle_riddle_clue(${prologAtom(r.id)}, ${prologAtom(t)}).`);
+    }
+    for (const l of def2.locks) {
+      facts.push(`puzzle_lock(${prologAtom(l.id)}, ${prologAtom(l.target)}).`);
+      for (const n of l.needs) facts.push(`puzzle_lock_needs(${prologAtom(l.id)}, ${needTerm(n)}).`);
+      for (const i of l.holds) facts.push(`puzzle_lock_holds(${prologAtom(l.id)}, ${prologAtom(i)}).`);
+    }
+    if (def2.finalLock) facts.push(`puzzle_final(${prologAtom(def2.finalLock)}).`);
+    if (def2.maxAttempts !== null) facts.push(`puzzle_max_attempts(${Math.trunc(def2.maxAttempts)}).`);
+    return facts;
+  }
+  function puzzleWorldFacts(world2, def2) {
+    const facts = readWorldFacts(world2.systems?.knowledgeBase, PUZZLE_WORLD_PREDICATES);
+    const out = [];
+    for (const r of def2.riddles) {
+      const { signature, subject } = RELATION_SOURCE[r.relation];
+      const name = signature.slice(0, signature.indexOf("/"));
+      for (const tuple of factsOf(facts, signature)) {
+        if (tuple[subject] !== r.subject) continue;
+        const fact = `${name}(${tuple.map((a) => typeof a === "number" ? String(a) : prologAtom(a)).join(", ")}).`;
+        if (!out.includes(fact)) out.push(fact);
+      }
+    }
+    return out;
+  }
+  function puzzleChoices(world2, riddle, count = 4) {
+    const facts = readWorldFacts(world2.systems?.knowledgeBase, PUZZLE_WORLD_PREDICATES);
+    const right = answersFor(facts, riddle.relation, riddle.subject).sort(canonical);
+    if (right.length === 0) return [];
+    let pool;
+    if (riddle.relation === "trade_of") {
+      pool = factsOf(facts, "business_type/2").map((t) => String(t[1]));
+    } else if (riddle.relation === "occupation_of") {
+      pool = factsOf(facts, "occupation/2").map((t) => String(t[1]));
+    } else if (riddle.relation === "home_of") {
+      pool = factsOf(facts, "lives_at/2").map((t) => String(t[1]));
+    } else {
+      pool = factsOf(facts, "first_name/2").map((t) => String(t[0]));
+    }
+    const wrong = [...new Set(pool)].filter((p) => !right.includes(p)).sort(canonical);
+    return [right[0], ...wrong.slice(0, Math.max(0, count - 1))].sort(canonical);
+  }
+  function puzzleAnswerKey(world2, def2) {
+    const facts = readWorldFacts(world2.systems?.knowledgeBase, PUZZLE_WORLD_PREDICATES);
+    return Object.fromEntries(def2.riddles.map((r) => [r.id, answersFor(facts, r.relation, r.subject).sort(canonical)]));
+  }
+
+  // @insimul/core/src/genre-mechanics/fact-delta.ts
+  function emptyGenreDelta() {
+    return { retract: [], assert: [] };
+  }
+  function replaceFact(before, after) {
+    if (before === after) return emptyGenreDelta();
+    return { retract: before ? [before] : [], assert: after ? [after] : [] };
+  }
+  function checkGenreDelta(delta, written, owner) {
+    const known = buildKnownPredicateSignatures(written);
+    const allowed = new Set(written);
+    for (const clause of [...delta.retract, ...delta.assert]) {
+      const verdict = validatePrologFact(clause, known);
+      if (!verdict.valid) {
+        return {
+          ok: false,
+          reason: `"${clause}" is not a fact this build can carry: ${verdict.reason}`,
+          offending: clause
+        };
+      }
+      const signature = `${verdict.predicate}/${verdict.arity}`;
+      if (!allowed.has(signature)) {
+        return {
+          ok: false,
+          reason: `"${clause}" writes ${signature}, which the ${owner} module does not own`,
+          offending: clause
+        };
+      }
+    }
+    return { ok: true, reason: null };
+  }
+  function stripPeriod8(clause) {
+    return clause.trim().replace(/\.$/, "");
+  }
+  async function applyGenreDelta(engine, delta, written, owner) {
+    const verdict = checkGenreDelta(delta, written, owner);
+    if (!verdict.ok) {
+      return { ok: false, reason: verdict.reason, ...verdict.offending ? { offending: verdict.offending } : {}, applied: [] };
+    }
+    const applied = [];
+    for (const fact of delta.retract) {
+      if (engine) await engine.retractFact(stripPeriod8(fact));
+      applied.push(fact);
+    }
+    if (engine && delta.assert.length > 0) await engine.assertFacts(delta.assert.map(stripPeriod8));
+    applied.push(...delta.assert);
+    return { ok: true, reason: null, applied };
+  }
+  async function publishFacts(engine, facts) {
+    if (!engine || facts.length === 0) return 0;
+    await engine.assertFacts(facts.map(stripPeriod8));
+    return facts.length;
+  }
+  async function holds(engine, goal) {
+    if (!engine) return false;
+    const result2 = await engine.query(goal, 1);
+    return result2.success && result2.bindings.length > 0;
+  }
+
+  // @insimul/core/src/game-engine/logic/PuzzleDirector.ts
+  var PUZZLE_WRITTEN_PREDICATES = Object.freeze([
+    ...PUZZLE_RUNTIME_PREDICATES,
+    "has_item/3"
+  ]);
+  function refused(refusal3, reason) {
+    return { ok: false, refusal: refusal3, reason, applied: [] };
+  }
+  var PuzzleDirector = class _PuzzleDirector {
+    constructor(config) {
+      __publicField(this, "definition");
+      __publicField(this, "engine");
+      __publicField(this, "host");
+      __publicField(this, "worldFacts");
+      __publicField(this, "actors", /* @__PURE__ */ new Map());
+      __publicField(this, "tick", 0);
+      this.definition = config.definition;
+      this.engine = config.engine;
+      this.host = config.host;
+      this.worldFacts = config.worldFacts ?? [];
+    }
+    /** Push the definition (and any supplied world facts) into the KB. Returns how many facts. */
+    async publish() {
+      return await publishFacts(this.engine, this.worldFacts) + await publishFacts(this.engine, puzzleFacts(this.definition));
+    }
+    actor(id4) {
+      let a = this.actors.get(id4);
+      if (!a) {
+        a = { clues: /* @__PURE__ */ new Set(), solved: /* @__PURE__ */ new Set(), attempts: /* @__PURE__ */ new Map(), opened: /* @__PURE__ */ new Set(), taken: /* @__PURE__ */ new Set() };
+        this.actors.set(id4, a);
+      }
+      return a;
+    }
+    riddle(id4) {
+      return this.definition.riddles.find((r) => r.id === id4);
+    }
+    attemptsLeft(a, riddle) {
+      const max = this.definition.maxAttempts;
+      if (max === null) return null;
+      return Math.max(0, max - (a.attempts.get(riddle) ?? 0));
+    }
+    async write(delta) {
+      const result2 = await applyGenreDelta(this.engine, delta, PUZZLE_WRITTEN_PREDICATES, "puzzle");
+      if (!result2.ok) return refused("schema", result2.reason ?? "refused by the schema gate");
+      return { ok: true, reason: null, applied: result2.applied };
+    }
+    // ── Evidence from the host ────────────────────────────────────────────────
+    /** The actor found and read a text. Only the puzzle's own clue texts count. */
+    async findClue(actorId, textId) {
+      const isClue = this.definition.clueTexts.some((t) => t.id === textId) || this.definition.riddles.some((r) => r.clues.includes(textId)) || this.definition.locks.some((l) => l.needs.some((n) => n.kind === "clue" && n.ref === textId));
+      if (!isClue) return refused("unknown_clue", `"${textId}" is not a clue in this puzzle`);
+      const a = this.actor(actorId);
+      if (a.clues.has(textId)) return { ok: true, reason: null, applied: [] };
+      const out = await this.write({ retract: [], assert: [`puzzle_clue_found(${prologAtom(actorId)}, ${prologAtom(textId)}).`] });
+      if (out.ok) a.clues.add(textId);
+      return out;
+    }
+    /** What a host shows for one riddle. */
+    async view(actorId, riddleId) {
+      const r = this.riddle(riddleId);
+      if (!r) return void 0;
+      const a = this.actor(actorId);
+      const open = await holds(this.engine, `puzzle_riddle_open(${prologAtom(actorId)}, ${prologAtom(riddleId)})`);
+      return {
+        id: r.id,
+        prompt: r.prompt,
+        open,
+        solved: a.solved.has(r.id),
+        attemptsLeft: this.attemptsLeft(a, r.id),
+        missingClues: r.clues.filter((t) => !a.clues.has(t))
+      };
+    }
+    /**
+     * The actor gives an answer. The KB decides whether the riddle may be asked
+     * (`puzzle_can_answer/2`) and whether the answer is right (`puzzle_correct/2`);
+     * a wrong answer costs an attempt.
+     */
+    async answer(actorId, riddleId, given) {
+      const r = this.riddle(riddleId);
+      const a = this.actor(actorId);
+      const fail = (o) => ({ ...o, correct: false, attemptsLeft: this.attemptsLeft(a, riddleId) });
+      if (!r) return fail(refused("unknown_riddle", `"${riddleId}" is not a riddle in this puzzle`));
+      const A = prologAtom(actorId);
+      const R = prologAtom(riddleId);
+      if (!await holds(this.engine, `puzzle_can_answer(${A}, ${R})`)) {
+        if (a.solved.has(riddleId)) return fail(refused("already_solved", `${actorId} has already solved ${riddleId}`));
+        if (await holds(this.engine, `puzzle_spent(${A}, ${R})`)) {
+          return fail(refused("spent", `${riddleId} has had all the wrong answers it allows`));
+        }
+        if (r.clues.some((t) => !a.clues.has(t))) {
+          return fail(refused("clue_missing", `${riddleId} waits on a clue ${actorId} has not found`));
+        }
+        return fail(refused("unanswerable", `nothing in this world answers ${riddleId}`));
+      }
+      const correct = await holds(this.engine, `puzzle_correct(${R}, ${prologAtom(given)})`);
+      const before = a.attempts.get(riddleId) ?? 0;
+      const attemptFact = (n) => n === 0 ? null : `puzzle_attempts(${A}, ${R}, ${n}).`;
+      if (correct) {
+        const delta = replaceFact(attemptFact(before), null);
+        delta.assert.push(`puzzle_solved(${A}, ${R}).`);
+        const out2 = await this.write(delta);
+        if (!out2.ok) return fail(out2);
+        a.solved.add(riddleId);
+        a.attempts.delete(riddleId);
+        return { ...out2, correct: true, attemptsLeft: this.attemptsLeft(a, riddleId) };
+      }
+      const out = await this.write(replaceFact(attemptFact(before), attemptFact(before + 1)));
+      if (!out.ok) return fail(out);
+      a.attempts.set(riddleId, before + 1);
+      return { ...out, correct: false, attemptsLeft: this.attemptsLeft(a, riddleId) };
+    }
+    /** The actor tries a lock. Opens it when `puzzle_can_unlock/2` says so, and tells the host. */
+    async unlock(actorId, lockId) {
+      const lock = this.definition.locks.find((l) => l.id === lockId);
+      if (!lock) return { ...refused("unknown_lock", `"${lockId}" is not a lock in this puzzle`), unmet: [] };
+      const a = this.actor(actorId);
+      if (a.opened.has(lockId)) return { ...refused("already_open", `${actorId} has already opened ${lockId}`), unmet: [] };
+      const A = prologAtom(actorId);
+      const L = prologAtom(lockId);
+      if (!await holds(this.engine, `puzzle_can_unlock(${A}, ${L})`)) {
+        const result2 = await this.engine.query(`puzzle_unmet_need(${A}, ${L}, Kind, Ref)`, 64);
+        const unmet = (result2.success ? result2.bindings : []).map((b) => ({ kind: String(b.Kind), ref: String(b.Ref) }));
+        return { ...refused("locked", `${lockId} still needs ${unmet.map((n) => `${n.kind} ${n.ref}`).join(", ")}`), unmet };
+      }
+      const out = await this.write({ retract: [], assert: [`puzzle_opened(${A}, ${L}).`] });
+      if (!out.ok) return { ...out, unmet: [] };
+      a.opened.add(lockId);
+      this.tick += 1;
+      const order2 = {
+        agent: actorId,
+        action: "open_container",
+        target: lock.target,
+        tick: this.tick,
+        animation: getActionAnimation("open_container") ?? DEFAULT_ANIMATION_INTENT,
+        utility: 0
+      };
+      this.host?.perform(order2);
+      return { ...out, unmet: [], order: order2 };
+    }
+    /** The actor takes what an opened lock held. Written as the equipment vocabulary's `has_item/3`. */
+    async take(actorId, itemId) {
+      const A = prologAtom(actorId);
+      if (!await holds(this.engine, `puzzle_can_take(${A}, ${prologAtom(itemId)})`)) {
+        return refused("not_available", `${itemId} is not behind a lock ${actorId} has opened, or is already held`);
+      }
+      const out = await this.write({ retract: [], assert: [`has_item(${A}, ${prologAtom(itemId)}, 1).`] });
+      if (out.ok) this.actor(actorId).taken.add(itemId);
+      return out;
+    }
+    /** Whether the actor has opened the final lock — `puzzle_complete/1`. */
+    async isComplete(actorId) {
+      return holds(this.engine, `puzzle_complete(${prologAtom(actorId)})`);
+    }
+    /** Counts for a quest tracker. */
+    async progress(actorId) {
+      const a = this.actor(actorId);
+      const clueIds = /* @__PURE__ */ new Set([
+        ...this.definition.clueTexts.map((t) => t.id),
+        ...this.definition.riddles.flatMap((r) => r.clues),
+        ...this.definition.locks.flatMap((l) => l.needs.filter((n) => n.kind === "clue").map((n) => n.ref))
+      ]);
+      return {
+        cluesFound: [...a.clues].filter((t) => clueIds.has(t)).length,
+        cluesTotal: clueIds.size,
+        riddlesSolved: a.solved.size,
+        riddlesTotal: this.definition.riddles.length,
+        locksOpened: a.opened.size,
+        locksTotal: this.definition.locks.length,
+        complete: await this.isComplete(actorId)
+      };
+    }
+    // ── Save ──────────────────────────────────────────────────────────────────
+    serialize() {
+      const sorted = (s) => [...s].sort(canonical);
+      return {
+        actors: [...this.actors.entries()].sort(([x], [y]) => canonical(x, y)).map(([actor, a]) => ({
+          actor,
+          clues: sorted(a.clues),
+          solved: sorted(a.solved),
+          attempts: [...a.attempts.entries()].filter(([, n]) => n > 0).sort(([x], [y]) => canonical(x, y)),
+          opened: sorted(a.opened),
+          taken: sorted(a.taken)
+        }))
+      };
+    }
+    /** Every runtime fact a state implies. */
+    static stateFacts(state) {
+      const facts = [];
+      for (const s of state.actors) {
+        const A = prologAtom(s.actor);
+        for (const t of s.clues) facts.push(`puzzle_clue_found(${A}, ${prologAtom(t)}).`);
+        for (const r of s.solved) facts.push(`puzzle_solved(${A}, ${prologAtom(r)}).`);
+        for (const [r, n] of s.attempts) facts.push(`puzzle_attempts(${A}, ${prologAtom(r)}, ${Math.trunc(n)}).`);
+        for (const l of s.opened) facts.push(`puzzle_opened(${A}, ${prologAtom(l)}).`);
+        for (const i of s.taken) facts.push(`has_item(${A}, ${prologAtom(i)}, 1).`);
+      }
+      return facts;
+    }
+    /** Load a saved state into a fresh director and its KB (published first). */
+    async restore(state) {
+      if (this.actors.size > 0) return refused("schema", "restore() is for a fresh director; this one already has actors");
+      const out = await this.write({ ...emptyGenreDelta(), assert: _PuzzleDirector.stateFacts(state) });
+      if (!out.ok) return out;
+      for (const s of state.actors) {
+        const a = this.actor(s.actor);
+        s.clues.forEach((t) => a.clues.add(t));
+        s.solved.forEach((r) => a.solved.add(r));
+        s.attempts.forEach(([r, n]) => a.attempts.set(r, n));
+        s.opened.forEach((l) => a.opened.add(l));
+        s.taken.forEach((i) => a.taken.add(i));
+      }
+      return out;
+    }
+  };
+
+  // @insimul/core/src/game-engine/logic/GamePrologEngine.ts
+  var QUEST_TRUTH_PREDICATES = [
+    "has/2",
+    "collected/3",
+    "visited/2",
+    "talked_to/2",
+    "defeated/2",
+    "delivered/3",
+    "equipped/2",
+    "crafted/2",
+    "used_vocabulary/2",
+    "solved/2",
+    "quest_active/1",
+    "quest_completed/1",
+    "objective_completed/2"
+  ];
+  function atom3(value) {
+    if (/^[a-z][A-Za-z0-9_]*$/.test(value)) return value;
+    return `'${value.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
+  }
+  function factsForEvent(event, playerId) {
+    const p = atom3(playerId);
+    switch (event.type) {
+      case "item_collected":
+      case "item_purchased":
+        return {
+          assert: [`has(${p}, ${atom3(event.itemId)})`],
+          collect: [event.itemId, event.quantity]
+        };
+      case "item_crafted":
+        return {
+          assert: [`has(${p}, ${atom3(event.itemId)})`, `crafted(${p}, ${atom3(event.itemId)})`],
+          collect: [event.itemId, event.quantity]
+        };
+      case "item_removed":
+      case "item_dropped":
+        return { collect: [event.itemId, -event.quantity] };
+      case "item_used":
+        return { collect: [event.itemId, -1] };
+      case "item_delivered":
+        return {
+          assert: [`delivered(${p}, ${atom3(event.npcId)}, ${atom3(event.itemId)})`],
+          retract: [`has(${p}, ${atom3(event.itemId)})`],
+          collect: [event.itemId, -1]
+        };
+      case "item_equipped":
+        return { assert: [`equipped(${p}, ${atom3(event.itemId)})`] };
+      case "item_unequipped":
+        return { retract: [`equipped(${p}, ${atom3(event.itemId)})`] };
+      case "location_visited":
+      case "location_discovered":
+        return { assert: [`visited(${p}, ${atom3(event.locationId)})`] };
+      case "settlement_entered":
+        return { assert: [`visited(${p}, ${atom3(event.settlementId)})`] };
+      case "npc_talked":
+        return { assert: [`talked_to(${p}, ${atom3(event.npcId)})`] };
+      case "enemy_defeated":
+        return { assert: [`defeated(${p}, ${atom3(event.enemyType)})`] };
+      case "puzzle_solved":
+        return { assert: [`solved(${p}, ${atom3(event.puzzleId)})`] };
+      case "vocabulary_used":
+        return event.correct ? { assert: [`used_vocabulary(${p}, ${atom3(event.word)})`] } : {};
+      case "quest_accepted":
+        return { assert: [`quest_active(${atom3(event.questId)})`] };
+      case "quest_completed":
+        return {
+          assert: [`quest_completed(${atom3(event.questId)})`],
+          retract: [`quest_active(${atom3(event.questId)})`]
+        };
+      case "quest_failed":
+      case "quest_abandoned":
+        return { retract: [`quest_active(${atom3(event.questId)})`] };
+      case "quest_objective_completed":
+        return {
+          assert: [`objective_completed(${atom3(event.questId)}, ${atom3(event.objectiveId)})`]
+        };
+      default:
+        return {};
+    }
+  }
+  function selectedPacks(config) {
+    let areas;
+    if (config.activeModules) areas = packAreasForModules(config.activeModules);
+    else if (config.genre !== void 0) areas = resolveActiveModules(config.genre).predicatePacks;
+    if (!areas) return PREDICATE_PACKS;
+    const selected = new Set(areas);
+    return PREDICATE_PACKS.filter((pack) => selected.has(pack.area));
+  }
+  var GamePrologEngine = class _GamePrologEngine {
+    constructor(config = {}) {
+      __publicField(this, "debug");
+      __publicField(this, "debugCategory");
+      __publicField(this, "loadMechanicPacks");
+      __publicField(this, "playerId");
+      /** The rule packs this KB carries — the active module set's, or all of them. */
+      __publicField(this, "packs");
+      __publicField(this, "engine");
+      __publicField(this, "initialized", false);
+      __publicField(this, "eventBus");
+      __publicField(this, "unsubscribe");
+      /** Events that arrived before the KB existed, in arrival order. */
+      __publicField(this, "pending", []);
+      /** Serialises KB writes so facts land in the order their events fired. */
+      __publicField(this, "chain", Promise.resolve());
+      __publicField(this, "counts", /* @__PURE__ */ new Map());
+      /** Runtime facts this module has asserted, for save and for `getFacts`. */
+      __publicField(this, "asserted", /* @__PURE__ */ new Set());
+      this.debug = hostDebugSink(config.host);
+      this.debugCategory = config.debugCategory ?? "prolog";
+      this.loadMechanicPacks = config.loadMechanicPacks ?? true;
+      this.playerId = config.playerId ?? "player";
+      this.packs = selectedPacks(config);
+      this.engine = config.engine;
+      if (config.eventBus) this.attach(config.eventBus);
+    }
+    /** Build and initialize in one step, the way a host normally starts up. */
+    static async create(config = {}, worldContent) {
+      const instance = new _GamePrologEngine(config);
+      await instance.initialize(worldContent);
+      return instance;
+    }
+    // ── Lifecycle ──────────────────────────────────────────────────────────
+    /**
+     * Stand the KB up: declare the runtime predicates, consult the mechanic rule
+     * packs the world's genre selects, consult the world's own Prolog content,
+     * then drain anything the bus delivered while all that was happening.
+     *
+     * "The packs the genre selects" is US-3 of `111-insimul-module-contract`: this
+     * used to consult all seven unconditionally, so every game carried every
+     * mechanic. See {@link GamePrologEngineConfig.genre}.
+     *
+     * Safe to call twice — the second call consults `worldContent` only. The
+     * mechanic packs are rules, and consulting them again would leave the KB with
+     * two copies of every clause, so they load exactly once per KB; loading a
+     * second world into a live host is the case this protects.
+     */
+    async initialize(worldContent) {
+      if (!this.engine) this.engine = await createPrologEngine();
+      const first = !this.initialized;
+      this.initialized = true;
+      if (first) {
+        const runtime = new Set(this.packs.flatMap((pack) => [...pack.runtimePredicates]));
+        await this.engine.declareDynamic([...QUEST_TRUTH_PREDICATES, ...runtime]);
+      }
+      if (first && this.loadMechanicPacks) {
+        for (const pack of this.packs) {
+          const result2 = await this.engine.consult(pack.prolog);
+          if (!result2.success) {
+            this.narrate("error", "KB", `rule pack '${pack.area}' failed to consult`, result2.error ?? "");
+          }
+        }
+      }
+      if (worldContent) {
+        const result2 = await this.engine.consult(worldContent);
+        if (!result2.success) {
+          this.narrate("error", "KB", "world content failed to consult", result2.error ?? "");
+        }
+      }
+      this.narrate(
+        "info",
+        "KB",
+        `initialized (${this.packs.length} of ${PREDICATE_PACKS.length} rule packs)`,
+        this.packs.map((pack) => pack.area).join(", ")
+      );
+      const queued = this.pending.splice(0, this.pending.length);
+      for (const event of queued) this.ingest(event);
+      await this.flush();
+    }
+    /**
+     * The mechanic pack areas this KB carries, in pack order — what the genre's
+     * active module set resolved to, or every area when no genre was declared. A
+     * host that wants to know why a predicate is missing asks this.
+     */
+    getActivePackAreas() {
+      return this.packs.map((pack) => pack.area);
+    }
+    /** Whether the KB exists. False until {@link initialize} resolves. */
+    isReady() {
+      return this.engine !== void 0;
+    }
+    /** The KB, for a caller that shares it (GameTruthSync, the radiant director). */
+    getEngine() {
+      return this.engine;
+    }
+    /**
+     * Release the KB and stop listening.
+     *
+     * Not hygiene: wasm has no finalizers, so an undestroyed KB leaks a handle in
+     * the module's indirect function table (see `PrologEngine.destroy`).
+     */
+    async dispose() {
+      this.detach();
+      await this.flush();
+      this.engine?.destroy?.();
+      this.engine = void 0;
+      this.initialized = false;
+    }
+    // ── The event bus ──────────────────────────────────────────────────────
+    /** Listen for game events. Replaces any previous subscription. */
+    attach(bus) {
+      this.detach();
+      this.eventBus = bus;
+      this.unsubscribe = bus.onAny((event) => this.ingest(event));
+    }
+    detach() {
+      this.unsubscribe?.();
+      this.unsubscribe = void 0;
+      this.eventBus = void 0;
+    }
+    /** The bus this engine is listening to, if any. */
+    getEventBus() {
+      return this.eventBus;
+    }
+    /**
+     * Fold one event into the KB. Called for every bus event and callable
+     * directly by a host that has no bus.
+     *
+     * Returns immediately — the write is queued on the serialisation chain.
+     * {@link flush} is how a caller waits for it.
+     */
+    ingest(event) {
+      if (!this.engine) {
+        this.pending.push(event);
+        return;
+      }
+      const update = factsForEvent(event, this.playerId);
+      const collect = update.collect;
+      if (!update.assert?.length && !update.retract?.length && !collect) return;
+      this.enqueue(async (engine) => {
+        for (const fact of update.retract ?? []) await this.retractOne(engine, fact);
+        for (const fact of update.assert ?? []) await this.assertOne(engine, fact);
+        if (collect) await this.recount(engine, collect[0], collect[1]);
+      });
+    }
+    /** Resolve once every queued KB write has landed. */
+    async flush() {
+      await this.chain;
+    }
+    /** How many events are waiting for {@link initialize}. */
+    getPendingCount() {
+      return this.pending.length;
+    }
+    // ── Facts ──────────────────────────────────────────────────────────────
+    /** Assert one runtime fact, queued behind whatever the bus already fired. */
+    assertFact(fact) {
+      return this.enqueue((engine) => this.assertOne(engine, fact));
+    }
+    /** Retract one runtime fact, queued the same way. */
+    retractFact(fact) {
+      return this.enqueue((engine) => this.retractOne(engine, fact));
+    }
+    /** The cumulative `collected/3` total for an item. */
+    getCollectedCount(itemId) {
+      return this.counts.get(itemId) ?? 0;
+    }
+    /** Every runtime fact this module has asserted and not retracted. */
+    getFacts() {
+      return [...this.asserted].sort();
+    }
+    // ── Queries ────────────────────────────────────────────────────────────
+    /**
+     * Run a goal. Queued behind pending writes, so `emit(...)` then `query(...)`
+     * sees the truth that event implied rather than racing it.
+     *
+     * A KB that does not exist yet answers `success: false` with an error rather
+     * than throwing: a host that queries during startup should degrade, not crash.
+     */
+    async query(goal, maxResults) {
+      await this.flush();
+      if (!this.engine) {
+        return { success: false, bindings: [], error: "prolog engine not initialized" };
+      }
+      const result2 = await this.engine.query(goal, maxResults);
+      if (this.debug.isEnabled()) {
+        const level = result2.error ? "error" : "info";
+        this.narrate(
+          level,
+          "QUERY",
+          `${goal} \u2192 ${result2.bindings.length} solution(s)`,
+          result2.error ?? JSON.stringify(result2.bindings)
+        );
+      }
+      return result2;
+    }
+    /** Run a goal for its truth value. `false` when the KB does not exist yet. */
+    async queryOnce(goal) {
+      const result2 = await this.query(goal, 1);
+      return result2.success && result2.bindings.length > 0;
+    }
+    /**
+     * Whether an objective's goal holds. Sugar over {@link queryOnce} that keeps
+     * the quest layer from having to know it is talking to Prolog at all.
+     */
+    checkObjective(goal) {
+      return this.queryOnce(goal);
+    }
+    // ── Diagnostics ────────────────────────────────────────────────────────
+    /**
+     * Dump the whole KB to the debug sink.
+     *
+     * The expensive path the contract's `isEnabled()` note is about: this
+     * serialises every fact and rule, so it returns without doing any of that
+     * when diagnostics are off.
+     */
+    dumpState(tag = "DUMP") {
+      if (!this.debug.isEnabled() || !this.engine) return;
+      const stats = this.engine.getStats();
+      this.narrate(
+        "info",
+        tag,
+        `${stats.factCount} facts, ${stats.ruleCount} rules`,
+        this.engine.export()
+      );
+    }
+    narrate(level, tag, summary, detail = "") {
+      if (!this.debug.isEnabled()) return;
+      this.debug.emit(debugEvent(this.debugCategory, level, tag, summary, detail));
+    }
+    // ── Save / restore ─────────────────────────────────────────────────────
+    getState() {
+      return { facts: this.getFacts(), counts: Object.fromEntries(this.counts) };
+    }
+    /**
+     * Restore runtime truths into a live KB.
+     *
+     * Facts whose predicate is not in {@link QUEST_TRUTH_PREDICATES} are dropped
+     * and narrated: a save that carries authored world facts would, on restore,
+     * duplicate what consulting the world content already provided.
+     */
+    async setState(state) {
+      this.counts.clear();
+      for (const [item2, count] of Object.entries(state.counts ?? {})) this.counts.set(item2, count);
+      const known = new Set(QUEST_TRUTH_PREDICATES);
+      const accepted = [];
+      for (const fact of state.facts ?? []) {
+        if (known.has(signatureOf2(fact))) accepted.push(fact);
+        else this.narrate("warn", "RESTORE", `dropped non-runtime fact: ${fact}`);
+      }
+      await this.enqueue(async (engine) => {
+        for (const fact of this.asserted) await this.retractOne(engine, fact);
+        for (const fact of accepted) await this.assertOne(engine, fact);
+      });
+    }
+    // ── Internals ──────────────────────────────────────────────────────────
+    /**
+     * Append work to the serialisation chain.
+     *
+     * A rejected step must not poison the chain — one unparseable fact would
+     * otherwise silently stop every later write — so failures are narrated and
+     * swallowed, and the chain always resolves.
+     */
+    enqueue(step) {
+      this.chain = this.chain.then(async () => {
+        const engine = this.engine;
+        if (!engine) return;
+        try {
+          await step(engine);
+        } catch (error) {
+          this.narrate("error", "KB", "fact update failed", String(error));
+        }
+      });
+      return this.chain;
+    }
+    async assertOne(engine, fact) {
+      if (this.asserted.has(fact)) return;
+      const ok = await engine.assertFact(fact);
+      if (ok) this.asserted.add(fact);
+      else this.narrate("warn", "ASSERT", `rejected: ${fact}`);
+    }
+    async retractOne(engine, fact) {
+      await engine.retractFact(fact);
+      this.asserted.delete(fact);
+    }
+    /**
+     * Move an item's running total and rewrite `collected/3`.
+     *
+     * Prolog has no in-place update, so the old clause is retracted before the new
+     * one goes in; the total is kept here because reading it back would mean
+     * parsing a solution on every pickup. A total that reaches zero leaves no
+     * `collected/3` clause at all — "collected none" and "never collected" are the
+     * same thing to an objective.
+     */
+    async recount(engine, itemId, delta) {
+      const previous = this.counts.get(itemId) ?? 0;
+      const next = Math.max(0, previous + delta);
+      if (next === previous) return;
+      const p = atom3(this.playerId);
+      const item2 = atom3(itemId);
+      if (previous > 0) await this.retractOne(engine, `collected(${p}, ${item2}, ${previous})`);
+      if (next > 0) await this.assertOne(engine, `collected(${p}, ${item2}, ${next})`);
+      if (next > 0) this.counts.set(itemId, next);
+      else this.counts.delete(itemId);
+    }
+  };
+  function signatureOf2(fact) {
+    const match = fact.trim().replace(/\.\s*$/, "").match(/^([a-z_]\w*)\((.*)\)$/s);
+    if (!match) return "";
+    let depth = 0;
+    let arity = 1;
+    for (const ch of match[2]) {
+      if (ch === "(" || ch === "[") depth++;
+      else if (ch === ")" || ch === "]") depth--;
+      else if (ch === "," && depth === 0) arity++;
+    }
+    return `${match[1]}/${arity}`;
+  }
+
+  // @insimul/core/src/platformer/course.ts
+  var DEFAULT_LEVEL_COUNT = 5;
+  var PLATFORMER_TUNING = Object.freeze({ levelCount: DEFAULT_LEVEL_COUNT });
+  var DEFAULT_RUNNER_MODES = Object.freeze(["walk", "jump"]);
+  var COMPASS_WORDS = Object.freeze({
+    N: "north",
+    NE: "north-east",
+    E: "east",
+    SE: "south-east",
+    S: "south",
+    SW: "south-west",
+    W: "west",
+    NW: "north-west"
+  });
+
+  // @insimul/core/src/strategy/strategy.ts
+  var DEFAULT_STRATEGY_RESOURCES = Object.freeze([
+    "coin",
+    "food",
+    "goods",
+    "influence",
+    "timber",
+    "tools"
+  ]);
+  var DEFAULT_TRADE_OUTPUTS = Object.freeze({
+    farm: { food: 3, coin: 1 },
+    bakery: { food: 2, coin: 1 },
+    butcher: { food: 2, coin: 1 },
+    mill: { food: 2, coin: 1 },
+    restaurant: { food: 1, coin: 2 },
+    inn: { coin: 2, food: 1 },
+    tavern: { coin: 2, food: 1 },
+    blacksmith: { tools: 2, coin: 1 },
+    carpenter: { timber: 2, coin: 1 },
+    market: { goods: 2, coin: 1 },
+    general_store: { goods: 2, coin: 1 },
+    tailor: { goods: 2, coin: 1 },
+    church: { influence: 2 }
+  });
+  var UNKNOWN_TRADE_OUTPUT = Object.freeze({ coin: 1 });
+  var DEFAULT_CLAIM_COST = Object.freeze({ coin: 10 });
+  var DEFAULT_WORKER_UPKEEP = Object.freeze({ food: 1 });
+  var DEFAULT_WORKERS_PER_HOLDING = 2;
+  var DEFAULT_STARTING_STOCK = Object.freeze({ coin: 25, food: 6 });
+  var STRATEGY_TUNING = Object.freeze({
+    claimCoin: DEFAULT_CLAIM_COST.coin,
+    upkeepFood: DEFAULT_WORKER_UPKEEP.food,
+    startingCoin: DEFAULT_STARTING_STOCK.coin,
+    startingFood: DEFAULT_STARTING_STOCK.food,
+    workersPerHolding: DEFAULT_WORKERS_PER_HOLDING
+  });
+  var STRATEGY_WORLD_PREDICATES = Object.freeze([
+    "settlement/1",
+    "business/1",
+    "business_type/2",
+    "business_owner/2",
+    "business_of_settlement/2",
+    "business_out_of_business/1",
+    "lives_at/2",
+    "residence_of_settlement/2"
+  ]);
+
+  // @insimul/core/src/genre-systems/systems-corpus.ts
+  var GENRE_SYSTEMS_CORPUS_FILES = Object.freeze({
+    puzzle: ["puzzle/definition", "puzzle/run", "puzzle/save"],
+    platformer: ["platformer/course", "platformer/run", "platformer/save"],
+    strategy: ["strategy/campaign", "strategy/run", "strategy/save"]
+  });
+  var GENRE_SYSTEMS_CORPUS_OPS = Object.freeze({
+    "puzzle/definition": ["generate", "authored", "choices"],
+    "puzzle/run": ["run"],
+    "puzzle/save": ["block", "read", "restore"],
+    "platformer/course": ["generate", "route", "stars"],
+    "platformer/run": ["run"],
+    "platformer/save": ["block", "read", "restore"],
+    "strategy/campaign": ["generate", "books", "claimCost", "controlled", "adjacency"],
+    "strategy/run": ["run"],
+    "strategy/save": ["block", "read", "restore"]
+  });
+  var GENRE_SYSTEMS_CORPUS_STEPS = Object.freeze({
+    puzzle: ["restore", "clue", "answer", "unlock", "take", "view", "progress", "complete", "state"],
+    platformer: ["restore", "enter", "step", "respawn", "hint", "unlocked", "progress", "state"],
+    strategy: ["start", "restore", "claim", "assign", "release", "endTurn", "stockpile", "holder", "controls", "victory", "progress", "state"]
+  });
+  var GENRE_SYSTEMS_CORPUS_CATALOG = Object.freeze({
+    "puzzle/definition": ["puzzle-rule-module"],
+    "puzzle/run": ["puzzle-rule-module"],
+    "puzzle/save": ["puzzle-rule-module"],
+    "platformer/course": ["genre-platformer"],
+    "platformer/run": ["genre-platformer"],
+    "platformer/save": ["genre-platformer"],
+    "strategy/campaign": ["genre-strategy"],
+    "strategy/run": ["genre-strategy"],
+    "strategy/save": ["genre-strategy"]
+  });
+  var isObj15 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var list2 = (v, name) => {
+    if (!Array.isArray(v)) throw new Error(`genre corpus: ${name} must be a list`);
+    return v;
+  };
+  var str9 = (v, name) => {
+    if (typeof v !== "string") throw new Error(`genre corpus: ${name} must be a string`);
+    return v;
+  };
+  var ENTITY_LISTS = ["characters", "npcs", "buildings", "businesses", "containers"];
+  function worldOf(v, slices) {
+    if (typeof v === "string") {
+      const w = slices[v];
+      if (!w) throw new Error(`genre corpus: no world slice named ${v}`);
+      return w;
+    }
+    if (!isObj15(v)) throw new Error("genre corpus: world must be a slice name or an object");
+    if (typeof v.slice !== "string") return v;
+    const base = worldOf(v.slice, slices);
+    const drop = new Set(list2(v.dropFacts ?? [], "dropFacts").map((s) => str9(s, "dropFacts[]")));
+    const dropEntities = new Set(list2(v.dropEntities ?? [], "dropEntities").map((s) => str9(s, "dropEntities[]")));
+    for (const e of dropEntities) if (!ENTITY_LISTS.includes(e)) throw new Error(`genre corpus: unknown entity list ${e}`);
+    const kb = (base.systems?.knowledgeBase ?? "").split("\n").filter((line) => {
+      const fact = parseGroundFact(line);
+      return !fact || !drop.has(fact.signature);
+    }).join("\n");
+    const entities = { ...base.entities ?? {} };
+    for (const e of dropEntities) entities[e] = [];
+    return {
+      ...base,
+      systems: { ...base.systems ?? {}, knowledgeBase: kb },
+      entities,
+      ..."player" in v ? { player: v.player } : {}
+    };
+  }
+
   // @insimul/core/src/system-packs/composer.ts
   var WORLD_DEFAULT_VARIANT = "world-default";
   function preset(p) {
@@ -43955,9 +45171,9 @@ Return JSON format:
     };
     const gatedBy = /* @__PURE__ */ new Map();
     const addGate = (feature, id4) => {
-      const list2 = gatedBy.get(feature) ?? [];
-      if (!list2.includes(id4)) list2.push(id4);
-      gatedBy.set(feature, list2);
+      const list3 = gatedBy.get(feature) ?? [];
+      if (!list3.includes(id4)) list3.push(id4);
+      gatedBy.set(feature, list3);
     };
     for (const m of catalog.manifests) if (m.core.genreFeature !== void 0) addGate(m.core.genreFeature, m.id);
     for (const id4 of Object.keys(presetDoc.gate)) {
@@ -44187,7 +45403,7 @@ Return JSON format:
     refusals.push(...pass.refusals);
     notes.push(...pass.notes);
     const modulesOf = (id4) => manifests.get(id4)?.core.modules ?? [];
-    const runningModules = (list2) => new Set(list2.filter((p) => p.active).flatMap((p) => modulesOf(p.id)));
+    const runningModules = (list3) => new Set(list3.filter((p) => p.active).flatMap((p) => modulesOf(p.id)));
     const now = runningModules(packs);
     const before = Object.keys(game).length === 0 ? now : runningModules(resolveComposition({ recipe: request.recipe, world: request.world }, catalog).packs);
     const moduleIds = [...base.activation.modules.filter((mod) => now.has(mod) || !before.has(mod)), ...[...now].filter((mod) => !before.has(mod))];
@@ -44330,16 +45546,16 @@ Return JSON format:
     };
   }
   function readAssetGeometry(transform, sockets) {
-    const declared = readConvention(transform?.convention);
+    const declared2 = readConvention(transform?.convention);
     const hasTransform = isRecord(transform);
     const hasSockets = isRecord(sockets);
     if (!hasTransform && !hasSockets) return unmeasuredGeometry(CORE_CONVENTION);
     const raw = {
-      convention: declared,
+      convention: declared2,
       // An asset with anchors but no extents IS measured — its anchors are real
       // measurements. `footprint === null` is the separate, narrower fact.
       measured: true,
-      footprint: readFootprint(transform?.footprint, declared.up),
+      footprint: readFootprint(transform?.footprint, declared2.up),
       offset: vec32(transform?.offset, { x: 0, y: 0, z: 0 }),
       yaw: finite4(transform?.yaw, 0),
       scale: readScale(transform?.scale),
@@ -46348,7 +47564,7 @@ Return JSON format:
     const v = o[k];
     return typeof v === "number" ? v : d;
   }
-  function str9(o, k, d = "") {
+  function str10(o, k, d = "") {
     const v = o[k];
     return typeof v === "string" ? v : d;
   }
@@ -46390,11 +47606,11 @@ Return JSON format:
   var DOOR_SOURCES = ["none", "binding_socket", "mesh_socket", "component", "binding_yaw"];
   function door(v) {
     const o = obj(v, "a door");
-    const source = str9(o, "source", "none");
+    const source = str10(o, "source", "none");
     if (!DOOR_SOURCES.includes(source)) bad(`unknown door source '${source}'`);
     return {
       source,
-      name: str9(o, "name"),
+      name: str10(o, "name"),
       hasPosition: bool(o, "hasPosition"),
       position: present(o, "position") ? vec2(o.position) : { x: 0, y: 0, z: 0 },
       yaw: numOr2(o, "yaw", 0),
@@ -46404,13 +47620,13 @@ Return JSON format:
   }
   function candidate(v) {
     const o = obj(v, "a door candidate");
-    return { component: str9(o, "component"), mesh: str9(o, "mesh"), owner: str9(o, "owner"), min: vec2(o.min), max: vec2(o.max) };
+    return { component: str10(o, "component"), mesh: str10(o, "mesh"), owner: str10(o, "owner"), min: vec2(o.min), max: vec2(o.max) };
   }
   function policy(v) {
     const o = obj(v, "a fit policy");
     const d = defaultFitPolicy();
     const p = {
-      mode: str9(o, "mode", "lot") === "none" ? "none" : "lot",
+      mode: str10(o, "mode", "lot") === "none" ? "none" : "lot",
       scaleMin: numOr2(o, "scaleMin", d.scaleMin),
       scaleMax: numOr2(o, "scaleMax", d.scaleMax),
       doorClearance: numOr2(o, "doorClearance", d.doorClearance),
@@ -46425,8 +47641,8 @@ Return JSON format:
     const g = obj(o.geometry, "geometry");
     const b = present(o, "bounds") ? obj(o.bounds, "bounds") : null;
     return {
-      entityId: str9(o, "entityId"),
-      lotId: str9(o, "lotId"),
+      entityId: str10(o, "entityId"),
+      lotId: str10(o, "lotId"),
       lot: present(o, "lot") ? readFitLot(o.lot) : null,
       lotCentre: present(o, "lotCentre") ? point2(o.lotCentre) : null,
       node: vec2(o.node),
@@ -46445,9 +47661,9 @@ Return JSON format:
   function obstacle(v) {
     const o = obj(v, "an obstacle");
     return {
-      entityId: str9(o, "entityId"),
-      kind: str9(o, "kind"),
-      lotId: str9(o, "lotId"),
+      entityId: str10(o, "entityId"),
+      kind: str10(o, "kind"),
+      lotId: str10(o, "lotId"),
       points: points(o.points),
       halfWidth: numOr2(o, "halfWidth", 0),
       closed: bool(o, "closed")
@@ -46459,8 +47675,8 @@ Return JSON format:
   function body(v) {
     const o = obj(v, "a body");
     return {
-      entityId: str9(o, "entityId"),
-      lotId: str9(o, "lotId"),
+      entityId: str10(o, "entityId"),
+      lotId: str10(o, "lotId"),
       outline: points(o.outline),
       mass: num4(o, "mass"),
       maxShift: num4(o, "maxShift"),
@@ -46480,10 +47696,10 @@ Return JSON format:
       y = p[1];
     }
     return {
-      kind: str9(o, "kind"),
-      entityId: str9(o, "entityId"),
-      archetype: str9(o, "archetype"),
-      lotId: str9(o, "lotId"),
+      kind: str10(o, "kind"),
+      entityId: str10(o, "entityId"),
+      archetype: str10(o, "archetype"),
+      lotId: str10(o, "lotId"),
       path: present(o, "path") ? points(o.path) : [],
       width: numOr2(o, "width", 0),
       closed: bool(o, "closed"),
@@ -46497,12 +47713,12 @@ Return JSON format:
     const o = obj(v, "a plan");
     const strips = present(o, "strips") ? arr(o.strips, "strips").map((x) => {
       const s = obj(x, "a strip");
-      const surface = str9(s, "surface");
+      const surface = str10(s, "surface");
       if (surface !== "road" && surface !== "plaza" && surface !== "path") bad("a strip's surface is road, plaza or path");
       return {
-        entityId: str9(s, "entityId"),
+        entityId: str10(s, "entityId"),
         surface,
-        lotId: str9(s, "lotId"),
+        lotId: str10(s, "lotId"),
         points: points(s.points),
         halfWidth: numOr2(s, "halfWidth", 0),
         closed: bool(s, "closed")
@@ -46511,8 +47727,8 @@ Return JSON format:
     const lots = present(o, "lots") ? arr(o.lots, "lots").map((x) => {
       const l = obj(x, "a lot");
       return {
-        entityId: str9(l, "entityId"),
-        lotId: str9(l, "lotId"),
+        entityId: str10(l, "entityId"),
+        lotId: str10(l, "lotId"),
         cx: num4(l, "cx"),
         cz: num4(l, "cz"),
         halfAcross: num4(l, "halfAcross"),
@@ -46527,7 +47743,7 @@ Return JSON format:
     return arr(v, "obstacles").map((x) => {
       const o = obj(x, "a ground obstacle");
       return {
-        entityId: str9(o, "entityId"),
+        entityId: str10(o, "entityId"),
         building: bool(o, "building"),
         cx: num4(o, "cx"),
         cz: num4(o, "cz"),
@@ -46541,7 +47757,7 @@ Return JSON format:
   function choices(v) {
     return arr(v, "authored").map((x) => {
       const o = obj(x, "a layer choice");
-      return { surface: str9(o, "surface"), layer: str9(o, "layer"), strength: numOr2(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
+      return { surface: str10(o, "surface"), layer: str10(o, "layer"), strength: numOr2(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
     });
   }
   var v3 = (v) => ({ x: v.x, y: v.y, z: v.z });
@@ -46643,7 +47859,7 @@ Return JSON format:
     switch (op) {
       // ── building-fit ──
       case "isDoorPartName":
-        return isDoorPartName({ component: str9(i, "component"), mesh: str9(i, "mesh"), owner: str9(i, "owner") });
+        return isDoorPartName({ component: str10(i, "component"), mesh: str10(i, "mesh"), owner: str10(i, "owner") });
       case "faceYawOf":
         return faceYawOf(vec2(i.point), vec2(i.min), vec2(i.max));
       case "chooseDoorPart":
@@ -46668,7 +47884,7 @@ Return JSON format:
           const o = obj(x, "a footprint");
           const corners = points(o.corners);
           if (corners.length !== 4) bad("a footprint has four corners");
-          return { entityId: str9(o, "entityId"), lotId: str9(o, "lotId"), corners: corners.map((c) => [c[0], c[1]]) };
+          return { entityId: str10(o, "entityId"), lotId: str10(o, "lotId"), corners: corners.map((c) => [c[0], c[1]]) };
         });
         return findFitOverlaps(buildings, obstacles(i.obstacles)).map((o) => ({ entityId: o.entityId, with: o.with, withKind: o.withKind, depth: o.depth }));
       }
@@ -46678,7 +47894,7 @@ Return JSON format:
         return { gap: s.gap, axis: [s.axis[0], s.axis[1]] };
       }
       case "settleBodies": {
-        const rule2 = str9(i, "rule");
+        const rule2 = str10(i, "rule");
         if (rule2 !== "neighbour" && rule2 !== "clearance") bad(`unknown settle rule '${rule2}'`);
         return movesJson(settleBodies(
           arr(i.bodies, "bodies").map(body),
@@ -46690,14 +47906,14 @@ Return JSON format:
       case "settleFittedBuildings":
         return movesJson(settleFittedBuildings(arr(i.buildings, "buildings").map((x) => {
           const o = obj(x, "a fitted footprint");
-          return { entityId: str9(o, "entityId"), lotId: str9(o, "lotId"), corners: points(o.corners), neighbourGap: num4(o, "neighbourGap") };
+          return { entityId: str10(o, "entityId"), lotId: str10(o, "lotId"), corners: points(o.corners), neighbourGap: num4(o, "neighbourGap") };
         }), obstacles(i.obstacles)));
       case "settleDoorFrontage": {
         const buildings = arr(i.buildings, "buildings").map((x) => {
           const o = obj(x, "a fitted footprint");
           return {
-            entityId: str9(o, "entityId"),
-            lotId: str9(o, "lotId"),
+            entityId: str10(o, "entityId"),
+            lotId: str10(o, "lotId"),
             corners: points(o.corners),
             neighbourGap: num4(o, "neighbourGap"),
             door: present(o, "door") ? fittedDoor(o.door) : null
@@ -46719,14 +47935,14 @@ Return JSON format:
       case "settleClearance": {
         const items = arr(i.items, "items").map((x) => {
           const o = obj(x, "a clearance item");
-          const kind = str9(o, "kind");
+          const kind = str10(o, "kind");
           const item2 = {
-            entityId: str9(o, "entityId"),
+            entityId: str10(o, "entityId"),
             kind: kind === "building" ? "building" : kind === "plant" ? "plant" : "prop",
             outline: points(o.outline)
           };
           item2.area = numOr2(o, "area", 0);
-          item2.archetype = str9(o, "archetype");
+          item2.archetype = str10(o, "archetype");
           item2.height = numOr2(o, "height", 0);
           item2.longestPlan = numOr2(o, "longestPlan", 0);
           item2.crownRadius = numOr2(o, "crownRadius", 1);
@@ -46755,7 +47971,7 @@ Return JSON format:
       case "layoutConstants":
         return { pairingNeighbourGap: PAIRING_NEIGHBOUR_GAP_M, crownRadius: CROWN_RADIUS_M };
       case "markerClearance":
-        return markerClearanceM(str9(i, "archetype"), num4(i, "height"), num4(i, "longestPlan"));
+        return markerClearanceM(str10(i, "archetype"), num4(i, "height"), num4(i, "longestPlan"));
       case "plantWallClearance":
         return plantWallClearanceM(num4(i, "crownRadius"));
       case "settleBuildingMaxShift":
@@ -46791,8 +48007,8 @@ Return JSON format:
           const o = obj(x, "a settled building");
           const d = present(o, "door") ? obj(o.door, "a door") : null;
           return {
-            entityId: str9(o, "entityId"),
-            lotId: str9(o, "lotId"),
+            entityId: str10(o, "entityId"),
+            lotId: str10(o, "lotId"),
             shiftX: numOr2(o, "shiftX", 0),
             shiftZ: numOr2(o, "shiftZ", 0),
             door: d === null ? null : { x: num4(d, "x"), z: num4(d, "z"), faceX: num4(d, "faceX"), faceZ: num4(d, "faceZ") }
@@ -46812,7 +48028,7 @@ Return JSON format:
       case "lanternsAtPathMouths": {
         const mouths = arr(i.mouths, "mouths").map((x) => {
           const o = obj(x, "a mouth");
-          return { pathId: str9(o, "pathId"), x: num4(o, "x"), z: num4(o, "z"), dirX: num4(o, "dirX"), dirZ: num4(o, "dirZ"), halfWidth: num4(o, "halfWidth") };
+          return { pathId: str10(o, "pathId"), x: num4(o, "x"), z: num4(o, "z"), dirX: num4(o, "dirX"), dirZ: num4(o, "dirZ"), halfWidth: num4(o, "halfWidth") };
         });
         return lanternsAtPathMouths(mouths, points(i.lanterns)).map((l) => ({ ...l }));
       }
@@ -46858,7 +48074,7 @@ Return JSON format:
         return arr(i.rows, "rows").map((x) => {
           const q = arr(x, "a row");
           const r = lookNeighbours(
-            str9(i, "layerId"),
+            str10(i, "layerId"),
             { x: q[0], z: q[1], yaw: q[2] },
             { density: num4(look, "density"), clumping: num4(look, "clumping"), clumpCell: num4(look, "clumpCell"), jitter: num4(look, "jitter") },
             t === null ? null : { sizeX: num4(t, "sizeX"), sizeZ: num4(t, "sizeZ") },
@@ -47614,11 +48830,11 @@ Return JSON format:
       if (!cells.has(key)) cells.set(key, { ix, iz, list: [] });
       cells.get(key).list.push(m);
     }
-    for (const { ix, iz, list: list2 } of cells.values()) {
-      if (list2.length < 2) continue;
-      const cx = list2.reduce((a, m) => a + m.x, 0) / list2.length + (cellHash01(ix, iz, salt) - 0.5) * 0.5 * cell;
-      const cz = list2.reduce((a, m) => a + m.z, 0) / list2.length + (cellHash01(ix, iz, salt ^ 1515870810) - 0.5) * 0.5 * cell;
-      for (const m of list2) {
+    for (const { ix, iz, list: list3 } of cells.values()) {
+      if (list3.length < 2) continue;
+      const cx = list3.reduce((a, m) => a + m.x, 0) / list3.length + (cellHash01(ix, iz, salt) - 0.5) * 0.5 * cell;
+      const cz = list3.reduce((a, m) => a + m.z, 0) / list3.length + (cellHash01(ix, iz, salt ^ 1515870810) - 0.5) * 0.5 * cell;
+      for (const m of list3) {
         const x = m.x + pull * (cx - m.x);
         const z = m.z + pull * (cz - m.z);
         out.set(m.k, ok(x, z) ? { x, z, blocked: false } : { x: m.x, z: m.z, blocked: true });
@@ -48167,9 +49383,9 @@ Return JSON format:
     const pts = [...points3].map((p) => [p[0], p[1]]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
     if (pts.length < 3) return pts;
     const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
-    const half = (list2) => {
+    const half = (list3) => {
       const h = [];
-      for (const p of list2) {
+      for (const p of list3) {
         while (h.length >= 2 && cross(h[h.length - 2], h[h.length - 1], p) <= COMPOSITION_SLACK) h.pop();
         h.push(p);
       }
@@ -48823,7 +50039,7 @@ Return JSON format:
     if (typeof v !== "number") bad2(`'${k}' is not a number`);
     return v;
   }
-  function str10(o, k) {
+  function str11(o, k) {
     const v = o[k];
     if (typeof v !== "string") bad2(`'${k}' is not a string`);
     return v;
@@ -48848,10 +50064,10 @@ Return JSON format:
   }
   function stripOf(v) {
     const s = obj2(v, "a strip");
-    const surface = str10(s, "surface");
+    const surface = str11(s, "surface");
     if (surface !== "road" && surface !== "plaza" && surface !== "path") bad2(`unknown strip surface '${surface}'`);
     return {
-      entityId: str10(s, "entityId"),
+      entityId: str11(s, "entityId"),
       surface,
       lotId: typeof s.lotId === "string" ? s.lotId : "",
       points: points2(s.points, "a strip's points"),
@@ -48862,7 +50078,7 @@ Return JSON format:
   function lotOf(v) {
     const l = obj2(v, "a lot");
     return {
-      entityId: str10(l, "entityId"),
+      entityId: str11(l, "entityId"),
       lotId: typeof l.lotId === "string" ? l.lotId : "",
       cx: num5(l, "cx"),
       cz: num5(l, "cz"),
@@ -48900,7 +50116,7 @@ Return JSON format:
   function doorsOf(v) {
     return arr2(v ?? [], "doors").map((d) => {
       const o = obj2(d, "a door");
-      return { entityId: str10(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), heading: num5(o, "heading") };
+      return { entityId: str11(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), heading: num5(o, "heading") };
     });
   }
   function groupingInput(i) {
@@ -48913,7 +50129,7 @@ Return JSON format:
   function propsOf(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      const prop = { entityId: str10(o, "entityId"), archetype: str10(o, "archetype"), x: num5(o, "x"), z: num5(o, "z"), radius: num5(o, "radius") };
+      const prop = { entityId: str11(o, "entityId"), archetype: str11(o, "archetype"), x: num5(o, "x"), z: num5(o, "z"), radius: num5(o, "radius") };
       if (o.middle !== void 0) prop.middle = point3(o.middle, "middle");
       return prop;
     });
@@ -48929,7 +50145,7 @@ Return JSON format:
   function spotsOf(v, what) {
     return arr2(v ?? [], what).map((p) => {
       const o = obj2(p, what);
-      return { entityId: str10(o, "entityId"), x: num5(o, "x"), z: num5(o, "z") };
+      return { entityId: str11(o, "entityId"), x: num5(o, "x"), z: num5(o, "z") };
     });
   }
   var postsOf = (v) => spotsOf(v, "posts");
@@ -48938,38 +50154,38 @@ Return JSON format:
   function foliageOf(v) {
     return arr2(v ?? [], "foliage").map((p) => {
       const o = obj2(p, "a foliage prop");
-      return { entityId: str10(o, "entityId"), archetype: str10(o, "archetype"), x: num5(o, "x"), z: num5(o, "z") };
+      return { entityId: str11(o, "entityId"), archetype: str11(o, "archetype"), x: num5(o, "x"), z: num5(o, "z") };
     });
   }
   function villagersOf(v) {
     return arr2(v ?? [], "villagers").map((p) => {
       const o = obj2(p, "a villager");
-      return { entityId: str10(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), target: typeof o.target === "string" ? o.target : null };
+      return { entityId: str11(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), target: typeof o.target === "string" ? o.target : null };
     });
   }
   function outlinedBuildings(v) {
     return arr2(v ?? [], "buildings").map((b) => {
       const o = obj2(b, "a building");
-      return { entityId: str10(o, "entityId"), outline: points2(o.outline, "a building's outline") };
+      return { entityId: str11(o, "entityId"), outline: points2(o.outline, "a building's outline") };
     });
   }
   function reachProps(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      return { entityId: str10(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), radius: num5(o, "radius") };
+      return { entityId: str11(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), radius: num5(o, "radius") };
     });
   }
   function seatsOf(v) {
     return arr2(v ?? [], "seats").map((s) => {
       const o = obj2(s, "a seat");
-      return { entityId: str10(o, "entityId"), archetype: str10(o, "archetype"), x: num5(o, "x"), z: num5(o, "z"), heading: num5(o, "heading"), length: num5(o, "length") };
+      return { entityId: str11(o, "entityId"), archetype: str11(o, "archetype"), x: num5(o, "x"), z: num5(o, "z"), heading: num5(o, "heading"), length: num5(o, "length") };
     });
   }
   function compositionHouseModels(v) {
     return arr2(v ?? [], "models").map((m) => {
       const o = obj2(m, "a model");
       if (o.entry !== void 0) {
-        const model = houseModelOf(str10(o, "id"), obj2(o.entry, "a model's entry"));
+        const model = houseModelOf(str11(o, "id"), obj2(o.entry, "a model's entry"));
         if (model === null) bad2(`model ${JSON.stringify(o.id)}: its entry states no measured footprint`);
         return model;
       }
@@ -48977,7 +50193,7 @@ Return JSON format:
         if (typeof s !== "string" || !HOUSE_SIDES.includes(s)) bad2(`unknown house side ${JSON.stringify(s)}`);
         return s;
       });
-      return { id: str10(o, "id"), width: num5(o, "width"), depth: num5(o, "depth"), blank };
+      return { id: str11(o, "id"), width: num5(o, "width"), depth: num5(o, "depth"), blank };
     });
   }
   function runCompositionOp(op, input, rules = DEFAULT_COMPOSITION_RULES) {
@@ -49017,7 +50233,7 @@ Return JSON format:
       case "auditGroundEdges":
         return json4(auditGroundEdges(arr2(i.samples, "samples").map((s) => point3(s, "an [s, w] sample")), r));
       case "coverageAudit": {
-        const source = str10(i, "source");
+        const source = str11(i, "source");
         if (source !== "transition" && source !== "paint") bad2(`unknown coverage source '${source}'`);
         const profile = coverageProfile(
           compositionPlan(i.plan),
@@ -49049,7 +50265,7 @@ Return JSON format:
       case "composeYards": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
-          return { entityId: str10(o, "entityId"), archetype: str10(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
+          return { entityId: str11(o, "entityId"), archetype: str11(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
         });
         return json4(composeYards({ lots: compositionPlan(i.plan).lots, buildings, doors: doorsOf(i.doors), posts: postsOf(i.posts) }, r));
       }
@@ -49058,7 +50274,7 @@ Return JSON format:
         if (i.buildings === void 0 || i.props === void 0) bad2("a lanternsOnRoutes input states its 'buildings' and 'props' (empty means none)");
         const lines2 = arr2(i.lines ?? [], "lines").map((q) => {
           const o = obj2(q, "a line");
-          return { entityId: str10(o, "entityId"), points: points2(o.points, "a line's points") };
+          return { entityId: str11(o, "entityId"), points: points2(o.points, "a line's points") };
         });
         return json4(lanternsOnRoutes({ plan: compositionPlan(i.plan), routes, lanterns: lanternsOf(i.lanterns), buildings: outlinedBuildings(i.buildings), props: reachProps(i.props), lines: lines2 }, r));
       }
@@ -49074,7 +50290,7 @@ Return JSON format:
       case "assignHouseModels": {
         const houses = arr2(i.houses ?? [], "houses").map((h) => {
           const o = obj2(h, "a house");
-          return { entityId: str10(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), heading: num5(o, "heading") };
+          return { entityId: str11(o, "entityId"), x: num5(o, "x"), z: num5(o, "z"), heading: num5(o, "heading") };
         });
         return json4(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: compositionHouseModels(i.models) }, r));
       }
@@ -49087,7 +50303,7 @@ Return JSON format:
       case "composeVillage": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
-          return { entityId: str10(o, "entityId"), archetype: str10(o, "archetype"), outline: points2(o.outline, "an outline") };
+          return { entityId: str11(o, "entityId"), archetype: str11(o, "archetype"), outline: points2(o.outline, "an outline") };
         });
         return json4(
           composeVillage(
@@ -49348,9 +50564,9 @@ Return JSON format:
     return value === void 0 || value === null ? void 0 : needString(method, value, name);
   }
   function optStrings(method, value, name) {
-    const list2 = optArrayValue(method, value, name);
-    if (list2 !== void 0) list2.forEach((v, i) => needString(method, v, `${name}[${i}]`));
-    return list2;
+    const list3 = optArrayValue(method, value, name);
+    if (list3 !== void 0) list3.forEach((v, i) => needString(method, v, `${name}[${i}]`));
+    return list3;
   }
   function sessionClockOf(method, value) {
     if (value === void 0 || value === null) return { manual: false, at: 0 };
@@ -49931,8 +51147,8 @@ Return JSON format:
     const input = { notices: optArrayValue(method, args.notices, "notices") ?? [] };
     if (args.fluency !== void 0 && args.fluency !== null) input.fluency = needNumber(method, args.fluency, "fluency");
     for (const key of ["read", "answered"]) {
-      const list2 = optArrayValue(method, args[key], key);
-      if (list2 !== void 0) input[key] = list2.map((id4, i) => needString(method, id4, `${key}[${i}]`));
+      const list3 = optArrayValue(method, args[key], key);
+      if (list3 !== void 0) input[key] = list3.map((id4, i) => needString(method, id4, `${key}[${i}]`));
     }
     const status = optObject(method, args.questStatus, "questStatus");
     if (status !== void 0) {
@@ -50451,7 +51667,7 @@ Return JSON format:
     return coded("invalid-input", () => {
       needObject(method, value, name);
       needString(method, value.questId, `${name}.questId`);
-      const each = (list2, at, check) => needArray(method, list2, at).forEach((x, i) => {
+      const each = (list3, at, check) => needArray(method, list3, at).forEach((x, i) => {
         needObject(method, x, `${at}[${i}]`);
         check(x, `${at}[${i}]`);
       });
@@ -50562,6 +51778,148 @@ Return JSON format:
   function jsonData(value) {
     const text4 = JSON.stringify(value);
     return text4 === void 0 ? null : JSON.parse(text4);
+  }
+  var REQ = "req";
+  var REQ_NULL = "reqNull";
+  var OPT = "opt";
+  var OPT_NULL = "optNull";
+  function declared(method, value, name, spec) {
+    needObject(method, value, name);
+    for (const [key, check, how] of spec) {
+      const where = `${name}.${key}`;
+      if (!hasOwn3(value, key)) {
+        if (how === REQ || how === REQ_NULL) throw refuse2(method, `\`${where}\` is missing`);
+        continue;
+      }
+      if (value[key] === null) {
+        if (how === REQ_NULL || how === OPT_NULL) continue;
+        throw refuse2(method, `\`${where}\` must not be null`);
+      }
+      check(method, value[key], where);
+    }
+    return value;
+  }
+  var tStr = (m, v, n) => needString(m, v, n);
+  var tNum = (m, v, n) => needNumber(m, v, n);
+  var tBool = (m, v, n) => needBoolean(m, v, n);
+  var tList = (check) => (m, v, n) => needArray(m, v, n).forEach((x, i) => check(m, x, `${n}[${i}]`));
+  var tObj = (spec) => (m, v, n) => declared(m, v, n, spec);
+  var tOneOf = (allowed) => (m, v, n) => oneOf(m, v, allowed, n);
+  var GENRE_VEC3 = [["x", tNum, REQ], ["y", tNum, OPT], ["z", tNum, REQ]];
+  var GENRE_XZ = [["x", tNum, REQ], ["z", tNum, REQ]];
+  var GENRE_PLAYER = [["startPosition", tObj(GENRE_VEC3), OPT_NULL]];
+  var GENRE_WORLD_SOURCE = [
+    ["meta", tObj([["worldId", tStr, OPT], ["worldName", tStr, OPT], ["genreConfig", tObj([["id", tStr, OPT]]), OPT_NULL]]), OPT_NULL],
+    ["geography", tObj([
+      ["georeference", tObj([["rotationRad", tNum, OPT_NULL]]), OPT_NULL],
+      ["settlements", tList(tObj([
+        ["id", tStr, REQ],
+        ["name", tStr, REQ],
+        ["position", tObj(GENRE_VEC3), OPT_NULL],
+        ["radius", tNum, OPT_NULL],
+        ["lots", tList(tObj([
+          ["id", tStr, REQ],
+          ["address", tStr, OPT_NULL],
+          ["streetName", tStr, OPT_NULL],
+          ["districtName", tStr, OPT_NULL],
+          ["position", tObj(GENRE_VEC3), OPT_NULL],
+          ["streetEdgeId", tStr, OPT_NULL]
+        ])), OPT_NULL],
+        ["streetNetwork", tObj([
+          ["nodes", tList(tObj([["id", tStr, REQ], ["position", tObj(GENRE_XZ), OPT_NULL]])), OPT_NULL],
+          ["segments", tList(tObj([["id", tStr, REQ], ["name", tStr, OPT_NULL], ["nodeIds", tList(tStr), OPT_NULL]])), OPT_NULL]
+        ]), OPT_NULL]
+      ])), OPT_NULL]
+    ]), OPT_NULL],
+    ["entities", tObj([
+      ["characters", tList(tObj([["id", tStr, REQ], ["firstName", tStr, OPT_NULL], ["lastName", tStr, OPT_NULL], ["isAlive", tBool, OPT_NULL]])), OPT_NULL],
+      ["npcs", tList(tObj([
+        ["characterId", tStr, REQ],
+        ["schedule", tObj([["homeBuildingId", tStr, OPT_NULL], ["workBuildingId", tStr, OPT_NULL]]), OPT_NULL]
+      ])), OPT_NULL],
+      ["buildings", tList(tObj([
+        ["id", tStr, REQ],
+        ["settlementId", tStr, OPT_NULL],
+        ["lotId", tStr, OPT_NULL],
+        ["businessId", tStr, OPT_NULL],
+        ["occupantIds", tList(tStr), OPT_NULL]
+      ])), OPT_NULL],
+      ["businesses", tList(tObj([
+        ["id", tStr, REQ],
+        ["settlementId", tStr, OPT_NULL],
+        ["name", tStr, REQ],
+        ["businessType", tStr, OPT_NULL],
+        ["ownerId", tStr, OPT_NULL],
+        ["isOutOfBusiness", tBool, OPT_NULL],
+        ["lotId", tStr, OPT_NULL]
+      ])), OPT_NULL],
+      ["containers", tList(tObj([["id", tStr, REQ], ["buildingId", tStr, OPT_NULL], ["containerType", tStr, OPT_NULL]])), OPT_NULL]
+    ]), OPT_NULL],
+    ["systems", tObj([["knowledgeBase", tStr, OPT_NULL]]), OPT_NULL],
+    ["player", tObj(GENRE_PLAYER), OPT_NULL]
+  ];
+  function genreWorldArg(method, value, name) {
+    return declared(method, value, name, GENRE_WORLD_SOURCE);
+  }
+  var PUZZLE_NEED_KINDS = ["riddle", "item", "clue", "lock"];
+  var PUZZLE_NEED = [["kind", tOneOf(PUZZLE_NEED_KINDS), REQ], ["ref", tStr, REQ]];
+  var PUZZLE_SOURCES = ["authored", "generated", "empty"];
+  var PUZZLE_IR = [
+    ["riddles", tList(tObj([["id", tStr, REQ], ["relation", tStr, REQ], ["subject", tStr, REQ], ["prompt", tStr, OPT], ["clues", tList(tStr), OPT]])), OPT],
+    ["locks", tList(tObj([["id", tStr, REQ], ["target", tStr, REQ], ["needs", tList(tObj(PUZZLE_NEED)), REQ], ["holds", tList(tStr), OPT]])), OPT],
+    ["finalLock", tStr, OPT],
+    ["maxAttempts", tNum, OPT_NULL]
+  ];
+  var PUZZLE_RIDDLE = [
+    ["id", tStr, REQ],
+    ["relation", tOneOf(PUZZLE_RELATIONS), REQ],
+    ["subject", tStr, REQ],
+    ["prompt", tStr, REQ],
+    ["clues", tList(tStr), REQ]
+  ];
+  var PUZZLE_DEFINITION = [
+    ["riddles", tList(tObj(PUZZLE_RIDDLE)), REQ],
+    ["locks", tList(tObj([["id", tStr, REQ], ["target", tStr, REQ], ["needs", tList(tObj(PUZZLE_NEED)), REQ], ["holds", tList(tStr), REQ]])), REQ],
+    ["finalLock", tStr, REQ_NULL],
+    ["maxAttempts", tNum, REQ_NULL],
+    ["clueTexts", tList(tObj([["id", tStr, REQ], ["clue", tStr, REQ]])), REQ],
+    ["source", tOneOf(PUZZLE_SOURCES), REQ],
+    ["notes", tList(tStr), REQ]
+  ];
+  function puzzleAttemptArg(method, value, name) {
+    if (needArray(method, value, name).length !== 2) throw refuse2(method, `\`${name}\` must be a [riddle, count] pair`);
+    needString(method, value[0], `${name}[0]`);
+    needNumber(method, value[1], `${name}[1]`);
+  }
+  var PUZZLE_DIRECTOR_STATE = [
+    ["actors", tList(tObj([
+      ["actor", tStr, REQ],
+      ["clues", tList(tStr), REQ],
+      ["solved", tList(tStr), REQ],
+      ["attempts", tList(puzzleAttemptArg), REQ],
+      ["opened", tList(tStr), REQ],
+      ["taken", tList(tStr), REQ]
+    ])), REQ]
+  ];
+  function puzzleOptionsArg(method, args) {
+    if (!hasOwn3(args, "maxAttempts")) return {};
+    if (args.maxAttempts !== null) needNumber(method, args.maxAttempts, "maxAttempts");
+    return { maxAttempts: args.maxAttempts };
+  }
+  function puzzleWorldArg(method, args) {
+    const world2 = genreWorldArg(method, args.world, "world");
+    if (hasOwn3(args, "puzzle")) {
+      if (args.puzzle !== null) declared(method, args.puzzle, "puzzle", PUZZLE_IR);
+      return { ...world2, puzzle: args.puzzle };
+    }
+    if (hasOwn3(world2, "puzzle") && world2.puzzle !== null) declared(method, world2.puzzle, "world.puzzle", PUZZLE_IR);
+    return world2;
+  }
+  function puzzleActorArgs(method, args, key) {
+    coded("invalid-input", () => {
+      needString(method, args.actor, "actor");
+      if (key) needString(method, args[key], key);
+    });
   }
   var QUEST_STATUSES = ["available", "active", "completed"];
   var QUEST_FILTERS = ["all", "active", "completed", "available"];
@@ -52110,6 +53468,239 @@ Return JSON format:
     "language.questTypes.templatesByCategory": (args) => ({
       templates: plain(getTemplatesByCategory(coded("invalid-input", () => needString("language.questTypes.templatesByCategory", args.category, "category"))))
     }),
+    // ── the genre systems (P9j): the world input and the puzzle (PL.native-genre-rows slice 1) ──
+    // core's P9j corpora's runner (genre-systems/systems-corpus.ts, runGenreSystemsOp) composes
+    // these functions; tests/genre_systems_corpus.cpp composes the rows the same way. A
+    // refusal core states is a VALUE in the answer (a director outcome's `refusal`, a save
+    // read's `keys`); an argument outside core's declared types is `[invalid-input]`.
+    /**
+     * `genre.world.of { world, slices? }` → `{ world }` — core's `worldOf`: a world named
+     * by a slice (`"thistlecombe"`), a slice with whole KB predicates (`dropFacts`,
+     * `name/arity`) or entity lists (`dropEntities`) dropped or its player start replaced
+     * (`{ slice, dropFacts?, dropEntities?, player? }`), or an inline world (any other
+     * object). `slices` are the committed world slices by name (core's runner reads no
+     * file; the caller loads them). A slice name must be an own key of `slices`. An
+     * unknown entity list is core's error.
+     */
+    "genre.world.of": (args) => {
+      const m = "genre.world.of";
+      const slices = coded("invalid-input", () => {
+        const s = optionalObject(m, args.slices, "slices") ?? {};
+        for (const [k, w2] of Object.entries(s)) genreWorldArg(m, w2, `slices.${k}`);
+        const named = (v, where) => {
+          needString(m, v, where);
+          if (!hasOwn3(s, v)) throw refuse2(m, `\`${where}\` names no slice of \`slices\` (got ${JSON.stringify(v)})`);
+        };
+        const w = args.world;
+        if (typeof w === "string") named(w, "world");
+        else if (typeof needObject(m, w, "world").slice === "string") {
+          named(w.slice, "world.slice");
+          optionalArg(w.dropFacts, (v) => stringList(m, v, "world.dropFacts"));
+          optionalArg(w.dropEntities, (v) => stringList(m, v, "world.dropEntities"));
+          if (hasOwn3(w, "player") && w.player !== null) declared(m, w.player, "world.player", GENRE_PLAYER);
+        } else genreWorldArg(m, w, "world");
+        return s;
+      });
+      return { world: plain(worldOf(args.world, slices)) };
+    },
+    /**
+     * `puzzle.contract {}` → core's puzzle constants: the relations a riddle asks, the world
+     * predicates the generator reads, the pack's authored, runtime and written predicates,
+     * the default attempt limit and the pack tuning, and the save block's key and members.
+     */
+    "puzzle.contract": () => ({
+      relations: [...PUZZLE_RELATIONS],
+      worldPredicates: [...PUZZLE_WORLD_PREDICATES],
+      authoredPredicates: [...PUZZLE_AUTHORED_PREDICATES],
+      runtimePredicates: [...PUZZLE_RUNTIME_PREDICATES],
+      writtenPredicates: [...PUZZLE_WRITTEN_PREDICATES],
+      defaultMaxAttempts: DEFAULT_PUZZLE_MAX_ATTEMPTS,
+      tuning: plain(PUZZLE_TUNING),
+      extensionKey: PUZZLE_EXTENSION_KEY,
+      blockMembers: [...PUZZLE_BLOCK_MEMBERS],
+      actorKeys: [...PUZZLE_ACTOR_KEYS]
+    }),
+    /**
+     * `puzzle.forWorld { world, puzzle?, maxAttempts? }` → `{ definition }` — core's
+     * `puzzleForWorld`: the world's authored section when it has riddles, else one generated
+     * from the world. `puzzle` (a `PuzzleIR`, or null for none) stands over the world's own
+     * `puzzle` when given; `maxAttempts` is the pack tunable (a number, or null for never
+     * spent; absent: core's default).
+     */
+    "puzzle.forWorld": (args) => {
+      const m = "puzzle.forWorld";
+      const [world2, options] = coded("invalid-input", () => [puzzleWorldArg(m, args), puzzleOptionsArg(m, args)]);
+      return { definition: plain(puzzleForWorld(world2, options)) };
+    },
+    /** `puzzle.generate { world, maxAttempts? }` → `{ definition }` — core's `generatePuzzle` (the world's own section unread). */
+    "puzzle.generate": (args) => {
+      const m = "puzzle.generate";
+      const [world2, options] = coded("invalid-input", () => [genreWorldArg(m, args.world, "world"), puzzleOptionsArg(m, args)]);
+      return { definition: plain(generatePuzzle(world2, options)) };
+    },
+    /** `puzzle.issues { puzzle? }` → `{ issues }` — core's `puzzleIssues` (absent or null: none). */
+    "puzzle.issues": (args) => {
+      const m = "puzzle.issues";
+      coded("invalid-input", () => optionalArg(args.puzzle, (v) => declared(m, v, "puzzle", PUZZLE_IR)));
+      return { issues: puzzleIssues(orUndefined(args.puzzle)) };
+    },
+    /** `puzzle.fromIR { puzzle, maxAttempts? }` → `{ definition }` — core's `puzzleFromIR`; a section with issues is core's error. */
+    "puzzle.fromIR": (args) => {
+      const m = "puzzle.fromIR";
+      const options = coded("invalid-input", () => {
+        declared(m, args.puzzle, "puzzle", PUZZLE_IR);
+        return puzzleOptionsArg(m, args);
+      });
+      return { definition: plain(puzzleFromIR(args.puzzle, options)) };
+    },
+    /** `puzzle.facts { definition }` → `{ facts }` — core's `puzzleFacts` (the definition as the pack's authored facts). */
+    "puzzle.facts": (args) => {
+      coded("invalid-input", () => declared("puzzle.facts", args.definition, "definition", PUZZLE_DEFINITION));
+      return { facts: puzzleFacts(args.definition) };
+    },
+    /** `puzzle.worldFacts { world, definition }` → `{ facts }` — core's `puzzleWorldFacts` (the world facts its riddles are answered from). */
+    "puzzle.worldFacts": (args) => {
+      const m = "puzzle.worldFacts";
+      coded("invalid-input", () => {
+        genreWorldArg(m, args.world, "world");
+        declared(m, args.definition, "definition", PUZZLE_DEFINITION);
+      });
+      return { facts: puzzleWorldFacts(args.world, args.definition) };
+    },
+    /** `puzzle.answerKey { world, definition }` → `{ answerKey }` — core's `puzzleAnswerKey` (riddle id → the world's answers). */
+    "puzzle.answerKey": (args) => {
+      const m = "puzzle.answerKey";
+      coded("invalid-input", () => {
+        genreWorldArg(m, args.world, "world");
+        declared(m, args.definition, "definition", PUZZLE_DEFINITION);
+      });
+      return { answerKey: plain(puzzleAnswerKey(args.world, args.definition)) };
+    },
+    /** `puzzle.choices { world, riddle, count? }` → `{ choices }` — core's `puzzleChoices` (absent or null count: core's 4). */
+    "puzzle.choices": (args) => {
+      const m = "puzzle.choices";
+      coded("invalid-input", () => {
+        genreWorldArg(m, args.world, "world");
+        declared(m, args.riddle, "riddle", PUZZLE_RIDDLE);
+        optNumber(m, args.count, "count");
+      });
+      return { choices: puzzleChoices(args.world, args.riddle, orUndefined(args.count)) };
+    },
+    /**
+     * `puzzle.director.create { definition, worldFacts?, kb? }` → `{ session, published }` —
+     * core's `PuzzleDirector` over a KB of its own, built as core's runner builds it:
+     * `GamePrologEngine` with genre `puzzle` (module activation consults the puzzle pack and
+     * declares its runtime predicates) on a native KB. `kb` (a program, or a list of
+     * clauses) is consulted after the packs, as `GamePrologEngine.create`'s world content
+     * is; a program the KB refuses is `[invalid-input]`. `worldFacts` (`puzzle.worldFacts`)
+     * are published with the definition (`publish()`, whose count is `published`). The KB
+     * lives as long as the session: `session.dispose` destroys it.
+     */
+    "puzzle.director.create": async (args) => {
+      const m = "puzzle.director.create";
+      const input = coded("invalid-input", () => ({
+        definition: declared(m, args.definition, "definition", PUZZLE_DEFINITION),
+        worldFacts: optionalArg(args.worldFacts, (v) => stringList(m, v, "worldFacts")),
+        kb: optionalArg(args.kb, (v) => Array.isArray(v) ? stringList(m, v, "kb").join("\n") : needString(m, v, "kb"))
+      }));
+      const engine = await createPrologEngine();
+      try {
+        await GamePrologEngine.create({ genre: "puzzle", engine });
+        if (input.kb !== void 0) {
+          const consulted = await engine.consult(input.kb);
+          if (!consulted.success) {
+            const err = refuse2(m, `the KB refused \`kb\`: ${consulted.error}`);
+            err.code = "invalid-input";
+            throw err;
+          }
+        }
+        const director = new PuzzleDirector({ definition: input.definition, engine, ...input.worldFacts ? { worldFacts: input.worldFacts } : {} });
+        const published = await director.publish();
+        return { session: openSession("puzzle.director", { director, onDispose: () => engine.destroy() }), published };
+      } catch (err) {
+        engine.destroy();
+        throw err;
+      }
+    },
+    /** `puzzle.director.findClue { session, actor, text }` → core's `findClue` outcome (`{ ok, refusal?, reason, applied }`). */
+    "puzzle.director.findClue": async (args) => {
+      const m = "puzzle.director.findClue";
+      const s = session(m, args, "puzzle.director");
+      puzzleActorArgs(m, args, "text");
+      return plain(await s.director.findClue(args.actor, args.text));
+    },
+    /** `puzzle.director.answer { session, actor, riddle, given }` → core's `answer` outcome (with `correct`, `attemptsLeft`). */
+    "puzzle.director.answer": async (args) => {
+      const m = "puzzle.director.answer";
+      const s = session(m, args, "puzzle.director");
+      puzzleActorArgs(m, args, "riddle");
+      coded("invalid-input", () => needString(m, args.given, "given"));
+      return plain(await s.director.answer(args.actor, args.riddle, args.given));
+    },
+    /** `puzzle.director.unlock { session, actor, lock }` → core's `unlock` outcome (with `unmet`, and the host's `order` when it opened). */
+    "puzzle.director.unlock": async (args) => {
+      const m = "puzzle.director.unlock";
+      const s = session(m, args, "puzzle.director");
+      puzzleActorArgs(m, args, "lock");
+      return plain(await s.director.unlock(args.actor, args.lock));
+    },
+    /** `puzzle.director.take { session, actor, item }` → core's `take` outcome. */
+    "puzzle.director.take": async (args) => {
+      const m = "puzzle.director.take";
+      const s = session(m, args, "puzzle.director");
+      puzzleActorArgs(m, args, "item");
+      return plain(await s.director.take(args.actor, args.item));
+    },
+    /** `puzzle.director.view { session, actor, riddle }` → `{ view }` — core's `view` (null: no such riddle). */
+    "puzzle.director.view": async (args) => {
+      const m = "puzzle.director.view";
+      const s = session(m, args, "puzzle.director");
+      puzzleActorArgs(m, args, "riddle");
+      return { view: plain(await s.director.view(args.actor, args.riddle)) };
+    },
+    /** `puzzle.director.progress { session, actor }` → `{ progress }` — core's `progress` (a quest tracker's counts). */
+    "puzzle.director.progress": async (args) => {
+      const m = "puzzle.director.progress";
+      const s = session(m, args, "puzzle.director");
+      puzzleActorArgs(m, args);
+      return { progress: plain(await s.director.progress(args.actor)) };
+    },
+    /** `puzzle.director.isComplete { session, actor }` → `{ complete }` — core's `isComplete` (`puzzle_complete/1`). */
+    "puzzle.director.isComplete": async (args) => {
+      const m = "puzzle.director.isComplete";
+      const s = session(m, args, "puzzle.director");
+      puzzleActorArgs(m, args);
+      return { complete: await s.director.isComplete(args.actor) };
+    },
+    /** `puzzle.director.serialize { session }` → `{ state }` — core's `serialize` (the save block's value). */
+    "puzzle.director.serialize": (args) => {
+      const s = session("puzzle.director.serialize", args, "puzzle.director");
+      return { state: plain(s.director.serialize()) };
+    },
+    /** `puzzle.director.restore { session, state }` → core's `restore` outcome (a director that has actors refuses: `schema`). */
+    "puzzle.director.restore": async (args) => {
+      const m = "puzzle.director.restore";
+      const s = session(m, args, "puzzle.director");
+      coded("invalid-input", () => declared(m, args.state, "state", PUZZLE_DIRECTOR_STATE));
+      return plain(await s.director.restore(args.state));
+    },
+    /** `puzzle.director.stateFacts { state }` → `{ facts }` — core's `PuzzleDirector.stateFacts` (every runtime fact a state implies). */
+    "puzzle.director.stateFacts": (args) => {
+      coded("invalid-input", () => declared("puzzle.director.stateFacts", args.state, "state", PUZZLE_DIRECTOR_STATE));
+      return { facts: PuzzleDirector.stateFacts(args.state) };
+    },
+    /** `puzzle.save.read { block? }` → core's `readPuzzleBlock` (`{ ok: true, value }`, null for no block; `{ ok: false, keys }`). */
+    "puzzle.save.read": (args) => plain(readPuzzleBlock(args.block)),
+    /** `puzzle.save.block { state? }` → `{ block }` — core's `puzzleSaveBlock` (absent or null state: null). */
+    "puzzle.save.block": (args) => {
+      coded("invalid-input", () => optionalArg(args.state, (v) => declared("puzzle.save.block", v, "state", PUZZLE_DIRECTOR_STATE)));
+      return { block: plain(puzzleSaveBlock(orUndefined(args.state))) };
+    },
+    /** `puzzle.save.blockOf { block }` → `{ block }` — core's `puzzleBlockOf` (only its member, rows by actor, lists in canonical order). */
+    "puzzle.save.blockOf": (args) => {
+      coded("invalid-input", () => declared("puzzle.save.blockOf", args.block, "block", PUZZLE_DIRECTOR_STATE));
+      return { block: plain(puzzleBlockOf(args.block)) };
+    },
     // ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
     /** `ui.notifications.create {}` → `{ session, view }` — core's `Notifications` toast queue. */
     "ui.notifications.create": () => {
@@ -54792,15 +56383,15 @@ Return JSON format:
      */
     "progression.modules.genre": (args) => {
       const r = resolveGenre(args.genre);
-      const declared = r.bundle.id ? [...getDefaultModulesForGenre(r.bundle.id)] : [];
-      const res = resolveFeatureModules(declared, r.bundle.id);
+      const declared2 = r.bundle.id ? [...getDefaultModulesForGenre(r.bundle.id)] : [];
+      const res = resolveFeatureModules(declared2, r.bundle.id);
       return okValue({
         genre: args.genre,
         bundle: r.bundle.id,
-        featureModules: declared,
+        featureModules: declared2,
         enabled: res.enabled,
         refused: res.refused.map((x) => ({ id: x.id, code: x.code })),
-        tabsDeclared: DEFAULT_MENU_TABS.filter((t) => [t.requires ?? []].flat().every((mod) => declared.includes(mod))).map((t) => t.key),
+        tabsDeclared: DEFAULT_MENU_TABS.filter((t) => [t.requires ?? []].flat().every((mod) => declared2.includes(mod))).map((t) => t.key),
         tabs: new PauseMenuModel(res.enabled).visibleKeys(),
         configs: r.bundle.id ? bundleModuleConfigs(r.bundle.id) : {}
       });

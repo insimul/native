@@ -20,12 +20,16 @@
 #   $2 $3 (optional) = --check-extension-keys <case dir>: run ONLY the save.rules
 #        extensionKeys check over <case dir> (the core_vendor_extension_keys_negative
 #        ctest, PL.native-save-extension-keys). Its [SKIP] line names that ctest.
+#   $2 = --check-language-transcription-negative or --check-genre-transcription-negative:
+#        run ONLY that transcription guard's negative control (core_vendor_language_negative,
+#        core_vendor_genre_negative). Its [SKIP] line names that ctest.
 set -u
 
 TOOL="$1"
 NAME=core_vendor
 [ "${2:-}" = "--check-extension-keys" ] && NAME=core_vendor_extension_keys_negative
 [ "${2:-}" = "--check-language-transcription-negative" ] && NAME=core_vendor_language_negative
+[ "${2:-}" = "--check-genre-transcription-negative" ] && NAME=core_vendor_genre_negative
 
 if ! command -v node >/dev/null 2>&1; then
   echo "  [SKIP] $NAME: 'node' not found — the vendored @insimul/core bundle"
@@ -43,6 +47,9 @@ if [ "$NAME" = core_vendor_extension_keys_negative ]; then
 fi
 if [ "$NAME" = core_vendor_language_negative ]; then
   exec node "$TOOL" --check-language-transcription-negative
+fi
+if [ "$NAME" = core_vendor_genre_negative ]; then
+  exec node "$TOOL" --check-genre-transcription-negative
 fi
 if [ -n "${INSIMUL_CORE_DIR:-}" ]; then
   exec node "$TOOL" --check --core "$INSIMUL_CORE_DIR"

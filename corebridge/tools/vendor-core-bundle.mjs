@@ -84,6 +84,14 @@
 //       and diffs the bundle AND the derived cases byte for byte — that is the
 //       real reproducibility check.
 //
+//   node corebridge/tools/vendor-core-bundle.mjs --check-genre-transcription-negative
+//       The genre systems transcription guard's negative control (PL.native-genre-rows):
+//       perturbs the vendored cases/core-genre-puzzle-*.json in memory (a dropped case, a
+//       case no corpus case names, a run's answer dropped, a read's first call changed, a
+//       riddle's choices dropped, an answer key expected nowhere, an unlock outcome weakened
+//       to a subset, a restored run's states expected nowhere, a KB run put on both
+//       legs) and requires the guard to name each one.
+//
 //   node corebridge/tools/vendor-core-bundle.mjs --check-language-transcription-negative
 //       The language transcription guard's negative control: perturbs the vendored
 //       cases/core-language-*.json in memory (a dropped case, a dropped call, a first
@@ -311,6 +319,25 @@ const LANGUAGE_CORPUS_FILES = [
   'conformance/language/quest-types.json',
   'conformance/language/save.json',
   'conformance/language/writing.json',
+];
+
+// core's P9j genre systems corpora that the genre.* and puzzle.* rows answer
+// (PL.native-genre-rows, U128, U115; core's P9j.core), copied verbatim the same way and
+// driven through the rows by tests/genre_systems_corpus.cpp, each op composed as core's
+// reference runner (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes it;
+// emit-bridge-cases.mjs also transcribes each into cases/core-genre-<area>-<file>.json.
+// The committed world slice (conformance/genre-mechanics/thistlecombe.world-slice.json) is
+// the corpora's `"thistlecombe"` world, which the runner hands core's `worldOf` as its
+// slices. Slice 1 copies the puzzle's three files (definition, run, save); the platformer
+// (conformance/platformer/), the strategy game (conformance/strategy/) and the genre pieces
+// (conformance/genre-pieces/) are later slices of the row. conformance/prolog/
+// mechanic-puzzle.json stays with PL.native-prolog-mirror-full (U120(9)). Each directory
+// is this set's alone, so a file an earlier pin left there is seen, hashed and removed.
+const GENRE_SYSTEMS_CORPUS_FILES = [
+  'conformance/genre-mechanics/thistlecombe.world-slice.json',
+  'conformance/puzzle/definition.json',
+  'conformance/puzzle/run.json',
+  'conformance/puzzle/save.json',
 ];
 
 // Core modules the bundle must NOT carry (PL.native-interact-target, U94(2)/(3)): core's
@@ -941,6 +968,145 @@ function languageTranscriptionProblems(load = (base) => {
   return { problems, count, files };
 }
 
+// ── the genre systems transcription guard (PL.native-genre-rows) ──────────────
+// cases/core-genre-puzzle-<file>.json must transcribe every case of the vendored
+// conformance/puzzle/<file>.json: by name, by the calls core's runner (systems-corpus.ts,
+// runGenreSystemsOp) makes for its op in that order, C-only exactly when it reaches the
+// KB (puzzle.director.create), and with every answer of the corpus stated in some
+// expectation. `--check-genre-transcription-negative` proves each kind of drift is named.
+const GENRE_GUARD_FILES = ['puzzle/definition', 'puzzle/run', 'puzzle/save'];
+const PUZZLE_STEP_CALL = {
+  restore: 'puzzle.director.restore',
+  clue: 'puzzle.director.findClue',
+  answer: 'puzzle.director.answer',
+  unlock: 'puzzle.director.unlock',
+  take: 'puzzle.director.take',
+  view: 'puzzle.director.view',
+  progress: 'puzzle.director.progress',
+  complete: 'puzzle.director.isComplete',
+  state: 'puzzle.director.serialize',
+};
+const genreCaseFileOf = (file) => `core-genre-${file.replace('/', '-')}.json`;
+
+/** The calls core's runner makes for one corpus case, in order, and the answers it must state. */
+function genreCallsOf(file, c) {
+  const e = c.expected;
+  const runCalls = (input, run, restoring) => [
+    'puzzle.director.create',
+    ...(restoring ? ['puzzle.director.restore'] : []),
+    ...(input.steps ?? []).map((st) => PUZZLE_STEP_CALL[st.step] ?? `(no row for step ${st.step})`),
+    'puzzle.director.serialize',
+    'session.dispose',
+  ];
+  const runAnswers = (run) => [run.published, ...run.steps.map((x) => {
+    const { step, ...rest } = x;
+    return step === 'view' ? rest.view : step === 'progress' ? rest.progress : step === 'complete' ? rest.complete : step === 'state' ? rest.state : rest;
+  }), run.state];
+  if (file === 'puzzle/definition') {
+    if (c.op === 'generate') return { calls: ['genre.world.of', 'puzzle.forWorld', 'puzzle.facts', 'puzzle.worldFacts', 'puzzle.answerKey'], answers: [e.definition, e.facts, e.worldFacts, e.answerKey] };
+    if (c.op === 'authored') return { calls: ['puzzle.issues', ...(e.issues.length === 0 ? ['puzzle.fromIR'] : [])], answers: [e.issues, ...(e.definition === null ? [] : [e.definition])] };
+    if (c.op === 'choices') return { calls: ['genre.world.of', 'puzzle.forWorld', ...Object.keys(e).map(() => 'puzzle.choices')], answers: Object.values(e) };
+  }
+  if (file === 'puzzle/run') return { calls: runCalls(c.input, e, false), answers: runAnswers(e) };
+  if (file === 'puzzle/save') {
+    if (c.op === 'block') return { calls: ['puzzle.save.block', 'puzzle.save.blockOf'], answers: [e] };
+    const read = c.op === 'read' ? e : e.read;
+    const held = read.ok && read.value !== null;
+    const calls = ['puzzle.save.read', ...(held ? ['puzzle.save.blockOf'] : [])];
+    const answers = [held ? read.value : read];
+    if (c.op === 'restore' && held) return { calls: [...calls, ...runCalls(c.input, e.run, true)], answers: [...answers, ...runAnswers(e.run)] };
+    return { calls, answers };
+  }
+  return { calls: [`(no op ${c.op} for ${file})`], answers: [] };
+}
+
+function genreTranscriptionProblems(load = (file) => JSON.parse(fs.readFileSync(path.join(CASES_DIR, genreCaseFileOf(file)), 'utf8'))) {
+  const problems = [];
+  let count = 0;
+  for (const file of GENRE_GUARD_FILES) {
+    const corpus = JSON.parse(fs.readFileSync(path.join(OUT_DIR, 'conformance', `${file}.json`), 'utf8'));
+    const doc = load(file);
+    const label = genreCaseFileOf(file);
+    const byName = new Map(doc.cases.map((k) => [k.name, k]));
+    const missing = [];
+    const miscalled = [];
+    const legs = [];
+    const unstated = [];
+    const names = new Set();
+    for (const c of corpus.cases) {
+      count++;
+      const name = `${file} ${c.op}: ${c.name}`;
+      names.add(name);
+      const kase = byName.get(name);
+      if (!kase) {
+        missing.push(name);
+        continue;
+      }
+      const { calls, answers } = genreCallsOf(file, c);
+      const got = (kase.steps ?? []).map((st) => st.call);
+      if (JSON.stringify(got) !== JSON.stringify(calls)) miscalled.push(name);
+      const kb = calls.includes('puzzle.director.create');
+      const cOnly = Array.isArray(kase.legs) && kase.legs.length === 1 && kase.legs[0] === 'c';
+      if (kb !== cOnly) legs.push(name);
+      const stated = statedValues(kase);
+      for (const [k, v] of answers.entries()) if (!stated.has(JSON.stringify(v))) unstated.push(`${name} (answer ${k})`);
+    }
+    const extra = doc.cases.filter((k) => !names.has(k.name)).map((k) => k.name);
+    if (missing.length) problems.push(`${label}: ${missing.length} corpus case(s) not transcribed: ${missing.join(', ')}`);
+    if (extra.length) problems.push(`${label}: ${extra.length} case(s) no corpus case names: ${extra.join(', ')}`);
+    if (miscalled.length) problems.push(`${label}: ${miscalled.length} case(s) not transcribed as core's runner calls their op: ${miscalled.join(', ')}`);
+    if (legs.length) problems.push(`${label}: ${legs.length} case(s) C-only when they do not reach the KB, or not C-only when they do: ${legs.join(', ')}`);
+    if (unstated.length) problems.push(`${label}: ${unstated.length} answer(s) of the corpus expected nowhere: ${unstated.join(', ')}`);
+  }
+  return { problems, count };
+}
+
+/** The genre guard's negative control: each perturbation, made in memory, must be named. */
+function genreTranscriptionNegative() {
+  const read = (file) => JSON.parse(fs.readFileSync(path.join(CASES_DIR, genreCaseFileOf(file)), 'utf8'));
+  const steps = (d) => d.cases.flatMap((c) => c.steps);
+  const perturbations = [
+    ['a dropped case', 'puzzle/definition', (d) => d.cases.splice(2, 1), 'corpus case(s) not transcribed'],
+    ['a case no corpus case names', 'puzzle/save', (d) => d.cases.push({ ...d.cases[0], name: 'puzzle/save block: invented' }), 'no corpus case names'],
+    ['a dropped call (a run\'s answer)', 'puzzle/run', (d) => {
+      d.cases[0].steps.splice(d.cases[0].steps.findIndex((st) => st.call === 'puzzle.director.answer'), 1);
+    }, "not transcribed as core's runner calls their op"],
+    ['a first call changed (a read that starts at blockOf)', 'puzzle/save', (d) => {
+      d.cases.find((c) => c.name.startsWith('puzzle/save read')).steps[0].call = 'puzzle.save.blockOf';
+    }, "not transcribed as core's runner calls their op"],
+    ['a riddle\'s choices dropped', 'puzzle/definition', (d) => {
+      const kase = d.cases.find((c) => c.name.startsWith('puzzle/definition choices'));
+      kase.steps.splice(kase.steps.findIndex((st) => st.call === 'puzzle.choices'), 1);
+    }, "not transcribed as core's runner calls their op"],
+    ['an answer expected nowhere (a generated answer key)', 'puzzle/definition', (d) => {
+      delete steps(d).find((st) => st.call === 'puzzle.answerKey').expect;
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['an answer weakened to a subset (an unlock outcome)', 'puzzle/run', (d) => {
+      const st = steps(d).find((x) => x.call === 'puzzle.director.unlock');
+      st.expect = { $subset: { ok: st.expect.ok } };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a restored run\'s states expected nowhere', 'puzzle/save', (d) => {
+      // Every serialize of the restored run (a state may repeat another step's, so all of them).
+      const kase = d.cases.find((c) => c.steps.some((st) => st.call === 'puzzle.director.create'));
+      for (const st of kase.steps) if (st.call === 'puzzle.director.serialize') st.expect = { state: { $type: 'object' } };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a KB run put on both legs', 'puzzle/run', (d) => {
+      delete d.cases[1].legs;
+    }, 'C-only when they do not reach the KB'],
+  ];
+  let named = 0;
+  for (const [what, file, perturb, want] of perturbations) {
+    const doc = read(file);
+    perturb(doc);
+    const { problems } = genreTranscriptionProblems((f) => (f === file ? doc : read(f)));
+    const hit = problems.find((p) => p.startsWith(genreCaseFileOf(file)) && p.includes(want));
+    console.log(`  ${hit ? 'named' : 'MISSED'}: ${what} -> ${(hit ?? problems.join('; ')) || 'no problem'}`);
+    if (hit) named++;
+  }
+  console.log(`vendor-core-bundle: genre transcription negative — ${named} of ${perturbations.length} perturbed transcription(s) named`);
+  if (named !== perturbations.length) fail('the genre transcription guard missed a perturbation');
+}
+
 /**
  * The language guard's negative control (`--check-language-transcription-negative`): each
  * perturbation of the vendored transcriptions, made in memory, must be named by the guard.
@@ -1381,6 +1547,16 @@ function languageFilesAtPin(src) {
   return filesAtPin(src, LANGUAGE_CORPUS_FILES, 'the language.* rows');
 }
 
+/** The vendored P9j genre systems corpora and world slice on disk (their directories are this set's alone). */
+function genreFilesOnDisk() {
+  return ownDirFilesOnDisk(GENRE_SYSTEMS_CORPUS_FILES);
+}
+
+/** core's P9j genre systems corpora and world slice at the pin, as { 'vendor/core/<path>': Buffer }. */
+function genreFilesAtPin(src) {
+  return filesAtPin(src, GENRE_SYSTEMS_CORPUS_FILES, 'the genre.* and puzzle.* rows');
+}
+
 /** The vendored headless build corpus on disk: the camera set's rule (no other set copies into `conformance/build/`). */
 function buildFilesOnDisk() {
   return ownDirFilesOnDisk(BUILD_CORPUS_FILES);
@@ -1810,6 +1986,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The genre systems corpora and world slice: the same exact-set replacement (only the listed files).
+    const genre = genreFilesAtPin(src);
+    for (const rel of genreFilesOnDisk()) if (!(rel in genre)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(genre)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     const js = fs.readFileSync(BUNDLE_JS, 'utf8');
     const manifest = {
       description:
@@ -1837,6 +2021,7 @@ async function write(coreDir) {
       buildCorpus: BUILD_CORPUS_FROM,
       progressionCorpus: PROGRESSION_CORPUS_FILES,
       languageCorpus: LANGUAGE_CORPUS_FILES,
+      genreSystemsCorpus: GENRE_SYSTEMS_CORPUS_FILES,
       bundleBytes: Buffer.byteLength(js, 'utf8'),
       bundleSha256: sha256(js),
     };
@@ -1860,6 +2045,7 @@ async function write(coreDir) {
       ...buildFilesOnDisk(),
       ...progressionFilesOnDisk(),
       ...languageFilesOnDisk(),
+      ...genreFilesOnDisk(),
       ...ADAPTER_MODULES,
       ...TOOL_INPUTS,
     ]);
@@ -1881,6 +2067,7 @@ async function write(coreDir) {
     console.log(`  headless build corpus files (${Object.keys(build).length}), copied unchanged`);
     console.log(`  progression and skill corpus files (${Object.keys(progression).length}), copied unchanged`);
     console.log(`  language corpus files (${Object.keys(language).length}), copied unchanged`);
+    console.log(`  genre systems corpus files and world slice (${Object.keys(genre).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -1969,6 +2156,10 @@ async function check(coreDir) {
   for (const rel of LANGUAGE_CORPUS_FILES) {
     if (!languageFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the language corpus gate would run nothing`);
   }
+  const genreFiles = genreFilesOnDisk();
+  for (const rel of GENRE_SYSTEMS_CORPUS_FILES) {
+    if (!genreFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the genre systems corpus gate would run nothing`);
+  }
   // conformance/ui/ is shared by the P9a, P6 and P8 sets: a file belongs to exactly one.
   const claimedTwice = propsFiles.filter((rel) => p9aFiles.includes(rel));
   if (claimedTwice.length) fail(`${claimedTwice.join(', ')} is listed as both a P9a and a P6 corpus file`);
@@ -1990,6 +2181,7 @@ async function check(coreDir) {
     ...buildFiles,
     ...progressionFiles,
     ...languageFiles,
+    ...genreFiles,
     ...ADAPTER_MODULES,
     ...TOOL_INPUTS,
   ];
@@ -2037,7 +2229,7 @@ async function check(coreDir) {
       `${savesFiles.length} saves (slots, tutorial progress, village state), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ` +
       `${cameraFiles.length} camera movement, ${audioFiles.length} audio ground, ${survivalFiles.length} survival, ` +
       `${traversalFiles.length} traversal, ${buildFiles.length} headless build, ${progressionFiles.length} progression/skill and ` +
-      `${languageFiles.length} language corpus file(s), ` +
+      `${languageFiles.length} language corpus file(s), ${genreFiles.length} genre systems corpus file(s) (the world slice among them), ` +
       `core ${manifest.coreCommit}, ` +
       `esbuild ${manifest.esbuild})`,
   );
@@ -2064,6 +2256,14 @@ async function check(coreDir) {
   console.log(
     `vendor-core-bundle: language — cases/core-language-{${lang.files.join(',')}}.json transcribe all ${lang.count} case(s) of ` +
       'the vendored conformance/language/ files, by name, by the calls core\'s runner makes, row for row, and with every answer stated',
+  );
+
+  const genreGuard = genreTranscriptionProblems();
+  if (genreGuard.problems.length) fail(`the genre transcription does not hold the vendored genre systems corpora: ${genreGuard.problems.join('; ')}`);
+  console.log(
+    `vendor-core-bundle: genre systems — cases/core-genre-puzzle-{definition,run,save}.json transcribe all ${genreGuard.count} case(s) of ` +
+      "the vendored conformance/puzzle/ files, by name, by the calls core's runner makes, C-only exactly where they reach the KB, " +
+      'and with every answer stated',
   );
 
   if (coreDir) {
@@ -2226,6 +2426,16 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
+      const genreAtPin = genreFilesAtPin(src);
+      const wantGenre = Object.keys(genreAtPin).sort();
+      if (JSON.stringify(wantGenre) !== JSON.stringify(genreFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s genre systems corpora are ${wantGenre.join(', ')} but vendor/core/ holds ${genreFiles.join(', ')}`);
+      }
+      for (const rel of wantGenre) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(genreAtPin[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       const keysAtPin = await checkExtensionKeys(js, SAVE_RULES_CASES_DIR, src.root);
       console.log(
         `vendor-core-bundle: core ${pin.coreCommit}'s src/save-extensions.ts registers the same ${keysAtPin.count} ` +
@@ -2239,7 +2449,8 @@ async function check(coreDir) {
           `corpus file(s), all ${wantCamera.length} camera movement corpus file(s), all ${wantAudio.length} audio ground ` +
           `corpus file(s), all ${wantSurvival.length} survival corpus file(s), all ${wantTraversal.length} traversal ` +
           `corpus file(s), all ${wantBuild.length} headless build corpus file(s), all ${wantProgression.length} progression/skill ` +
-          `corpus file(s) and all ${wantLanguage.length} language corpus file(s) byte for byte`,
+          `corpus file(s), all ${wantLanguage.length} language corpus file(s) and all ${wantGenre.length} genre systems corpus ` +
+          'file(s) (the world slice among them) byte for byte',
       );
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -2252,6 +2463,8 @@ async function check(coreDir) {
 
 if (args.includes('--check-language-transcription-negative')) {
   languageTranscriptionNegative();
+} else if (args.includes('--check-genre-transcription-negative')) {
+  genreTranscriptionNegative();
 } else if (argValue('--check-extension-keys')) {
   // The save.rules extensionKeys check alone, over another case directory: the
   // core_vendor_extension_keys_negative ctest points it at tests/save-extension-keys-negative/,

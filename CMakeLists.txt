@@ -629,6 +629,20 @@ add_test(NAME core_vendor_language_negative COMMAND
 set_tests_properties(core_vendor_language_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "language transcription negative [^ ]* 20 of 20 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_language_negative")
 
+# And for the genre systems transcriptions (PL.native-genre-rows slice 1, the puzzle): the guard
+# that holds cases/core-genre-puzzle-*.json to the vendored conformance/puzzle/ corpora (by name,
+# by the calls core's runner makes in order, C-only exactly where a case reaches the KB, and
+# with every answer stated) is given nine perturbations in memory (a dropped case, a case no
+# corpus case names, a run's answer dropped, a read's first call changed, a riddle's choices
+# dropped, an answer key expected nowhere, an unlock outcome weakened to a subset, a restored
+# run's states expected nowhere, a KB run put on both legs) and passes only when all nine are named.
+add_test(NAME core_vendor_genre_negative COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
+       --check-genre-transcription-negative)
+set_tests_properties(core_vendor_genre_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "genre transcription negative [^ ]* 9 of 9 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_genre_negative")
+
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus
 # vendor-core-bundle.mjs transcribes from core's own conformance files at the
@@ -1174,6 +1188,41 @@ set_tests_properties(language_corpus PROPERTIES
 add_test(NAME language_corpus_negative COMMAND insimulcore_language_corpus --negative ${INSIMUL_LANGUAGE_CORPORA})
 set_tests_properties(language_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "refusals: 27 of 27 probe[(]s[)] refused as core refuses[^\n]*\n.*rows: 114 of 114 called by the corpora's cases\nlanguage_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nlanguage_corpus --negative: PASS")
+
+# genre_systems_corpus (PL.native-genre-rows slice 1, the puzzle; rulings U128, U115, U49(3) and
+# U36): core's P9j puzzle module (src/puzzle/puzzle.ts: the definition a world gives, authored or
+# generated, its facts, the world facts its riddles are answered from, the answer key and the
+# choices), its decision layer (src/game-engine/logic/PuzzleDirector.ts over a KB that module
+# activation builds: GamePrologEngine with genre puzzle, on the native Trealla seam) and its save
+# block (src/puzzle/puzzle-save.ts) as libinsimulcore's `puzzle.*` rows, with the corpora's world
+# input (core's worldOf) as `genre.world.of`, held to core's own corpora
+# conformance/puzzle/{definition,run,save}.json and the world slice they name,
+# conformance/genre-mechanics/thistlecombe.world-slice.json, COPIED byte for byte into
+# corebridge/vendor/core/conformance/ at the pin (vendor-core-bundle.mjs
+# GENRE_SYSTEMS_CORPUS_FILES; hashed, and byte-compared under --check --core).
+# tests/genre_systems_corpus.cpp composes each op from the rows as core's reference runner
+# (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes core's functions; the same
+# cases also run on both legs as the transcribed cases/core-genre-puzzle-*.json (the runs that
+# reach the KB on the C leg only). Unreal's interim puzzle copy (Portable/InsimulPuzzle.{h,cpp}) is
+# what these rows retire (P9j.unreal.retire-puzzle-copy). The platformer, the strategy game and
+# the genre pieces join in later slices. The regex demands every refusal probe as core answers,
+# each file's driven line with every op (and the run file's every step) driven and 0 undriven,
+# every row it names called, then PASS. It holds no ';'.
+add_executable(insimulcore_genre_systems_corpus tests/genre_systems_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_genre_systems_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_genre_systems_corpus PRIVATE insimulcore)
+set(INSIMUL_GENRE_SYSTEMS_CORPORA
+  --slice ${INSIMUL_PROPS_CORPUS}/genre-mechanics/thistlecombe.world-slice.json
+  ${INSIMUL_PROPS_CORPUS}/puzzle/definition.json
+  ${INSIMUL_PROPS_CORPUS}/puzzle/run.json
+  ${INSIMUL_PROPS_CORPUS}/puzzle/save.json)
+add_test(NAME genre_systems_corpus COMMAND insimulcore_genre_systems_corpus ${INSIMUL_GENRE_SYSTEMS_CORPORA})
+set_tests_properties(genre_systems_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 13 of 13 probe[(]s[)] as core answers[^\n]*\n.*puzzle/definition: [1-9][0-9]* case[(]s[)], driven generate [1-9][0-9]*, authored [1-9][0-9]*, choices [1-9][0-9]*. 0 undriven\n.*puzzle/run: [1-9][0-9]* case[(]s[)], driven run [1-9][0-9]*. 0 undriven. steps restore [1-9][0-9]*, clue [1-9][0-9]*, answer [1-9][0-9]*, unlock [1-9][0-9]*, take [1-9][0-9]*, view [1-9][0-9]*, progress [1-9][0-9]*, complete [1-9][0-9]*, state [1-9][0-9]*\n.*puzzle/save: [1-9][0-9]* case[(]s[)], driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*rows: 22 of 22 called by the corpora's cases\ngenre_systems_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\ngenre_systems_corpus: PASS")
+# Its negative pass: every case's expectation perturbed (its last leaf), every one refused.
+add_test(NAME genre_systems_corpus_negative COMMAND insimulcore_genre_systems_corpus --negative ${INSIMUL_GENRE_SYSTEMS_CORPORA})
+set_tests_properties(genre_systems_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 13 of 13 probe[(]s[)] as core answers[^\n]*\n.*rows: 22 of 22 called by the corpora's cases\ngenre_systems_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\ngenre_systems_corpus --negative: PASS")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest
