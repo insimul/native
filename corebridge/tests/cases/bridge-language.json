@@ -32018,6 +32018,82 @@
      "expect": {
       "type": "rpg"
      }
+    },
+    {
+     "call": "language.questTypes.forWorld",
+     "args": {
+      "world": {
+       "id": "o",
+       "name": "O",
+       "config": {
+        "questTypes": [
+         "customer-service",
+         "rpg"
+        ]
+       },
+       "worldType": "fantasy"
+      }
+     },
+     "expect": {
+      "types": [
+       "customer-service",
+       "rpg"
+      ]
+     }
+    },
+    {
+     "call": "language.questTypes.primary",
+     "args": {
+      "world": {
+       "id": "o",
+       "name": "O",
+       "config": {
+        "questTypes": [
+         "customer-service",
+         "rpg"
+        ]
+       },
+       "worldType": "fantasy"
+      }
+     },
+     "expect": {
+      "type": "rpg"
+     }
+    },
+    {
+     "call": "language.questTypes.forWorld",
+     "args": {
+      "world": {
+       "id": "p",
+       "name": "P",
+       "enabledModules": [
+        "knowledge-acquisition"
+       ],
+       "gameType": "business-scavenger-hunt"
+      }
+     },
+     "expect": {
+      "types": [
+       "business-scavenger-hunt",
+       "language-learning"
+      ]
+     }
+    },
+    {
+     "call": "language.questTypes.primary",
+     "args": {
+      "world": {
+       "id": "p",
+       "name": "P",
+       "enabledModules": [
+        "knowledge-acquisition"
+       ],
+       "gameType": "business-scavenger-hunt"
+      }
+     },
+     "expect": {
+      "type": "business-scavenger-hunt"
+     }
     }
    ]
   },
@@ -33589,6 +33665,7 @@
        "customer-service",
        "nope",
        "language-learning",
+       "business-scavenger-hunt",
        "customer-service"
       ]
      },
@@ -33876,6 +33953,86 @@
          "advanced": {
           "xp": 50,
           "multiplier": 2
+         }
+        }
+       },
+       {
+        "id": "business-scavenger-hunt",
+        "name": "Business Scavenger Hunt",
+        "questCategories": [
+         {
+          "id": "item_hunt",
+          "name": "Item Hunt",
+          "icon": "🔍",
+          "description": "Find and name specific items across businesses"
+         },
+         {
+          "id": "shop_tour",
+          "name": "Shop Tour",
+          "icon": "🏪",
+          "description": "Visit multiple businesses and learn their inventory vocabulary"
+         },
+         {
+          "id": "clue_trail",
+          "name": "Clue Trail",
+          "icon": "🗝️",
+          "description": "Follow clues from business owners to find hidden items"
+         },
+         {
+          "id": "timed_hunt",
+          "name": "Timed Hunt",
+          "icon": "⏱️",
+          "description": "Find all items before time runs out"
+         }
+        ],
+        "objectiveTypes": [
+         {
+          "id": "visit_business",
+          "name": "Visit Business"
+         },
+         {
+          "id": "identify_business_item",
+          "name": "Identify Business Item"
+         },
+         {
+          "id": "collect_business_item",
+          "name": "Collect Business Item"
+         },
+         {
+          "id": "get_clue_from_owner",
+          "name": "Get Clue from Owner"
+         }
+        ],
+        "rewardTypes": [
+         "experience",
+         "fluency",
+         "items",
+         "reputation"
+        ],
+        "difficultyScaling": {
+         "beginner": {
+          "multiplier": 1,
+          "xp": 20,
+          "itemCount": 3,
+          "cefrLevel": "A1"
+         },
+         "intermediate": {
+          "multiplier": 1.5,
+          "xp": 40,
+          "itemCount": 5,
+          "cefrLevel": "A2"
+         },
+         "advanced": {
+          "multiplier": 2,
+          "xp": 70,
+          "itemCount": 8,
+          "cefrLevel": "B1"
+         },
+         "expert": {
+          "multiplier": 3,
+          "xp": 100,
+          "itemCount": 10,
+          "cefrLevel": "B2"
          }
         }
        },
@@ -34270,6 +34427,86 @@
         }
        },
        {
+        "id": "business-scavenger-hunt",
+        "name": "Business Scavenger Hunt",
+        "questCategories": [
+         {
+          "id": "item_hunt",
+          "name": "Item Hunt",
+          "icon": "🔍",
+          "description": "Find and name specific items across businesses"
+         },
+         {
+          "id": "shop_tour",
+          "name": "Shop Tour",
+          "icon": "🏪",
+          "description": "Visit multiple businesses and learn their inventory vocabulary"
+         },
+         {
+          "id": "clue_trail",
+          "name": "Clue Trail",
+          "icon": "🗝️",
+          "description": "Follow clues from business owners to find hidden items"
+         },
+         {
+          "id": "timed_hunt",
+          "name": "Timed Hunt",
+          "icon": "⏱️",
+          "description": "Find all items before time runs out"
+         }
+        ],
+        "objectiveTypes": [
+         {
+          "id": "visit_business",
+          "name": "Visit Business"
+         },
+         {
+          "id": "identify_business_item",
+          "name": "Identify Business Item"
+         },
+         {
+          "id": "collect_business_item",
+          "name": "Collect Business Item"
+         },
+         {
+          "id": "get_clue_from_owner",
+          "name": "Get Clue from Owner"
+         }
+        ],
+        "rewardTypes": [
+         "experience",
+         "fluency",
+         "items",
+         "reputation"
+        ],
+        "difficultyScaling": {
+         "beginner": {
+          "multiplier": 1,
+          "xp": 20,
+          "itemCount": 3,
+          "cefrLevel": "A1"
+         },
+         "intermediate": {
+          "multiplier": 1.5,
+          "xp": 40,
+          "itemCount": 5,
+          "cefrLevel": "A2"
+         },
+         "advanced": {
+          "multiplier": 2,
+          "xp": 70,
+          "itemCount": 8,
+          "cefrLevel": "B1"
+         },
+         "expert": {
+          "multiplier": 3,
+          "xp": 100,
+          "itemCount": 10,
+          "cefrLevel": "B2"
+         }
+        }
+       },
+       {
         "id": "customer-service",
         "name": "Customer Service",
         "questCategories": [
@@ -34475,6 +34712,30 @@
         "name": "Teaching",
         "icon": "🎓",
         "description": "Reinforce your knowledge by teaching vocabulary and phrases to NPC learners"
+       },
+       {
+        "id": "item_hunt",
+        "name": "Item Hunt",
+        "icon": "🔍",
+        "description": "Find and name specific items across businesses"
+       },
+       {
+        "id": "shop_tour",
+        "name": "Shop Tour",
+        "icon": "🏪",
+        "description": "Visit multiple businesses and learn their inventory vocabulary"
+       },
+       {
+        "id": "clue_trail",
+        "name": "Clue Trail",
+        "icon": "🗝️",
+        "description": "Follow clues from business owners to find hidden items"
+       },
+       {
+        "id": "timed_hunt",
+        "name": "Timed Hunt",
+        "icon": "⏱️",
+        "description": "Find all items before time runs out"
        }
       ],
       "objectiveTypes": [
@@ -34585,6 +34846,22 @@
        {
         "id": "teach_phrase",
         "name": "Teach Phrase"
+       },
+       {
+        "id": "visit_business",
+        "name": "Visit Business"
+       },
+       {
+        "id": "identify_business_item",
+        "name": "Identify Business Item"
+       },
+       {
+        "id": "collect_business_item",
+        "name": "Collect Business Item"
+       },
+       {
+        "id": "get_clue_from_owner",
+        "name": "Get Clue from Owner"
        }
       ],
       "rewardTypes": [
