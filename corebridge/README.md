@@ -2185,7 +2185,11 @@ chat-cefr copy's and goes with `PL.native-chat-cefr-rows`; core's genre quest ty
   `language.naming.point` and `.submit`; examine and read sign,
   `language.objects.examine` (`options` `{ languageWorld, targetLanguage, fluency,
   range? }`), with `.nearest`, `.isSignRole` and `.fluencyTier`, the parts it reads. A
-  tuning absent or null is core's default.
+  tuning absent or null is core's default. Every target's progress is held to core's
+  `IdentificationProgress` (`attempts` and `bestScore` numbers, `identified` a boolean),
+  a translation to its string `targetWord` and optional string `pronunciation` and
+  `category`, and a sign's optional `category` to a string (a null is `[invalid-input]`,
+  slice 4 round 2 carrying slice 3's verdict m1).
 - **Composition and listening** (slice 3, the rest of `reading-writing.ts`):
   `language.writing.countWords`, `.view` and `.submit` (a config's `minWords` and
   `objectiveType` absent or null are core's defaults); `language.listening.register`,
@@ -2196,7 +2200,9 @@ chat-cefr copy's and goes with `PL.native-chat-cefr-rows`; core's genre quest ty
   `language.word.stripEdges` and `language.word.key` answer them.
 - **Quest feedback** (slice 4, `quest-feedback.ts`; the quest lifecycle governs, U118(10)):
   `language.questFeedback.initial` (the strip's state from a quest's objectives, read as
-  the lifecycle reads them; `meanings` absent or null: none), `.useVocabulary`,
+  the lifecycle reads them; `meanings` absent or null: none; core is handed a
+  prototype-free copy, so a word such as `constructor` takes the host's meaning or none
+  like any other), `.useVocabulary`,
   `.grammar`, `.correctUsage`, `.pronunciation` and `.hints` move it;
   `.syncLifecycle` takes the lifecycle's records of the same quest again (by index);
   `.lockedVocabulary`, `.lockedPronunciation`, `.lockedGrammar`, `.done`,
@@ -2213,7 +2219,8 @@ chat-cefr copy's and goes with `PL.native-chat-cefr-rows`; core's genre quest ty
   generation prompt; null when unknown), `.has`, `.all`, `.mixing`, `.merge` (over
   definitions as data), `.objectiveComplete` (a registered objective type's
   `completionCheck`; an unknown quest type or objective is `[invalid-input]`, where core's
-  runner throws), and `.templates`, `.templatesByDifficulty`, `.templatesByCategory`. The
+  runner throws, and so is a member core's `ObjectiveProgress` declares that is not its
+  declared number or `{ x, y, z }`), and `.templates`, `.templatesByDifficulty`, `.templatesByCategory`. The
   objective and reward type maps are `language.contract`'s. The genre quest types
   (`quest-types/genre-quests.ts`) are bundled through `index.ts` and bound by no row here.
 - **Refusals are values** in core's shape: `empty_word`, `unknown_encounter`
@@ -2258,7 +2265,7 @@ Hand cases: `tests/cases/bridge-language.json` (every row; malformed books and t
 `[invalid-input]` boundary of every state; core's refusals as values; a game's own
 tunings; slice 4: every quest feedback row on its own with its defaults, every setting a
 world's quest type is read from, the definitions and templates whole, every objective
-type's completion check), every expectation computed by core's own functions at the pin.
+type's completion check, a quest word naming an `Object.prototype` member), every expectation computed by core's own functions at the pin.
 
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 

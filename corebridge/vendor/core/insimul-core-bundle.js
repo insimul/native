@@ -50107,7 +50107,11 @@ Return JSON format:
         needObject(method, t, `${name}.targets[${i}]`);
         needString(method, t.id, `${name}.targets[${i}].id`);
       });
-      objectRecord(method, value.progress, `${name}.progress`);
+      for (const [k, p] of Object.entries(objectRecord(method, value.progress, `${name}.progress`))) {
+        needNumber(method, p.attempts, `${name}.progress.${k}.attempts`);
+        needBoolean(method, p.identified, `${name}.progress.${k}.identified`);
+        needNumber(method, p.bestScore, `${name}.progress.${k}.bestScore`);
+      }
       return value;
     });
   }
@@ -50174,7 +50178,12 @@ Return JSON format:
     needObject(method, value.position, `${name}.position`);
     needNumber(method, value.position.x, `${name}.position.x`);
     needNumber(method, value.position.z, `${name}.position.z`);
-    if (value.translations !== void 0 && value.translations !== null) objectRecord(method, value.translations, `${name}.translations`);
+    if (value.translations !== void 0 && value.translations !== null) {
+      for (const [k, t] of Object.entries(objectRecord(method, value.translations, `${name}.translations`))) {
+        needString(method, t.targetWord, `${name}.translations.${k}.targetWord`);
+        for (const f of ["pronunciation", "category"]) if (t[f] !== void 0) needString(method, t[f], `${name}.translations.${k}.${f}`);
+      }
+    }
     return value;
   }
   function xzArg(method, value, name) {
@@ -50349,7 +50358,7 @@ Return JSON format:
     if (value.sign !== void 0 && value.sign !== null) {
       needObject(method, value.sign, `${name}.sign`);
       for (const k of ["signId", "targetText", "nativeText"]) needString(method, value.sign[k], `${name}.sign.${k}`);
-      optStringOrNull(method, value.sign.category, `${name}.sign.category`);
+      if (value.sign.category !== void 0) needString(method, value.sign.category, `${name}.sign.category`);
     }
     return value;
   }
@@ -50533,6 +50542,7 @@ Return JSON format:
       return value;
     });
   }
+  var OBJECTIVE_PROGRESS_NUMBERS = ["vocabularyUsed", "vocabularyRequired", "conversationTurns", "requiredTurns", "defeated", "required", "collected"];
   var QUEST_REWARD_TYPES = ["experience", "fluency", "items", "gold", "skills", "reputation", "unlock"];
   function questTypeDataArg(method, value, name) {
     needObject(method, value, name);
@@ -51939,12 +51949,13 @@ Return JSON format:
       const questId = coded("invalid-input", () => needString(m, args.questId, "questId"));
       const objectives = questObjectivesArg(m, args.objectives);
       const meanings = coded("invalid-input", () => {
-        if (args.meanings === void 0 || args.meanings === null) return void 0;
+        const own = /* @__PURE__ */ Object.create(null);
+        if (args.meanings === void 0 || args.meanings === null) return own;
         needObject(m, args.meanings, "meanings");
-        for (const [k, v] of Object.entries(args.meanings)) needString(m, v, `meanings.${k}`);
-        return args.meanings;
+        for (const [k, v] of Object.entries(args.meanings)) own[k] = needString(m, v, `meanings.${k}`);
+        return own;
       });
-      return { state: plain(meanings === void 0 ? questFeedback(questId, objectives) : questFeedback(questId, objectives, meanings)) };
+      return { state: plain(questFeedback(questId, objectives, meanings)) };
     },
     /** `language.questFeedback.targets { objectives }` → `{ targetWords, grammarPatterns, pronunciationPhrases, vocabularyRequired, pronunciationRequired, grammarRequired }`: core's `questLanguageTargets`. */
     "language.questFeedback.targets": (args) => plain(questLanguageTargets(questObjectivesArg("language.questFeedback.targets", args.objectives))),
@@ -52069,7 +52080,8 @@ Return JSON format:
      * `language.questTypes.objectiveComplete { questType, objective, progress }` → `{
      * complete }`: the registered quest type's objective type's `completionCheck(progress)`.
      * A quest type the registry does not hold, or an objective type it does not define, is
-     * `[invalid-input]` (core's runner throws there).
+     * `[invalid-input]` (core's runner throws there), and so is a `progress` member core's
+     * `ObjectiveProgress` declares that is not of its declared type (a number, or an `{ x, y, z }`).
      */
     "language.questTypes.objectiveComplete": (args) => {
       const m = "language.questTypes.objectiveComplete";
@@ -52078,6 +52090,8 @@ Return JSON format:
         const ids = QUEST_TYPE_REGISTRY[t].objectiveTypes.map((o2) => o2.id);
         const o = QUEST_TYPE_REGISTRY[t].objectiveTypes[ids.indexOf(oneOf(m, args.objective, ids, "objective"))];
         const p = needObject(m, args.progress, "progress");
+        for (const k of OBJECTIVE_PROGRESS_NUMBERS) if (p[k] !== void 0) needNumber(m, p[k], `progress.${k}`);
+        for (const k of ["playerPos", "targetPos"]) if (p[k] !== void 0) vec3Arg(m, p[k], `progress.${k}`);
         if (o.id === "use_vocabulary_category" && p.wordsUsed) {
           needArray(m, p.wordsUsed, "progress.wordsUsed");
           if (p.targetCategory) p.wordsUsed.forEach((w, i) => needObject(m, w, `progress.wordsUsed[${i}]`));

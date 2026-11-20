@@ -24985,6 +24985,376 @@
       }
      },
      "expectError": "[invalid-input] insimulcore: language.objects.examine: `objects[0].sign.nativeText` must be a string"
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "a",
+         "questId": "q",
+         "objectiveId": "o",
+         "expected": "b",
+         "hint": "a"
+        }
+       ],
+       "progress": {
+        "a": {
+         "identified": false
+        }
+       }
+      },
+      "id": "a",
+      "input": "b"
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.answer: `state.progress.a.attempts` must be a finite number"
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "a",
+         "questId": "q",
+         "objectiveId": "o",
+         "expected": "b",
+         "hint": "a"
+        }
+       ],
+       "progress": {
+        "a": {
+         "attempts": 0,
+         "identified": "no",
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "a",
+      "input": "b"
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.answer: `state.progress.a.identified` must be a boolean"
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "a",
+         "questId": "q",
+         "objectiveId": "o",
+         "expected": "b",
+         "hint": "a"
+        }
+       ],
+       "progress": {
+        "a": {
+         "attempts": "x",
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "a",
+      "input": "b"
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.answer: `state.progress.a.attempts` must be a finite number"
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "a",
+         "questId": "q",
+         "objectiveId": "o",
+         "expected": "b",
+         "hint": "a"
+        }
+       ],
+       "progress": {
+        "a": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": null
+        }
+       }
+      },
+      "id": "a"
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.prompt: `state.progress.a.bestScore` must be a finite number"
+    },
+    {
+     "call": "language.identification.quest",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "a",
+         "questId": "q",
+         "objectiveId": "o",
+         "expected": "b",
+         "hint": "a"
+        }
+       ],
+       "progress": {
+        "a": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "z": {
+         "attempts": 0,
+         "identified": 1,
+         "bestScore": 0
+        }
+       }
+      },
+      "questId": "q"
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.quest: `state.progress.z.identified` must be a boolean"
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "a",
+         "questId": "q",
+         "objectiveId": "o",
+         "expected": "b",
+         "hint": "a"
+        }
+       ],
+       "progress": {
+        "a": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "a",
+      "input": "b"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "targets": [
+        {
+         "id": "a",
+         "questId": "q",
+         "objectiveId": "o",
+         "expected": "b",
+         "hint": "a"
+        }
+       ],
+       "progress": {
+        "a": {
+         "attempts": 1,
+         "identified": true,
+         "bestScore": 100
+        }
+       }
+      },
+      "passed": true,
+      "score": 100,
+      "feedback": "Excellent! Perfect identification!",
+      "bestMatch": "b",
+      "objectiveCompleted": true,
+      "events": [
+       {
+        "type": "identification_correct",
+        "targetId": "a",
+        "questId": "q",
+        "score": 100,
+        "playerAnswer": "b"
+       },
+       {
+        "type": "vocabulary_used",
+        "word": "b",
+        "correct": true
+       },
+       {
+        "type": "visual_vocab_answered",
+        "targetId": "a",
+        "questId": "q",
+        "passed": true,
+        "score": 100,
+        "playerAnswer": "b"
+       },
+       {
+        "type": "object_identified",
+        "objectId": "a",
+        "objectName": "a",
+        "targetWord": "b"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.naming.nameableObjects",
+     "args": {
+      "objects": [
+       {
+        "id": "a",
+        "role": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "fr": {
+          "targetWord": 5
+         }
+        }
+       }
+      ],
+      "targetLanguage": "fr"
+     },
+     "expectError": "[invalid-input] insimulcore: language.naming.nameableObjects: `objects[0].translations.fr.targetWord` must be a string"
+    },
+    {
+     "call": "language.naming.nameableObjects",
+     "args": {
+      "objects": [
+       {
+        "id": "a",
+        "role": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "fr": {
+          "targetWord": "puits",
+          "pronunciation": 7
+         }
+        }
+       }
+      ],
+      "targetLanguage": "fr"
+     },
+     "expectError": "[invalid-input] insimulcore: language.naming.nameableObjects: `objects[0].translations.fr.pronunciation` must be a string"
+    },
+    {
+     "call": "language.objects.nearest",
+     "args": {
+      "objects": [
+       {
+        "id": "a",
+        "role": "well",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "translations": {
+         "de": {
+          "targetWord": "Brunnen",
+          "category": null
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.objects.nearest: `objects[0].translations.de.category` must be a string"
+    },
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "s",
+        "role": "sign",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s",
+         "targetText": "Avis",
+         "nativeText": "Notice",
+         "category": null
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 45000,
+       "range": null
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.objects.examine: `objects[0].sign.category` must be a string"
+    },
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "s",
+        "role": "sign",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s",
+         "targetText": "Avis",
+         "nativeText": "Notice",
+         "category": "shop"
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 45000,
+       "range": null
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "read_sign",
+      "title": "Avis",
+      "description": "You read the sign.",
+      "tier": "intermediate",
+      "narrative": "You read the sign: \"Avis\"",
+      "events": [
+       {
+        "type": "sign_read",
+        "signId": "s",
+        "objectId": "s",
+        "targetText": "Avis",
+        "nativeText": "Notice",
+        "category": "shop"
+       },
+       {
+        "type": "object_examined",
+        "objectId": "s",
+        "objectName": "sign",
+        "targetWord": "Avis",
+        "targetLanguage": "French",
+        "category": "shop"
+       }
+      ]
+     }
     }
    ]
   },
@@ -30969,6 +31339,611 @@
    ]
   },
   {
+   "name": "quest feedback: a target word naming an Object.prototype member (constructor, valueOf, toString) takes the host's meaning or none, as any word does, and its state carries on through the next rows",
+   "steps": [
+    {
+     "call": "language.questFeedback.initial",
+     "args": {
+      "questId": "q",
+      "objectives": [
+       {
+        "type": "use_vocabulary",
+        "id": "w",
+        "targetWords": [
+         "constructor",
+         "valueOf",
+         "toString",
+         "casa"
+        ],
+        "requiredCount": 2
+       }
+      ]
+     },
+     "expect": {
+      "state": {
+       "questId": "q",
+       "vocabulary": [
+        {
+         "word": "constructor",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        },
+        {
+         "word": "valueOf",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        },
+        {
+         "word": "toString",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        },
+        {
+         "word": "casa",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        }
+       ],
+       "vocabularyObjectives": [
+        {
+         "index": 0,
+         "type": "use_vocabulary",
+         "targetWords": [
+          "constructor",
+          "valueOf",
+          "toString",
+          "casa"
+         ],
+         "required": 2,
+         "current": 0,
+         "wordsUsed": [],
+         "completed": false
+        }
+       ],
+       "objectiveLocks": [
+        {
+         "id": "w",
+         "order": null,
+         "dependsOn": [],
+         "completed": false
+        }
+       ],
+       "vocabularyUsed": 0,
+       "vocabularyRequired": 2,
+       "vocabularyProgress": 0,
+       "grammar": [],
+       "grammarCorrect": 0,
+       "grammarErrors": 0,
+       "grammarAccuracy": 100,
+       "pronunciation": [],
+       "pronunciationObjectives": [],
+       "pronunciationAttempts": 0,
+       "pronunciationPassed": 0,
+       "pronunciationRequired": 0,
+       "pronunciationAverage": 0,
+       "pronunciationProgress": 0,
+       "objectives": null,
+       "grammarObjectives": [],
+       "grammarUsed": 0,
+       "grammarRequired": 0,
+       "grammarProgress": 0,
+       "recent": [],
+       "nextId": 0
+      }
+     }
+    },
+    {
+     "call": "language.questFeedback.initial",
+     "args": {
+      "questId": "q",
+      "objectives": [
+       {
+        "type": "use_vocabulary",
+        "id": "w",
+        "targetWords": [
+         "constructor",
+         "valueOf",
+         "toString",
+         "casa"
+        ],
+        "requiredCount": 2
+       }
+      ],
+      "meanings": null
+     },
+     "expect": {
+      "state": {
+       "questId": "q",
+       "vocabulary": [
+        {
+         "word": "constructor",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        },
+        {
+         "word": "valueOf",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        },
+        {
+         "word": "toString",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        },
+        {
+         "word": "casa",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        }
+       ],
+       "vocabularyObjectives": [
+        {
+         "index": 0,
+         "type": "use_vocabulary",
+         "targetWords": [
+          "constructor",
+          "valueOf",
+          "toString",
+          "casa"
+         ],
+         "required": 2,
+         "current": 0,
+         "wordsUsed": [],
+         "completed": false
+        }
+       ],
+       "objectiveLocks": [
+        {
+         "id": "w",
+         "order": null,
+         "dependsOn": [],
+         "completed": false
+        }
+       ],
+       "vocabularyUsed": 0,
+       "vocabularyRequired": 2,
+       "vocabularyProgress": 0,
+       "grammar": [],
+       "grammarCorrect": 0,
+       "grammarErrors": 0,
+       "grammarAccuracy": 100,
+       "pronunciation": [],
+       "pronunciationObjectives": [],
+       "pronunciationAttempts": 0,
+       "pronunciationPassed": 0,
+       "pronunciationRequired": 0,
+       "pronunciationAverage": 0,
+       "pronunciationProgress": 0,
+       "objectives": null,
+       "grammarObjectives": [],
+       "grammarUsed": 0,
+       "grammarRequired": 0,
+       "grammarProgress": 0,
+       "recent": [],
+       "nextId": 0
+      }
+     }
+    },
+    {
+     "call": "language.questFeedback.initial",
+     "args": {
+      "questId": "q",
+      "objectives": [
+       {
+        "type": "use_vocabulary",
+        "id": "w",
+        "targetWords": [
+         "constructor",
+         "valueOf",
+         "toString",
+         "casa"
+        ],
+        "requiredCount": 2
+       }
+      ],
+      "meanings": {
+       "constructor": "builder",
+       "casa": "house"
+      }
+     },
+     "expect": {
+      "state": {
+       "questId": "q",
+       "vocabulary": [
+        {
+         "word": "constructor",
+         "meaning": "builder",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        },
+        {
+         "word": "valueOf",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        },
+        {
+         "word": "toString",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        },
+        {
+         "word": "casa",
+         "meaning": "house",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        }
+       ],
+       "vocabularyObjectives": [
+        {
+         "index": 0,
+         "type": "use_vocabulary",
+         "targetWords": [
+          "constructor",
+          "valueOf",
+          "toString",
+          "casa"
+         ],
+         "required": 2,
+         "current": 0,
+         "wordsUsed": [],
+         "completed": false
+        }
+       ],
+       "objectiveLocks": [
+        {
+         "id": "w",
+         "order": null,
+         "dependsOn": [],
+         "completed": false
+        }
+       ],
+       "vocabularyUsed": 0,
+       "vocabularyRequired": 2,
+       "vocabularyProgress": 0,
+       "grammar": [],
+       "grammarCorrect": 0,
+       "grammarErrors": 0,
+       "grammarAccuracy": 100,
+       "pronunciation": [],
+       "pronunciationObjectives": [],
+       "pronunciationAttempts": 0,
+       "pronunciationPassed": 0,
+       "pronunciationRequired": 0,
+       "pronunciationAverage": 0,
+       "pronunciationProgress": 0,
+       "objectives": null,
+       "grammarObjectives": [],
+       "grammarUsed": 0,
+       "grammarRequired": 0,
+       "grammarProgress": 0,
+       "recent": [],
+       "nextId": 0
+      }
+     },
+     "bind": "proto0"
+    },
+    {
+     "call": "language.questFeedback.useVocabulary",
+     "args": {
+      "state": {
+       "$ref": "proto0.state"
+      },
+      "usages": [
+       {
+        "word": "constructor",
+        "usedCorrectly": true
+       },
+       {
+        "word": "valueOf",
+        "usedCorrectly": true
+       }
+      ]
+     },
+     "expect": {
+      "state": {
+       "questId": "q",
+       "vocabulary": [
+        {
+         "word": "constructor",
+         "meaning": "builder",
+         "category": null,
+         "used": true,
+         "usedCorrectly": true,
+         "uses": 1
+        },
+        {
+         "word": "valueOf",
+         "meaning": "",
+         "category": null,
+         "used": true,
+         "usedCorrectly": true,
+         "uses": 1
+        },
+        {
+         "word": "toString",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        },
+        {
+         "word": "casa",
+         "meaning": "house",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        }
+       ],
+       "vocabularyObjectives": [
+        {
+         "index": 0,
+         "type": "use_vocabulary",
+         "targetWords": [
+          "constructor",
+          "valueOf",
+          "toString",
+          "casa"
+         ],
+         "required": 2,
+         "current": 2,
+         "wordsUsed": [
+          "constructor",
+          "valueof"
+         ],
+         "completed": true
+        }
+       ],
+       "objectiveLocks": [
+        {
+         "id": "w",
+         "order": null,
+         "dependsOn": [],
+         "completed": true
+        }
+       ],
+       "vocabularyUsed": 2,
+       "vocabularyRequired": 2,
+       "vocabularyProgress": 100,
+       "grammar": [],
+       "grammarCorrect": 0,
+       "grammarErrors": 0,
+       "grammarAccuracy": 100,
+       "pronunciation": [],
+       "pronunciationObjectives": [],
+       "pronunciationAttempts": 0,
+       "pronunciationPassed": 0,
+       "pronunciationRequired": 0,
+       "pronunciationAverage": 0,
+       "pronunciationProgress": 0,
+       "objectives": null,
+       "grammarObjectives": [],
+       "grammarUsed": 0,
+       "grammarRequired": 0,
+       "grammarProgress": 0,
+       "recent": [
+        {
+         "id": "qfb_1",
+         "type": "vocabulary_used",
+         "message": "Used quest word: \"constructor\" (builder)"
+        },
+        {
+         "id": "qfb_2",
+         "type": "vocabulary_used",
+         "message": "Used quest word: \"valueOf\""
+        },
+        {
+         "id": "qfb_3",
+         "type": "milestone",
+         "message": "Vocabulary objective complete!"
+        }
+       ],
+       "nextId": 3
+      },
+      "items": [
+       {
+        "id": "qfb_1",
+        "type": "vocabulary_used",
+        "message": "Used quest word: \"constructor\" (builder)"
+       },
+       {
+        "id": "qfb_2",
+        "type": "vocabulary_used",
+        "message": "Used quest word: \"valueOf\""
+       },
+       {
+        "id": "qfb_3",
+        "type": "milestone",
+        "message": "Vocabulary objective complete!"
+       }
+      ]
+     },
+     "bind": "proto1"
+    },
+    {
+     "call": "language.questFeedback.hints",
+     "args": {
+      "state": {
+       "$ref": "proto1.state"
+      }
+     },
+     "expect": {
+      "state": {
+       "questId": "q",
+       "vocabulary": [
+        {
+         "word": "constructor",
+         "meaning": "builder",
+         "category": null,
+         "used": true,
+         "usedCorrectly": true,
+         "uses": 1
+        },
+        {
+         "word": "valueOf",
+         "meaning": "",
+         "category": null,
+         "used": true,
+         "usedCorrectly": true,
+         "uses": 1
+        },
+        {
+         "word": "toString",
+         "meaning": "",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        },
+        {
+         "word": "casa",
+         "meaning": "house",
+         "category": null,
+         "used": false,
+         "usedCorrectly": false,
+         "uses": 0
+        }
+       ],
+       "vocabularyObjectives": [
+        {
+         "index": 0,
+         "type": "use_vocabulary",
+         "targetWords": [
+          "constructor",
+          "valueOf",
+          "toString",
+          "casa"
+         ],
+         "required": 2,
+         "current": 2,
+         "wordsUsed": [
+          "constructor",
+          "valueof"
+         ],
+         "completed": true
+        }
+       ],
+       "objectiveLocks": [
+        {
+         "id": "w",
+         "order": null,
+         "dependsOn": [],
+         "completed": true
+        }
+       ],
+       "vocabularyUsed": 2,
+       "vocabularyRequired": 2,
+       "vocabularyProgress": 100,
+       "grammar": [],
+       "grammarCorrect": 0,
+       "grammarErrors": 0,
+       "grammarAccuracy": 100,
+       "pronunciation": [],
+       "pronunciationObjectives": [],
+       "pronunciationAttempts": 0,
+       "pronunciationPassed": 0,
+       "pronunciationRequired": 0,
+       "pronunciationAverage": 0,
+       "pronunciationProgress": 0,
+       "objectives": null,
+       "grammarObjectives": [],
+       "grammarUsed": 0,
+       "grammarRequired": 0,
+       "grammarProgress": 0,
+       "recent": [
+        {
+         "id": "qfb_1",
+         "type": "vocabulary_used",
+         "message": "Used quest word: \"constructor\" (builder)"
+        },
+        {
+         "id": "qfb_2",
+         "type": "vocabulary_used",
+         "message": "Used quest word: \"valueOf\""
+        },
+        {
+         "id": "qfb_3",
+         "type": "milestone",
+         "message": "Vocabulary objective complete!"
+        },
+        {
+         "id": "qfb_4",
+         "type": "vocabulary_hint",
+         "message": "Try using: \"toString\""
+        },
+        {
+         "id": "qfb_5",
+         "type": "vocabulary_hint",
+         "message": "Try using: \"casa\" (house)"
+        }
+       ],
+       "nextId": 5
+      },
+      "items": [
+       {
+        "id": "qfb_4",
+        "type": "vocabulary_hint",
+        "message": "Try using: \"toString\""
+       },
+       {
+        "id": "qfb_5",
+        "type": "vocabulary_hint",
+        "message": "Try using: \"casa\" (house)"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.questFeedback.done",
+     "args": {
+      "state": {
+       "$ref": "proto1.state"
+      }
+     },
+     "expect": {
+      "vocabulary": true,
+      "pronunciation": false,
+      "grammar": false
+     }
+    }
+   ]
+  },
+  {
    "name": "quest feedback refuses what core's declared types exclude as [invalid-input]",
    "steps": [
     {
@@ -35260,16 +36235,46 @@
       "progress": {
        "playerPos": {
         "x": 0,
+        "y": 7,
         "z": 0
        },
        "targetPos": {
         "x": 3,
+        "y": 0,
         "z": 4
        }
       }
      },
      "expect": {
       "complete": false
+     }
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "language-learning",
+      "objective": "use_vocabulary",
+      "progress": {
+       "vocabularyUsed": 9,
+       "vocabularyRequired": 10
+      }
+     },
+     "expect": {
+      "complete": false
+     }
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "language-learning",
+      "objective": "complete_conversation",
+      "progress": {
+       "conversationTurns": 3,
+       "requiredTurns": 3
+      }
+     },
+     "expect": {
+      "complete": true
      }
     },
     {
@@ -39282,6 +40287,142 @@
       }
      },
      "expectError": "[invalid-input] insimulcore: language.questTypes.objectiveComplete: `progress.wordsUsed[0]` must be a JSON object"
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "language-learning",
+      "objective": "use_vocabulary",
+      "progress": {
+       "vocabularyUsed": "9",
+       "vocabularyRequired": "10"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.questTypes.objectiveComplete: `progress.vocabularyUsed` must be a finite number"
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "language-learning",
+      "objective": "use_vocabulary",
+      "progress": {
+       "vocabularyUsed": 9,
+       "vocabularyRequired": "10"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.questTypes.objectiveComplete: `progress.vocabularyRequired` must be a finite number"
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "language-learning",
+      "objective": "complete_conversation",
+      "progress": {
+       "conversationTurns": true,
+       "requiredTurns": 1
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.questTypes.objectiveComplete: `progress.conversationTurns` must be a finite number"
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "language-learning",
+      "objective": "complete_conversation",
+      "progress": {
+       "conversationTurns": 1,
+       "requiredTurns": null
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.questTypes.objectiveComplete: `progress.requiredTurns` must be a finite number"
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "business-scavenger-hunt",
+      "objective": "collect_business_item",
+      "progress": {
+       "collected": null
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.questTypes.objectiveComplete: `progress.collected` must be a finite number"
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "customer-service",
+      "objective": "request_refund",
+      "progress": {
+       "defeated": "1"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.questTypes.objectiveComplete: `progress.defeated` must be a finite number"
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "customer-service",
+      "objective": "request_refund",
+      "progress": {
+       "required": []
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.questTypes.objectiveComplete: `progress.required` must be a finite number"
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "language-learning",
+      "objective": "visit_location",
+      "progress": {
+       "playerPos": 5,
+       "targetPos": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.questTypes.objectiveComplete: `progress.playerPos` must be a JSON object"
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "language-learning",
+      "objective": "visit_location",
+      "progress": {
+       "playerPos": {
+        "x": "a",
+        "y": 0,
+        "z": 0
+       },
+       "targetPos": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.questTypes.objectiveComplete: `progress.playerPos.x` must be a finite number"
+    },
+    {
+     "call": "language.questTypes.objectiveComplete",
+     "args": {
+      "questType": "language-learning",
+      "objective": "visit_location",
+      "progress": {
+       "playerPos": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+       },
+       "targetPos": {
+        "x": 3,
+        "z": 4
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.questTypes.objectiveComplete: `progress.targetPos.y` must be a finite number"
     },
     {
      "call": "language.questTypes.templatesByDifficulty",

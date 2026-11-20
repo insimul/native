@@ -2410,7 +2410,7 @@ function objectRecord(method, value, name) {
 	return value;
 }
 
-/** An `IdentificationState`: `targets` objects with a string `id`, `progress` a record of objects. */
+/** An `IdentificationState`: `targets` objects with a string `id`, `progress` a record of `IdentificationProgress` (`attempts` and `bestScore` numbers, `identified` a boolean). */
 function identificationStateArg(method, value, name = 'identification') {
 	return coded('invalid-input', () => {
 		needObject(method, value, name);
@@ -2418,7 +2418,11 @@ function identificationStateArg(method, value, name = 'identification') {
 			needObject(method, t, `${name}.targets[${i}]`);
 			needString(method, t.id, `${name}.targets[${i}].id`);
 		});
-		objectRecord(method, value.progress, `${name}.progress`);
+		for (const [k, p] of Object.entries(objectRecord(method, value.progress, `${name}.progress`))) {
+			needNumber(method, p.attempts, `${name}.progress.${k}.attempts`);
+			needBoolean(method, p.identified, `${name}.progress.${k}.identified`);
+			needNumber(method, p.bestScore, `${name}.progress.${k}.bestScore`);
+		}
 		return value;
 	});
 }
@@ -2487,7 +2491,7 @@ function pickWorldArg(method, value) {
 	return world;
 }
 
-/** A `WorldObjectIn`: a string `id`, a string `role` (core lower-cases it), a position with numeric `x` and `z`. */
+/** A `WorldObjectIn`: a string `id`, a string `role` (core lower-cases it), a position with numeric `x` and `z`; each translation a string `targetWord`, and `pronunciation` and `category` strings when present (a null refused: core declares them optional strings). */
 function worldObjectArg(method, value, name) {
 	needObject(method, value, name);
 	needString(method, value.id, `${name}.id`);
@@ -2495,7 +2499,12 @@ function worldObjectArg(method, value, name) {
 	needObject(method, value.position, `${name}.position`);
 	needNumber(method, value.position.x, `${name}.position.x`);
 	needNumber(method, value.position.z, `${name}.position.z`);
-	if (value.translations !== undefined && value.translations !== null) objectRecord(method, value.translations, `${name}.translations`);
+	if (value.translations !== undefined && value.translations !== null) {
+		for (const [k, t] of Object.entries(objectRecord(method, value.translations, `${name}.translations`))) {
+			needString(method, t.targetWord, `${name}.translations.${k}.targetWord`);
+			for (const f of ['pronunciation', 'category']) if (t[f] !== undefined) needString(method, t[f], `${name}.translations.${k}.${f}`);
+		}
+	}
 	return value;
 }
 
@@ -2710,7 +2719,7 @@ function targetProgressArg(method, state, id) {
 	});
 }
 
-/** A `WorldObjectIn` as examine reads it: the point's fields, `name` and `description` strings when given, a `sign`'s three texts. */
+/** A `WorldObjectIn` as examine reads it: the point's fields, `name` and `description` strings when given, a `sign`'s three texts, and its `category` a string when present (a null refused: core declares `category?: string`). */
 function examinedObjectArg(method, value, name) {
 	worldObjectArg(method, value, name);
 	optStringOrNull(method, value.name, `${name}.name`);
@@ -2718,7 +2727,7 @@ function examinedObjectArg(method, value, name) {
 	if (value.sign !== undefined && value.sign !== null) {
 		needObject(method, value.sign, `${name}.sign`);
 		for (const k of ['signId', 'targetText', 'nativeText']) needString(method, value.sign[k], `${name}.sign.${k}`);
-		optStringOrNull(method, value.sign.category, `${name}.sign.category`);
+		if (value.sign.category !== undefined) needString(method, value.sign.category, `${name}.sign.category`);
 	}
 	return value;
 }
@@ -2929,6 +2938,9 @@ function questWorldArg(method, value, name = 'world') {
 		return value;
 	});
 }
+
+// `ObjectiveProgress`'s declared optional numbers (quest-types/types.ts); its `playerPos` and `targetPos` are `Vector3`s.
+const OBJECTIVE_PROGRESS_NUMBERS = ['vocabularyUsed', 'vocabularyRequired', 'conversationTurns', 'requiredTurns', 'defeated', 'required', 'collected'];
 
 // Core's `RewardType`, a type-only union (quest-types/types.ts).
 const QUEST_REWARD_TYPES = ['experience', 'fluency', 'items', 'gold', 'skills', 'reputation', 'unlock'];
@@ -4539,13 +4551,17 @@ const METHODS = {
 		const m = 'language.questFeedback.initial';
 		const questId = coded('invalid-input', () => needString(m, args.questId, 'questId'));
 		const objectives = questObjectivesArg(m, args.objectives);
+		// Core reads `meanings[w] ?? ''` on the record, so a plain object would answer an `Object.prototype` member for a
+		// word such as `constructor`; core is handed a prototype-free copy, which keeps its rule (the host's meaning,
+		// else '') for every word. Absent or null: core's default, none (an empty record).
 		const meanings = coded('invalid-input', () => {
-			if (args.meanings === undefined || args.meanings === null) return undefined;
+			const own = Object.create(null);
+			if (args.meanings === undefined || args.meanings === null) return own;
 			needObject(m, args.meanings, 'meanings');
-			for (const [k, v] of Object.entries(args.meanings)) needString(m, v, `meanings.${k}`);
-			return args.meanings;
+			for (const [k, v] of Object.entries(args.meanings)) own[k] = needString(m, v, `meanings.${k}`);
+			return own;
 		});
-		return { state: plain(meanings === undefined ? questFeedback(questId, objectives) : questFeedback(questId, objectives, meanings)) };
+		return { state: plain(questFeedback(questId, objectives, meanings)) };
 	},
 
 	/** `language.questFeedback.targets { objectives }` → `{ targetWords, grammarPatterns, pronunciationPhrases, vocabularyRequired, pronunciationRequired, grammarRequired }`: core's `questLanguageTargets`. */
@@ -4691,7 +4707,8 @@ const METHODS = {
 	 * `language.questTypes.objectiveComplete { questType, objective, progress }` → `{
 	 * complete }`: the registered quest type's objective type's `completionCheck(progress)`.
 	 * A quest type the registry does not hold, or an objective type it does not define, is
-	 * `[invalid-input]` (core's runner throws there).
+	 * `[invalid-input]` (core's runner throws there), and so is a `progress` member core's
+	 * `ObjectiveProgress` declares that is not of its declared type (a number, or an `{ x, y, z }`).
 	 */
 	'language.questTypes.objectiveComplete': (args) => {
 		const m = 'language.questTypes.objectiveComplete';
@@ -4700,6 +4717,10 @@ const METHODS = {
 			const ids = QUEST_TYPE_REGISTRY[t].objectiveTypes.map((o) => o.id);
 			const o = QUEST_TYPE_REGISTRY[t].objectiveTypes[ids.indexOf(oneOf(m, args.objective, ids, 'objective'))];
 			const p = needObject(m, args.progress, 'progress');
+			// ObjectiveProgress's declared members (quest-types/types.ts), when present: optional numbers and `Vector3`s
+			// (none is declared `| null`). Members only its index signature covers are passed through.
+			for (const k of OBJECTIVE_PROGRESS_NUMBERS) if (p[k] !== undefined) needNumber(m, p[k], `progress.${k}`);
+			for (const k of ['playerPos', 'targetPos']) if (p[k] !== undefined) vec3Arg(m, p[k], `progress.${k}`);
 			// use_vocabulary_category filters `wordsUsed` and reads each one's category unread.
 			if (o.id === 'use_vocabulary_category' && p.wordsUsed) {
 				needArray(m, p.wordsUsed, 'progress.wordsUsed');
