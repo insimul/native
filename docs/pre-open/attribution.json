@@ -2,7 +2,7 @@
   "tool": "scripts/check-attribution.mjs",
   "repository": {
     "root": "native-native-pass-by-rows",
-    "gitHead": "43bb276cbeb1dceab4a48e0f07ac8e8867949128"
+    "gitHead": "c300144fc5e427d8ccde93425a3710731185aa58"
   },
   "coverage": {
     "trackedFiles": 534,
