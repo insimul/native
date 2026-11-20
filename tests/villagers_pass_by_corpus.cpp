@@ -32,8 +32,8 @@
 // exclude ([invalid-input]) while a refused step aside is core's VALUE. The run FAILS on
 // a file that is not the pass-by corpus or holds no case, on an op of core's runner no
 // case drives, on a row missing from the method table, on a contract key that differs,
-// on a session left open, and when its comparator or its perturbation cannot fail (a
-// self-test on every start).
+// on a session left open, and when its comparator, its perturbation or its contract check
+// cannot fail (self-tests on every start: ten doctored contract answers must each be named).
 //
 // --negative perturbs EVERY driven case's expectation (its last leaf) and requires
 // every one to be refused.
@@ -305,6 +305,96 @@ bool self_test() {
 	return ok;
 }
 
+// ── the contract check ────────────────────────────────────────────────────────
+
+// What is wrong with passBy.contract's answer `row` against the corpus's `contract`: every
+// constant's `value` equal (key for key, both ways), each with a distinct PASS_BY_* export name
+// keyed as the constants are, sideFrames and measuredAbreastS equal, and no other key. `agree`
+// counts the constants that hold.
+std::vector<std::string> contract_problems(const JsonValue &contract, const JsonValue &row, int &agree) {
+	std::vector<std::string> out;
+	agree = 0;
+	const JsonValue *constants = contract.find("constants");
+	const JsonValue *stated = row.find("constants");
+	const JsonValue *names = row.find("names");
+	if (!constants || !constants->is_object()) return {"the corpus's contract has no constants"};
+	if (!stated || !stated->is_object() || !names || !names->is_object()) return {"the row states no constants or names object"};
+	for (const auto &kv : constants->object_items) {
+		const JsonValue *want = kv.second->find("value");
+		const JsonValue *got = stated->find(kv.first);
+		const JsonValue *name = names->find(kv.first);
+		if (!want || !got) {
+			out.push_back("constant " + kv.first + (want ? " is not stated by the row" : " has no value in the corpus"));
+			continue;
+		}
+		const std::string diff = compare(*want, *got, 0.0, "constants." + kv.first);
+		if (!diff.empty()) {
+			out.push_back(diff);
+			continue;
+		}
+		if (!name || !name->is_string() || name->string_value.rfind("PASS_BY_", 0) != 0) {
+			out.push_back("constant " + kv.first + " has no PASS_BY_* export name");
+			continue;
+		}
+		agree++;
+	}
+	for (const auto &kv : stated->object_items) {
+		if (!constants->find(kv.first)) out.push_back("the row states constant " + kv.first + ", which the corpus's contract does not");
+	}
+	std::set<std::string> distinct;
+	for (const auto &kv : names->object_items) {
+		distinct.insert(kv.second->as_string());
+		if (!constants->find(kv.first)) out.push_back("the row names " + kv.first + ", which the corpus's contract does not hold");
+	}
+	if (distinct.size() != names->object_items.size()) out.push_back("two constants share an export name");
+	for (const char *k : {"sideFrames", "measuredAbreastS"}) {
+		const JsonValue *want = contract.find(k);
+		const JsonValue *got = row.find(k);
+		const std::string diff = want && got ? compare(*want, *got, 0.0, k) : std::string(k) + ": missing";
+		if (!diff.empty()) out.push_back(diff);
+	}
+	if (row.object_items.size() != 4) {
+		out.push_back("the row states " + std::to_string(row.object_items.size()) +
+		              " key(s), not constants, names, measuredAbreastS and sideFrames");
+	}
+	return out;
+}
+
+// The contract check is a gate too: each doctored answer must be named, the sound one must not.
+bool contract_self_test() {
+	const char *contract = "{\"constants\":{\"gapM\":{\"value\":0.2,\"source\":\"s\"},\"pastLegsM\":{\"value\":[1.3,0.9],\"source\":\"s\"}},"
+	                       "\"sideFrames\":{\"unreal\":\"+1 right\"},\"measuredAbreastS\":{\"min\":0.4,\"max\":1.7}}";
+	const std::string frames = "\"sideFrames\":{\"unreal\":\"+1 right\"},\"measuredAbreastS\":{\"min\":0.4,\"max\":1.7}";
+	const std::string names = "\"names\":{\"gapM\":\"PASS_BY_GUARD_GAP_M\",\"pastLegsM\":\"PASS_BY_PAST_LEGS_M\"}";
+	struct Probe {
+		std::string row;
+		bool sound;
+	} probes[] = {
+	    {"{\"constants\":{\"gapM\":0.2,\"pastLegsM\":[1.3,0.9]}," + names + "," + frames + "}", true},
+	    {"{\"constants\":{\"gapM\":0.25,\"pastLegsM\":[1.3,0.9]}," + names + "," + frames + "}", false},
+	    {"{\"constants\":{\"gapM\":0.2,\"pastLegsM\":[1.3]}," + names + "," + frames + "}", false},
+	    {"{\"constants\":{\"gapM\":0.2}," + names + "," + frames + "}", false},
+	    {"{\"constants\":{\"gapM\":0.2,\"pastLegsM\":[1.3,0.9],\"waitS\":3}," + names + "," + frames + "}", false},
+	    {"{\"constants\":{\"gapM\":0.2,\"pastLegsM\":[1.3,0.9]},\"names\":{\"gapM\":\"GAP\",\"pastLegsM\":\"PASS_BY_PAST_LEGS_M\"}," + frames + "}", false},
+	    {"{\"constants\":{\"gapM\":0.2,\"pastLegsM\":[1.3,0.9]},\"names\":{\"gapM\":\"PASS_BY_X\",\"pastLegsM\":\"PASS_BY_X\"}," + frames + "}", false},
+	    {"{\"constants\":{\"gapM\":0.2,\"pastLegsM\":[1.3,0.9]}," + names + ",\"sideFrames\":{\"unreal\":\"+1 left\"},\"measuredAbreastS\":{\"min\":0.4,\"max\":1.7}}", false},
+	    {"{\"constants\":{\"gapM\":0.2,\"pastLegsM\":[1.3,0.9]}," + names + ",\"sideFrames\":{\"unreal\":\"+1 right\"},\"measuredAbreastS\":{\"min\":0.4,\"max\":1.6}}", false},
+	    {"{\"constants\":{\"gapM\":0.2,\"pastLegsM\":[1.3,0.9]}," + names + "," + frames + ",\"extra\":1}", false},
+	};
+	auto c = insimul::parse_json(contract).root;
+	bool ok = true;
+	for (const Probe &p : probes) {
+		auto r = insimul::parse_json(p.row).root;
+		int agree = 0;
+		const bool sound = c && r && contract_problems(*c, *r, agree).empty();
+		if (sound != p.sound) {
+			std::printf("  [FAIL] self-test: the contract check %s %s\n", p.sound ? "refused" : "accepted", p.row.c_str());
+			ok = false;
+		}
+	}
+	return ok;
+}
+
 // ── calling the rows ──────────────────────────────────────────────────────────
 
 struct DriveError : std::runtime_error {
@@ -429,7 +519,7 @@ int main(int argc, char **argv) {
 		return 2;
 	}
 	const char *tag = negative ? "villagers_pass_by_corpus --negative" : "villagers_pass_by_corpus";
-	if (!self_test()) {
+	if (!self_test() || !contract_self_test()) {
 		std::fprintf(stderr, "%s: the comparator or the perturbation cannot tell a wrong answer from a right one\n", tag);
 		return 2;
 	}
@@ -500,74 +590,13 @@ int main(int argc, char **argv) {
 			failed++;
 		}
 		if (row) {
-			int agree = 0, bad = 0;
-			const JsonValue *stated = row->find("constants");
-			const JsonValue *names = row->find("names");
-			if (!stated || !stated->is_object() || !names || !names->is_object()) {
-				std::printf("  [FAIL] contract: the row states no constants or names object\n");
-				bad++;
-			} else {
-				for (const auto &kv : constants->object_items) {
-					const JsonValue *want = kv.second->find("value");
-					const JsonValue *got = stated->find(kv.first);
-					const JsonValue *name = names->find(kv.first);
-					if (!want || !got) {
-						std::printf("  [FAIL] contract: constant %s is %s\n", kv.first.c_str(), want ? "not stated by the row" : "valueless in the corpus");
-						bad++;
-						continue;
-					}
-					const std::string diff = compare(*want, *got, 0.0, "contract.constants." + kv.first);
-					if (!diff.empty()) {
-						std::printf("  [FAIL] %s\n", diff.c_str());
-						bad++;
-						continue;
-					}
-					if (!name || !name->is_string() || name->string_value.rfind("PASS_BY_", 0) != 0) {
-						std::printf("  [FAIL] contract: constant %s has no PASS_BY_* export name\n", kv.first.c_str());
-						bad++;
-						continue;
-					}
-					agree++;
-				}
-				for (const auto &kv : stated->object_items) {
-					if (!constants->find(kv.first)) {
-						std::printf("  [FAIL] contract: the row states constant %s, which the corpus's contract does not\n", kv.first.c_str());
-						bad++;
-					}
-				}
-				std::set<std::string> distinct;
-				for (const auto &kv : names->object_items) {
-					distinct.insert(kv.second->as_string());
-					if (!constants->find(kv.first)) {
-						std::printf("  [FAIL] contract: the row names %s, which the corpus's contract does not hold\n", kv.first.c_str());
-						bad++;
-					}
-				}
-				if (distinct.size() != names->object_items.size()) {
-					std::printf("  [FAIL] contract: two constants share an export name\n");
-					bad++;
-				}
-			}
-			for (const char *k : {"sideFrames", "measuredAbreastS"}) {
-				const JsonValue *want = contract->find(k);
-				const JsonValue *got = row->find(k);
-				const std::string diff = want && got ? compare(*want, *got, 0.0, std::string("contract.") + k)
-				                                     : std::string("contract.") + k + ": missing";
-				if (!diff.empty()) {
-					std::printf("  [FAIL] %s\n", diff.c_str());
-					bad++;
-				}
-			}
-			if (row->object_items.size() != 4) {
-				std::printf("  [FAIL] contract: the row states %zu key(s), not constants, names, measuredAbreastS and sideFrames\n",
-				            row->object_items.size());
-				bad++;
-			}
-			if (bad) failed++;
+			int agree = 0;
+			const std::vector<std::string> problems = contract_problems(*contract, *row, agree);
+			for (const std::string &why : problems) std::printf("  [FAIL] contract: %s\n", why.c_str());
+			if (!problems.empty()) failed++;
 			std::printf("contract: %d of %zu constant(s) passBy.contract states agree with the corpus's, each with its export "
 			            "name; sideFrames and measuredAbreastS %s\n",
-			            agree, constants->object_items.size(), bad ? "checked, with problems" : "agree");
-			if (agree != static_cast<int>(constants->object_items.size())) failed++;
+			            agree, constants->object_items.size(), problems.empty() ? "agree" : "checked, with problems");
 		}
 	}
 
