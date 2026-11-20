@@ -1016,13 +1016,12 @@ function languageTranscriptionNegative() {
       kase.steps.splice(kase.steps.findIndex((x) => x.call === 'language.questFeedback.lockedVocabulary'), 1);
     }, "not transcribed as core's runner calls their op"],
     ['a lifecycle sync\'s pronunciation objectives expected nowhere (a nested member)', 'quest-feedback', (d) => {
-      // Every expectation of the pronunciation objectives in the first case that syncs them is dropped.
-      const kase = d.cases.find((c) => c.steps.some((x) => x.call === 'language.questFeedback.syncLifecycle') && c.name.includes('pronunciation'));
-      for (const st of kase.steps) {
-        const held = st.expect?.$subset?.state?.$subset;
-        if (held) delete held.pronunciationObjectives;
+      // Every sync of the pronunciation objectives in the cases that sync them loses that expectation (a nested
+      // member of the lifecycle step's `pronunciation`, held by LANGUAGE_NESTED_KEYS alone).
+      for (const kase of d.cases.filter((c) => c.name.startsWith('language/quest-feedback run: pronunciation'))) {
+        for (const st of kase.steps) if (st.call === 'language.questFeedback.syncLifecycle') delete st.expect.$subset.state.$subset.pronunciationObjectives;
       }
-    }, 'answer(s) of the corpus expected nowhere'],
+    }, 'lifecycle: pronunciation.objectives)'],
     ['a run\'s recent ids not expected (a reshaped member)', 'quest-feedback', (d) => {
       const kase = d.cases.find((c) => c.name.includes('last twenty'));
       for (const st of kase.steps) {
