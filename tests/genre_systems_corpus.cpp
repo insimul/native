@@ -1,5 +1,5 @@
 // genre_systems_corpus.cpp — core's P9j genre systems corpora, driven through
-// libinsimulcore's `genre.*`, `puzzle.*` and `platformer.*` rows.
+// libinsimulcore's `genre.*`, `puzzle.*`, `platformer.*` and `strategy.*` rows.
 //
 // PL.native-genre-rows, slice 1: the puzzle (rulings U128, U115, U101(1), U49(3),
 // U36). Core's puzzle module (src/puzzle/puzzle.ts: the definition a world gives,
@@ -60,8 +60,32 @@
 //   platformer/save   block, read, restore as puzzle/save, over the platformer.save.* rows
 //                              and the platformer run
 //
+// PL.native-genre-rows, slice 3: the strategy game. Core's strategy module
+// (src/strategy/strategy.ts: the campaign a world gives over its businesses and
+// settlements, a turn's books, a holding's price, control and neighbours), its decision layer
+// (src/game-engine/logic/StrategyDirector.ts, over a KB module activation builds:
+// GamePrologEngine with genre `strategy`) and its save block (src/strategy/strategy-save.ts),
+// held to conformance/strategy/{campaign,run,save}.json the same way:
+//
+//   strategy/campaign generate genre.world.of, then strategy.forWorld (strategy ?? null,
+//                              tuning ?? null: core's `?? {}`), strategy.facts and
+//                              strategy.worldFacts (of the world)
+//                     books    strategy.books (board ?? an empty board)
+//                     claimCost strategy.claimCost per business
+//                     controlled strategy.controlled per faction of the campaign (board as
+//                              books's)
+//                     adjacency genre.world.of, then strategy.adjacency
+//   strategy/run      run      strategy.director.create (the campaign, worldFacts ?? []),
+//                              then per step: start, restore, claim, assign, release, endTurn
+//                              (the whole turn report, its orders included), stockpile,
+//                              holder (holderOf, null for nobody), controls, victory,
+//                              progress, state (serialize); then serialize; then
+//                              session.dispose. No `published` (core's runner reports none).
+//   strategy/save     block, read, restore as puzzle/save, over the strategy.save.* rows and
+//                              the strategy run
+//
 // A puzzle step's actor is `player` unless the step names one; a platformer step's runner
-// likewise. Comparison is the corpora's
+// likewise; a strategy step's faction is the campaign's `playerFaction` unless it names one. Comparison is the corpora's
 // own rule: exact, object key sets included. Each file's declared `ops` (and the run
 // and save files' `steps`) must be exactly the ones this runner drives (core's
 // GENRE_SYSTEMS_CORPUS_OPS and _STEPS), so an op or step core adds is a failure here,
@@ -113,6 +137,7 @@ struct FileSpec {
 };
 const std::vector<std::string> kPuzzleSteps = {"restore", "clue", "answer", "unlock", "take", "view", "progress", "complete", "state"};
 const std::vector<std::string> kPlatformerSteps = {"restore", "enter", "step", "respawn", "hint", "unlocked", "progress", "state"};
+const std::vector<std::string> kStrategySteps = {"start", "restore", "claim", "assign", "release", "endTurn", "stockpile", "holder", "controls", "victory", "progress", "state"};
 const std::vector<FileSpec> kFiles = {
     {"puzzle/definition", {"generate", "authored", "choices"}, {}},
     {"puzzle/run", {"run"}, kPuzzleSteps},
@@ -120,6 +145,9 @@ const std::vector<FileSpec> kFiles = {
     {"platformer/course", {"generate", "route", "stars"}, {}},
     {"platformer/run", {"run"}, kPlatformerSteps},
     {"platformer/save", {"block", "read", "restore"}, kPlatformerSteps},
+    {"strategy/campaign", {"generate", "books", "claimCost", "controlled", "adjacency"}, {}},
+    {"strategy/run", {"run"}, kStrategySteps},
+    {"strategy/save", {"block", "read", "restore"}, kStrategySteps},
 };
 
 // Every row this runner calls.
@@ -133,7 +161,13 @@ const char *const kRows[] = {
     "platformer.stars",        "platformer.director.create", "platformer.director.restore", "platformer.director.enter",
     "platformer.director.step", "platformer.director.respawn", "platformer.director.hint", "platformer.director.isUnlocked",
     "platformer.director.progress", "platformer.director.serialize", "platformer.save.read", "platformer.save.block",
-    "platformer.save.blockOf", "session.dispose"};
+    "platformer.save.blockOf", "strategy.forWorld",      "strategy.facts",          "strategy.worldFacts",
+    "strategy.books",          "strategy.claimCost",     "strategy.controlled",     "strategy.adjacency",
+    "strategy.director.create", "strategy.director.start", "strategy.director.restore", "strategy.director.claim",
+    "strategy.director.assign", "strategy.director.release", "strategy.director.endTurn", "strategy.director.stockpile",
+    "strategy.director.holderOf", "strategy.director.controls", "strategy.director.victory", "strategy.director.progress",
+    "strategy.director.serialize", "strategy.save.read",   "strategy.save.block",     "strategy.save.blockOf",
+    "session.dispose"};
 
 std::string read_file(const std::string &path, bool &ok) {
 	std::ifstream in(path, std::ios::binary);
@@ -793,6 +827,146 @@ JsonValuePtr platformer_save(Run &r, const std::string &op, const JsonValue &inp
 	return Obj().put("read", shown).put("run", platformer_run(r, input, value)).v;
 }
 
+// ── the strategy game ─────────────────────────────────────────────────────────
+
+// `input.board ?? { holders: {}, workers: {} }`.
+JsonValuePtr board_or_empty(const JsonValue &input) {
+	const JsonValue *b = input.find("board");
+	if (b) return deep_copy(*b);
+	return Obj().put("holders", Obj().v).put("workers", Obj().v).v;
+}
+
+JsonValuePtr strategy_campaign(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "generate") {
+		JsonValuePtr world = r.world_of(input);
+		Obj a;
+		a.put("world", world).put("strategy", or_null(input, "strategy")).put("tuning", or_null(input, "tuning"));
+		JsonValuePtr campaign = member(c.call("strategy.forWorld", a), "campaign", "strategy.forWorld");
+		return Obj()
+		    .put("campaign", campaign)
+		    .put("facts", member(c.call("strategy.facts", Obj().put("campaign", campaign)), "facts", "strategy.facts"))
+		    .put("worldFacts", member(c.call("strategy.worldFacts", Obj().put("world", world)), "facts", "strategy.worldFacts"))
+		    .v;
+	}
+	if (op == "adjacency") return member(c.call("strategy.adjacency", Obj().put("world", r.world_of(input))), "adjacency", "strategy.adjacency");
+	const JsonValue &campaign = need(input, "campaign", "the input");
+	if (op == "books") return member(c.call("strategy.books", Obj().put("campaign", campaign).put("board", board_or_empty(input))), "books", "strategy.books");
+	if (op == "claimCost") {
+		const JsonValue *bs = input.find("businesses");
+		if (!bs || !bs->is_array()) throw DriveError("genre corpus: businesses must be a list");
+		Obj out;
+		for (const auto &b : bs->array_items) {
+			if (!b->is_string()) throw DriveError("genre corpus: business must be a string");
+			out.put(b->string_value, member(c.call("strategy.claimCost", Obj().put("campaign", campaign).put("business", b->string_value)), "cost", "strategy.claimCost"));
+		}
+		return out.v;
+	}
+	if (op == "controlled") {
+		JsonValuePtr board = board_or_empty(input);
+		Obj out;
+		for (const auto &f : items(need(campaign, "factions", "the campaign"), "factions")) {
+			if (!f->is_string()) throw DriveError("genre corpus: a faction must be a string");
+			out.put(f->string_value, member(c.call("strategy.controlled", Obj().put("campaign", campaign).put("board", board).put("faction", f->string_value)), "settlements", "strategy.controlled"));
+		}
+		return out.v;
+	}
+	throw DriveError("genre corpus: unknown op " + op + " for strategy/campaign");
+}
+
+// core's `strategyRun(input, steps, restoreFrom?)`: a fresh director over the case's campaign
+// and world facts, then the steps; the session always disposed.
+JsonValuePtr strategy_run(Run &r, const JsonValue &input, const JsonValuePtr &restore_from) {
+	Caller &c = r.c;
+	std::vector<JsonValuePtr> none;
+	const JsonValue &campaign = need(input, "campaign", "the input");
+	const std::string player = str_of(campaign, "playerFaction");
+	auto created = c.call("strategy.director.create", Obj().put("campaign", campaign).put("worldFacts", make_array(list_or_empty(input, "worldFacts", none))));
+	JsonValuePtr session = member(created, "session", "strategy.director.create");
+	struct Dispose {
+		Caller &c;
+		JsonValuePtr session;
+		~Dispose() { c.try_call("session.dispose", Obj().put("session", session).text()), c.calls["session.dispose"]++; }
+	} dispose{c, session};
+	auto with = [&](const std::string &faction) { return Obj().put("session", session).put("faction", faction); };
+	std::vector<JsonValuePtr> results;
+	if (restore_from) {
+		results.push_back(stepped("restore", c.call("strategy.director.restore", Obj().put("session", session).put("state", restore_from))));
+	}
+	for (const auto &raw : list_or_empty(input, "steps", none)) {
+		const JsonValue &s = *raw;
+		const JsonValue *name = s.find("step");
+		if (!s.is_object() || !name || !name->is_string()) throw DriveError("genre corpus: strategy step has no step");
+		const std::string step = name->string_value;
+		r.step_known(step);
+		const std::string faction = s.find("faction") ? str_of(s, "faction") : player;
+		if (step == "start") {
+			results.push_back(stepped("start", c.call("strategy.director.start", Obj().put("session", session))));
+		} else if (step == "restore") {
+			results.push_back(stepped("restore", c.call("strategy.director.restore", Obj().put("session", session).put("state", need(s, "state", "a restore step")))));
+		} else if (step == "claim") {
+			results.push_back(stepped("claim", c.call("strategy.director.claim", with(faction).put("business", str_of(s, "business")))));
+		} else if (step == "assign") {
+			results.push_back(stepped("assign", c.call("strategy.director.assign", with(faction).put("worker", str_of(s, "worker")).put("business", str_of(s, "business")))));
+		} else if (step == "release") {
+			results.push_back(stepped("release", c.call("strategy.director.release", with(faction).put("worker", str_of(s, "worker")))));
+		} else if (step == "endTurn") {
+			results.push_back(stepped("endTurn", c.call("strategy.director.endTurn", Obj().put("session", session))));
+		} else if (step == "stockpile") {
+			auto v = c.call("strategy.director.stockpile", with(faction));
+			results.push_back(Obj().put("step", "stockpile").put("stockpile", member(v, "stockpile", "strategy.director.stockpile")).v);
+		} else if (step == "holder") {
+			auto v = c.call("strategy.director.holderOf", Obj().put("session", session).put("business", str_of(s, "business")));
+			results.push_back(Obj().put("step", "holder").put("holder", member(v, "holder", "strategy.director.holderOf")).v);
+		} else if (step == "controls") {
+			auto v = c.call("strategy.director.controls", with(faction));
+			results.push_back(Obj().put("step", "controls").put("controls", member(v, "settlements", "strategy.director.controls")).v);
+		} else if (step == "victory") {
+			auto v = c.call("strategy.director.victory", with(faction));
+			results.push_back(Obj().put("step", "victory").put("victory", member(v, "victory", "strategy.director.victory")).v);
+		} else if (step == "progress") {
+			auto v = c.call("strategy.director.progress", with(faction));
+			results.push_back(Obj().put("step", "progress").put("progress", member(v, "progress", "strategy.director.progress")).v);
+		} else if (step == "state") {
+			auto v = c.call("strategy.director.serialize", Obj().put("session", session));
+			results.push_back(Obj().put("step", "state").put("state", member(v, "state", "strategy.director.serialize")).v);
+		} else {
+			throw DriveError("genre corpus: strategy step " + step + " has no drive");
+		}
+	}
+	auto st = c.call("strategy.director.serialize", Obj().put("session", session));
+	return Obj().put("steps", make_array(results)).put("state", member(st, "state", "strategy.director.serialize")).v;
+}
+
+JsonValuePtr strategy_block_of(Caller &c, const JsonValuePtr &block) {
+	return member(c.call("strategy.save.blockOf", Obj().put("block", block)), "block", "strategy.save.blockOf");
+}
+
+JsonValuePtr strategy_save(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "block") {
+		Obj a;
+		if (const JsonValue *s = input.find("state")) a.put("state", *s);
+		JsonValuePtr block = member(c.call("strategy.save.block", a), "block", "strategy.save.block");
+		if (block->is_null()) throw DriveError("genre corpus: strategySaveBlock gave no block to write");
+		return strategy_block_of(c, block);
+	}
+	if (op != "read" && op != "restore") throw DriveError("genre corpus: unknown op " + op + " for strategy/save");
+	Obj a;
+	if (const JsonValue *b = input.find("block")) a.put("block", *b);
+	JsonValuePtr read = c.call("strategy.save.read", a);
+	const bool ok = ok_of(read, "strategy.save.read");
+	JsonValuePtr value = ok ? member(read, "value", "strategy.save.read") : nullptr;
+	if (op == "read") {
+		if (!ok) return read;
+		return Obj().put("ok", make_bool(true)).put("value", value->is_null() ? make_null() : strategy_block_of(c, value)).v;
+	}
+	if (!ok) return Obj().put("read", read).v;
+	if (value->is_null()) return Obj().put("read", Obj().put("ok", make_bool(true)).put("value", make_null()).v).v;
+	JsonValuePtr shown = Obj().put("ok", make_bool(true)).put("value", strategy_block_of(c, value)).v;
+	return Obj().put("read", shown).put("run", strategy_run(r, input, value)).v;
+}
+
 JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	bool known = false;
 	for (const auto &o : r.spec.ops) known = known || o == op;
@@ -804,6 +978,9 @@ JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	if (file == "platformer/course") return platformer_course(r, op, input);
 	if (file == "platformer/run") return platformer_run(r, input, nullptr);
 	if (file == "platformer/save") return platformer_save(r, op, input);
+	if (file == "strategy/campaign") return strategy_campaign(r, op, input);
+	if (file == "strategy/run") return strategy_run(r, input, nullptr);
+	if (file == "strategy/save") return strategy_save(r, op, input);
 	throw DriveError("genre corpus: unknown file " + file);
 }
 
@@ -911,6 +1088,49 @@ void refusal_probes(Caller &c, const JsonValuePtr &slices, std::map<std::string,
 	probe(p, fails_as(c, "platformer.director.create", "{\"course\":{\"places\":[]}}", "[invalid-input]"), "a course missing its members is not [invalid-input]");
 	probe(p, fails_as(c, "platformer.route", "{\"links\":[{\"from\":\"a\",\"mode\":\"walk\"}],\"from\":\"a\",\"to\":\"b\"}", "[invalid-input]"), "a link with no `to` is not [invalid-input]");
 	probe(p, fails_as(c, "platformer.save.blockOf", "{\"block\":{\"runners\":[{\"runner\":\"p\"}]}}", "[invalid-input]"), "a runner row missing its members is not [invalid-input]");
+	// The strategy game: the same three kinds of drive failure, its refusals as values, its boundary as errors.
+	const std::string campaign =
+	    "{\"resources\":[\"coin\",\"food\"],\"outputs\":{\"farm\":{\"food\":3}},\"claimCosts\":{},\"defaultClaimCost\":{\"coin\":10},"
+	    "\"workerUpkeep\":{\"food\":1},\"workersPerHolding\":1,\"playerFaction\":\"player\",\"startingStock\":{\"coin\":5},"
+	    "\"settlements\":[\"ashby\"],\"adjacency\":[],\"holdings\":[{\"business\":\"farm1\",\"trade\":\"farm\",\"settlement\":\"ashby\","
+	    "\"holder\":\"ada\"}],\"factions\":[\"player\",\"ada\"],\"residents\":{},\"trading\":{\"ashby\":[\"farm1\"]},"
+	    "\"businessTrade\":{\"farm1\":\"farm\"},\"source\":\"generated\",\"notes\":[]}";
+	const std::string world_facts = "[\"settlement(ashby).\",\"business(farm1).\",\"business_type(farm1, farm).\",\"business_of_settlement(farm1, ashby).\"]";
+	probe(p, fails_drive(kFiles[6], "nope", "{}"), "an unknown campaign op is driven");
+	probe(p, fails_drive(kFiles[8], "nope", "{}"), "an unknown strategy save op is driven");
+	probe(p, fails_drive(kFiles[7], "run", ("{\"campaign\":" + campaign + ",\"steps\":[{\"step\":\"enter\"}]}").c_str()), "an unknown strategy run step is driven");
+	probe(p, fails_drive(kFiles[7], "run", ("{\"campaign\":" + campaign + ",\"steps\":[{\"business\":\"farm1\"}]}").c_str()), "a strategy run step with no name is driven");
+	{
+		auto s = c.try_call("strategy.director.create", "{\"campaign\":" + campaign + ",\"worldFacts\":" + world_facts + "}");
+		const JsonValue *h = s ? s->find("session") : nullptr;
+		if (h) {
+			const std::string sess = json_of(*h);
+			c.try_call("strategy.director.start", "{\"session\":" + sess + "}");
+			auto again = c.try_call("strategy.director.start", "{\"session\":" + sess + "}");
+			probe(p, again && again->get_string("refusal") == "schema", "a second start is not the value refusal schema");
+			auto f = c.try_call("strategy.director.claim", "{\"session\":" + sess + ",\"faction\":\"nobody\",\"business\":\"farm1\"}");
+			probe(p, f && f->get_string("refusal") == "unknown_faction", "an unknown faction is not the value refusal unknown_faction");
+			auto b = c.try_call("strategy.director.claim", "{\"session\":" + sess + ",\"faction\":\"player\",\"business\":\"mill9\"}");
+			probe(p, b && b->get_string("refusal") == "unknown_business", "a business off the board is not the value refusal unknown_business");
+			auto k = c.try_call("strategy.director.claim", "{\"session\":" + sess + ",\"faction\":\"player\",\"business\":\"farm1\"}");
+			probe(p, k && k->get_string("refusal") == "cannot_claim", "an unaffordable holding is not the value refusal cannot_claim");
+			auto a = c.try_call("strategy.director.assign", "{\"session\":" + sess + ",\"faction\":\"player\",\"worker\":\"finn\",\"business\":\"farm1\"}");
+			probe(p, a && a->get_string("refusal") == "cannot_assign", "a hand at a holding the faction does not hold is not the value refusal cannot_assign");
+			auto rl = c.try_call("strategy.director.release", "{\"session\":" + sess + ",\"faction\":\"player\",\"worker\":\"finn\"}");
+			probe(p, rl && rl->get_string("refusal") == "not_assigned", "releasing a worker nobody assigned is not the value refusal not_assigned");
+			c.try_call("session.dispose", "{\"session\":" + sess + "}");
+		} else {
+			probe(p, false, "strategy.director.create refused a campaign: " + c.last_error);
+		}
+	}
+	{
+		auto rd = c.try_call("strategy.save.read", "{\"block\":{\"turn\":-1}}");
+		probe(p, rd && !rd->get_bool("ok", true) && rd->find("keys") && json_of(*rd->find("keys")) == "[\"turn\"]", "an unreadable strategy block is not the value { ok: false, keys: [turn] }");
+	}
+	probe(p, fails_as(c, "strategy.forWorld", "{\"world\":5}", "[invalid-input]"), "a campaign world that is not an object is not [invalid-input]");
+	probe(p, fails_as(c, "strategy.director.create", "{\"campaign\":{\"resources\":[]}}", "[invalid-input]"), "a campaign missing its members is not [invalid-input]");
+	probe(p, fails_as(c, "strategy.books", ("{\"campaign\":" + campaign + ",\"board\":{\"holders\":{}}}").c_str(), "[invalid-input]"), "a board with no workers is not [invalid-input]");
+	probe(p, fails_as(c, "strategy.save.blockOf", "{\"block\":{\"turn\":0,\"holders\":[[\"farm1\"]],\"stock\":[],\"workers\":[]}}", "[invalid-input]"), "a holder row that is not a pair is not [invalid-input]");
 }
 
 } // namespace
@@ -977,10 +1197,11 @@ int main(int argc, char **argv) {
 	refusal_probes(c, slices.v, probe_steps, probes);
 	if (probes.passed != probes.total) failed++;
 	std::printf("refusals: %d of %d probe(s) as core answers (an unknown op, an unknown step and a nameless step fail their case, "
-	            "for the puzzle and the platformer; values: unknown_riddle, unknown_lock, unknown_clue, unknown_level, locked, "
-	            "not_running, movement with the probed link, an unreadable block's keys (both); errors: [invalid-input] for a "
-	            "world that is not an object (both), a slice name that is no own key, a definition, a course, a link and a state "
-	            "row missing members; an unknown row)\n",
+	            "for the puzzle, the platformer and the strategy game; values: unknown_riddle, unknown_lock, unknown_clue, "
+	            "unknown_level, locked, not_running, movement with the probed link, schema, unknown_faction, unknown_business, "
+	            "cannot_claim, cannot_assign, not_assigned, an unreadable block's keys (all three); errors: [invalid-input] for a "
+	            "world that is not an object (all three), a slice name that is no own key, a definition, a course, a link, a "
+	            "campaign, a board and a state row missing members; an unknown row)\n",
 	            probes.passed, probes.total);
 
 	int total_cases = 0, total_driven = 0, refused = 0, accepted = 0;
@@ -1079,7 +1300,7 @@ int main(int argc, char **argv) {
 		}
 		// Every step the run file declares is driven by one of its cases (the save file's
 		// restore runs drive a subset; the run file is where each step is held).
-		if (file == "puzzle/run" || file == "platformer/run") {
+		if (file == "puzzle/run" || file == "platformer/run" || file == "strategy/run") {
 			for (const auto &s : spec->steps) {
 				const int n = steps_driven.count(s) ? steps_driven[s] : 0;
 				by_step += (by_step.empty() ? "" : ", ") + s + " " + std::to_string(n);

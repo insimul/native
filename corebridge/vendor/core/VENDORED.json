@@ -353,13 +353,16 @@
     "conformance/platformer/save.json",
     "conformance/puzzle/definition.json",
     "conformance/puzzle/run.json",
-    "conformance/puzzle/save.json"
+    "conformance/puzzle/save.json",
+    "conformance/strategy/campaign.json",
+    "conformance/strategy/run.json",
+    "conformance/strategy/save.json"
   ],
-  "bundleBytes": 2597665,
-  "bundleSha256": "a2139946839430e928f57849bb7412dc66718b944f7afd3c0983313a8174b0cd",
+  "bundleBytes": 2634628,
+  "bundleSha256": "382db30ca281148acd79cf078c2252a8fd5867b185e27f87d0f42fb0700d106e",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "a2139946839430e928f57849bb7412dc66718b944f7afd3c0983313a8174b0cd",
-    "vendor/core/insimul_core_bundle.c": "714ad5e9de550d98881f5c438fc1df9908fb2dcf26f16c5bc6c9c981467bb8a3",
+    "vendor/core/insimul-core-bundle.js": "382db30ca281148acd79cf078c2252a8fd5867b185e27f87d0f42fb0700d106e",
+    "vendor/core/insimul_core_bundle.c": "493ffba3640478b478999385d6f34d71d92b1fa02c96ba859353deacd05522b7",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genre-platformer-course.json": "91a505afe9f435468ca948c8fa32ccba44681b9dbd3bcbc24f0b018ea8e62d44",
     "vendor/core/cases/core-genre-platformer-run.json": "cb758bf0927f41c7685929ca691a638f70458e36e204ba29ed1017be7455df81",
@@ -367,6 +370,9 @@
     "vendor/core/cases/core-genre-puzzle-definition.json": "d02d7163cba8954b3914d9cdf169e7daf726dd3a97699fb2c91ab8df334df8fb",
     "vendor/core/cases/core-genre-puzzle-run.json": "b07e68da4604108bb8cc4b98ed5153e3521fe4947f319b58971f508c50c1d1e4",
     "vendor/core/cases/core-genre-puzzle-save.json": "989f3b24aff22dbb9e09ae6445d6c773e84b7b305f9e3505813f69b912f42a4b",
+    "vendor/core/cases/core-genre-strategy-campaign.json": "f5f857459e065321f1e6fdc59f0aa231a7fbb1e9949b31e175df2e586e12edc9",
+    "vendor/core/cases/core-genre-strategy-run.json": "f659548fbdc6e2f9d611b005377247f60dade79729c503f274ae05f2fc58a4c5",
+    "vendor/core/cases/core-genre-strategy-save.json": "a5262253cc750f690c879ba17f83477fb06901676b41871586dbf24bafd62253",
     "vendor/core/cases/core-genres-recipes.json": "39edd39d967b4afe2744b2c1a90f33d3e43d9d66833663b7cf49a26f7d2f0dfa",
     "vendor/core/cases/core-genres-registry.json": "b840323e8706158c85dda9be4b2f1056d1e0f501da583101a413734c6dfe7adc",
     "vendor/core/cases/core-language-adaptation.json": "18d9cf6c17f950a8d6c261b5576d33f9027f25ae4067eaed62c670747a53f21d",
@@ -493,13 +499,16 @@
     "vendor/core/conformance/puzzle/definition.json": "8edc927ab42096577ac6bf9de2e99dc0064c4a1fdde31e29852eb11a10647c1d",
     "vendor/core/conformance/puzzle/run.json": "fb8fc0d3f9c13e37fc1bc659667c7904c8b5290eddc0cfdfdb93fc00827a4a03",
     "vendor/core/conformance/puzzle/save.json": "3ca6d63e5bb2fbb2f9836f9c4ce5c74c2f8b5212941b222aad6c443af323d49f",
-    "js/entry.js": "476032f66415941eda8f6b92fbae0edf7e6da9987e2584b5fe116482bcf735a1",
+    "vendor/core/conformance/strategy/campaign.json": "783df7cc2ce233046614f7fdd33ff2b290aa15040e83af8d559e55af4419a4e6",
+    "vendor/core/conformance/strategy/run.json": "fa4765abfbe38e68a0750f20d40e959a1c0d9c82c6fba18d9f453b11e353ef87",
+    "vendor/core/conformance/strategy/save.json": "f093109d3f5173c2b9fd0666056bb03a8f1105ef987f0570be382da5d5a68065",
+    "js/entry.js": "f0f3101a8a3803306efcdee85b2e0d44e20b111e19b4bc6263578fd459ccc76c",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
-    "tools/emit-bridge-cases.mjs": "e6782ade2ed80eb5628ffac9b2dd1badba7eb8d7d57e3176c697df50f1d8089a",
-    "core-pin.json": "f4077d4bd2244ea1c195612dcd7cd33f9ce2ba630edac808ad7d146b9a257f11"
+    "tools/emit-bridge-cases.mjs": "c52bd02cdbf7f982e9cb2b53d7d1d73542c3cc3d45d9a33fb4dab29cc6059584",
+    "core-pin.json": "8a636158415cce4542046889398669a803217fa8ea4759e40458d15d4a89358b"
   }
 }

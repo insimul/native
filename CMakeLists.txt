@@ -639,13 +639,17 @@ set_tests_properties(core_vendor_language_negative PROPERTIES
 # cases/core-genre-platformer-*.json and eight more (a step call dropped, a step's movement
 # weakened, its probed links changed, its outcome weakened to a subset, its host orders stated
 # non-empty, two runs' stars swapped, a course case put on the C leg only, a restored run put on
-# both legs). It passes only when all seventeen are named.
+# both legs); slice 3 (the strategy game) adds cases/core-genre-strategy-*.json and nine more (a
+# run's endTurn call dropped, a turn report's orders stated empty, a turn report weakened to a
+# subset, a victory answer flipped, a controls answer stated under another key, two businesses'
+# prices swapped, a controlled call asked for another faction, a campaign case put on the C leg
+# only, a restored run put on both legs). It passes only when all twenty-six are named.
 add_test(NAME core_vendor_genre_negative COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
        --check-genre-transcription-negative)
 set_tests_properties(core_vendor_genre_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "genre transcription negative [^ ]* 17 of 17 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_genre_negative")
+  PASS_REGULAR_EXPRESSION "genre transcription negative [^ ]* 26 of 26 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_genre_negative")
 
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus
@@ -1215,8 +1219,14 @@ set_tests_properties(language_corpus_negative PROPERTIES
 # TraversalPlanner inside the director, the host's probe stated as data) and
 # src/platformer/platformer-save.ts as the `platformer.*` rows, held to
 # conformance/platformer/{course,run,save}.json (transcribed as cases/core-genre-platformer-*.json);
-# they retire Unreal's Portable/InsimulPlatformer.{h,cpp} (P9j.unreal.retire-platformer-copy). The
-# strategy game and the genre pieces join in later slices. The regex demands every refusal probe as core answers,
+# they retire Unreal's Portable/InsimulPlatformer.{h,cpp} (P9j.unreal.retire-platformer-copy).
+# Slice 3 adds the strategy game the same way: core's src/strategy/strategy.ts (the campaign a
+# world gives, a turn's books, a holding's price, control and neighbours),
+# src/game-engine/logic/StrategyDirector.ts (over a KB that module activation builds:
+# GamePrologEngine with genre strategy) and src/strategy/strategy-save.ts as the `strategy.*`
+# rows, held to conformance/strategy/{campaign,run,save}.json (transcribed as
+# cases/core-genre-strategy-*.json); they retire Unreal's Portable/InsimulStrategy.{h,cpp}
+# (P9j.unreal.retire-strategy-copy). The genre pieces join in a later slice. The regex demands every refusal probe as core answers,
 # each file's driven line with every op (and the run file's every step) driven and 0 undriven,
 # every row it names called, then PASS. It holds no ';'.
 add_executable(insimulcore_genre_systems_corpus tests/genre_systems_corpus.cpp tests/radiant/json_value.cpp)
@@ -1229,14 +1239,17 @@ set(INSIMUL_GENRE_SYSTEMS_CORPORA
   ${INSIMUL_PROPS_CORPUS}/puzzle/save.json
   ${INSIMUL_PROPS_CORPUS}/platformer/course.json
   ${INSIMUL_PROPS_CORPUS}/platformer/run.json
-  ${INSIMUL_PROPS_CORPUS}/platformer/save.json)
+  ${INSIMUL_PROPS_CORPUS}/platformer/save.json
+  ${INSIMUL_PROPS_CORPUS}/strategy/campaign.json
+  ${INSIMUL_PROPS_CORPUS}/strategy/run.json
+  ${INSIMUL_PROPS_CORPUS}/strategy/save.json)
 add_test(NAME genre_systems_corpus COMMAND insimulcore_genre_systems_corpus ${INSIMUL_GENRE_SYSTEMS_CORPORA})
 set_tests_properties(genre_systems_corpus PROPERTIES
-  PASS_REGULAR_EXPRESSION "refusals: 26 of 26 probe[(]s[)] as core answers[^\n]*\n.*puzzle/definition: [1-9][0-9]* case[(]s[)], driven generate [1-9][0-9]*, authored [1-9][0-9]*, choices [1-9][0-9]*. 0 undriven\n.*puzzle/run: [1-9][0-9]* case[(]s[)], driven run [1-9][0-9]*. 0 undriven. steps restore [1-9][0-9]*, clue [1-9][0-9]*, answer [1-9][0-9]*, unlock [1-9][0-9]*, take [1-9][0-9]*, view [1-9][0-9]*, progress [1-9][0-9]*, complete [1-9][0-9]*, state [1-9][0-9]*\n.*puzzle/save: [1-9][0-9]* case[(]s[)], driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*platformer/course: [1-9][0-9]* case[(]s[)], driven generate [1-9][0-9]*, route [1-9][0-9]*, stars [1-9][0-9]*. 0 undriven\n.*platformer/run: [1-9][0-9]* case[(]s[)], driven run [1-9][0-9]*. 0 undriven. steps restore [1-9][0-9]*, enter [1-9][0-9]*, step [1-9][0-9]*, respawn [1-9][0-9]*, hint [1-9][0-9]*, unlocked [1-9][0-9]*, progress [1-9][0-9]*, state [1-9][0-9]*\n.*platformer/save: [1-9][0-9]* case[(]s[)], driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*rows: 38 of 38 called by the corpora's cases\ngenre_systems_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\ngenre_systems_corpus: PASS")
+  PASS_REGULAR_EXPRESSION "refusals: 41 of 41 probe[(]s[)] as core answers[^\n]*\n.*puzzle/definition: [1-9][0-9]* case[(]s[)], driven generate [1-9][0-9]*, authored [1-9][0-9]*, choices [1-9][0-9]*. 0 undriven\n.*puzzle/run: [1-9][0-9]* case[(]s[)], driven run [1-9][0-9]*. 0 undriven. steps restore [1-9][0-9]*, clue [1-9][0-9]*, answer [1-9][0-9]*, unlock [1-9][0-9]*, take [1-9][0-9]*, view [1-9][0-9]*, progress [1-9][0-9]*, complete [1-9][0-9]*, state [1-9][0-9]*\n.*puzzle/save: [1-9][0-9]* case[(]s[)], driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*platformer/course: [1-9][0-9]* case[(]s[)], driven generate [1-9][0-9]*, route [1-9][0-9]*, stars [1-9][0-9]*. 0 undriven\n.*platformer/run: [1-9][0-9]* case[(]s[)], driven run [1-9][0-9]*. 0 undriven. steps restore [1-9][0-9]*, enter [1-9][0-9]*, step [1-9][0-9]*, respawn [1-9][0-9]*, hint [1-9][0-9]*, unlocked [1-9][0-9]*, progress [1-9][0-9]*, state [1-9][0-9]*\n.*platformer/save: [1-9][0-9]* case[(]s[)], driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*strategy/campaign: [1-9][0-9]* case[(]s[)], driven generate [1-9][0-9]*, books [1-9][0-9]*, claimCost [1-9][0-9]*, controlled [1-9][0-9]*, adjacency [1-9][0-9]*. 0 undriven\n.*strategy/run: [1-9][0-9]* case[(]s[)], driven run [1-9][0-9]*. 0 undriven. steps start [1-9][0-9]*, restore [1-9][0-9]*, claim [1-9][0-9]*, assign [1-9][0-9]*, release [1-9][0-9]*, endTurn [1-9][0-9]*, stockpile [1-9][0-9]*, holder [1-9][0-9]*, controls [1-9][0-9]*, victory [1-9][0-9]*, progress [1-9][0-9]*, state [1-9][0-9]*\n.*strategy/save: [1-9][0-9]* case[(]s[)], driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*rows: 61 of 61 called by the corpora's cases\ngenre_systems_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\ngenre_systems_corpus: PASS")
 # Its negative pass: every case's expectation perturbed (its last leaf), every one refused.
 add_test(NAME genre_systems_corpus_negative COMMAND insimulcore_genre_systems_corpus --negative ${INSIMUL_GENRE_SYSTEMS_CORPORA})
 set_tests_properties(genre_systems_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "refusals: 26 of 26 probe[(]s[)] as core answers[^\n]*\n.*rows: 38 of 38 called by the corpora's cases\ngenre_systems_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\ngenre_systems_corpus --negative: PASS")
+  PASS_REGULAR_EXPRESSION "refusals: 41 of 41 probe[(]s[)] as core answers[^\n]*\n.*rows: 61 of 61 called by the corpora's cases\ngenre_systems_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\ngenre_systems_corpus --negative: PASS")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest

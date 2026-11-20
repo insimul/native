@@ -1,0 +1,1095 @@
+{
+ "area": "genre-strategy-save",
+ "description": "core's genre systems corpus conformance/strategy/save.json (P9j.core) through the genre.world.of and strategy.* rows, each op as core's reference runner (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/genre-mechanics/thistlecombe.world-slice.json": "2dccd06611aa6325c6a7ea9d3c4ae18135252f039a8cb3ba61173d95608376cb",
+   "conformance/strategy/save.json": "f093109d3f5173c2b9fd0666056bb03a8f1105ef987f0570be382da5d5a68065"
+  }
+ },
+ "cases": [
+  {
+   "name": "strategy/save block: block: the director's state, holders by business, stock by faction then resource, workers by worker",
+   "steps": [
+    {
+     "call": "strategy.save.block",
+     "args": {
+      "state": {
+       "turn": 3,
+       "holders": [
+        [
+         "brook_farm",
+         "cora_field"
+        ],
+        [
+         "ashby_inn",
+         "player"
+        ],
+        [
+         "ashby_forge",
+         "player"
+        ],
+        [
+         "ashby_mill",
+         "ada_miller"
+        ]
+       ],
+       "stock": [
+        [
+         "player",
+         "tools",
+         4
+        ],
+        [
+         "player",
+         "coin",
+         9
+        ],
+        [
+         "ada_miller",
+         "food",
+         12
+        ]
+       ],
+       "workers": [
+        [
+         "hugh",
+         "ashby_forge"
+        ],
+        [
+         "finn",
+         "ashby_inn"
+        ]
+       ]
+      }
+     },
+     "expect": {
+      "block": {
+       "$type": "object"
+      }
+     },
+     "bind": "b"
+    },
+    {
+     "call": "strategy.save.blockOf",
+     "args": {
+      "block": {
+       "$ref": "b.block"
+      }
+     },
+     "expect": {
+      "block": {
+       "turn": 3,
+       "holders": [
+        [
+         "ashby_forge",
+         "player"
+        ],
+        [
+         "ashby_inn",
+         "player"
+        ],
+        [
+         "ashby_mill",
+         "ada_miller"
+        ],
+        [
+         "brook_farm",
+         "cora_field"
+        ]
+       ],
+       "stock": [
+        [
+         "ada_miller",
+         "food",
+         12
+        ],
+        [
+         "player",
+         "coin",
+         9
+        ],
+        [
+         "player",
+         "tools",
+         4
+        ]
+       ],
+       "workers": [
+        [
+         "finn",
+         "ashby_inn"
+        ],
+        [
+         "hugh",
+         "ashby_forge"
+        ]
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy/save read: read: a block as written reads back unchanged",
+   "steps": [
+    {
+     "call": "strategy.save.read",
+     "args": {
+      "block": {
+       "turn": 3,
+       "holders": [
+        [
+         "brook_farm",
+         "cora_field"
+        ],
+        [
+         "ashby_inn",
+         "player"
+        ],
+        [
+         "ashby_forge",
+         "player"
+        ],
+        [
+         "ashby_mill",
+         "ada_miller"
+        ]
+       ],
+       "stock": [
+        [
+         "player",
+         "tools",
+         4
+        ],
+        [
+         "player",
+         "coin",
+         9
+        ],
+        [
+         "ada_miller",
+         "food",
+         12
+        ]
+       ],
+       "workers": [
+        [
+         "hugh",
+         "ashby_forge"
+        ],
+        [
+         "finn",
+         "ashby_inn"
+        ]
+       ]
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "$type": "object"
+      }
+     },
+     "bind": "r"
+    },
+    {
+     "call": "strategy.save.blockOf",
+     "args": {
+      "block": {
+       "$ref": "r.value"
+      }
+     },
+     "expect": {
+      "block": {
+       "turn": 3,
+       "holders": [
+        [
+         "ashby_forge",
+         "player"
+        ],
+        [
+         "ashby_inn",
+         "player"
+        ],
+        [
+         "ashby_mill",
+         "ada_miller"
+        ],
+        [
+         "brook_farm",
+         "cora_field"
+        ]
+       ],
+       "stock": [
+        [
+         "ada_miller",
+         "food",
+         12
+        ],
+        [
+         "player",
+         "coin",
+         9
+        ],
+        [
+         "player",
+         "tools",
+         4
+        ]
+       ],
+       "workers": [
+        [
+         "finn",
+         "ashby_inn"
+        ],
+        [
+         "hugh",
+         "ashby_forge"
+        ]
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy/save read: read: absent members read as turn 0 and empty lists",
+   "steps": [
+    {
+     "call": "strategy.save.read",
+     "args": {
+      "block": {}
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "$type": "object"
+      }
+     },
+     "bind": "r"
+    },
+    {
+     "call": "strategy.save.blockOf",
+     "args": {
+      "block": {
+       "$ref": "r.value"
+      }
+     },
+     "expect": {
+      "block": {
+       "turn": 0,
+       "holders": [],
+       "stock": [],
+       "workers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy/save read: read: no block (absent or null) is no campaign under way",
+   "steps": [
+    {
+     "call": "strategy.save.read",
+     "args": {
+      "block": null
+     },
+     "expect": {
+      "ok": true,
+      "value": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy/save read: read refused: a block that is not an object",
+   "steps": [
+    {
+     "call": "strategy.save.read",
+     "args": {
+      "block": "turn 3"
+     },
+     "expect": {
+      "ok": false,
+      "keys": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy/save read: read refused: every unreadable member, in ascending order",
+   "steps": [
+    {
+     "call": "strategy.save.read",
+     "args": {
+      "block": {
+       "turn": -1,
+       "holders": [
+        [
+         "ashby_inn",
+         "player"
+        ],
+        [
+         "ashby_inn",
+         "ada_miller"
+        ],
+        [
+         "brook_farm"
+        ]
+       ],
+       "stock": [
+        [
+         "player",
+         "coin",
+         0
+        ],
+        [
+         "player",
+         "coin",
+         5
+        ],
+        [
+         "player",
+         "coin",
+         6
+        ],
+        [
+         "player",
+         "food",
+         1.5
+        ]
+       ],
+       "workers": [
+        [
+         "finn",
+         "ashby_inn"
+        ],
+        [
+         "finn",
+         "ashby_inn"
+        ],
+        [
+         "gwen",
+         "carr_chapel"
+        ]
+       ]
+      }
+     },
+     "expect": {
+      "ok": false,
+      "keys": [
+       "holders[1]",
+       "holders[2]",
+       "stock[0]",
+       "stock[2]",
+       "stock[3]",
+       "turn",
+       "workers[1]",
+       "workers[2]"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy/save read: read refused: lists that are not lists",
+   "steps": [
+    {
+     "call": "strategy.save.read",
+     "args": {
+      "block": {
+       "turn": 1,
+       "holders": {},
+       "stock": "none",
+       "workers": 3
+      }
+     },
+     "expect": {
+      "ok": false,
+      "keys": [
+       "holders",
+       "stock",
+       "workers"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy/save restore: restore: a campaign comes back at turn 3 and plays on",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's StrategyDirector over a KB (GamePrologEngine's strategy pack on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "strategy.save.read",
+     "args": {
+      "block": {
+       "turn": 3,
+       "holders": [
+        [
+         "brook_farm",
+         "cora_field"
+        ],
+        [
+         "ashby_inn",
+         "player"
+        ],
+        [
+         "ashby_forge",
+         "player"
+        ],
+        [
+         "ashby_mill",
+         "ada_miller"
+        ]
+       ],
+       "stock": [
+        [
+         "player",
+         "tools",
+         4
+        ],
+        [
+         "player",
+         "coin",
+         9
+        ],
+        [
+         "ada_miller",
+         "food",
+         12
+        ]
+       ],
+       "workers": [
+        [
+         "hugh",
+         "ashby_forge"
+        ],
+        [
+         "finn",
+         "ashby_inn"
+        ]
+       ]
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "$type": "object"
+      }
+     },
+     "bind": "r"
+    },
+    {
+     "call": "strategy.save.blockOf",
+     "args": {
+      "block": {
+       "$ref": "r.value"
+      }
+     },
+     "expect": {
+      "block": {
+       "turn": 3,
+       "holders": [
+        [
+         "ashby_forge",
+         "player"
+        ],
+        [
+         "ashby_inn",
+         "player"
+        ],
+        [
+         "ashby_mill",
+         "ada_miller"
+        ],
+        [
+         "brook_farm",
+         "cora_field"
+        ]
+       ],
+       "stock": [
+        [
+         "ada_miller",
+         "food",
+         12
+        ],
+        [
+         "player",
+         "coin",
+         9
+        ],
+        [
+         "player",
+         "tools",
+         4
+        ]
+       ],
+       "workers": [
+        [
+         "finn",
+         "ashby_inn"
+        ],
+        [
+         "hugh",
+         "ashby_forge"
+        ]
+       ]
+      }
+     }
+    },
+    {
+     "call": "strategy.director.create",
+     "args": {
+      "campaign": {
+       "resources": [
+        "coin",
+        "food",
+        "goods",
+        "influence",
+        "timber",
+        "tools"
+       ],
+       "outputs": {
+        "blacksmith": {
+         "tools": 2,
+         "coin": 1
+        },
+        "inn": {
+         "coin": 2,
+         "food": 1
+        },
+        "mill": {
+         "food": 2,
+         "coin": 1
+        },
+        "farm": {
+         "food": 3,
+         "coin": 1
+        },
+        "pottery": {
+         "coin": 1
+        },
+        "church": {
+         "influence": 2
+        }
+       },
+       "claimCosts": {},
+       "defaultClaimCost": {
+        "coin": 10
+       },
+       "workerUpkeep": {
+        "food": 1
+       },
+       "workersPerHolding": 2,
+       "playerFaction": "player",
+       "startingStock": {
+        "coin": 25,
+        "food": 6
+       },
+       "settlements": [
+        "ashby",
+        "brook",
+        "carr"
+       ],
+       "adjacency": [
+        [
+         "ashby",
+         "brook"
+        ],
+        [
+         "brook",
+         "carr"
+        ]
+       ],
+       "holdings": [
+        {
+         "business": "ashby_forge",
+         "trade": "blacksmith",
+         "settlement": "ashby",
+         "holder": "bram_smith"
+        },
+        {
+         "business": "ashby_mill",
+         "trade": "mill",
+         "settlement": "ashby",
+         "holder": "ada_miller"
+        },
+        {
+         "business": "brook_farm",
+         "trade": "farm",
+         "settlement": "brook",
+         "holder": "cora_field"
+        },
+        {
+         "business": "brook_pottery",
+         "trade": "pottery",
+         "settlement": "brook",
+         "holder": "dell_potter"
+        },
+        {
+         "business": "carr_chapel",
+         "trade": "church",
+         "settlement": "carr",
+         "holder": "eve_priest"
+        }
+       ],
+       "factions": [
+        "player",
+        "ada_miller",
+        "bram_smith",
+        "cora_field",
+        "dell_potter",
+        "eve_priest"
+       ],
+       "residents": {
+        "ashby": [
+         "finn",
+         "gwen",
+         "hugh"
+        ],
+        "brook": [
+         "iris"
+        ]
+       },
+       "trading": {
+        "ashby": [
+         "ashby_forge",
+         "ashby_inn",
+         "ashby_mill"
+        ],
+        "brook": [
+         "brook_farm",
+         "brook_pottery"
+        ],
+        "carr": [
+         "carr_chapel"
+        ]
+       },
+       "businessTrade": {
+        "ashby_forge": "blacksmith",
+        "ashby_inn": "inn",
+        "ashby_mill": "mill",
+        "brook_farm": "farm",
+        "brook_pottery": "pottery",
+        "carr_chapel": "church"
+       },
+       "source": "generated",
+       "notes": []
+      },
+      "worldFacts": [
+       "settlement(ashby).",
+       "settlement(brook).",
+       "settlement(carr).",
+       "business(ashby_mill).",
+       "business(ashby_forge).",
+       "business(ashby_inn).",
+       "business(old_tavern).",
+       "business(brook_farm).",
+       "business(brook_pottery).",
+       "business(carr_chapel).",
+       "business_type(ashby_mill, mill).",
+       "business_type(ashby_forge, blacksmith).",
+       "business_type(ashby_inn, inn).",
+       "business_type(old_tavern, tavern).",
+       "business_type(brook_farm, farm).",
+       "business_type(brook_pottery, pottery).",
+       "business_type(carr_chapel, church).",
+       "business_of_settlement(ashby_mill, ashby).",
+       "business_of_settlement(ashby_forge, ashby).",
+       "business_of_settlement(ashby_inn, ashby).",
+       "business_of_settlement(old_tavern, ashby).",
+       "business_of_settlement(brook_farm, brook).",
+       "business_of_settlement(brook_pottery, brook).",
+       "business_of_settlement(carr_chapel, carr).",
+       "business_out_of_business(old_tavern).",
+       "lives_at(finn, ashby_cottage).",
+       "lives_at(gwen, ashby_cottage).",
+       "lives_at(hugh, ashby_row).",
+       "lives_at(iris, brook_house).",
+       "lives_at(jude, nowhere_hut).",
+       "residence_of_settlement(ashby_cottage, ashby).",
+       "residence_of_settlement(ashby_row, ashby).",
+       "residence_of_settlement(brook_house, brook)."
+      ]
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      }
+     },
+     "bind": "s"
+    },
+    {
+     "call": "strategy.director.restore",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "state": {
+       "$ref": "r.value"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "strategy_turn(3).",
+       "strategy_holds(cora_field, brook_farm).",
+       "strategy_holds(player, ashby_inn).",
+       "strategy_holds(player, ashby_forge).",
+       "strategy_holds(ada_miller, ashby_mill).",
+       "strategy_stock(player, tools, 4).",
+       "strategy_stock(player, coin, 9).",
+       "strategy_stock(ada_miller, food, 12).",
+       "strategy_worker(ashby_forge, hugh).",
+       "strategy_worker(ashby_inn, finn)."
+      ]
+     }
+    },
+    {
+     "call": "strategy.director.progress",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "faction": "player"
+     },
+     "expect": {
+      "progress": {
+       "holdings": 2,
+       "controlled": 1,
+       "settlements": 3,
+       "stock": {
+        "coin": 9,
+        "food": 0,
+        "goods": 0,
+        "influence": 0,
+        "timber": 0,
+        "tools": 4
+       },
+       "workers": 2,
+       "turn": 3,
+       "victory": false
+      }
+     }
+    },
+    {
+     "call": "strategy.director.controls",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "faction": "player"
+     },
+     "expect": {
+      "settlements": [
+       "ashby"
+      ]
+     }
+    },
+    {
+     "call": "strategy.director.endTurn",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "strategy_turn(3).",
+       "strategy_stock(player, coin, 9).",
+       "strategy_stock(player, tools, 4).",
+       "strategy_stock(ada_miller, food, 12).",
+       "strategy_turn(4).",
+       "strategy_stock(player, coin, 15).",
+       "strategy_stock(player, tools, 8).",
+       "strategy_stock(ada_miller, coin, 1).",
+       "strategy_stock(ada_miller, food, 14).",
+       "strategy_stock(cora_field, coin, 1).",
+       "strategy_stock(cora_field, food, 3)."
+      ],
+      "turn": 4,
+      "net": {
+       "player": {
+        "coin": 6,
+        "food": 0,
+        "goods": 0,
+        "influence": 0,
+        "timber": 0,
+        "tools": 4
+       },
+       "ada_miller": {
+        "coin": 1,
+        "food": 2,
+        "goods": 0,
+        "influence": 0,
+        "timber": 0,
+        "tools": 0
+       },
+       "bram_smith": {
+        "coin": 0,
+        "food": 0,
+        "goods": 0,
+        "influence": 0,
+        "timber": 0,
+        "tools": 0
+       },
+       "cora_field": {
+        "coin": 1,
+        "food": 3,
+        "goods": 0,
+        "influence": 0,
+        "timber": 0,
+        "tools": 0
+       },
+       "dell_potter": {
+        "coin": 0,
+        "food": 0,
+        "goods": 0,
+        "influence": 0,
+        "timber": 0,
+        "tools": 0
+       },
+       "eve_priest": {
+        "coin": 0,
+        "food": 0,
+        "goods": 0,
+        "influence": 0,
+        "timber": 0,
+        "tools": 0
+       }
+      },
+      "released": [],
+      "orders": [
+       {
+        "agent": "finn",
+        "action": "work",
+        "target": "ashby_inn",
+        "tick": 4,
+        "animation": "work",
+        "utility": 0
+       },
+       {
+        "agent": "hugh",
+        "action": "work",
+        "target": "ashby_forge",
+        "tick": 4,
+        "animation": "work",
+        "utility": 0
+       }
+      ]
+     }
+    },
+    {
+     "call": "strategy.director.stockpile",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "faction": "player"
+     },
+     "expect": {
+      "stockpile": {
+       "coin": 15,
+       "food": 0,
+       "goods": 0,
+       "influence": 0,
+       "timber": 0,
+       "tools": 8
+      }
+     }
+    },
+    {
+     "call": "strategy.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "turn": 4,
+       "holders": [
+        [
+         "ashby_forge",
+         "player"
+        ],
+        [
+         "ashby_inn",
+         "player"
+        ],
+        [
+         "ashby_mill",
+         "ada_miller"
+        ],
+        [
+         "brook_farm",
+         "cora_field"
+        ]
+       ],
+       "stock": [
+        [
+         "ada_miller",
+         "coin",
+         1
+        ],
+        [
+         "ada_miller",
+         "food",
+         14
+        ],
+        [
+         "cora_field",
+         "coin",
+         1
+        ],
+        [
+         "cora_field",
+         "food",
+         3
+        ],
+        [
+         "player",
+         "coin",
+         15
+        ],
+        [
+         "player",
+         "tools",
+         8
+        ]
+       ],
+       "workers": [
+        [
+         "finn",
+         "ashby_inn"
+        ],
+        [
+         "hugh",
+         "ashby_forge"
+        ]
+       ]
+      }
+     }
+    },
+    {
+     "call": "strategy.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "turn": 4,
+       "holders": [
+        [
+         "ashby_forge",
+         "player"
+        ],
+        [
+         "ashby_inn",
+         "player"
+        ],
+        [
+         "ashby_mill",
+         "ada_miller"
+        ],
+        [
+         "brook_farm",
+         "cora_field"
+        ]
+       ],
+       "stock": [
+        [
+         "ada_miller",
+         "coin",
+         1
+        ],
+        [
+         "ada_miller",
+         "food",
+         14
+        ],
+        [
+         "cora_field",
+         "coin",
+         1
+        ],
+        [
+         "cora_field",
+         "food",
+         3
+        ],
+        [
+         "player",
+         "coin",
+         15
+        ],
+        [
+         "player",
+         "tools",
+         8
+        ]
+       ],
+       "workers": [
+        [
+         "finn",
+         "ashby_inn"
+        ],
+        [
+         "hugh",
+         "ashby_forge"
+        ]
+       ]
+      }
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy/save restore: restore refused: an unreadable block restores nothing",
+   "steps": [
+    {
+     "call": "strategy.save.read",
+     "args": {
+      "block": {
+       "turn": 2,
+       "workers": [
+        [
+         "finn",
+         "ashby_inn"
+        ]
+       ]
+      }
+     },
+     "expect": {
+      "ok": false,
+      "keys": [
+       "workers[0]"
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

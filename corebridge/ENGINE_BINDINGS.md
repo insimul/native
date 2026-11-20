@@ -853,7 +853,7 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   | `CourseForWorld(Core, World, Platformer, Traversal, LevelCount)` (LevelCount nullptr: undefined) | `platformer.forWorld { world, platformer, traversal, levelCount? }` (send `platformer: null` / `traversal: null` for none: absent, the row reads the world's own section; omit `levelCount` for undefined) |
   | `GenerateCourse`, `CourseFromIR` (the copy's internals) | `platformer.generate { world, levelCount?, runnerModes? }`, `platformer.fromIR { platformer, traversal?, world }` |
   | `CourseLevelFacts(Course)`, `StarsFor(Par, Cost)` | `platformer.levelFacts { course }`, `platformer.stars { par, cost }` |
-  | `FPlatformerDirector(Course, Kb, Core, Probe)` + `Publish()` | `platformer.director.create { course, probe?, kb? }` → `{ session, published }` |
+  | `FPlatformerDirector(Course, Kb, Core, Probe)` + `Publish()` | `platformer.director.create { course, probe?, locomotion?, kb? }` → `{ session, published }` (Unreal's copy has no locomotion host: omit `locomotion`) |
   | `IsUnlocked`, `Enter`, `Respawn`, `Hint` (nullptr: none), `Progress`, `Serialize`, `Restore` | `platformer.director.isUnlocked` (`{ unlocked }`), `.enter`, `.respawn`, `.hint` (`{ route: null }`), `.progress` (`{ progress }`), `.serialize` (`{ state }`), `.restore` |
   | `Step(Runner, To)` (the outcome with `movement` reduced to `movementView`) | `platformer.director.step { session, runner, to }` → `{ outcome, probed, orders }`: `outcome.movement` is core's whole `TraversalReport`; the corpus's view is `{ performed, refusal? (when non-empty), mode: affordance.mode, link: affordance.id (when there is an affordance), cost, location }` |
   | `FProbe` | `probe` at create, `platformer.director.host { session, probe }` after |
@@ -876,6 +876,58 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `platformer.save.*` and the platformer run. Exact comparison, key sets included; an
   unknown op or step is an error. `conformance/prolog/mechanic-platformer.json` stays with
   PL.native-prolog-mirror-full (U120(9)).
+- **The strategy game, slice 3 of PL.native-genre-rows (Unreal's
+  `P9j.unreal.retire-strategy-copy`; U115, U128).** Core's P9j strategy module is the
+  `strategy.*` rows (`README.md`, "The genre systems rows: the strategy game"). The retirement
+  row binds them in place of the interim copy on unreal main (`8568cf5c`, read only; unchanged
+  at `9dac49f4`): `Portable/InsimulStrategy.{h,cpp}` (91 + 880 lines), held to core's strategy
+  corpus by its `strategy_corpus` (+ `_negative`). The campaign rows are stateless; the
+  director is a session (`strategy.director.create` → `{ session }`; nothing is published until
+  `.start` or `.restore`) whose KB is its OWN: `GamePrologEngine` with genre `strategy` on the
+  library's native KB, as core's runner builds it. Unreal's copy writes the campaign into the
+  game's KB through an `FScopedKb` (`FGenreSystemsSession`'s `StrategyKb`), so its verdicts see
+  the game's own `business/1`, `business_out_of_business/1`, `lives_at/2` and
+  `residence_of_settlement/2`. Through the rows, pass those as `worldFacts`
+  (`strategy.worldFacts { world }`, published at `.start`) or as `kb` (consulted at create):
+  either reaches every verdict. With neither, no business trades, so every claim is refused
+  `cannot_claim` and every hand `cannot_assign`; a `kb` that adds
+  `business_out_of_business(<b>).` takes that business off the board for the KB (the hand
+  cases in `tests/cases/bridge-strategy.json` pin all three). A binding whose game rules must
+  see the campaign mirrors each outcome's `applied` facts into the game's KB, as the scoped KB
+  did. Core's `IAgentActionHost` is only told (`perform` returns nothing), so no host crosses
+  the ABI and none is stated: `.endTurn`'s report carries every `work` order, which the
+  binding performs (the copy takes no host either).
+
+  | Unreal's interim copy (`insimul::strategy`) | Row |
+  |---|---|
+  | `kRuntimePredicates` | `strategy.contract {}` (`runtimePredicates`, `writtenPredicates`; also the area, the authored and world predicates, core's default tables, the pack tuning and the save block's key and members) |
+  | `SettlementAdjacency(World)` | `strategy.adjacency { world }` → `{ adjacency }` |
+  | `CampaignForWorld(World, Strategy, Tuning)` (nullptr: none) | `strategy.forWorld { world, strategy, tuning? }` → `{ campaign }` (send `strategy: null` for none: absent, the row reads the world's own section; `tuning` absent or null is core's defaults) |
+  | `CampaignFacts(Campaign)`, `CampaignWorldFacts(World)` | `strategy.facts { campaign }`, `strategy.worldFacts { world }` → `{ facts }` |
+  | `TurnBooks(Campaign, Board)` | `strategy.books { campaign, board }` → `{ books }`. `board` is core's `CampaignBoard`, `{ holders: { <business>: <faction> }, workers: { <business>: [<worker>] } }`, both required: build it from `.serialize`'s state (holders as an object; workers grouped by business). The copy's `TurnBooks(D->Campaign(), *D->Serialize())` (InsimulPlayerGenres.cpp) passes the state's lists, which the row refuses `[invalid-input]` |
+  | `ClaimCost(Campaign, Business)` | `strategy.claimCost { campaign, business }` → `{ cost }` (`{}` off the board) |
+  | `ControlledSettlements(Campaign, Board, Faction)` | `strategy.controlled { campaign, board, faction }` → `{ settlements }` |
+  | `FStrategyDirector(Campaign, Kb, WorldFacts)` | `strategy.director.create { campaign, worldFacts?, kb? }` → `{ session }` |
+  | `Start`, `Claim`, `Assign`, `Release`, `EndTurn`, `Restore` | `strategy.director.start`, `.claim { faction, business }`, `.assign { faction, worker, business }`, `.release { faction, worker }`, `.endTurn` (core's `TurnReport`), `.restore { state }`: each answers core's outcome, its refusal a value |
+  | `HolderOf(Business)` (`""`: nobody) | `strategy.director.holderOf { session, business }` → `{ holder }` (null: nobody) |
+  | `Stockpile`, `Controls`, `Victory`, `Progress`, `Turn`, `Serialize` | `strategy.director.stockpile` (`{ stockpile }`), `.controls` (`{ settlements }`), `.victory` (`{ victory }`), `.progress` (`{ progress }`), `.turn` (`{ turn }`), `.serialize` (`{ state }`) |
+  | `Campaign()`, `Started()` | the binding keeps the campaign it created the session with; started is whether its `.start` or `.restore` answered `ok` |
+  | `Workers()` (worker → business) | `.serialize`'s `state.workers` (`[worker, business]` pairs, by worker) |
+  | the village save's own reader (`GenreRunBlockRead` for `extensions.strategy`) | `strategy.save.read`, `strategy.save.block`, `strategy.save.blockOf` for a binding that shows the block between saves; the save itself carries it through `save.village.write`/`.read` |
+
+  Re-vendor `conformance/strategy/{campaign,run,save}.json` (with the world slice above) from
+  core at this library's pin and drive each case as `tests/genre_systems_corpus.cpp` does:
+  generate as `genre.world.of`, then `strategy.forWorld` (`strategy ?? null`, `tuning ??
+  null`), `strategy.facts` and `strategy.worldFacts`; adjacency as `genre.world.of` then
+  `strategy.adjacency`; books as `strategy.books` (the case's `board`, else
+  `{ holders: {}, workers: {} }`); claimCost as `strategy.claimCost` per business; controlled
+  as `strategy.controlled` per faction of the campaign; a run as `strategy.director.create`
+  (`worldFacts ?? []`), each step's row with the faction the campaign's `playerFaction` unless
+  named (`holder` is `.holderOf`, `controls` answers `{ settlements }`, shown as `controls`), a
+  final `.serialize` and `session.dispose`; a save as the puzzle's, over `strategy.save.*` and
+  the strategy run. Exact comparison, key sets included; an unknown op or step is an error.
+  `conformance/prolog/mechanic-strategy.json` stays with PL.native-prolog-mirror-full
+  (U120(9)).
 - **Run 22's cases, from the 45409ed pin** (PL.native-bundle-core-r2; U124, U126). What
   each Unreal cell binds, and what it does not get here:
   - **One E press, one object** (`P6.unreal.interact-press`; core's

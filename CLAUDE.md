@@ -932,9 +932,17 @@
   `platformer.director.host`), as `traversal.session.create` states them. A `step` answers
   `{ outcome, probed, orders }` with core's whole `StepOutcome`; core's runner shows only
   `movementView` of its movement, so the transcription holds the movement as a subset and the
-  guard reads the view back. The strategy game and the genre pieces are later slices;
-  `conformance/prolog/mechanic-{puzzle,platformer}.json` stay with PL.native-prolog-mirror-full
-  (U120(9)).
+  guard reads the view back. Slice 3 adds the strategy game the same way
+  (`strategy/{campaign,run,save}.json`, 27 cases, transcribed as
+  `core-genre-strategy-<file>.json`; `core_vendor_genre_negative` then names twenty-six
+  perturbations): the campaign rows are stateless, `strategy.director.*` is a session whose KB is
+  its own (`GamePrologEngine` genre `strategy`; nothing published until `.start` or `.restore`),
+  and core's `IAgentActionHost` is only told, so no host crosses the ABI: `.endTurn` answers the
+  whole `TurnReport`, its `orders` included. The guard holds each strategy answer as its step
+  row's WHOLE expectation (`{ victory }`, `{ settlements }`), never a bare scalar any step could
+  state, and a campaign's books, prices and control in place. The genre pieces are a later
+  slice; `conformance/prolog/mechanic-{puzzle,platformer,strategy}.json` stay with
+  PL.native-prolog-mirror-full (U120(9)).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

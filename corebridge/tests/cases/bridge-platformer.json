@@ -13401,6 +13401,42 @@
       "block": {}
      },
      "expectError": "[invalid-input] insimulcore: platformer.save.blockOf: `block.runners` is missing"
+    },
+    {
+     "call": "platformer.route",
+     "args": {
+      "links": [
+       {
+        "from": "gate",
+        "to": "yard",
+        "mode": "walk",
+        "cost": 4,
+        "requires": [
+         1
+        ]
+       }
+      ],
+      "from": "gate",
+      "to": "yard"
+     },
+     "expectError": "[invalid-input] insimulcore: platformer.route: `links[0].requires[0]` must be a string"
+    },
+    {
+     "call": "platformer.fromIR",
+     "args": {
+      "platformer": {
+       "levels": [
+        {
+         "id": "up",
+         "start": "gate",
+         "goal": "roof",
+         "par": "x"
+        }
+       ]
+      },
+      "world": {}
+     },
+     "expectError": "[invalid-input] insimulcore: platformer.fromIR: `platformer.levels[0].par` must be a finite number"
     }
    ]
   },

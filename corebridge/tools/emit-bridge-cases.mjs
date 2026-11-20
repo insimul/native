@@ -1750,8 +1750,8 @@ function language(root, coreCommit) {
 	return out;
 }
 
-// ── genre systems: conformance/{puzzle,platformer}/ (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) ──
-// PL.native-genre-rows slices 1 (the puzzle) and 2 (the platformer). Each case is its op composed from the rows as core's runner
+// ── genre systems: conformance/{puzzle,platformer,strategy}/ (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) ──
+// PL.native-genre-rows slices 1 (the puzzle), 2 (the platformer) and 3 (the strategy game). Each case is its op composed from the rows as core's runner
 // composes core's functions. A `world` input goes through genre.world.of (core's worldOf) over
 // the committed slices, which every case names by `$file` (the vendored slice beside these
 // cases) instead of copying 181 KB into each one. The runner's steps are `{ step, ...outcome }`;
@@ -1763,9 +1763,22 @@ function language(root, coreCommit) {
 // TraversalReport as `movement`, where core's runner shows only movementView of it
 // ({ performed, refusal?, mode, link, cost, location }): that step's outcome is stated exactly
 // but for `movement`, which is held as a subset (performed, refusal, cost, location, and the
-// affordance's mode and id), and the guard in vendor-core-bundle.mjs reads the view back.
+// affordance's mode and id), and the guard in vendor-core-bundle.mjs reads the view back. A
+// strategy run reaches core's StrategyDirector over a KB the same way; every answer, the
+// turn report's orders included, is stated exactly. A campaign's claimCost and controlled
+// ops are one row call per business and per faction, in the input's order.
 
-export const GENRE_CASE_FILES = ['puzzle/definition', 'puzzle/run', 'puzzle/save', 'platformer/course', 'platformer/run', 'platformer/save'];
+export const GENRE_CASE_FILES = [
+	'puzzle/definition',
+	'puzzle/run',
+	'puzzle/save',
+	'platformer/course',
+	'platformer/run',
+	'platformer/save',
+	'strategy/campaign',
+	'strategy/run',
+	'strategy/save',
+];
 
 /** The committed world slices core's runner is handed, as the case reads them: `$file`s beside the case files. */
 export const GENRE_SLICES = { thistlecombe: 'conformance/genre-mechanics/thistlecombe.world-slice.json' };
@@ -2033,6 +2046,130 @@ function platformerCase(file, c, where) {
 	throw new Error(`emit-bridge-cases: ${where}: ${file} op ${c.op} has no transcription`);
 }
 
+// ── the strategy game (slice 3): conformance/strategy/ ──
+const STRATEGY_KB_LEGS = {
+	legs: ['c'],
+	why: "it drives core's StrategyDirector over a KB (GamePrologEngine's strategy pack on the native Prolog seam), which the JS leg does not have",
+};
+
+/** The director row each strategy run step calls, the args it takes from the step (faction the campaign's player unless named), and the expectation it states. */
+const STRATEGY_STEP_ROWS = {
+	start: ['strategy.director.start', [], (x) => withoutStep(x)],
+	claim: ['strategy.director.claim', ['faction', 'business'], (x) => withoutStep(x)],
+	assign: ['strategy.director.assign', ['faction', 'worker', 'business'], (x) => withoutStep(x)],
+	release: ['strategy.director.release', ['faction', 'worker'], (x) => withoutStep(x)],
+	endTurn: ['strategy.director.endTurn', [], (x) => withoutStep(x)],
+	stockpile: ['strategy.director.stockpile', ['faction'], (x) => ({ stockpile: x.stockpile })],
+	holder: ['strategy.director.holderOf', ['business'], (x) => ({ holder: x.holder })],
+	controls: ['strategy.director.controls', ['faction'], (x) => ({ settlements: x.controls })],
+	victory: ['strategy.director.victory', ['faction'], (x) => ({ victory: x.victory })],
+	progress: ['strategy.director.progress', ['faction'], (x) => ({ progress: x.progress })],
+};
+
+/** core's strategyRun: create over the campaign and its world facts, restore the read value first when given, the steps, serialize, dispose. */
+function strategyRunSteps(S, input, expected, restoreFrom) {
+	const where = S.where;
+	const sess = { $ref: 's.session' };
+	const steps = [{ call: 'strategy.director.create', args: { campaign: input.campaign, worldFacts: input.worldFacts ?? [] }, expect: { session: { $type: 'number' } }, bind: 's' }];
+	const results = expected.steps;
+	let k = 0;
+	if (restoreFrom) {
+		genreCheck(results[0]?.step === 'restore', where, 'a restored run starts with its restore');
+		steps.push({ call: 'strategy.director.restore', args: { session: sess, state: restoreFrom }, expect: withoutStep(results[0]) });
+		k = 1;
+	}
+	const given = input.steps ?? [];
+	genreCheck(results.length === given.length + k, where, 'one answer per step');
+	given.forEach((st, i) => {
+		const x = results[i + k];
+		genreCheck(x.step === st.step, where, `step ${i} answers ${x.step}, not ${st.step}`);
+		if (st.step === 'restore') {
+			steps.push({ call: 'strategy.director.restore', args: { session: sess, state: st.state }, expect: withoutStep(x) });
+			return;
+		}
+		if (st.step === 'state') {
+			steps.push({ call: 'strategy.director.serialize', args: { session: sess }, expect: { state: x.state } });
+			return;
+		}
+		const row = STRATEGY_STEP_ROWS[st.step];
+		genreCheck(row !== undefined, where, `strategy run step ${st.step} has no transcription`);
+		const args = { session: sess };
+		for (const key of row[1]) args[key] = key === 'faction' ? (st.faction === undefined ? input.campaign.playerFaction : st.faction) : st[key];
+		steps.push({ call: row[0], args, expect: row[2](x) });
+	});
+	steps.push({ call: 'strategy.director.serialize', args: { session: sess }, expect: { state: expected.state } });
+	steps.push({ call: 'session.dispose', args: { session: sess }, expect: { disposed: true } });
+	return steps;
+}
+
+/** One case of conformance/strategy/<file>.json as bridge steps, and whether it reaches the KB. */
+function strategyCase(file, c, where) {
+	const i = c.input;
+	const e = c.expected;
+	const S = { where };
+	const world = () => ({ call: 'genre.world.of', args: { world: i.world, slices: genreSlicesArg() }, bind: 'w' });
+	const board = i.board ?? { holders: {}, workers: {} };
+	if (file === 'strategy/campaign') {
+		if (c.op === 'generate') {
+			return [[
+				world(),
+				{ call: 'strategy.forWorld', args: { world: { $ref: 'w.world' }, strategy: i.strategy ?? null, tuning: i.tuning ?? null }, expect: { campaign: e.campaign }, bind: 'c' },
+				{ call: 'strategy.facts', args: { campaign: { $ref: 'c.campaign' } }, expect: { facts: e.facts } },
+				{ call: 'strategy.worldFacts', args: { world: { $ref: 'w.world' } }, expect: { facts: e.worldFacts } },
+			], false];
+		}
+		if (c.op === 'adjacency') return [[world(), { call: 'strategy.adjacency', args: { world: { $ref: 'w.world' } }, expect: { adjacency: e } }], false];
+		if (c.op === 'books') return [[{ call: 'strategy.books', args: { campaign: i.campaign, board }, expect: { books: e } }], false];
+		if (c.op === 'claimCost') {
+			genreCheck(new Set(i.businesses).size === i.businesses.length && i.businesses.length === Object.keys(e).length, where, 'one price per business');
+			return [i.businesses.map((business) => ({ call: 'strategy.claimCost', args: { campaign: i.campaign, business }, expect: { cost: e[business] } })), false];
+		}
+		if (c.op === 'controlled') {
+			const factions = i.campaign.factions;
+			genreCheck(factions.length === Object.keys(e).length, where, 'one answer per faction');
+			return [factions.map((faction) => ({ call: 'strategy.controlled', args: { campaign: i.campaign, board, faction }, expect: { settlements: e[faction] } })), false];
+		}
+	}
+	if (file === 'strategy/run') {
+		genreCheck(c.op === 'run', where, `strategy run op ${c.op} has no transcription`);
+		return [strategyRunSteps(S, i, e, null), true];
+	}
+	if (file === 'strategy/save') {
+		if (c.op === 'block') {
+			return [[
+				{ call: 'strategy.save.block', args: { state: i.state }, expect: { block: { $type: 'object' } }, bind: 'b' },
+				{ call: 'strategy.save.blockOf', args: { block: { $ref: 'b.block' } }, expect: { block: e } },
+			], false];
+		}
+		const read = { call: 'strategy.save.read', args: 'block' in i ? { block: i.block } : {} };
+		const readOf = (r) => {
+			if (!r.ok) return [{ ...read, expect: r }];
+			if (r.value === null) return [{ ...read, expect: { ok: true, value: null } }];
+			return [
+				{ ...read, expect: { ok: true, value: { $type: 'object' } }, bind: 'r' },
+				{ call: 'strategy.save.blockOf', args: { block: { $ref: 'r.value' } }, expect: { block: r.value } },
+			];
+		};
+		if (c.op === 'read') return [readOf(e), false];
+		if (c.op === 'restore') {
+			const steps = readOf(e.read);
+			if (!e.read.ok || e.read.value === null) {
+				genreCheck(!('run' in e), where, 'nothing runs without a read block');
+				return [steps, false];
+			}
+			return [[...steps, ...strategyRunSteps(S, i, e.run, { $ref: 'r.value' })], true];
+		}
+	}
+	throw new Error(`emit-bridge-cases: ${where}: ${file} op ${c.op} has no transcription`);
+}
+
+/** Each genre's transcription and the legs a case that reaches the KB runs on. */
+const GENRE_TRANSCRIPTIONS = {
+	puzzle: [(...a) => puzzleCase(...a), GENRE_KB_LEGS],
+	platformer: [(...a) => platformerCase(...a), PLATFORMER_KB_LEGS],
+	strategy: [(...a) => strategyCase(...a), STRATEGY_KB_LEGS],
+};
+
 /** One case file per genre corpus file: `core-genre-<genre>-<file>.json`. */
 function genreSystems(root, coreCommit) {
 	const out = {};
@@ -2043,9 +2180,9 @@ function genreSystems(root, coreCommit) {
 		if (doc.schema !== 'insimul.conformance.genre-systems/1' || doc.file !== file) throw new Error(`emit-bridge-cases: conformance/${file}.json is not core's ${file} corpus`);
 		const cases = doc.cases.map((c) => {
 			const name = `${file} ${c.op}: ${c.name}`;
-			const platformer = file.startsWith('platformer/');
-			const [steps, kb] = (platformer ? platformerCase : puzzleCase)(file, c, name);
-			return { name, ...(kb ? (platformer ? PLATFORMER_KB_LEGS : GENRE_KB_LEGS) : {}), steps };
+			const [transcribe, kbLegs] = GENRE_TRANSCRIPTIONS[file.split('/')[0]];
+			const [steps, kb] = transcribe(file, c, name);
+			return { name, ...(kb ? kbLegs : {}), steps };
 		});
 		out[`core-genre-${file.replace('/', '-')}.json`] = caseFile(
 			`genre-${file.replace('/', '-')}`,

@@ -867,6 +867,42 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/strategy/strategy",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the strategy.* campaign rows (core's strategy module's pure half: the campaign a world gives over its businesses and settlements, its facts, the world facts it is decided over, a turn's books, a holding's price, control and neighbours) and strategy.contract's default tables (PL.native-genre-rows slice 3, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s3-strategy (Features Gauntlet PL.native-genre-rows slice 3)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/strategy/strategy-predicates",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of strategy.contract's pack area and the strategy pack's authored and runtime predicates (PL.native-genre-rows slice 3, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s3-strategy (Features Gauntlet PL.native-genre-rows slice 3)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/strategy/strategy-save",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the strategy.save.* rows (core's strategy save block: its reader, the block a save stores and the block the writer stores) and strategy.contract's extension key and block members (PL.native-genre-rows slice 3, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s3-strategy (Features Gauntlet PL.native-genre-rows slice 3)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/StrategyDirector",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the strategy.director.* rows (core's StrategyDirector: start, claim, assign, release, endTurn, holderOf, stockpile, controls, victory, progress, serialize and restore) and strategy.contract's written predicates (PL.native-genre-rows slice 3, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-genre-rows-s3-strategy (Features Gauntlet PL.native-genre-rows slice 3)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/progression/skill-kb",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the skill.kb.* rows (core's skill KB that sees the live facts: which facts a skill KB holds, the program a recomposing host consults, and its reference session, PL.core-skill-kb-live-facts and PL.core-skill-kb-rule-head-facts) (PL.native-bundle-core-r2, rulings U124, U126 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

@@ -881,8 +881,8 @@ import { QUEST_TEMPLATES, getTemplatesByCategory, getTemplatesByDifficulty } fro
 // builds: GamePrologEngine with genre 'puzzle', on this library's native Trealla seam),
 // and its save block (puzzle-save.ts). `worldOf` is the genre corpora's world input (a
 // committed slice by name, a slice with KB predicates or entity lists dropped, or an
-// inline world), which core exports with its runner. The platformer, the strategy game
-// and the genre pieces are later slices of the row.
+// inline world), which core exports with its runner. The platformer (slice 2) and the
+// strategy game (slice 3) follow; the genre pieces are a later slice of the row.
 import {
 	DEFAULT_PUZZLE_MAX_ATTEMPTS,
 	PUZZLE_TUNING,
@@ -942,6 +942,35 @@ import {
 	readPlatformerBlock,
 } from '@insimul/core/platformer/platformer-save';
 import { PLATFORMER_WRITTEN_PREDICATES, PlatformerDirector } from '@insimul/core/game-engine/logic/PlatformerDirector';
+
+// ── the genre systems (P9j): the strategy game (PL.native-genre-rows slice 3, U128, U115) ──
+// The strategy module's pure half (strategy.ts: the campaign a world gives over its
+// businesses and settlements, the campaign as facts, the world facts it is decided over, a
+// turn's books, a holding's price, the settlements a faction controls and the neighbours),
+// its decision layer (StrategyDirector, over a KB module activation builds: GamePrologEngine
+// with genre 'strategy'), and its save block (strategy-save.ts).
+import {
+	DEFAULT_CLAIM_COST,
+	DEFAULT_PLAYER_FACTION,
+	DEFAULT_STARTING_STOCK,
+	DEFAULT_STRATEGY_RESOURCES,
+	DEFAULT_TRADE_OUTPUTS,
+	DEFAULT_WORKERS_PER_HOLDING,
+	DEFAULT_WORKER_UPKEEP,
+	STRATEGY_TUNING,
+	STRATEGY_WORLD_PREDICATES,
+	UNKNOWN_TRADE_OUTPUT,
+	campaignFacts,
+	campaignForWorld,
+	campaignWorldFacts,
+	claimCost,
+	controlledSettlements,
+	settlementAdjacency,
+	turnBooks,
+} from '@insimul/core/strategy/strategy';
+import { STRATEGY_AREA, STRATEGY_AUTHORED_PREDICATES, STRATEGY_RUNTIME_PREDICATES } from '@insimul/core/strategy/strategy-predicates';
+import { STRATEGY_BLOCK_MEMBERS, STRATEGY_EXTENSION_KEY, readStrategyBlock, strategyBlockOf, strategySaveBlock } from '@insimul/core/strategy/strategy-save';
+import { STRATEGY_WRITTEN_PREDICATES, StrategyDirector } from '@insimul/core/game-engine/logic/StrategyDirector';
 
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
@@ -3367,6 +3396,94 @@ function platformerRunnerArgs(method, args, key) {
 	});
 }
 
+// core's strategy types (strategy/strategy.ts, game-engine/ir-types.ts, StrategyDirector.ts),
+// member for member, under the same rule as the puzzle's and the platformer's.
+
+/** A fixed-length list whose k-th item holds `checks[k]` (core's tuple types); `shape` names it in the refusal. */
+const tTuple = (shape, ...checks) => (m, v, n) => {
+	if (needArray(m, v, n).length !== checks.length) throw refuse(m, `\`${n}\` must be a ${shape}`);
+	checks.forEach((check, k) => check(m, v[k], `${n}[${k}]`));
+};
+
+/** core's `ResourceAmounts` (strategy.ts): resource → amount. */
+const STRATEGY_AMOUNTS = tRecord(tNum);
+
+/** core's `StrategyAmountIR` (ir-types.ts). */
+const STRATEGY_AMOUNT_IR = [['resource', tStr, REQ], ['amount', tNum, REQ]];
+
+/** core's `StrategyIR` (ir-types.ts): every member optional; a claim-cost row with no `trade` is the default price. */
+const STRATEGY_IR = [
+	['resources', tList(tStr), OPT],
+	['outputs', tList(tObj([['trade', tStr, REQ], ...STRATEGY_AMOUNT_IR])), OPT],
+	['claimCosts', tList(tObj([['trade', tStr, OPT], ...STRATEGY_AMOUNT_IR])), OPT],
+	['workerUpkeep', tList(tObj(STRATEGY_AMOUNT_IR)), OPT],
+	['workersPerHolding', tNum, OPT],
+	['startingStock', tList(tObj(STRATEGY_AMOUNT_IR)), OPT],
+	['playerFaction', tStr, OPT],
+];
+
+/** core's `Partial<StrategyTuning>` (strategy.ts): the pack's five tunables, each optional. */
+const STRATEGY_TUNING_ARG = [
+	['claimCoin', tNum, OPT],
+	['upkeepFood', tNum, OPT],
+	['startingCoin', tNum, OPT],
+	['startingFood', tNum, OPT],
+	['workersPerHolding', tNum, OPT],
+];
+
+// Campaign's `source` (a type-only union in strategy.ts).
+const STRATEGY_CAMPAIGN_SOURCES = ['generated', 'empty'];
+
+/** core's `Campaign` (strategy.ts), every member declared and required, with its `CampaignHolding`s. */
+const STRATEGY_CAMPAIGN = [
+	['resources', tList(tStr), REQ],
+	['outputs', tRecord(STRATEGY_AMOUNTS), REQ],
+	['claimCosts', tRecord(STRATEGY_AMOUNTS), REQ],
+	['defaultClaimCost', STRATEGY_AMOUNTS, REQ],
+	['workerUpkeep', STRATEGY_AMOUNTS, REQ],
+	['workersPerHolding', tNum, REQ],
+	['playerFaction', tStr, REQ],
+	['startingStock', STRATEGY_AMOUNTS, REQ],
+	['settlements', tList(tStr), REQ],
+	['adjacency', tList(tTuple('[settlement, settlement] pair', tStr, tStr)), REQ],
+	['holdings', tList(tObj([['business', tStr, REQ], ['trade', tStr, REQ], ['settlement', tStr, REQ], ['holder', tStr, REQ]])), REQ],
+	['factions', tList(tStr), REQ],
+	['residents', tRecord(tList(tStr)), REQ],
+	['trading', tRecord(tList(tStr)), REQ],
+	['businessTrade', tRecord(tStr), REQ],
+	['source', tOneOf(STRATEGY_CAMPAIGN_SOURCES), REQ],
+	['notes', tList(tStr), REQ],
+];
+
+/** core's `CampaignBoard` (strategy.ts): business → holder, business → workers. */
+const STRATEGY_BOARD = [['holders', tRecord(tStr), REQ], ['workers', tRecord(tList(tStr)), REQ]];
+
+/** core's `StrategyDirectorState` (StrategyDirector.ts), which is also the save block (`SavedStrategy`). */
+const STRATEGY_DIRECTOR_STATE = [
+	['turn', tNum, REQ],
+	['holders', tList(tTuple('[business, faction] pair', tStr, tStr)), REQ],
+	['stock', tList(tTuple('[faction, resource, amount] triple', tStr, tStr, tNum)), REQ],
+	['workers', tList(tTuple('[worker, business] pair', tStr, tStr)), REQ],
+];
+
+/** The world a campaign row reads: `world`, with `strategy` (a section, or null for none) over its own when the row is given one. */
+function strategyWorldArg(method, args) {
+	const world = genreWorldArg(method, args.world, 'world');
+	if (hasOwn(args, 'strategy')) {
+		if (args.strategy !== null) declared(method, args.strategy, 'strategy', STRATEGY_IR);
+		return { ...world, strategy: args.strategy };
+	}
+	if (hasOwn(world, 'strategy') && world.strategy !== null) declared(method, world.strategy, 'world.strategy', STRATEGY_IR);
+	return world;
+}
+
+/** A strategy director session's ids (`faction`, `worker`, `business`), each a string. */
+function strategyIdArgs(method, args, keys) {
+	coded('invalid-input', () => {
+		for (const key of keys) needString(method, args[key], key);
+	});
+}
+
 // ── quests ────────────────────────────────────────────────────────────────────
 
 const QUEST_STATUSES = ['available', 'active', 'completed'];
@@ -5699,6 +5816,253 @@ const METHODS = {
 	'platformer.save.blockOf': (args) => {
 		coded('invalid-input', () => declared('platformer.save.blockOf', args.block, 'block', PLATFORMER_DIRECTOR_STATE));
 		return { block: plain(platformerBlockOf(args.block)) };
+	},
+
+	/**
+	 * `strategy.contract {}` → core's strategy constants: the pack's area and its authored,
+	 * runtime and written predicates, the world predicates a campaign reads, core's default
+	 * tables (resources, trade outputs, the unknown trade's output, the claim cost, the upkeep,
+	 * workers per holding, the starting stock, the player's faction), the pack tuning, and the
+	 * save block's key and members.
+	 */
+	'strategy.contract': () => ({
+		area: STRATEGY_AREA,
+		authoredPredicates: [...STRATEGY_AUTHORED_PREDICATES],
+		runtimePredicates: [...STRATEGY_RUNTIME_PREDICATES],
+		writtenPredicates: [...STRATEGY_WRITTEN_PREDICATES],
+		worldPredicates: [...STRATEGY_WORLD_PREDICATES],
+		defaultResources: [...DEFAULT_STRATEGY_RESOURCES],
+		defaultTradeOutputs: plain(DEFAULT_TRADE_OUTPUTS),
+		unknownTradeOutput: plain(UNKNOWN_TRADE_OUTPUT),
+		defaultClaimCost: plain(DEFAULT_CLAIM_COST),
+		defaultWorkerUpkeep: plain(DEFAULT_WORKER_UPKEEP),
+		defaultWorkersPerHolding: DEFAULT_WORKERS_PER_HOLDING,
+		defaultStartingStock: plain(DEFAULT_STARTING_STOCK),
+		defaultPlayerFaction: DEFAULT_PLAYER_FACTION,
+		tuning: plain(STRATEGY_TUNING),
+		extensionKey: STRATEGY_EXTENSION_KEY,
+		blockMembers: [...STRATEGY_BLOCK_MEMBERS],
+	}),
+
+	/** `strategy.adjacency { world }` → `{ adjacency }` — core's `settlementAdjacency`: neighbouring settlements (each one's nearest, and any within three radii), unordered pairs in canonical order. */
+	'strategy.adjacency': (args) => {
+		const world = coded('invalid-input', () => genreWorldArg('strategy.adjacency', args.world, 'world'));
+		return { adjacency: plain(settlementAdjacency(world)) };
+	},
+
+	/**
+	 * `strategy.forWorld { world, strategy?, tuning? }` → `{ campaign }` — core's
+	 * `campaignForWorld`: the world as a board (its businesses the holdings, their keepers the
+	 * factions, its settlements the territory). `strategy` (a `StrategyIR`, or null for none)
+	 * stands over the world's own section when given; `tuning` is the pack's tunables (absent
+	 * or null: core's defaults; an authored row wins, table for table).
+	 */
+	'strategy.forWorld': (args) => {
+		const m = 'strategy.forWorld';
+		const world = coded('invalid-input', () => {
+			const w = strategyWorldArg(m, args);
+			optionalArg(args.tuning, (v) => declared(m, v, 'tuning', STRATEGY_TUNING_ARG));
+			return w;
+		});
+		return { campaign: plain(campaignForWorld(world, orUndefined(args.tuning))) };
+	},
+
+	/** `strategy.facts { campaign }` → `{ facts }` — core's `campaignFacts` (the campaign as the pack's authored facts). */
+	'strategy.facts': (args) => {
+		coded('invalid-input', () => declared('strategy.facts', args.campaign, 'campaign', STRATEGY_CAMPAIGN));
+		return { facts: campaignFacts(args.campaign) };
+	},
+
+	/** `strategy.worldFacts { world }` → `{ facts }` — core's `campaignWorldFacts` (the world facts a campaign is decided over, for a KB that did not consult the world). */
+	'strategy.worldFacts': (args) => {
+		const world = coded('invalid-input', () => genreWorldArg('strategy.worldFacts', args.world, 'world'));
+		return { facts: campaignWorldFacts(world) };
+	},
+
+	/** `strategy.books { campaign, board }` → `{ books }` — core's `turnBooks` (faction → resource → the turn's net: yields per hand, less each worker's keep; `strategy_net/3` in TypeScript). */
+	'strategy.books': (args) => {
+		const m = 'strategy.books';
+		coded('invalid-input', () => {
+			declared(m, args.campaign, 'campaign', STRATEGY_CAMPAIGN);
+			declared(m, args.board, 'board', STRATEGY_BOARD);
+		});
+		return { books: plain(turnBooks(args.campaign, args.board)) };
+	},
+
+	/** `strategy.claimCost { campaign, business }` → `{ cost }` — core's `claimCost` (the trade's own price, else the default; `{}` for a business off the board). */
+	'strategy.claimCost': (args) => {
+		const m = 'strategy.claimCost';
+		coded('invalid-input', () => {
+			declared(m, args.campaign, 'campaign', STRATEGY_CAMPAIGN);
+			needString(m, args.business, 'business');
+		});
+		return { cost: plain(claimCost(args.campaign, args.business)) };
+	},
+
+	/** `strategy.controlled { campaign, board, faction }` → `{ settlements }` — core's `controlledSettlements` (where the faction holds a strict majority of the trading businesses; `strategy_controls/2`). */
+	'strategy.controlled': (args) => {
+		const m = 'strategy.controlled';
+		coded('invalid-input', () => {
+			declared(m, args.campaign, 'campaign', STRATEGY_CAMPAIGN);
+			declared(m, args.board, 'board', STRATEGY_BOARD);
+			needString(m, args.faction, 'faction');
+		});
+		return { settlements: controlledSettlements(args.campaign, args.board, args.faction) };
+	},
+
+	/**
+	 * `strategy.director.create { campaign, worldFacts?, kb? }` → `{ session }` — core's
+	 * `StrategyDirector` over a KB of its own, built as core's runner builds it:
+	 * `GamePrologEngine` with genre `strategy` (module activation consults the strategy pack
+	 * and declares its runtime predicates) on a native KB, then `kb` (a program, or a list of
+	 * clauses: the game's own facts and rules, which every verdict reads; refused:
+	 * `[invalid-input]`), then the director. Nothing is published until `start` or `restore`,
+	 * which publish `worldFacts` (`strategy.worldFacts`) and the campaign. Core's
+	 * `IAgentActionHost` is only TOLD (`perform` returns nothing), so no host crosses this
+	 * ABI: `endTurn`'s report carries every order. The KB lives as long as the session:
+	 * `session.dispose` destroys it.
+	 */
+	'strategy.director.create': async (args) => {
+		const m = 'strategy.director.create';
+		const input = coded('invalid-input', () => ({
+			campaign: declared(m, args.campaign, 'campaign', STRATEGY_CAMPAIGN),
+			worldFacts: optionalArg(args.worldFacts, (v) => stringList(m, v, 'worldFacts')),
+			kb: optionalArg(args.kb, (v) => (Array.isArray(v) ? stringList(m, v, 'kb').join('\n') : needString(m, v, 'kb'))),
+		}));
+		const engine = await createPrologEngine();
+		try {
+			// core's runner: genreEngine('strategy') = GamePrologEngine.create({ genre: 'strategy' }).
+			await GamePrologEngine.create({ genre: 'strategy', engine });
+			if (input.kb !== undefined) {
+				const consulted = await engine.consult(input.kb);
+				if (!consulted.success) {
+					const err = refuse(m, `the KB refused \`kb\`: ${consulted.error}`);
+					err.code = 'invalid-input';
+					throw err;
+				}
+			}
+			const director = new StrategyDirector({ campaign: input.campaign, engine, ...(input.worldFacts ? { worldFacts: input.worldFacts } : {}) });
+			return { session: openSession('strategy.director', { director, onDispose: () => engine.destroy() }) };
+		} catch (err) {
+			engine.destroy();
+			throw err;
+		}
+	},
+
+	/** `strategy.director.start { session }` → core's `start` outcome (`{ ok, refusal?, reason, applied }`): the campaign published, every keeper on their holding, the player's purse, turn 0; a second start refuses (`schema`). */
+	'strategy.director.start': async (args) => {
+		const s = session('strategy.director.start', args, 'strategy.director');
+		return plain(await s.director.start());
+	},
+
+	/** `strategy.director.restore { session, state }` → core's `restore` outcome (the campaign published, then the state; a started director refuses: `schema`). */
+	'strategy.director.restore': async (args) => {
+		const m = 'strategy.director.restore';
+		const s = session(m, args, 'strategy.director');
+		coded('invalid-input', () => declared(m, args.state, 'state', STRATEGY_DIRECTOR_STATE));
+		return plain(await s.director.restore(args.state));
+	},
+
+	/** `strategy.director.claim { session, faction, business }` → core's `claim` outcome (`unknown_faction`, `unknown_business` and `cannot_claim` are values). */
+	'strategy.director.claim': async (args) => {
+		const m = 'strategy.director.claim';
+		const s = session(m, args, 'strategy.director');
+		strategyIdArgs(m, args, ['faction', 'business']);
+		return plain(await s.director.claim(args.faction, args.business));
+	},
+
+	/** `strategy.director.assign { session, faction, worker, business }` → core's `assign` outcome (`cannot_assign` is a value). */
+	'strategy.director.assign': async (args) => {
+		const m = 'strategy.director.assign';
+		const s = session(m, args, 'strategy.director');
+		strategyIdArgs(m, args, ['faction', 'worker', 'business']);
+		return plain(await s.director.assign(args.faction, args.worker, args.business));
+	},
+
+	/** `strategy.director.release { session, faction, worker }` → core's `release` outcome (`not_assigned` is a value). */
+	'strategy.director.release': async (args) => {
+		const m = 'strategy.director.release';
+		const s = session(m, args, 'strategy.director');
+		strategyIdArgs(m, args, ['faction', 'worker']);
+		return plain(await s.director.release(args.faction, args.worker));
+	},
+
+	/**
+	 * `strategy.director.endTurn { session }` → core's `TurnReport` (`{ ok, refusal?, reason,
+	 * applied, turn, net, released, orders }`): hands a faction cannot feed sent home
+	 * (canonically last first), each faction's `strategy_net/3` added (floored at zero), the
+	 * turn advanced, and every remaining worker's `work` order, which the host performs.
+	 */
+	'strategy.director.endTurn': async (args) => {
+		const s = session('strategy.director.endTurn', args, 'strategy.director');
+		return plain(await s.director.endTurn());
+	},
+
+	/** `strategy.director.holderOf { session, business }` → `{ holder }` — core's `holderOf` (null: nobody holds it). */
+	'strategy.director.holderOf': (args) => {
+		const m = 'strategy.director.holderOf';
+		const s = session(m, args, 'strategy.director');
+		strategyIdArgs(m, args, ['business']);
+		return { holder: plain(s.director.holderOf(args.business)) };
+	},
+
+	/** `strategy.director.stockpile { session, faction }` → `{ stockpile }` — core's `stockpile` (every resource of the campaign, zero included). */
+	'strategy.director.stockpile': (args) => {
+		const m = 'strategy.director.stockpile';
+		const s = session(m, args, 'strategy.director');
+		strategyIdArgs(m, args, ['faction']);
+		return { stockpile: plain(s.director.stockpile(args.faction)) };
+	},
+
+	/** `strategy.director.controls { session, faction }` → `{ settlements }` — core's `controls` (`strategy_controls/2`, canonical). */
+	'strategy.director.controls': async (args) => {
+		const m = 'strategy.director.controls';
+		const s = session(m, args, 'strategy.director');
+		strategyIdArgs(m, args, ['faction']);
+		return { settlements: await s.director.controls(args.faction) };
+	},
+
+	/** `strategy.director.victory { session, faction }` → `{ victory }` — core's `victory` (`strategy_victory/1`). */
+	'strategy.director.victory': async (args) => {
+		const m = 'strategy.director.victory';
+		const s = session(m, args, 'strategy.director');
+		strategyIdArgs(m, args, ['faction']);
+		return { victory: await s.director.victory(args.faction) };
+	},
+
+	/** `strategy.director.progress { session, faction }` → `{ progress }` — core's `progress` (a quest tracker's counts). */
+	'strategy.director.progress': async (args) => {
+		const m = 'strategy.director.progress';
+		const s = session(m, args, 'strategy.director');
+		strategyIdArgs(m, args, ['faction']);
+		return { progress: plain(await s.director.progress(args.faction)) };
+	},
+
+	/** `strategy.director.turn { session }` → `{ turn }` — core's `getTurn`. */
+	'strategy.director.turn': (args) => {
+		const s = session('strategy.director.turn', args, 'strategy.director');
+		return { turn: s.director.getTurn() };
+	},
+
+	/** `strategy.director.serialize { session }` → `{ state }` — core's `serialize` (the save block's value). */
+	'strategy.director.serialize': (args) => {
+		const s = session('strategy.director.serialize', args, 'strategy.director');
+		return { state: plain(s.director.serialize()) };
+	},
+
+	/** `strategy.save.read { block? }` → core's `readStrategyBlock` (`{ ok: true, value }`, null for no block; `{ ok: false, keys }`). */
+	'strategy.save.read': (args) => plain(readStrategyBlock(args.block)),
+
+	/** `strategy.save.block { state? }` → `{ block }` — core's `strategySaveBlock` (absent or null state: null). */
+	'strategy.save.block': (args) => {
+		coded('invalid-input', () => optionalArg(args.state, (v) => declared('strategy.save.block', v, 'state', STRATEGY_DIRECTOR_STATE)));
+		return { block: plain(strategySaveBlock(orUndefined(args.state))) };
+	},
+
+	/** `strategy.save.blockOf { block }` → `{ block }` — core's `strategyBlockOf` (only its members; holders by business, stock by faction then resource, workers by worker). */
+	'strategy.save.blockOf': (args) => {
+		coded('invalid-input', () => declared('strategy.save.blockOf', args.block, 'block', STRATEGY_DIRECTOR_STATE));
+		return { block: plain(strategyBlockOf(args.block)) };
 	},
 
 	// ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────

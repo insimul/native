@@ -336,6 +336,31 @@ game; **meta** = about the bridge itself.
 | `platformer.save.read` | `{ block? }` → `{ ok: true, value }` (null: no block) or `{ ok: false, keys }` | `platformer/platformer-save` `readPlatformerBlock` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
 | `platformer.save.block` | `{ state? }` → `{ block }` (null for no state) | `platformer/platformer-save` `platformerSaveBlock` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
 | `platformer.save.blockOf` | `{ block }` → `{ block }` (rows by runner, checkpoints ascending, clears by level) | `platformer/platformer-save` `platformerBlockOf` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `strategy.contract` | `{}` → `{ area, authoredPredicates, runtimePredicates, writtenPredicates, worldPredicates, defaultResources, defaultTradeOutputs, unknownTradeOutput, defaultClaimCost, defaultWorkerUpkeep, defaultWorkersPerHolding, defaultStartingStock, defaultPlayerFaction, tuning, extensionKey, blockMembers }` | `strategy/strategy`, `strategy/strategy-predicates`, `strategy/strategy-save`, `StrategyDirector` constants | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.adjacency` | `{ world }` → `{ adjacency }` (unordered pairs, canonical) | `strategy/strategy` `settlementAdjacency` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.forWorld` | `{ world, strategy?, tuning? }` → `{ campaign }` (`strategy`, or null for none, over the world's own section; `tuning` absent or null: core's defaults) | `strategy/strategy` `campaignForWorld` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.facts` | `{ campaign }` → `{ facts }` | `strategy/strategy` `campaignFacts` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.worldFacts` | `{ world }` → `{ facts }` | `strategy/strategy` `campaignWorldFacts` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.books` | `{ campaign, board }` → `{ books }` (faction → resource → the turn's net) | `strategy/strategy` `turnBooks` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.claimCost` | `{ campaign, business }` → `{ cost }` (`{}` off the board) | `strategy/strategy` `claimCost` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.controlled` | `{ campaign, board, faction }` → `{ settlements }` | `strategy/strategy` `controlledSettlements` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.create` | `{ campaign, worldFacts?, kb? }` → `{ session }` (a KB of its own: `GamePrologEngine` genre `strategy`; nothing published until `start` or `restore`) | `game-engine/logic/StrategyDirector`, `GamePrologEngine` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.start` | `{ session }` → `{ ok, refusal?, reason, applied }` (`schema` the second time) | `StrategyDirector.start` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.restore` | `{ session, state }` → the outcome (`schema` once started) | `StrategyDirector.restore` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.claim` | `{ session, faction, business }` → the outcome (`unknown_faction`, `unknown_business`, `cannot_claim`) | `StrategyDirector.claim` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.assign` | `{ session, faction, worker, business }` → the outcome (`cannot_assign`) | `StrategyDirector.assign` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.release` | `{ session, faction, worker }` → the outcome (`not_assigned`) | `StrategyDirector.release` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.endTurn` | `{ session }` → `{ ok, refusal?, reason, applied, turn, net, released, orders }` (`orders`: each worker's `work` order, which the host performs) | `StrategyDirector.endTurn` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.holderOf` | `{ session, business }` → `{ holder }` (null: nobody) | `StrategyDirector.holderOf` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.stockpile` | `{ session, faction }` → `{ stockpile }` | `StrategyDirector.stockpile` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.controls` | `{ session, faction }` → `{ settlements }` | `StrategyDirector.controls` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.victory` | `{ session, faction }` → `{ victory }` | `StrategyDirector.victory` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.progress` | `{ session, faction }` → `{ progress }` | `StrategyDirector.progress` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.turn` | `{ session }` → `{ turn }` | `StrategyDirector.getTurn` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.director.serialize` | `{ session }` → `{ state }` | `StrategyDirector.serialize` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.save.read` | `{ block? }` → `{ ok: true, value }` (null: no block) or `{ ok: false, keys }` | `strategy/strategy-save` `readStrategyBlock` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.save.block` | `{ state? }` → `{ block }` (null for no state) | `strategy/strategy-save` `strategySaveBlock` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `strategy.save.blockOf` | `{ block }` → `{ block }` (holders by business, stock by faction then resource, workers by worker) | `strategy/strategy-save` `strategyBlockOf` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `ui.loadRefusal` | `{ refusal }` → `{ outcome, message }`: every string `invalid_format` with its message; any other value `{ outcome: null, message: '' }` | `ui/save-slot-model` `slotOutcomeOfLoadRefusal`, `loadRefusalMessage` | P1 refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1), U126(2)) |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
@@ -2435,6 +2460,59 @@ tuning, the stars at their edges, the save block's defaults and refusals, ids na
 `Object.prototype` members, the `[invalid-input]` boundary of every argument, and directors
 over their own KB with and without the hosts), every expectation computed by core's own
 functions at the pin.
+
+### The genre systems rows: the strategy game (PL.native-genre-rows, slice 3)
+
+Slice 3 binds core's strategy game (catalog `genre-strategy`) the way slices 1 and 2 bind the
+puzzle and the platformer, so Unreal's interim `Portable/InsimulStrategy.{h,cpp}` can go
+(`P9j.unreal.retire-strategy-copy`).
+
+- **The campaign** (`strategy/strategy.ts`, pure): `strategy.forWorld` (`campaignForWorld`:
+  the world as a board, its businesses the holdings, their keepers the factions, its
+  settlements the territory; the row's `strategy`, a section or null for none, stands over the
+  world's own when given; `tuning` is the pack's tunables, absent or null core's defaults, as a
+  function default is, and an authored table beats them whole), `strategy.facts` (the
+  campaign as the pack's authored facts), `strategy.worldFacts` (the world facts a campaign is
+  decided over, for a KB that did not consult the world), `strategy.adjacency`
+  (`settlementAdjacency`), `strategy.books` (`turnBooks`, `strategy_net/3` in TypeScript),
+  `strategy.claimCost` and `strategy.controlled` (`controlledSettlements`).
+  `strategy.contract` states core's constants and default tables.
+- **The director** (`game-engine/logic/StrategyDirector.ts`): `strategy.director.create`
+  opens a session holding a KB of its own, built as core's runner builds it — `GamePrologEngine`
+  with genre `strategy`, whose module activation consults the strategy pack — on the native
+  Trealla seam, then `kb` (a host program: the game's facts and rules, which every verdict
+  reads) and the director. Nothing is published until `.start` (the campaign and
+  `worldFacts`, every keeper on their holding, the player's purse, turn 0) or `.restore` (the
+  same, then the state). Core's `IAgentActionHost` is only TOLD (`perform` returns nothing),
+  so no host crosses the ABI: `.endTurn` answers core's whole `TurnReport`, whose `orders`
+  are the `work` orders the host performs. Each further row is one method: `.claim`,
+  `.assign`, `.release`, `.holderOf` (null: nobody), `.stockpile`, `.controls`, `.victory`,
+  `.progress`, `.turn` and `.serialize`. Every verdict is the KB's; a refusal
+  (`unknown_faction`, `unknown_business`, `cannot_claim`, `cannot_assign`, `not_assigned`,
+  `schema`) is a VALUE. `session.dispose` destroys the KB.
+- **The save block** (`strategy/strategy-save.ts`): `strategy.save.read`,
+  `strategy.save.block` and `strategy.save.blockOf`, as the puzzle's. A load builds the
+  campaign again from the same world and restores the READ value into a fresh director.
+- **The bundle** grows 2,597,665 → 2,634,628 bytes (the strategy modules' code and the rows).
+- **The boundary.** As slices 1 and 2, member for member: `Campaign` (with its
+  `CampaignHolding`s and `ResourceAmounts` tables), `CampaignBoard`, `StrategyIR` (with its
+  `StrategyAmountIR` rows), `Partial<StrategyTuning>`, `StrategyDirectorState` (its tuples by
+  length and item). Anything else is `[invalid-input]`.
+
+Gates: `genre_systems_corpus` (+ `_negative`) also drives every case of core's
+`conformance/strategy/{campaign,run,save}.json` (13 + 5 + 9), copied byte for byte at the pin,
+each op as core's runner composes it (a step's faction is the campaign's `playerFaction`
+unless named). `emit-bridge-cases.mjs` transcribes them into
+`cases/core-genre-strategy-{campaign,run,save}.json`, every answer stated exactly; `core_vendor`
+holds each answer as its step row's whole expectation and a campaign's books, prices and
+controlled settlements in place, and `core_vendor_genre_negative` names twenty-six
+perturbations. Hand cases: `tests/cases/bridge-strategy.json` (the contract, the campaign over
+a world's own section and the row's over it, the tunables absent, null, partial and whole,
+facts, world facts and neighbours alone, books, prices and control at their edges, the save
+block's defaults, duplicates and refusals, ids naming `Object.prototype` members, the
+`[invalid-input]` boundary of every declared member, directors over their own KB, a restore
+mid-game, and a director's `kb` carrying the facts its verdicts read), every expectation
+computed by core's own functions at the pin.
 
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 

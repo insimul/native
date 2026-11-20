@@ -86,14 +86,18 @@
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --check-genre-transcription-negative
 //       The genre systems transcription guard's negative control (PL.native-genre-rows):
-//       perturbs the vendored cases/core-genre-{puzzle,platformer}-*.json in memory (a
+//       perturbs the vendored cases/core-genre-{puzzle,platformer,strategy}-*.json in memory (a
 //       dropped case, a case no corpus case names, a run's answer dropped, a read's first
 //       call changed, a riddle's choices dropped, an answer key expected nowhere, an unlock
 //       outcome weakened to a subset, a restored run's states expected nowhere, a KB run put
 //       on both legs; a platformer step call dropped, a step's movement weakened, its probed
 //       links changed, its outcome weakened to a subset, its host orders stated non-empty,
 //       two runs' stars swapped, a course
-//       case put on the C leg only, a restored platformer run put on both legs) and requires
+//       case put on the C leg only, a restored platformer run put on both legs; a strategy
+//       run's endTurn call dropped, a turn report's orders stated empty, a turn report weakened
+//       to a subset, a victory answer flipped, a controls answer stated under another key, two
+//       businesses' prices swapped, a controlled call asked for another faction, a campaign
+//       case put on the C leg only, a restored strategy run put on both legs) and requires
 //       the guard to name each one.
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --check-language-transcription-negative
@@ -325,17 +329,17 @@ const LANGUAGE_CORPUS_FILES = [
   'conformance/language/writing.json',
 ];
 
-// core's P9j genre systems corpora that the genre.*, puzzle.* and platformer.* rows answer
+// core's P9j genre systems corpora that the genre.*, puzzle.*, platformer.* and strategy.* rows answer
 // (PL.native-genre-rows, U128, U115; core's P9j.core), copied verbatim the same way and
 // driven through the rows by tests/genre_systems_corpus.cpp, each op composed as core's
 // reference runner (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes it;
 // emit-bridge-cases.mjs also transcribes each into cases/core-genre-<area>-<file>.json.
 // The committed world slice (conformance/genre-mechanics/thistlecombe.world-slice.json) is
 // the corpora's `"thistlecombe"` world, which the runner hands core's `worldOf` as its
-// slices. Slice 1 copies the puzzle's three files (definition, run, save) and slice 2 the
-// platformer's (course, run, save); the strategy game (conformance/strategy/) and the genre
-// pieces (conformance/genre-pieces/) are later slices of the row. conformance/prolog/
-// mechanic-{puzzle,platformer}.json stay with PL.native-prolog-mirror-full (U120(9)). Each
+// slices. Slice 1 copies the puzzle's three files (definition, run, save), slice 2 the
+// platformer's (course, run, save) and slice 3 the strategy game's (campaign, run, save); the
+// genre pieces (conformance/genre-pieces/) are a later slice of the row. conformance/prolog/
+// mechanic-{puzzle,platformer,strategy}.json stay with PL.native-prolog-mirror-full (U120(9)). Each
 // directory is this set's alone, so a file an earlier pin left there is seen, hashed and removed.
 const GENRE_SYSTEMS_CORPUS_FILES = [
   'conformance/genre-mechanics/thistlecombe.world-slice.json',
@@ -345,6 +349,9 @@ const GENRE_SYSTEMS_CORPUS_FILES = [
   'conformance/puzzle/definition.json',
   'conformance/puzzle/run.json',
   'conformance/puzzle/save.json',
+  'conformance/strategy/campaign.json',
+  'conformance/strategy/run.json',
+  'conformance/strategy/save.json',
 ];
 
 // Core modules the bundle must NOT carry (PL.native-interact-target, U94(2)/(3)): core's
@@ -979,16 +986,30 @@ function languageTranscriptionProblems(load = (base) => {
 // cases/core-genre-<genre>-<file>.json must transcribe every case of the vendored
 // conformance/<genre>/<file>.json: by name, by the calls core's runner (systems-corpus.ts,
 // runGenreSystemsOp) makes for its op in that order, C-only exactly when it reaches the
-// KB (puzzle.director.create, platformer.director.create), and with every answer of the
+// KB (puzzle.director.create, platformer.director.create, strategy.director.create), and with every answer of the
 // corpus stated in some expectation (compared with object keys in canonical order). A
 // platformer `step` answer is core's runner's view (`{ ...outcome, movement:
 // movementView, probed }`), which the step row's expectation states as its outcome with the
 // movement held as a subset: the guard reads the view back out of that expectation
 // (`platformerStepView`) and requires it to BE the corpus's answer, and the host's `orders`
 // to be stated empty. The stars are held in place: the k-th platformer.stars call takes the
-// k-th run and expects its stars. `--check-genre-transcription-negative` proves each kind of
-// drift is named.
-const GENRE_GUARD_FILES = ['puzzle/definition', 'puzzle/run', 'puzzle/save', 'platformer/course', 'platformer/run', 'platformer/save'];
+// k-th run and expects its stars. A strategy case is held the same way, more tightly: each
+// answer is the step row's whole expectation (a `{ victory }`, a `{ settlements }`, never a
+// bare `true` or `[]` that any other step could state), and a campaign's books, prices and
+// controlled settlements are held in place, call k taking the k-th business or faction and
+// expecting its answer. `--check-genre-transcription-negative` proves each kind of drift is
+// named.
+const GENRE_GUARD_FILES = [
+  'puzzle/definition',
+  'puzzle/run',
+  'puzzle/save',
+  'platformer/course',
+  'platformer/run',
+  'platformer/save',
+  'strategy/campaign',
+  'strategy/run',
+  'strategy/save',
+];
 const PLATFORMER_STEP_CALL = {
   restore: 'platformer.director.restore',
   enter: 'platformer.director.enter',
@@ -999,7 +1020,21 @@ const PLATFORMER_STEP_CALL = {
   progress: 'platformer.director.progress',
   state: 'platformer.director.serialize',
 };
-const KB_CREATES = ['puzzle.director.create', 'platformer.director.create'];
+const STRATEGY_STEP_CALL = {
+  start: 'strategy.director.start',
+  restore: 'strategy.director.restore',
+  claim: 'strategy.director.claim',
+  assign: 'strategy.director.assign',
+  release: 'strategy.director.release',
+  endTurn: 'strategy.director.endTurn',
+  stockpile: 'strategy.director.stockpile',
+  holder: 'strategy.director.holderOf',
+  controls: 'strategy.director.controls',
+  victory: 'strategy.director.victory',
+  progress: 'strategy.director.progress',
+  state: 'strategy.director.serialize',
+};
+const KB_CREATES = ['puzzle.director.create', 'platformer.director.create', 'strategy.director.create'];
 
 /** JSON with every object's keys in code-unit order: two values are equal exactly when these are. */
 function canonJson(v) {
@@ -1134,6 +1169,55 @@ function genreCallsOf(file, c) {
     if (c.op === 'restore' && held) return { calls: [...calls, ...pRunCalls(c.input, true)], answers: [...answers, ...pRunAnswers(e.run)] };
     return { calls, answers };
   }
+  // The strategy game: a run's answers are each step row's whole expectation (a scalar
+  // answer is held with its key, so a `true` or a `[]` stated elsewhere does not stand for it).
+  const sRunCalls = (input, restoring) => [
+    'strategy.director.create',
+    ...(restoring ? ['strategy.director.restore'] : []),
+    ...(input.steps ?? []).map((st) => STRATEGY_STEP_CALL[st.step] ?? `(no row for step ${st.step})`),
+    'strategy.director.serialize',
+    'session.dispose',
+  ];
+  const sRunAnswers = (run) => [...run.steps.map((x) => {
+    const { step, ...rest } = x;
+    return step === 'stockpile' ? { stockpile: rest.stockpile }
+      : step === 'holder' ? { holder: rest.holder }
+      : step === 'controls' ? { settlements: rest.controls }
+      : step === 'victory' ? { victory: rest.victory }
+      : step === 'progress' ? { progress: rest.progress }
+      : step === 'state' ? { state: rest.state }
+      : rest;
+  }), { state: run.state }];
+  if (file === 'strategy/campaign') {
+    const board = c.input.board ?? { holders: {}, workers: {} };
+    if (c.op === 'generate') return { calls: ['genre.world.of', 'strategy.forWorld', 'strategy.facts', 'strategy.worldFacts'], answers: [{ campaign: e.campaign }, { facts: e.facts }, { facts: e.worldFacts }] };
+    if (c.op === 'adjacency') return { calls: ['genre.world.of', 'strategy.adjacency'], answers: [{ adjacency: e }] };
+    if (c.op === 'books') return { calls: ['strategy.books'], answers: [], positional: [[0, { campaign: c.input.campaign, board }, { books: e }]] };
+    if (c.op === 'claimCost') {
+      return {
+        calls: c.input.businesses.map(() => 'strategy.claimCost'),
+        answers: [],
+        positional: c.input.businesses.map((business, k) => [k, { campaign: c.input.campaign, business }, { cost: e[business] }]),
+      };
+    }
+    if (c.op === 'controlled') {
+      return {
+        calls: c.input.campaign.factions.map(() => 'strategy.controlled'),
+        answers: [],
+        positional: c.input.campaign.factions.map((faction, k) => [k, { campaign: c.input.campaign, board, faction }, { settlements: e[faction] }]),
+      };
+    }
+  }
+  if (file === 'strategy/run') return { calls: sRunCalls(c.input, false), answers: sRunAnswers(e) };
+  if (file === 'strategy/save') {
+    if (c.op === 'block') return { calls: ['strategy.save.block', 'strategy.save.blockOf'], answers: [{ block: e }] };
+    const read = c.op === 'read' ? e : e.read;
+    const held = read.ok && read.value !== null;
+    const calls = ['strategy.save.read', ...(held ? ['strategy.save.blockOf'] : [])];
+    const answers = [held ? { block: read.value } : read];
+    if (c.op === 'restore' && held) return { calls: [...calls, ...sRunCalls(c.input, true)], answers: [...answers, ...sRunAnswers(e.run)] };
+    return { calls, answers };
+  }
   return { calls: [`(no op ${c.op} for ${file})`], answers: [] };
 }
 
@@ -1243,6 +1327,39 @@ function genreTranscriptionNegative() {
       Object.assign(d.cases[0], { legs: ['c'], why: 'perturbed' });
     }, 'C-only when they do not reach the KB'],
     ['a restored platformer run put on both legs', 'platformer/save', (d) => {
+      delete d.cases.find((c) => c.legs).legs;
+    }, 'C-only when they do not reach the KB'],
+    ['a strategy run\'s endTurn call dropped', 'strategy/run', (d) => {
+      d.cases[0].steps.splice(d.cases[0].steps.findIndex((st) => st.call === 'strategy.director.endTurn'), 1);
+    }, "not transcribed as core's runner calls their op"],
+    ['a turn report\'s orders stated empty', 'strategy/run', (d) => {
+      steps(d).find((x) => x.call === 'strategy.director.endTurn' && x.expect.orders.length > 0).expect.orders = [];
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a turn report weakened to a subset', 'strategy/run', (d) => {
+      const st = steps(d).find((x) => x.call === 'strategy.director.endTurn');
+      st.expect = { $subset: { ok: st.expect.ok, turn: st.expect.turn } };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a victory answer flipped', 'strategy/run', (d) => {
+      const st = steps(d).find((x) => x.call === 'strategy.director.victory');
+      st.expect = { victory: !st.expect.victory };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a controls answer stated under another key', 'strategy/run', (d) => {
+      const st = steps(d).find((x) => x.call === 'strategy.director.controls' && x.expect.settlements.length > 0);
+      st.expect = { controls: st.expect.settlements };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['two businesses\' prices swapped', 'strategy/campaign', (d) => {
+      const kase = d.cases.find((c) => c.steps.every((st) => st.call === 'strategy.claimCost') && new Set(c.steps.map((st) => canonJson(st.expect))).size > 1);
+      const k = kase.steps.findIndex((st) => canonJson(st.expect) !== canonJson(kase.steps[0].expect));
+      [kase.steps[0].expect, kase.steps[k].expect] = [kase.steps[k].expect, kase.steps[0].expect];
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a controlled call asked for another faction', 'strategy/campaign', (d) => {
+      const kase = d.cases.find((c) => c.steps[0]?.call === 'strategy.controlled');
+      kase.steps[1].args.faction = kase.steps[0].args.faction;
+    }, "not transcribed as core's runner calls their op"],
+    ['a campaign case put on the C leg only', 'strategy/campaign', (d) => {
+      Object.assign(d.cases[0], { legs: ['c'], why: 'perturbed' });
+    }, 'C-only when they do not reach the KB'],
+    ['a restored strategy run put on both legs', 'strategy/save', (d) => {
       delete d.cases.find((c) => c.legs).legs;
     }, 'C-only when they do not reach the KB'],
   ];
@@ -2413,8 +2530,8 @@ async function check(coreDir) {
   const genreGuard = genreTranscriptionProblems();
   if (genreGuard.problems.length) fail(`the genre transcription does not hold the vendored genre systems corpora: ${genreGuard.problems.join('; ')}`);
   console.log(
-    `vendor-core-bundle: genre systems — cases/core-genre-{puzzle-{definition,run,save},platformer-{course,run,save}}.json transcribe all ${genreGuard.count} case(s) of ` +
-      "the vendored conformance/{puzzle,platformer}/ files, by name, by the calls core's runner makes, C-only exactly where they reach the KB, " +
+    `vendor-core-bundle: genre systems — cases/core-genre-{puzzle-{definition,run,save},platformer-{course,run,save},strategy-{campaign,run,save}}.json transcribe all ${genreGuard.count} case(s) of ` +
+      "the vendored conformance/{puzzle,platformer,strategy}/ files, by name, by the calls core's runner makes, C-only exactly where they reach the KB, " +
       'and with every answer stated',
   );
 

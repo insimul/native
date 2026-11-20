@@ -458,6 +458,31 @@
        "skill.unlocks.resolve",
        "skill.unregister",
        "skill.view",
+       "strategy.adjacency",
+       "strategy.books",
+       "strategy.claimCost",
+       "strategy.contract",
+       "strategy.controlled",
+       "strategy.director.assign",
+       "strategy.director.claim",
+       "strategy.director.controls",
+       "strategy.director.create",
+       "strategy.director.endTurn",
+       "strategy.director.holderOf",
+       "strategy.director.progress",
+       "strategy.director.release",
+       "strategy.director.restore",
+       "strategy.director.serialize",
+       "strategy.director.start",
+       "strategy.director.stockpile",
+       "strategy.director.turn",
+       "strategy.director.victory",
+       "strategy.facts",
+       "strategy.forWorld",
+       "strategy.save.block",
+       "strategy.save.blockOf",
+       "strategy.save.read",
+       "strategy.worldFacts",
        "survival.hud.initial",
        "survival.hud.reduce",
        "survival.hud.stamina",
@@ -589,7 +614,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 555}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 580}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -635,7 +660,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 555}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 580}}}}
    ]
   },
   {

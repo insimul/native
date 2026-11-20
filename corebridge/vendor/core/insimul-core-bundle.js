@@ -6282,6 +6282,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
     return { ok: true, value: { turn: turn2, holders, stock, workers } };
   }
+  function strategySaveBlock(state) {
+    return state ? { turn: state.turn, holders: [...state.holders], stock: [...state.stock], workers: [...state.workers] } : null;
+  }
   function strategyBlockOf(b) {
     return {
       turn: b.turn,
@@ -45294,6 +45297,7 @@ Return JSON format:
   var DEFAULT_WORKER_UPKEEP = Object.freeze({ food: 1 });
   var DEFAULT_WORKERS_PER_HOLDING = 2;
   var DEFAULT_STARTING_STOCK = Object.freeze({ coin: 25, food: 6 });
+  var DEFAULT_PLAYER_FACTION = "player";
   var STRATEGY_TUNING = Object.freeze({
     claimCoin: DEFAULT_CLAIM_COST.coin,
     upkeepFood: DEFAULT_WORKER_UPKEEP.food,
@@ -45311,6 +45315,416 @@ Return JSON format:
     "lives_at/2",
     "residence_of_settlement/2"
   ]);
+  function amounts(rows) {
+    if (!rows || rows.length === 0) return null;
+    const out = {};
+    for (const r of rows) out[r.resource] = (out[r.resource] ?? 0) + Math.trunc(r.amount);
+    return out;
+  }
+  function settlementAdjacency(world2) {
+    const ss = (world2.geography?.settlements ?? []).filter((s) => s.position).map((s) => ({ atom: worldAtom(s.name), p: s.position, r: s.radius ?? 0 }));
+    const pairs = /* @__PURE__ */ new Set();
+    const add = (a, b) => {
+      if (a === b) return;
+      const [x, y] = canonical(a, b) < 0 ? [a, b] : [b, a];
+      pairs.add(`${x}\0${y}`);
+    };
+    for (const s of ss) {
+      let nearest = null;
+      for (const o of ss) {
+        if (o.atom === s.atom) continue;
+        const d = planeDistance(s.p, o.p);
+        if (d <= 3 * (s.r + o.r)) add(s.atom, o.atom);
+        if (!nearest || d < nearest.d || d === nearest.d && canonical(o.atom, nearest.atom) < 0) nearest = { atom: o.atom, d };
+      }
+      if (nearest) add(s.atom, nearest.atom);
+    }
+    return [...pairs].sort(canonical).map((k) => k.split("\0"));
+  }
+  function campaignForWorld(world2, tuning = {}) {
+    const ir = world2.strategy ?? null;
+    const t = { ...STRATEGY_TUNING, ...tuning };
+    const facts = readWorldFacts(world2.systems?.knowledgeBase, STRATEGY_WORLD_PREDICATES);
+    const notes = [];
+    const settlements = factsOf(facts, "settlement/1").map((t2) => String(t2[0])).sort(canonical);
+    const shut = new Set(factsOf(facts, "business_out_of_business/1").map((t2) => String(t2[0])));
+    const typeOf = new Map(factsOf(facts, "business_type/2").map((t2) => [String(t2[0]), String(t2[1])]));
+    const ownerOf = /* @__PURE__ */ new Map();
+    for (const t2 of factsOf(facts, "business_owner/2")) if (!ownerOf.has(String(t2[0]))) ownerOf.set(String(t2[0]), String(t2[1]));
+    const settlementOf = new Map(factsOf(facts, "business_of_settlement/2").map((t2) => [String(t2[0]), String(t2[1])]));
+    const playerFaction = ir?.playerFaction ?? DEFAULT_PLAYER_FACTION;
+    const holdings = [];
+    for (const b of factsOf(facts, "business/1").map((t2) => String(t2[0])).sort(canonical)) {
+      const trade = typeOf.get(b);
+      const settlement = settlementOf.get(b);
+      const holder = ownerOf.get(b);
+      if (!trade || !settlement || !holder || shut.has(b)) continue;
+      if (holder === playerFaction) {
+        notes.push(`${b}'s keeper is named like the player's faction, so it is left out`);
+        continue;
+      }
+      holdings.push({ business: b, trade, settlement, holder });
+    }
+    const authoredOutputs = {};
+    for (const row of ir?.outputs ?? []) {
+      const t2 = worldAtom(row.trade);
+      authoredOutputs[t2] = { ...authoredOutputs[t2] ?? {}, [row.resource]: Math.trunc(row.amount) };
+    }
+    const businessTrade = {};
+    for (const b of factsOf(facts, "business/1").map((t2) => String(t2[0])).sort(canonical)) {
+      const trade = typeOf.get(b);
+      if (trade && settlementOf.has(b) && !shut.has(b)) businessTrade[b] = trade;
+    }
+    const outputs = {};
+    for (const trade of Object.values(businessTrade)) {
+      if (outputs[trade]) continue;
+      outputs[trade] = authoredOutputs[trade] ?? DEFAULT_TRADE_OUTPUTS[trade] ?? UNKNOWN_TRADE_OUTPUT;
+    }
+    const claimCosts = {};
+    let defaultClaimCost = { coin: Math.trunc(t.claimCoin) };
+    const defaults = (ir?.claimCosts ?? []).filter((r) => !r.trade);
+    if (defaults.length > 0) defaultClaimCost = amounts(defaults);
+    for (const row of ir?.claimCosts ?? []) {
+      if (!row.trade) continue;
+      const t2 = worldAtom(row.trade);
+      claimCosts[t2] = { ...claimCosts[t2] ?? {}, [row.resource]: Math.trunc(row.amount) };
+    }
+    const resources = new Set(ir?.resources ?? DEFAULT_STRATEGY_RESOURCES);
+    for (const table2 of [...Object.values(outputs), ...Object.values(claimCosts), defaultClaimCost]) {
+      for (const r of Object.keys(table2)) resources.add(r);
+    }
+    const workerUpkeep = amounts(ir?.workerUpkeep) ?? { food: Math.trunc(t.upkeepFood) };
+    const startingStock = amounts(ir?.startingStock) ?? { coin: Math.trunc(t.startingCoin), food: Math.trunc(t.startingFood) };
+    for (const r of [...Object.keys(workerUpkeep), ...Object.keys(startingStock)]) resources.add(r);
+    const residenceSettlement = new Map(factsOf(facts, "residence_of_settlement/2").map((t2) => [String(t2[0]), String(t2[1])]));
+    const residents = {};
+    for (const t2 of factsOf(facts, "lives_at/2")) {
+      const s = residenceSettlement.get(String(t2[1]));
+      if (!s) continue;
+      (residents[s] ?? (residents[s] = [])).push(String(t2[0]));
+    }
+    for (const s of Object.keys(residents)) residents[s] = [...new Set(residents[s])].sort(canonical);
+    const trading = {};
+    for (const b of factsOf(facts, "business/1").map((t2) => String(t2[0])).sort(canonical)) {
+      const settlement = settlementOf.get(b);
+      if (!settlement || shut.has(b)) continue;
+      (trading[settlement] ?? (trading[settlement] = [])).push(b);
+    }
+    if (holdings.length === 0) notes.push("the world names no trading business with a keeper, so the board is empty");
+    const factions = [playerFaction, ...[...new Set(holdings.map((h) => h.holder))].sort(canonical)];
+    return {
+      resources: [...resources].sort(canonical),
+      outputs,
+      claimCosts,
+      defaultClaimCost,
+      workerUpkeep,
+      workersPerHolding: ir?.workersPerHolding ?? Math.trunc(t.workersPerHolding),
+      playerFaction,
+      startingStock,
+      settlements,
+      adjacency: settlementAdjacency(world2).filter(([a, b]) => settlements.includes(a) && settlements.includes(b)),
+      holdings,
+      factions,
+      residents,
+      trading,
+      businessTrade,
+      source: holdings.length > 0 ? "generated" : "empty",
+      notes
+    };
+  }
+  function amountFacts(name, prefix, table2) {
+    return Object.keys(table2).sort(canonical).map((r) => `${name}(${[...prefix, prologAtom(r), String(Math.trunc(table2[r]))].join(", ")}).`);
+  }
+  function campaignFacts(c) {
+    const facts = [];
+    for (const r of c.resources) facts.push(`strategy_resource(${prologAtom(r)}).`);
+    for (const t of Object.keys(c.outputs).sort(canonical)) facts.push(...amountFacts("strategy_trade_output", [prologAtom(t)], c.outputs[t]));
+    for (const t of Object.keys(c.claimCosts).sort(canonical)) facts.push(...amountFacts("strategy_claim_cost", [prologAtom(t)], c.claimCosts[t]));
+    facts.push(...amountFacts("strategy_default_claim_cost", [], c.defaultClaimCost));
+    facts.push(...amountFacts("strategy_worker_upkeep", [], c.workerUpkeep));
+    facts.push(`strategy_workers_per_holding(${Math.trunc(c.workersPerHolding)}).`);
+    for (const [a, b] of c.adjacency) facts.push(`strategy_adjacent(${prologAtom(a)}, ${prologAtom(b)}).`);
+    for (const f of c.factions) facts.push(`strategy_faction(${prologAtom(f)}).`);
+    return facts;
+  }
+  function campaignWorldFacts(world2) {
+    const facts = readWorldFacts(world2.systems?.knowledgeBase, STRATEGY_WORLD_PREDICATES);
+    const out = [];
+    for (const signature of STRATEGY_WORLD_PREDICATES) {
+      if (signature === "business_owner/2") continue;
+      const name = signature.slice(0, signature.indexOf("/"));
+      for (const t of factsOf(facts, signature)) {
+        out.push(`${name}(${t.map((a) => typeof a === "number" ? String(a) : prologAtom(a)).join(", ")}).`);
+      }
+    }
+    return out;
+  }
+  function turnBooks(c, board) {
+    const books = {};
+    for (const f of c.factions) {
+      books[f] = {};
+      for (const r of c.resources) books[f][r] = 0;
+    }
+    for (const [business, holder] of Object.entries(board.holders)) {
+      if (!books[holder]) continue;
+      const workers = board.workers[business] ?? [];
+      const hands = workers.length + 1;
+      const trade = c.businessTrade[business];
+      for (const [r, per] of Object.entries(trade ? c.outputs[trade] ?? {} : {})) books[holder][r] = (books[holder][r] ?? 0) + per * hands;
+      for (const [r, per] of Object.entries(c.workerUpkeep)) books[holder][r] = (books[holder][r] ?? 0) - per * workers.length;
+    }
+    return books;
+  }
+  function claimCost(c, business) {
+    const trade = c.businessTrade[business];
+    if (!trade) return {};
+    return c.claimCosts[trade] ?? c.defaultClaimCost;
+  }
+  function controlledSettlements(c, board, faction) {
+    return c.settlements.filter((s) => {
+      const trading = c.trading[s] ?? [];
+      if (trading.length === 0) return false;
+      const held = trading.filter((b) => board.holders[b] === faction).length;
+      return 2 * held > trading.length;
+    });
+  }
+
+  // @insimul/core/src/game-engine/logic/StrategyDirector.ts
+  var STRATEGY_WRITTEN_PREDICATES = STRATEGY_RUNTIME_PREDICATES;
+  var StrategyDirector = class {
+    constructor(config) {
+      __publicField(this, "campaign");
+      __publicField(this, "engine");
+      __publicField(this, "host");
+      __publicField(this, "worldFacts");
+      __publicField(this, "holders", /* @__PURE__ */ new Map());
+      /** faction → resource → amount; zero is kept as absence. */
+      __publicField(this, "stock", /* @__PURE__ */ new Map());
+      /** worker → business. */
+      __publicField(this, "workers", /* @__PURE__ */ new Map());
+      __publicField(this, "turn", 0);
+      __publicField(this, "started", false);
+      this.campaign = config.campaign;
+      this.engine = config.engine;
+      this.host = config.host;
+      this.worldFacts = config.worldFacts ?? [];
+    }
+    stockOf(faction, resource) {
+      return this.stock.get(faction)?.get(resource) ?? 0;
+    }
+    stockFact(faction, resource, amount) {
+      return amount === 0 ? null : `strategy_stock(${prologAtom(faction)}, ${prologAtom(resource)}, ${amount}).`;
+    }
+    setStockDelta(delta, faction, resource, next) {
+      const before = this.stockFact(faction, resource, this.stockOf(faction, resource));
+      const after = this.stockFact(faction, resource, next);
+      if (before === after) return;
+      if (before) delta.retract.push(before);
+      if (after) delta.assert.push(after);
+    }
+    applyStock(faction, resource, next) {
+      let m = this.stock.get(faction);
+      if (!m) {
+        m = /* @__PURE__ */ new Map();
+        this.stock.set(faction, m);
+      }
+      if (next === 0) m.delete(resource);
+      else m.set(resource, next);
+    }
+    async write(delta) {
+      const result2 = await applyGenreDelta(this.engine, delta, STRATEGY_WRITTEN_PREDICATES, "strategy");
+      if (!result2.ok) return { ok: false, refusal: "schema", reason: result2.reason, applied: [] };
+      return { ok: true, reason: null, applied: result2.applied };
+    }
+    /**
+     * Publish the campaign (and any world facts), then set the board: every
+     * keeper holds their business, the player holds its starting purse, turn 0.
+     */
+    async start() {
+      if (this.started) return { ok: false, refusal: "schema", reason: "the campaign has already started", applied: [] };
+      await publishFacts(this.engine, this.worldFacts);
+      await publishFacts(this.engine, campaignFacts(this.campaign));
+      const delta = { retract: [], assert: ["strategy_turn(0)."] };
+      for (const h of this.campaign.holdings) delta.assert.push(`strategy_holds(${prologAtom(h.holder)}, ${prologAtom(h.business)}).`);
+      for (const r of Object.keys(this.campaign.startingStock).sort(canonical)) {
+        const amount = Math.trunc(this.campaign.startingStock[r]);
+        const fact = this.stockFact(this.campaign.playerFaction, r, amount);
+        if (fact) delta.assert.push(fact);
+      }
+      const out = await this.write(delta);
+      if (!out.ok) return out;
+      for (const h of this.campaign.holdings) this.holders.set(h.business, h.holder);
+      for (const r of Object.keys(this.campaign.startingStock)) {
+        this.applyStock(this.campaign.playerFaction, r, Math.trunc(this.campaign.startingStock[r]));
+      }
+      this.started = true;
+      return out;
+    }
+    holderOf(business) {
+      return this.holders.get(business);
+    }
+    stockpile(faction) {
+      return Object.fromEntries(this.campaign.resources.map((r) => [r, this.stockOf(faction, r)]));
+    }
+    /** Take a business for a faction, if `strategy_can_claim/2` allows: pay its price, send its workers home. */
+    async claim(faction, business) {
+      if (!this.campaign.factions.includes(faction)) {
+        return { ok: false, refusal: "unknown_faction", reason: `"${faction}" is not a faction of this campaign`, applied: [] };
+      }
+      if (!this.campaign.businessTrade[business]) {
+        return { ok: false, refusal: "unknown_business", reason: `"${business}" is not a trading business on the board`, applied: [] };
+      }
+      if (!await holds(this.engine, `strategy_can_claim(${prologAtom(faction)}, ${prologAtom(business)})`)) {
+        return { ok: false, refusal: "cannot_claim", reason: `${faction} cannot take ${business}: already held, out of reach, or unaffordable`, applied: [] };
+      }
+      const delta = { retract: [], assert: [] };
+      const previous = this.holders.get(business);
+      if (previous) delta.retract.push(`strategy_holds(${prologAtom(previous)}, ${prologAtom(business)}).`);
+      delta.assert.push(`strategy_holds(${prologAtom(faction)}, ${prologAtom(business)}).`);
+      const price = claimCost(this.campaign, business);
+      const next = [];
+      for (const r of Object.keys(price).sort(canonical)) {
+        const after = this.stockOf(faction, r) - Math.trunc(price[r]);
+        this.setStockDelta(delta, faction, r, after);
+        next.push([r, after]);
+      }
+      const sentHome = [...this.workers.entries()].filter(([, b]) => b === business).map(([w]) => w).sort(canonical);
+      for (const w of sentHome) delta.retract.push(`strategy_worker(${prologAtom(business)}, ${prologAtom(w)}).`);
+      const out = await this.write(delta);
+      if (!out.ok) return out;
+      this.holders.set(business, faction);
+      for (const [r, after] of next) this.applyStock(faction, r, after);
+      for (const w of sentHome) this.workers.delete(w);
+      return out;
+    }
+    /** Put a resident to work at one of the faction's holdings, if `strategy_can_assign/3` allows. */
+    async assign(faction, worker, business) {
+      if (!await holds(this.engine, `strategy_can_assign(${prologAtom(faction)}, ${prologAtom(worker)}, ${prologAtom(business)})`)) {
+        return { ok: false, refusal: "cannot_assign", reason: `${worker} cannot work ${business} for ${faction}`, applied: [] };
+      }
+      const out = await this.write({ retract: [], assert: [`strategy_worker(${prologAtom(business)}, ${prologAtom(worker)}).`] });
+      if (out.ok) this.workers.set(worker, business);
+      return out;
+    }
+    /** Send a worker home from one of the faction's holdings. */
+    async release(faction, worker) {
+      const business = this.workers.get(worker);
+      if (!business || this.holders.get(business) !== faction) {
+        return { ok: false, refusal: "not_assigned", reason: `${worker} does not work for ${faction}`, applied: [] };
+      }
+      const out = await this.write({ retract: [`strategy_worker(${prologAtom(business)}, ${prologAtom(worker)}).`], assert: [] });
+      if (out.ok) this.workers.delete(worker);
+      return out;
+    }
+    /**
+     * End the turn. Each faction's `strategy_net/3` is added to its stockpile.
+     * A faction that would go below zero on a resource first sends workers home
+     * (canonically last first) until it would not, or until it has none left;
+     * whatever is still short floors at zero. Then every remaining worker is told
+     * to work.
+     */
+    async endTurn() {
+      const released = [];
+      const releaseDelta = { retract: [], assert: [] };
+      for (const f of this.campaign.factions) {
+        for (; ; ) {
+          const short = await solutions(this.engine, `strategy_shortfall(${prologAtom(f)}, R, S)`, "R");
+          const mine = [...this.workers.entries()].filter(([, b]) => this.holders.get(b) === f).sort(([a], [b]) => canonical(b, a));
+          if (short.length === 0 || mine.length === 0) break;
+          const [worker, business] = mine[0];
+          const out2 = await this.write({ retract: [`strategy_worker(${prologAtom(business)}, ${prologAtom(worker)}).`], assert: [] });
+          if (!out2.ok) return { ...out2, turn: this.turn, net: {}, released, orders: [] };
+          releaseDelta.retract.push(...out2.applied);
+          this.workers.delete(worker);
+          released.push({ faction: f, worker, business });
+        }
+      }
+      const net = {};
+      const delta = { retract: [`strategy_turn(${this.turn}).`], assert: [`strategy_turn(${this.turn + 1}).`] };
+      const nextStock = [];
+      for (const f of this.campaign.factions) {
+        net[f] = {};
+        const result2 = await this.engine.query(`strategy_net(${prologAtom(f)}, R, N)`, 256);
+        for (const b of result2.success ? result2.bindings : []) {
+          const r = String(b.R);
+          const n = Number(b.N);
+          net[f][r] = n;
+          const after = Math.max(0, this.stockOf(f, r) + n);
+          if (after !== this.stockOf(f, r)) {
+            this.setStockDelta(delta, f, r, after);
+            nextStock.push([f, r, after]);
+          }
+        }
+      }
+      const out = await this.write(delta);
+      if (!out.ok) return { ...out, turn: this.turn, net, released, orders: [] };
+      for (const [f, r, after] of nextStock) this.applyStock(f, r, after);
+      this.turn += 1;
+      const orders = [];
+      for (const [worker, business] of [...this.workers.entries()].sort(([a], [b]) => canonical(a, b))) {
+        const order2 = {
+          agent: worker,
+          action: "work",
+          target: business,
+          tick: this.turn,
+          animation: getActionAnimation("work") ?? DEFAULT_ANIMATION_INTENT,
+          utility: 0
+        };
+        orders.push(order2);
+        this.host?.perform(order2);
+      }
+      return { ok: true, reason: null, applied: [...releaseDelta.retract, ...out.applied], turn: this.turn, net, released, orders };
+    }
+    async controls(faction) {
+      return (await solutions(this.engine, `strategy_controls(${prologAtom(faction)}, S)`, "S")).sort(canonical);
+    }
+    async victory(faction) {
+      return holds(this.engine, `strategy_victory(${prologAtom(faction)})`);
+    }
+    async progress(faction) {
+      return {
+        holdings: [...this.holders.values()].filter((f) => f === faction).length,
+        controlled: (await this.controls(faction)).length,
+        settlements: Object.values(this.campaign.trading).filter((bs) => bs.length > 0).length,
+        stock: this.stockpile(faction),
+        workers: [...this.workers.values()].filter((b) => this.holders.get(b) === faction).length,
+        turn: this.turn,
+        victory: await this.victory(faction)
+      };
+    }
+    getTurn() {
+      return this.turn;
+    }
+    serialize() {
+      const stock = [];
+      for (const [f, m] of this.stock) for (const [r, n] of m) stock.push([f, r, n]);
+      stock.sort((a, b) => canonical(a[0], b[0]) || canonical(a[1], b[1]));
+      return {
+        turn: this.turn,
+        holders: [...this.holders.entries()].sort(([a], [b]) => canonical(a, b)),
+        stock,
+        workers: [...this.workers.entries()].sort(([a], [b]) => canonical(a, b))
+      };
+    }
+    /** Load a saved state into a fresh director: publishes the campaign, then the state. */
+    async restore(state) {
+      if (this.started) return { ok: false, refusal: "schema", reason: "restore() is for a fresh director", applied: [] };
+      await publishFacts(this.engine, this.worldFacts);
+      await publishFacts(this.engine, campaignFacts(this.campaign));
+      const facts = [`strategy_turn(${Math.trunc(state.turn)}).`];
+      for (const [b, f] of state.holders) facts.push(`strategy_holds(${prologAtom(f)}, ${prologAtom(b)}).`);
+      for (const [f, r, n] of state.stock) if (n !== 0) facts.push(`strategy_stock(${prologAtom(f)}, ${prologAtom(r)}, ${Math.trunc(n)}).`);
+      for (const [w, b] of state.workers) facts.push(`strategy_worker(${prologAtom(b)}, ${prologAtom(w)}).`);
+      const out = await this.write({ retract: [], assert: facts });
+      if (!out.ok) return out;
+      this.turn = state.turn;
+      for (const [b, f] of state.holders) this.holders.set(b, f);
+      for (const [f, r, n] of state.stock) this.applyStock(f, r, n);
+      for (const [w, b] of state.workers) this.workers.set(w, b);
+      this.started = true;
+      return out;
+    }
+  };
 
   // @insimul/core/src/genre-systems/systems-corpus.ts
   var GENRE_SYSTEMS_CORPUS_FILES = Object.freeze({
@@ -52560,6 +52974,69 @@ Return JSON format:
       if (key) needString(method, args[key], key);
     });
   }
+  var tTuple = (shape, ...checks) => (m, v, n) => {
+    if (needArray(m, v, n).length !== checks.length) throw refuse2(m, `\`${n}\` must be a ${shape}`);
+    checks.forEach((check, k) => check(m, v[k], `${n}[${k}]`));
+  };
+  var STRATEGY_AMOUNTS = tRecord(tNum);
+  var STRATEGY_AMOUNT_IR = [["resource", tStr, REQ], ["amount", tNum, REQ]];
+  var STRATEGY_IR = [
+    ["resources", tList(tStr), OPT],
+    ["outputs", tList(tObj([["trade", tStr, REQ], ...STRATEGY_AMOUNT_IR])), OPT],
+    ["claimCosts", tList(tObj([["trade", tStr, OPT], ...STRATEGY_AMOUNT_IR])), OPT],
+    ["workerUpkeep", tList(tObj(STRATEGY_AMOUNT_IR)), OPT],
+    ["workersPerHolding", tNum, OPT],
+    ["startingStock", tList(tObj(STRATEGY_AMOUNT_IR)), OPT],
+    ["playerFaction", tStr, OPT]
+  ];
+  var STRATEGY_TUNING_ARG = [
+    ["claimCoin", tNum, OPT],
+    ["upkeepFood", tNum, OPT],
+    ["startingCoin", tNum, OPT],
+    ["startingFood", tNum, OPT],
+    ["workersPerHolding", tNum, OPT]
+  ];
+  var STRATEGY_CAMPAIGN_SOURCES = ["generated", "empty"];
+  var STRATEGY_CAMPAIGN = [
+    ["resources", tList(tStr), REQ],
+    ["outputs", tRecord(STRATEGY_AMOUNTS), REQ],
+    ["claimCosts", tRecord(STRATEGY_AMOUNTS), REQ],
+    ["defaultClaimCost", STRATEGY_AMOUNTS, REQ],
+    ["workerUpkeep", STRATEGY_AMOUNTS, REQ],
+    ["workersPerHolding", tNum, REQ],
+    ["playerFaction", tStr, REQ],
+    ["startingStock", STRATEGY_AMOUNTS, REQ],
+    ["settlements", tList(tStr), REQ],
+    ["adjacency", tList(tTuple("[settlement, settlement] pair", tStr, tStr)), REQ],
+    ["holdings", tList(tObj([["business", tStr, REQ], ["trade", tStr, REQ], ["settlement", tStr, REQ], ["holder", tStr, REQ]])), REQ],
+    ["factions", tList(tStr), REQ],
+    ["residents", tRecord(tList(tStr)), REQ],
+    ["trading", tRecord(tList(tStr)), REQ],
+    ["businessTrade", tRecord(tStr), REQ],
+    ["source", tOneOf(STRATEGY_CAMPAIGN_SOURCES), REQ],
+    ["notes", tList(tStr), REQ]
+  ];
+  var STRATEGY_BOARD = [["holders", tRecord(tStr), REQ], ["workers", tRecord(tList(tStr)), REQ]];
+  var STRATEGY_DIRECTOR_STATE = [
+    ["turn", tNum, REQ],
+    ["holders", tList(tTuple("[business, faction] pair", tStr, tStr)), REQ],
+    ["stock", tList(tTuple("[faction, resource, amount] triple", tStr, tStr, tNum)), REQ],
+    ["workers", tList(tTuple("[worker, business] pair", tStr, tStr)), REQ]
+  ];
+  function strategyWorldArg(method, args) {
+    const world2 = genreWorldArg(method, args.world, "world");
+    if (hasOwn3(args, "strategy")) {
+      if (args.strategy !== null) declared(method, args.strategy, "strategy", STRATEGY_IR);
+      return { ...world2, strategy: args.strategy };
+    }
+    if (hasOwn3(world2, "strategy") && world2.strategy !== null) declared(method, world2.strategy, "world.strategy", STRATEGY_IR);
+    return world2;
+  }
+  function strategyIdArgs(method, args, keys) {
+    coded("invalid-input", () => {
+      for (const key of keys) needString(method, args[key], key);
+    });
+  }
   var QUEST_STATUSES = ["available", "active", "completed"];
   var QUEST_FILTERS = ["all", "active", "completed", "available"];
   function questEntry(method, entry) {
@@ -54606,6 +55083,227 @@ Return JSON format:
     "platformer.save.blockOf": (args) => {
       coded("invalid-input", () => declared("platformer.save.blockOf", args.block, "block", PLATFORMER_DIRECTOR_STATE));
       return { block: plain(platformerBlockOf(args.block)) };
+    },
+    /**
+     * `strategy.contract {}` → core's strategy constants: the pack's area and its authored,
+     * runtime and written predicates, the world predicates a campaign reads, core's default
+     * tables (resources, trade outputs, the unknown trade's output, the claim cost, the upkeep,
+     * workers per holding, the starting stock, the player's faction), the pack tuning, and the
+     * save block's key and members.
+     */
+    "strategy.contract": () => ({
+      area: STRATEGY_AREA,
+      authoredPredicates: [...STRATEGY_AUTHORED_PREDICATES],
+      runtimePredicates: [...STRATEGY_RUNTIME_PREDICATES],
+      writtenPredicates: [...STRATEGY_WRITTEN_PREDICATES],
+      worldPredicates: [...STRATEGY_WORLD_PREDICATES],
+      defaultResources: [...DEFAULT_STRATEGY_RESOURCES],
+      defaultTradeOutputs: plain(DEFAULT_TRADE_OUTPUTS),
+      unknownTradeOutput: plain(UNKNOWN_TRADE_OUTPUT),
+      defaultClaimCost: plain(DEFAULT_CLAIM_COST),
+      defaultWorkerUpkeep: plain(DEFAULT_WORKER_UPKEEP),
+      defaultWorkersPerHolding: DEFAULT_WORKERS_PER_HOLDING,
+      defaultStartingStock: plain(DEFAULT_STARTING_STOCK),
+      defaultPlayerFaction: DEFAULT_PLAYER_FACTION,
+      tuning: plain(STRATEGY_TUNING),
+      extensionKey: STRATEGY_EXTENSION_KEY,
+      blockMembers: [...STRATEGY_BLOCK_MEMBERS]
+    }),
+    /** `strategy.adjacency { world }` → `{ adjacency }` — core's `settlementAdjacency`: neighbouring settlements (each one's nearest, and any within three radii), unordered pairs in canonical order. */
+    "strategy.adjacency": (args) => {
+      const world2 = coded("invalid-input", () => genreWorldArg("strategy.adjacency", args.world, "world"));
+      return { adjacency: plain(settlementAdjacency(world2)) };
+    },
+    /**
+     * `strategy.forWorld { world, strategy?, tuning? }` → `{ campaign }` — core's
+     * `campaignForWorld`: the world as a board (its businesses the holdings, their keepers the
+     * factions, its settlements the territory). `strategy` (a `StrategyIR`, or null for none)
+     * stands over the world's own section when given; `tuning` is the pack's tunables (absent
+     * or null: core's defaults; an authored row wins, table for table).
+     */
+    "strategy.forWorld": (args) => {
+      const m = "strategy.forWorld";
+      const world2 = coded("invalid-input", () => {
+        const w = strategyWorldArg(m, args);
+        optionalArg(args.tuning, (v) => declared(m, v, "tuning", STRATEGY_TUNING_ARG));
+        return w;
+      });
+      return { campaign: plain(campaignForWorld(world2, orUndefined(args.tuning))) };
+    },
+    /** `strategy.facts { campaign }` → `{ facts }` — core's `campaignFacts` (the campaign as the pack's authored facts). */
+    "strategy.facts": (args) => {
+      coded("invalid-input", () => declared("strategy.facts", args.campaign, "campaign", STRATEGY_CAMPAIGN));
+      return { facts: campaignFacts(args.campaign) };
+    },
+    /** `strategy.worldFacts { world }` → `{ facts }` — core's `campaignWorldFacts` (the world facts a campaign is decided over, for a KB that did not consult the world). */
+    "strategy.worldFacts": (args) => {
+      const world2 = coded("invalid-input", () => genreWorldArg("strategy.worldFacts", args.world, "world"));
+      return { facts: campaignWorldFacts(world2) };
+    },
+    /** `strategy.books { campaign, board }` → `{ books }` — core's `turnBooks` (faction → resource → the turn's net: yields per hand, less each worker's keep; `strategy_net/3` in TypeScript). */
+    "strategy.books": (args) => {
+      const m = "strategy.books";
+      coded("invalid-input", () => {
+        declared(m, args.campaign, "campaign", STRATEGY_CAMPAIGN);
+        declared(m, args.board, "board", STRATEGY_BOARD);
+      });
+      return { books: plain(turnBooks(args.campaign, args.board)) };
+    },
+    /** `strategy.claimCost { campaign, business }` → `{ cost }` — core's `claimCost` (the trade's own price, else the default; `{}` for a business off the board). */
+    "strategy.claimCost": (args) => {
+      const m = "strategy.claimCost";
+      coded("invalid-input", () => {
+        declared(m, args.campaign, "campaign", STRATEGY_CAMPAIGN);
+        needString(m, args.business, "business");
+      });
+      return { cost: plain(claimCost(args.campaign, args.business)) };
+    },
+    /** `strategy.controlled { campaign, board, faction }` → `{ settlements }` — core's `controlledSettlements` (where the faction holds a strict majority of the trading businesses; `strategy_controls/2`). */
+    "strategy.controlled": (args) => {
+      const m = "strategy.controlled";
+      coded("invalid-input", () => {
+        declared(m, args.campaign, "campaign", STRATEGY_CAMPAIGN);
+        declared(m, args.board, "board", STRATEGY_BOARD);
+        needString(m, args.faction, "faction");
+      });
+      return { settlements: controlledSettlements(args.campaign, args.board, args.faction) };
+    },
+    /**
+     * `strategy.director.create { campaign, worldFacts?, kb? }` → `{ session }` — core's
+     * `StrategyDirector` over a KB of its own, built as core's runner builds it:
+     * `GamePrologEngine` with genre `strategy` (module activation consults the strategy pack
+     * and declares its runtime predicates) on a native KB, then `kb` (a program, or a list of
+     * clauses: the game's own facts and rules, which every verdict reads; refused:
+     * `[invalid-input]`), then the director. Nothing is published until `start` or `restore`,
+     * which publish `worldFacts` (`strategy.worldFacts`) and the campaign. Core's
+     * `IAgentActionHost` is only TOLD (`perform` returns nothing), so no host crosses this
+     * ABI: `endTurn`'s report carries every order. The KB lives as long as the session:
+     * `session.dispose` destroys it.
+     */
+    "strategy.director.create": async (args) => {
+      const m = "strategy.director.create";
+      const input = coded("invalid-input", () => ({
+        campaign: declared(m, args.campaign, "campaign", STRATEGY_CAMPAIGN),
+        worldFacts: optionalArg(args.worldFacts, (v) => stringList(m, v, "worldFacts")),
+        kb: optionalArg(args.kb, (v) => Array.isArray(v) ? stringList(m, v, "kb").join("\n") : needString(m, v, "kb"))
+      }));
+      const engine = await createPrologEngine();
+      try {
+        await GamePrologEngine.create({ genre: "strategy", engine });
+        if (input.kb !== void 0) {
+          const consulted = await engine.consult(input.kb);
+          if (!consulted.success) {
+            const err = refuse2(m, `the KB refused \`kb\`: ${consulted.error}`);
+            err.code = "invalid-input";
+            throw err;
+          }
+        }
+        const director = new StrategyDirector({ campaign: input.campaign, engine, ...input.worldFacts ? { worldFacts: input.worldFacts } : {} });
+        return { session: openSession("strategy.director", { director, onDispose: () => engine.destroy() }) };
+      } catch (err) {
+        engine.destroy();
+        throw err;
+      }
+    },
+    /** `strategy.director.start { session }` → core's `start` outcome (`{ ok, refusal?, reason, applied }`): the campaign published, every keeper on their holding, the player's purse, turn 0; a second start refuses (`schema`). */
+    "strategy.director.start": async (args) => {
+      const s = session("strategy.director.start", args, "strategy.director");
+      return plain(await s.director.start());
+    },
+    /** `strategy.director.restore { session, state }` → core's `restore` outcome (the campaign published, then the state; a started director refuses: `schema`). */
+    "strategy.director.restore": async (args) => {
+      const m = "strategy.director.restore";
+      const s = session(m, args, "strategy.director");
+      coded("invalid-input", () => declared(m, args.state, "state", STRATEGY_DIRECTOR_STATE));
+      return plain(await s.director.restore(args.state));
+    },
+    /** `strategy.director.claim { session, faction, business }` → core's `claim` outcome (`unknown_faction`, `unknown_business` and `cannot_claim` are values). */
+    "strategy.director.claim": async (args) => {
+      const m = "strategy.director.claim";
+      const s = session(m, args, "strategy.director");
+      strategyIdArgs(m, args, ["faction", "business"]);
+      return plain(await s.director.claim(args.faction, args.business));
+    },
+    /** `strategy.director.assign { session, faction, worker, business }` → core's `assign` outcome (`cannot_assign` is a value). */
+    "strategy.director.assign": async (args) => {
+      const m = "strategy.director.assign";
+      const s = session(m, args, "strategy.director");
+      strategyIdArgs(m, args, ["faction", "worker", "business"]);
+      return plain(await s.director.assign(args.faction, args.worker, args.business));
+    },
+    /** `strategy.director.release { session, faction, worker }` → core's `release` outcome (`not_assigned` is a value). */
+    "strategy.director.release": async (args) => {
+      const m = "strategy.director.release";
+      const s = session(m, args, "strategy.director");
+      strategyIdArgs(m, args, ["faction", "worker"]);
+      return plain(await s.director.release(args.faction, args.worker));
+    },
+    /**
+     * `strategy.director.endTurn { session }` → core's `TurnReport` (`{ ok, refusal?, reason,
+     * applied, turn, net, released, orders }`): hands a faction cannot feed sent home
+     * (canonically last first), each faction's `strategy_net/3` added (floored at zero), the
+     * turn advanced, and every remaining worker's `work` order, which the host performs.
+     */
+    "strategy.director.endTurn": async (args) => {
+      const s = session("strategy.director.endTurn", args, "strategy.director");
+      return plain(await s.director.endTurn());
+    },
+    /** `strategy.director.holderOf { session, business }` → `{ holder }` — core's `holderOf` (null: nobody holds it). */
+    "strategy.director.holderOf": (args) => {
+      const m = "strategy.director.holderOf";
+      const s = session(m, args, "strategy.director");
+      strategyIdArgs(m, args, ["business"]);
+      return { holder: plain(s.director.holderOf(args.business)) };
+    },
+    /** `strategy.director.stockpile { session, faction }` → `{ stockpile }` — core's `stockpile` (every resource of the campaign, zero included). */
+    "strategy.director.stockpile": (args) => {
+      const m = "strategy.director.stockpile";
+      const s = session(m, args, "strategy.director");
+      strategyIdArgs(m, args, ["faction"]);
+      return { stockpile: plain(s.director.stockpile(args.faction)) };
+    },
+    /** `strategy.director.controls { session, faction }` → `{ settlements }` — core's `controls` (`strategy_controls/2`, canonical). */
+    "strategy.director.controls": async (args) => {
+      const m = "strategy.director.controls";
+      const s = session(m, args, "strategy.director");
+      strategyIdArgs(m, args, ["faction"]);
+      return { settlements: await s.director.controls(args.faction) };
+    },
+    /** `strategy.director.victory { session, faction }` → `{ victory }` — core's `victory` (`strategy_victory/1`). */
+    "strategy.director.victory": async (args) => {
+      const m = "strategy.director.victory";
+      const s = session(m, args, "strategy.director");
+      strategyIdArgs(m, args, ["faction"]);
+      return { victory: await s.director.victory(args.faction) };
+    },
+    /** `strategy.director.progress { session, faction }` → `{ progress }` — core's `progress` (a quest tracker's counts). */
+    "strategy.director.progress": async (args) => {
+      const m = "strategy.director.progress";
+      const s = session(m, args, "strategy.director");
+      strategyIdArgs(m, args, ["faction"]);
+      return { progress: plain(await s.director.progress(args.faction)) };
+    },
+    /** `strategy.director.turn { session }` → `{ turn }` — core's `getTurn`. */
+    "strategy.director.turn": (args) => {
+      const s = session("strategy.director.turn", args, "strategy.director");
+      return { turn: s.director.getTurn() };
+    },
+    /** `strategy.director.serialize { session }` → `{ state }` — core's `serialize` (the save block's value). */
+    "strategy.director.serialize": (args) => {
+      const s = session("strategy.director.serialize", args, "strategy.director");
+      return { state: plain(s.director.serialize()) };
+    },
+    /** `strategy.save.read { block? }` → core's `readStrategyBlock` (`{ ok: true, value }`, null for no block; `{ ok: false, keys }`). */
+    "strategy.save.read": (args) => plain(readStrategyBlock(args.block)),
+    /** `strategy.save.block { state? }` → `{ block }` — core's `strategySaveBlock` (absent or null state: null). */
+    "strategy.save.block": (args) => {
+      coded("invalid-input", () => optionalArg(args.state, (v) => declared("strategy.save.block", v, "state", STRATEGY_DIRECTOR_STATE)));
+      return { block: plain(strategySaveBlock(orUndefined(args.state))) };
+    },
+    /** `strategy.save.blockOf { block }` → `{ block }` — core's `strategyBlockOf` (only its members; holders by business, stock by faction then resource, workers by worker). */
+    "strategy.save.blockOf": (args) => {
+      coded("invalid-input", () => declared("strategy.save.blockOf", args.block, "block", STRATEGY_DIRECTOR_STATE));
+      return { block: plain(strategyBlockOf(args.block)) };
     },
     // ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
     /** `ui.notifications.create {}` → `{ session, view }` — core's `Notifications` toast queue. */
