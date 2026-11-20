@@ -1,0 +1,807 @@
+{
+  "schema": "insimul.conformance.language/1",
+  "area": "language",
+  "file": "language/writing",
+  "phase": "P9h",
+  "description": "Composition writing (word count, submit) and listening comprehension (story capture, answers, grading) (src/language-learning/reading-writing.ts).",
+  "runner": "src/language-learning/systems-corpus.ts (runLanguageSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "language-composition-writing",
+    "language-listening-comprehension"
+  ],
+  "ops": [
+    "composition",
+    "listening"
+  ],
+  "steps": {
+    "listening": [
+      "register",
+      "prompt",
+      "chat",
+      "grade"
+    ]
+  },
+  "cases": [
+    {
+      "name": "composition: the live count, the label, and Submit enabled only at the minimum",
+      "op": "composition",
+      "input": {
+        "config": {
+          "questId": "q_letter",
+          "objectiveId": "o1",
+          "prompt": "Write to Ada about the market.",
+          "minWords": 5,
+          "objectiveType": "write_response"
+        },
+        "texts": [
+          "",
+          "   ",
+          "Bonjour Ada",
+          "Le marché est très grand",
+          "Bonjour Ada, le marché\nest grand",
+          "  Le pain est très bon aujourd hui  "
+        ]
+      },
+      "expected": [
+        {
+          "text": "",
+          "words": 0,
+          "view": {
+            "header": "Written Response",
+            "instructions": "Write your response in the target language below. Minimum 5 words required.",
+            "count": 0,
+            "label": "0 / 5 words",
+            "tone": "danger",
+            "canSubmit": false
+          },
+          "submit": {
+            "ok": false,
+            "refusal": "empty"
+          }
+        },
+        {
+          "text": "   ",
+          "words": 0,
+          "view": {
+            "header": "Written Response",
+            "instructions": "Write your response in the target language below. Minimum 5 words required.",
+            "count": 0,
+            "label": "0 / 5 words",
+            "tone": "danger",
+            "canSubmit": false
+          },
+          "submit": {
+            "ok": false,
+            "refusal": "empty"
+          }
+        },
+        {
+          "text": "Bonjour Ada",
+          "words": 2,
+          "view": {
+            "header": "Written Response",
+            "instructions": "Write your response in the target language below. Minimum 5 words required.",
+            "count": 2,
+            "label": "2 / 5 words",
+            "tone": "danger",
+            "canSubmit": false
+          },
+          "submit": {
+            "ok": false,
+            "refusal": "too_short"
+          }
+        },
+        {
+          "text": "Le marché est très grand",
+          "words": 5,
+          "view": {
+            "header": "Written Response",
+            "instructions": "Write your response in the target language below. Minimum 5 words required.",
+            "count": 5,
+            "label": "5 / 5 words",
+            "tone": "success",
+            "canSubmit": true
+          },
+          "submit": {
+            "ok": true,
+            "text": "Le marché est très grand",
+            "wordCount": 5,
+            "events": [
+              {
+                "type": "writing_submitted",
+                "text": "Le marché est très grand",
+                "wordCount": 5,
+                "questId": "q_letter"
+              }
+            ]
+          }
+        },
+        {
+          "text": "Bonjour Ada, le marché\nest grand",
+          "words": 6,
+          "view": {
+            "header": "Written Response",
+            "instructions": "Write your response in the target language below. Minimum 5 words required.",
+            "count": 6,
+            "label": "6 / 5 words",
+            "tone": "success",
+            "canSubmit": true
+          },
+          "submit": {
+            "ok": true,
+            "text": "Bonjour Ada, le marché\nest grand",
+            "wordCount": 6,
+            "events": [
+              {
+                "type": "writing_submitted",
+                "text": "Bonjour Ada, le marché\nest grand",
+                "wordCount": 6,
+                "questId": "q_letter"
+              }
+            ]
+          }
+        },
+        {
+          "text": "  Le pain est très bon aujourd hui  ",
+          "words": 7,
+          "view": {
+            "header": "Written Response",
+            "instructions": "Write your response in the target language below. Minimum 5 words required.",
+            "count": 7,
+            "label": "7 / 5 words",
+            "tone": "success",
+            "canSubmit": true
+          },
+          "submit": {
+            "ok": true,
+            "text": "Le pain est très bon aujourd hui",
+            "wordCount": 7,
+            "events": [
+              {
+                "type": "writing_submitted",
+                "text": "Le pain est très bon aujourd hui",
+                "wordCount": 7,
+                "questId": "q_letter"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "composition: describe the scene with no minimum",
+      "op": "composition",
+      "input": {
+        "config": {
+          "questId": "q_scene",
+          "objectiveId": "o2",
+          "prompt": "Describe the square.",
+          "objectiveType": "describe_scene"
+        },
+        "texts": [
+          "",
+          "Fontaine",
+          "Une fontaine"
+        ]
+      },
+      "expected": [
+        {
+          "text": "",
+          "words": 0,
+          "view": {
+            "header": "Describe the Scene",
+            "instructions": "Write your response in the target language below.",
+            "count": 0,
+            "label": "0 words",
+            "tone": "success",
+            "canSubmit": false
+          },
+          "submit": {
+            "ok": false,
+            "refusal": "empty"
+          }
+        },
+        {
+          "text": "Fontaine",
+          "words": 1,
+          "view": {
+            "header": "Describe the Scene",
+            "instructions": "Write your response in the target language below.",
+            "count": 1,
+            "label": "1 word",
+            "tone": "success",
+            "canSubmit": true
+          },
+          "submit": {
+            "ok": true,
+            "text": "Fontaine",
+            "wordCount": 1,
+            "events": [
+              {
+                "type": "writing_submitted",
+                "text": "Fontaine",
+                "wordCount": 1,
+                "questId": "q_scene"
+              }
+            ]
+          }
+        },
+        {
+          "text": "Une fontaine",
+          "words": 2,
+          "view": {
+            "header": "Describe the Scene",
+            "instructions": "Write your response in the target language below.",
+            "count": 2,
+            "label": "2 words",
+            "tone": "success",
+            "canSubmit": true
+          },
+          "submit": {
+            "ok": true,
+            "text": "Une fontaine",
+            "wordCount": 2,
+            "events": [
+              {
+                "type": "writing_submitted",
+                "text": "Une fontaine",
+                "wordCount": 2,
+                "questId": "q_scene"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "listening: the story is captured until it is long enough, then answers are recorded and graded locally",
+      "op": "listening",
+      "note": "An answer is right when it holds at least half (rounded up) of the expected answer's words longer than two letters. One of two right is 50: not a pass (60).",
+      "input": {
+        "steps": [
+          {
+            "do": "register",
+            "quest": {
+              "questId": "q_story",
+              "storyNpcId": "cora",
+              "answerNpcId": "dov",
+              "targetLanguage": "French",
+              "questions": [
+                {
+                  "question": "What colour was the cat?",
+                  "correctAnswer": "the cat was black"
+                },
+                {
+                  "question": "Where did it sleep?",
+                  "correctAnswer": "on the warm oven"
+                }
+              ]
+            }
+          },
+          {
+            "do": "prompt",
+            "npcId": "cora"
+          },
+          {
+            "do": "prompt",
+            "npcId": "dov"
+          },
+          {
+            "do": "chat",
+            "npcId": "dov",
+            "player": "hello",
+            "npc": "hi"
+          },
+          {
+            "do": "chat",
+            "npcId": "cora",
+            "player": "Une histoire ?",
+            "npc": "Le chat"
+          },
+          {
+            "do": "chat",
+            "npcId": "cora",
+            "player": "Et puis ?",
+            "npc": "était noir et dormait."
+          },
+          {
+            "do": "prompt",
+            "npcId": "cora"
+          },
+          {
+            "do": "prompt",
+            "npcId": "dov"
+          },
+          {
+            "do": "chat",
+            "npcId": "dov",
+            "player": "The cat was black",
+            "npc": "Très bien."
+          },
+          {
+            "do": "grade",
+            "questId": "q_story"
+          },
+          {
+            "do": "chat",
+            "npcId": "dov",
+            "player": "in the garden",
+            "npc": "Merci."
+          },
+          {
+            "do": "grade",
+            "questId": "q_story"
+          },
+          {
+            "do": "grade",
+            "questId": "q_story",
+            "score": 90
+          },
+          {
+            "do": "chat",
+            "npcId": "bram",
+            "player": "hello",
+            "npc": "hi"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "quests": [
+            "q_story"
+          ]
+        },
+        {
+          "do": "prompt",
+          "prompt": "\n\n[QUEST INSTRUCTION — LISTENING COMPREHENSION]\nYou have a special task: Tell the player a short story (3-5 sentences) in French. Use simple, clear vocabulary appropriate for a language learner. The story should include concrete details (names, colors, locations, actions) that the player can be quizzed on later. After telling the story, ask the player if they understood and encourage them to visit another NPC to discuss what they heard.\n"
+        },
+        {
+          "do": "prompt",
+          "prompt": null
+        },
+        {
+          "do": "chat",
+          "captured": null,
+          "needsGrade": null,
+          "quests": [
+            {
+              "questId": "q_story",
+              "storyHeard": false,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            }
+          ]
+        },
+        {
+          "do": "chat",
+          "captured": "story",
+          "needsGrade": null,
+          "quests": [
+            {
+              "questId": "q_story",
+              "storyHeard": false,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            }
+          ]
+        },
+        {
+          "do": "chat",
+          "captured": "story",
+          "needsGrade": null,
+          "quests": [
+            {
+              "questId": "q_story",
+              "storyHeard": true,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            }
+          ]
+        },
+        {
+          "do": "prompt",
+          "prompt": null
+        },
+        {
+          "do": "prompt",
+          "prompt": "\n\n[QUEST INSTRUCTION — LISTENING COMPREHENSION CHECK]\nThe player just heard a story from another NPC. Your job is to check their comprehension.\nOriginal story: \"Le chat était noir et dormait.\"\n\nAsk these comprehension questions one at a time:\n  1. \"What colour was the cat?\" (expected answer: \"the cat was black\")\n  2. \"Where did it sleep?\" (expected answer: \"on the warm oven\")\n\nAfter asking each question, wait for the player's response before moving to the next one. Be encouraging but don't give away the answers. After all questions have been answered, thank the player for their effort.\n"
+        },
+        {
+          "do": "chat",
+          "captured": "answer",
+          "needsGrade": null,
+          "quests": [
+            {
+              "questId": "q_story",
+              "storyHeard": true,
+              "answers": 1,
+              "evaluated": false,
+              "score": null
+            }
+          ]
+        },
+        {
+          "do": "grade",
+          "completed": null
+        },
+        {
+          "do": "chat",
+          "captured": "answer",
+          "needsGrade": {
+            "questId": "q_story",
+            "story": "Le chat était noir et dormait.",
+            "questions": [
+              {
+                "question": "What colour was the cat?",
+                "correctAnswer": "the cat was black"
+              },
+              {
+                "question": "Where did it sleep?",
+                "correctAnswer": "on the warm oven"
+              }
+            ],
+            "answers": [
+              "The cat was black",
+              "in the garden"
+            ],
+            "targetLanguage": "French"
+          },
+          "quests": [
+            {
+              "questId": "q_story",
+              "storyHeard": true,
+              "answers": 2,
+              "evaluated": true,
+              "score": null
+            }
+          ]
+        },
+        {
+          "do": "grade",
+          "completed": {
+            "questId": "q_story",
+            "score": 50,
+            "passed": false,
+            "story": "Le chat était noir et dormait.",
+            "feedback": "Keep practicing! Score: 50/100. You need 60% to pass.",
+            "results": [
+              {
+                "question": "What colour was the cat?",
+                "correct": true,
+                "feedback": "Good answer!"
+              },
+              {
+                "question": "Where did it sleep?",
+                "correct": false,
+                "feedback": "Expected something like: \"on the warm oven\""
+              }
+            ]
+          }
+        },
+        {
+          "do": "grade",
+          "completed": null
+        },
+        {
+          "do": "chat",
+          "captured": null,
+          "needsGrade": null,
+          "quests": [
+            {
+              "questId": "q_story",
+              "storyHeard": true,
+              "answers": 2,
+              "evaluated": true,
+              "score": 50
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "listening: a story is heard from exactly 20 characters, not at 19",
+      "op": "listening",
+      "input": {
+        "steps": [
+          {
+            "do": "register",
+            "quest": {
+              "questId": "q_twenty",
+              "storyNpcId": "cora",
+              "answerNpcId": "dov",
+              "questions": [
+                {
+                  "question": "What was good?",
+                  "correctAnswer": "the bread"
+                }
+              ]
+            }
+          },
+          {
+            "do": "register",
+            "quest": {
+              "questId": "q_nineteen",
+              "storyNpcId": "ada",
+              "answerNpcId": "bram",
+              "questions": [
+                {
+                  "question": "What was good?",
+                  "correctAnswer": "the bread"
+                }
+              ]
+            }
+          },
+          {
+            "do": "chat",
+            "npcId": "cora",
+            "player": "",
+            "npc": "Le pain est très bon"
+          },
+          {
+            "do": "chat",
+            "npcId": "ada",
+            "player": "",
+            "npc": "Le pain est très bo"
+          },
+          {
+            "do": "prompt",
+            "npcId": "dov"
+          },
+          {
+            "do": "prompt",
+            "npcId": "bram"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "quests": [
+            "q_twenty"
+          ]
+        },
+        {
+          "do": "register",
+          "quests": [
+            "q_twenty",
+            "q_nineteen"
+          ]
+        },
+        {
+          "do": "chat",
+          "captured": "story",
+          "needsGrade": null,
+          "quests": [
+            {
+              "questId": "q_twenty",
+              "storyHeard": true,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            },
+            {
+              "questId": "q_nineteen",
+              "storyHeard": false,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            }
+          ]
+        },
+        {
+          "do": "chat",
+          "captured": "story",
+          "needsGrade": null,
+          "quests": [
+            {
+              "questId": "q_twenty",
+              "storyHeard": true,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            },
+            {
+              "questId": "q_nineteen",
+              "storyHeard": false,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            }
+          ]
+        },
+        {
+          "do": "prompt",
+          "prompt": "\n\n[QUEST INSTRUCTION — LISTENING COMPREHENSION CHECK]\nThe player just heard a story from another NPC. Your job is to check their comprehension.\nOriginal story: \"Le pain est très bon\"\n\nAsk these comprehension questions one at a time:\n  1. \"What was good?\" (expected answer: \"the bread\")\n\nAfter asking each question, wait for the player's response before moving to the next one. Be encouraging but don't give away the answers. After all questions have been answered, thank the player for their effort.\n"
+        },
+        {
+          "do": "prompt",
+          "prompt": null
+        }
+      ]
+    },
+    {
+      "name": "listening: a server grade passes at 60; a quest with no answer NPC never asks",
+      "op": "listening",
+      "input": {
+        "steps": [
+          {
+            "do": "register",
+            "quest": {
+              "questId": "q_tale",
+              "storyNpcId": "ada",
+              "answerNpcId": "bram",
+              "questions": [
+                {
+                  "question": "Who baked?",
+                  "correctAnswer": "Ada"
+                }
+              ]
+            }
+          },
+          {
+            "do": "register",
+            "quest": {
+              "questId": "q_lonely",
+              "storyNpcId": "ada",
+              "questions": []
+            }
+          },
+          {
+            "do": "chat",
+            "npcId": "ada",
+            "player": "",
+            "npc": "Ada a fait du pain ce matin."
+          },
+          {
+            "do": "chat",
+            "npcId": "ada",
+            "player": "",
+            "npc": "Encore une histoire, très longue."
+          },
+          {
+            "do": "prompt",
+            "npcId": "bram"
+          },
+          {
+            "do": "chat",
+            "npcId": "bram",
+            "player": "Ada",
+            "npc": "Oui."
+          },
+          {
+            "do": "grade",
+            "questId": "q_tale",
+            "score": 60
+          },
+          {
+            "do": "grade",
+            "questId": "q_lonely"
+          },
+          {
+            "do": "grade",
+            "questId": "q_none"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "quests": [
+            "q_tale"
+          ]
+        },
+        {
+          "do": "register",
+          "quests": [
+            "q_tale",
+            "q_lonely"
+          ]
+        },
+        {
+          "do": "chat",
+          "captured": "story",
+          "needsGrade": null,
+          "quests": [
+            {
+              "questId": "q_tale",
+              "storyHeard": true,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            },
+            {
+              "questId": "q_lonely",
+              "storyHeard": false,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            }
+          ]
+        },
+        {
+          "do": "chat",
+          "captured": "story",
+          "needsGrade": null,
+          "quests": [
+            {
+              "questId": "q_tale",
+              "storyHeard": true,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            },
+            {
+              "questId": "q_lonely",
+              "storyHeard": true,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            }
+          ]
+        },
+        {
+          "do": "prompt",
+          "prompt": "\n\n[QUEST INSTRUCTION — LISTENING COMPREHENSION CHECK]\nThe player just heard a story from another NPC. Your job is to check their comprehension.\nOriginal story: \"Ada a fait du pain ce matin.\"\n\nAsk these comprehension questions one at a time:\n  1. \"Who baked?\" (expected answer: \"Ada\")\n\nAfter asking each question, wait for the player's response before moving to the next one. Be encouraging but don't give away the answers. After all questions have been answered, thank the player for their effort.\n"
+        },
+        {
+          "do": "chat",
+          "captured": "answer",
+          "needsGrade": {
+            "questId": "q_tale",
+            "story": "Ada a fait du pain ce matin.",
+            "questions": [
+              {
+                "question": "Who baked?",
+                "correctAnswer": "Ada"
+              }
+            ],
+            "answers": [
+              "Ada"
+            ],
+            "targetLanguage": "the target language"
+          },
+          "quests": [
+            {
+              "questId": "q_tale",
+              "storyHeard": true,
+              "answers": 1,
+              "evaluated": true,
+              "score": null
+            },
+            {
+              "questId": "q_lonely",
+              "storyHeard": true,
+              "answers": 0,
+              "evaluated": false,
+              "score": null
+            }
+          ]
+        },
+        {
+          "do": "grade",
+          "completed": {
+            "questId": "q_tale",
+            "score": 60,
+            "passed": true,
+            "story": "Ada a fait du pain ce matin.",
+            "feedback": null,
+            "results": null
+          }
+        },
+        {
+          "do": "grade",
+          "completed": null
+        },
+        {
+          "do": "grade",
+          "completed": null
+        }
+      ]
+    }
+  ]
+}

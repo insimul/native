@@ -679,28 +679,64 @@ import {
 	quizOnReach,
 	standingPick,
 } from '@insimul/core/language-learning/prompt-selector';
+// Slice 3 (U128, U118, U107(2)): the rest of world-words.ts (knowledge collection's
+// distractors, reach, seeded quiz and answer; object identification's grading, prompts,
+// answers and quests; point and name; examine and read sign) and of reading-writing.ts
+// (composition writing and listening comprehension).
 import {
 	COLLECTION_TUNING,
 	IDENTIFICATION_TUNING,
 	NAMING_TUNING,
+	SIGN_ROLES,
+	WORLD_WORD_REFUSALS,
+	answerIdentification,
+	answerQuiz,
+	distanceScore,
+	editDistance,
+	examineNearest,
+	fluencyTier,
+	identificationPrompt,
 	initialCollection,
 	initialIdentification,
 	initialNaming,
+	isSignRole,
 	nameableObjects,
+	nearestObject,
+	normalizeAnswer,
+	objectsInReach,
+	pointAt,
+	questIdentification,
+	quizDraw,
+	raiseQuiz,
 	registerNameable,
 	registerTags,
 	registerTargets,
+	removeQuestTargets,
+	seedDistractors,
+	submitName,
 } from '@insimul/core/language-learning/world-words';
 import {
+	COMMON_ENGLISH_WORDS,
+	COMPOSITION_REFUSALS,
 	HOVER_REFUSALS,
+	LISTENING_PASS,
+	STORY_MIN_LENGTH,
 	addHints,
+	compositionView,
+	countWords,
+	fallbackGrade,
+	gradeListening,
 	hoverDisplay,
 	initialHover,
 	isLikelyTarget,
+	listeningChat,
+	listeningPrompt,
 	lookup as hoverLookup,
+	registerListening,
 	resolveLookup,
 	seeWord,
 	setMastery,
+	submitComposition,
 	tokenize,
 } from '@insimul/core/language-learning/reading-writing';
 import { stripWordEdges, wordKey } from '@insimul/core/language-learning/word-key';
@@ -2610,6 +2646,86 @@ function wordResultsArg(method, value) {
 	});
 }
 
+// Slice 3's boundary (world-words.ts, reading-writing.ts). As slices 1 and 2: `[invalid-input]`
+// follows core's declared types for what core reads (a point's numbers, a target's or an
+// object's word, a state core indexes, a quest's questions, a composition's `minWords` and
+// `objectiveType`); a defaulted parameter absent or null takes core's default. The
+// composition's objective types are core's type-only union `CompositionConfig['objectiveType']`.
+const COMPOSITION_OBJECTIVE_TYPES = ['write_response', 'describe_scene'];
+
+/** A `Vec3` (`{ x, y, z }`, every one a number: core compares squared distances over all three). */
+function vec3Arg(method, value, name) {
+	needObject(method, value, name);
+	for (const k of ['x', 'y', 'z']) needNumber(method, value[k], `${name}.${k}`);
+	return value;
+}
+
+/** A target's progress, which core reads for the asked target (`state.progress[id]`). */
+function targetProgressArg(method, state, id) {
+	return coded('invalid-input', () => {
+		if (state.targets.some((t) => t.id === id)) needObject(method, state.progress[id], `state.progress.${id}`);
+		return state;
+	});
+}
+
+/** A `WorldObjectIn` as examine reads it: the point's fields, `name` and `description` strings when given, a `sign`'s three texts. */
+function examinedObjectArg(method, value, name) {
+	worldObjectArg(method, value, name);
+	optStringOrNull(method, value.name, `${name}.name`);
+	optStringOrNull(method, value.description, `${name}.description`);
+	if (value.sign !== undefined && value.sign !== null) {
+		needObject(method, value.sign, `${name}.sign`);
+		for (const k of ['signId', 'targetText', 'nativeText']) needString(method, value.sign[k], `${name}.sign.${k}`);
+		optStringOrNull(method, value.sign.category, `${name}.sign.category`);
+	}
+	return value;
+}
+
+/** A `CompositionConfig`: `questId` a string; `minWords` a number and `objectiveType` core's two, each absent or null for core's default. */
+function compositionConfigArg(method, value) {
+	return coded('invalid-input', () => {
+		needObject(method, value, 'config');
+		needString(method, value.questId, 'config.questId');
+		const c = { ...value };
+		if (value.minWords === undefined || value.minWords === null) delete c.minWords;
+		else needNumber(method, value.minWords, 'config.minWords');
+		if (value.objectiveType === undefined || value.objectiveType === null) delete c.objectiveType;
+		else oneOf(method, value.objectiveType, COMPOSITION_OBJECTIVE_TYPES, 'config.objectiveType');
+		return c;
+	});
+}
+
+/** A listening quest's questions: `{ question, correctAnswer }`, both strings (core quotes one and splits the other). */
+function listeningQuestionsArg(method, value, name) {
+	needArray(method, value, name).forEach((q, i) => {
+		needObject(method, q, `${name}[${i}]`);
+		needString(method, q.question, `${name}[${i}].question`);
+		needString(method, q.correctAnswer, `${name}[${i}].correctAnswer`);
+	});
+	return value;
+}
+
+/** A `ListeningState`: each quest's id, its two NPCs and language (string or null), questions, story, flags, answers and score. */
+function listeningStateArg(method, value, name = 'state') {
+	return coded('invalid-input', () => {
+		needArray(method, value, name).forEach((q, i) => {
+			const at = `${name}[${i}]`;
+			needObject(method, q, at);
+			needString(method, q.questId, `${at}.questId`);
+			for (const k of ['storyNpcId', 'answerNpcId', 'targetLanguage', 'story']) {
+				if (q[k] !== null) needString(method, q[k], `${at}.${k}`);
+			}
+			listeningQuestionsArg(method, q.questions, `${at}.questions`);
+			for (const k of ['storyHeard', 'evaluated']) {
+				if (typeof q[k] !== 'boolean') throw refuse(method, `\`${at}.${k}\` must be a boolean`);
+			}
+			stringList(method, q.answers, `${at}.answers`);
+			if (q.score !== null) needNumber(method, q.score, `${at}.score`);
+		});
+		return value;
+	});
+}
+
 // ── quests ────────────────────────────────────────────────────────────────────
 
 const QUEST_STATUSES = ['available', 'active', 'completed'];
@@ -3083,11 +3199,11 @@ const METHODS = {
 	/** `save.village.conversations.epochMs { timestamp }` → `{ epochMs }`: core's `epochMsOfConversationTimestamp`, the round trip back, or null. */
 	'save.village.conversations.epochMs': (args) => ({ epochMs: epochMsOfConversationTimestamp(args.timestamp) }),
 
-	// ── language learning (PL.native-language-rows, slices 1 and 2) ─────────────
+	// ── language learning (PL.native-language-rows, slices 1 to 3) ─────────────
 	// One core function per row, state in and out as JSON (README "The language
 	// rows"). Core's corpus runner composes them per op; tests/language_corpus.cpp
 	// replays conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,
-	// pronunciation}.json the same way.
+	// pronunciation,collection,objects,writing}.json the same way.
 
 	/**
 	 * `language.contract` → the constants a binding must not hard-code: the CEFR
@@ -3101,7 +3217,10 @@ const METHODS = {
 	 * dimensions, the history's statuses, the difficulty monitor's thresholds and
 	 * weights, the NPC mode shares, hint behaviour, band advancement, frequency
 	 * ranges, text complexity and quest pool sizes by band, and listen and repeat's
-	 * close threshold, phonetic weight, pass score and base XP.
+	 * close threshold, phonetic weight, pass score and base XP; and (slice 3) the
+	 * world words' refusals and sign roles, the composition refusals, the common
+	 * English words hover passes over, listening's pass score and a story's
+	 * minimum length.
 	 */
 	'language.contract': () => ({
 		cefrOrder: [...CEFR_ORDER],
@@ -3163,6 +3282,13 @@ const METHODS = {
 		phoneticWeight: PHONETIC_WEIGHT,
 		passScore: PASS_SCORE,
 		baseXp: BASE_XP,
+		// Slice 3: the words in the world (world-words.ts), composition and listening (reading-writing.ts).
+		worldWordRefusals: [...WORLD_WORD_REFUSALS],
+		signRoles: [...SIGN_ROLES],
+		compositionRefusals: [...COMPOSITION_REFUSALS],
+		commonEnglishWords: [...COMMON_ENGLISH_WORDS],
+		listeningPass: LISTENING_PASS,
+		storyMinLength: STORY_MIN_LENGTH,
 	}),
 
 	// The language book (progress.ts) and the player's CEFR facts (prolog/player-language-state.ts).
@@ -3887,6 +4013,273 @@ const METHODS = {
 		});
 		const questId = defaultedString(m, args.questId, 'questId');
 		return plain(questId === undefined ? listenAndRepeat(phrase, spoken) : listenAndRepeat(phrase, spoken, questId));
+	},
+
+	// Slice 3: the words in the world (world-words.ts, beyond slice 1's registers) and
+	// composition and listening (reading-writing.ts, beyond slice 1's hover). Core's
+	// refusals here (`unknown_object`, `already_named`, `no_attempts_left`,
+	// `nothing_in_reach`, `empty`, `too_short`) are VALUES in core's shape.
+
+	/** `language.collection.seed { state, category, answers }` → `{ state }`: core's `seedDistractors`, answers joining a category's distractor pool. */
+	'language.collection.seed': (args) => {
+		const m = 'language.collection.seed';
+		const state = collectionStateArg(m, args.state, 'state');
+		const [category, answers] = coded('invalid-input', () => [needString(m, args.category, 'category'), stringList(m, args.answers, 'answers')]);
+		return { state: plain(seedDistractors(state, category, answers)) };
+	},
+
+	/** `language.collection.quizDraw { seed, objectId, quiz, i }` → `{ draw }`: core's `quizDraw`, the seeded draw (0..999999) a quiz shuffles by. */
+	'language.collection.quizDraw': (args) => {
+		const m = 'language.collection.quizDraw';
+		const [seed, objectId, quiz, i] = coded('invalid-input', () => [
+			needString(m, args.seed, 'seed'),
+			needString(m, args.objectId, 'objectId'),
+			needNumber(m, args.quiz, 'quiz'),
+			needNumber(m, args.i, 'i'),
+		]);
+		return { draw: quizDraw(seed, objectId, quiz, i) };
+	},
+
+	/** `language.collection.inReach { state, at, tuning? }` → `{ inReach }`: core's `objectsInReach`, the uncollected tagged objects within reach of `at` (`{ x, y, z }`), in registration order. */
+	'language.collection.inReach': (args) => {
+		const m = 'language.collection.inReach';
+		const state = collectionStateArg(m, args.state, 'state');
+		const at = coded('invalid-input', () => {
+			state.tags.forEach((t, i) => vec3Arg(m, t.position, `state.tags[${i}].position`));
+			return vec3Arg(m, args.at, 'at');
+		});
+		const tuning = tuningArg(m, args.tuning, 'tuning', COLLECTION_TUNING);
+		return { inReach: plain(tuning ? objectsInReach(state, at, tuning) : objectsInReach(state, at)) };
+	},
+
+	/** `language.collection.quiz { state, objectId, tuning? }` → `{ state, quiz }`: core's `raiseQuiz`, the seeded multiple-choice quiz (null for an unknown or collected object). */
+	'language.collection.quiz': (args) => {
+		const m = 'language.collection.quiz';
+		const state = collectionStateArg(m, args.state, 'state');
+		const objectId = coded('invalid-input', () => {
+			const id = needString(m, args.objectId, 'objectId');
+			optNumber(m, state.quizzes[id], `state.quizzes.${id}`);
+			return id;
+		});
+		const tuning = tuningArg(m, args.tuning, 'tuning', COLLECTION_TUNING);
+		return plain(tuning ? raiseQuiz(state, objectId, tuning) : raiseQuiz(state, objectId));
+	},
+
+	/**
+	 * `language.collection.answer { state, objectId, answer, tuning? }` → core's
+	 * `answerQuiz`: `{ ok: true, state, correct, alreadyCollected, xp, label, answer,
+	 * category, events }` or `{ ok: false, state, refusal: unknown_object }`.
+	 */
+	'language.collection.answer': (args) => {
+		const m = 'language.collection.answer';
+		const state = collectionStateArg(m, args.state, 'state');
+		const [objectId, answer] = coded('invalid-input', () => [needString(m, args.objectId, 'objectId'), needString(m, args.answer, 'answer')]);
+		const tuning = tuningArg(m, args.tuning, 'tuning', COLLECTION_TUNING);
+		return plain(tuning ? answerQuiz(state, objectId, answer, tuning) : answerQuiz(state, objectId, answer));
+	},
+
+	/** `language.identification.normalize { text }` → `{ normalized }`: core's `normalizeAnswer` (trimmed, lower case, punctuation and accents off, single spaces). */
+	'language.identification.normalize': (args) => ({
+		normalized: normalizeAnswer(coded('invalid-input', () => needString('language.identification.normalize', args.text, 'text'))),
+	}),
+
+	/** `language.identification.editDistance { a, b }` → `{ distance }`: core's `editDistance`, Levenshtein over code points. */
+	'language.identification.editDistance': (args) => {
+		const m = 'language.identification.editDistance';
+		const [a, b] = coded('invalid-input', () => [needString(m, args.a, 'a'), needString(m, args.b, 'b')]);
+		return { distance: editDistance(a, b) };
+	},
+
+	/** `language.identification.distanceScore { distance, length }` → `{ score }`: core's `distanceScore`, the half-up percent an edit distance leaves of an answer `length` code points long. */
+	'language.identification.distanceScore': (args) => {
+		const m = 'language.identification.distanceScore';
+		const [distance, length] = coded('invalid-input', () => [needNumber(m, args.distance, 'distance'), needNumber(m, args.length, 'length')]);
+		return { score: distanceScore(distance, length) };
+	},
+
+	/** `language.identification.removeQuest { state, questId }` → `{ state }`: core's `removeQuestTargets`, a quest's targets and their progress dropped. */
+	'language.identification.removeQuest': (args) => {
+		const m = 'language.identification.removeQuest';
+		const state = identificationStateArg(m, args.state, 'state');
+		return { state: plain(removeQuestTargets(state, coded('invalid-input', () => needString(m, args.questId, 'questId')))) };
+	},
+
+	/** `language.identification.prompt { state, id, tuning? }` → `{ prompt, events }`: core's `identificationPrompt` (nothing for an unknown or identified target; the hint after `hintAfter` tries). */
+	'language.identification.prompt': (args) => {
+		const m = 'language.identification.prompt';
+		const state = identificationStateArg(m, args.state, 'state');
+		const id = coded('invalid-input', () => needString(m, args.id, 'id'));
+		targetProgressArg(m, state, id);
+		const tuning = tuningArg(m, args.tuning, 'tuning', IDENTIFICATION_TUNING);
+		return plain(tuning ? identificationPrompt(state, id, tuning) : identificationPrompt(state, id));
+	},
+
+	/**
+	 * `language.identification.answer { state, id, input, tuning? }` → core's
+	 * `answerIdentification`: `{ ok: true, state, passed, score, feedback, bestMatch,
+	 * objectiveCompleted, events }` or `{ ok: false, state, refusal: unknown_object }`.
+	 */
+	'language.identification.answer': (args) => {
+		const m = 'language.identification.answer';
+		const state = identificationStateArg(m, args.state, 'state');
+		const [id, input] = coded('invalid-input', () => [needString(m, args.id, 'id'), needString(m, args.input, 'input')]);
+		targetProgressArg(m, state, id);
+		coded('invalid-input', () => {
+			const at = state.targets.findIndex((t) => t.id === id);
+			if (at < 0) return;
+			needString(m, state.targets[at].expected, `state.targets[${at}].expected`);
+			if (state.targets[at].accepted !== undefined && state.targets[at].accepted !== null) stringList(m, state.targets[at].accepted, `state.targets[${at}].accepted`);
+		});
+		const tuning = tuningArg(m, args.tuning, 'tuning', IDENTIFICATION_TUNING);
+		return plain(tuning ? answerIdentification(state, id, input, tuning) : answerIdentification(state, id, input));
+	},
+
+	/** `language.identification.quest { state, questId }` → `{ identified, total, complete }`: core's `questIdentification`. */
+	'language.identification.quest': (args) => {
+		const m = 'language.identification.quest';
+		const state = identificationStateArg(m, args.state, 'state');
+		return plain(questIdentification(state, coded('invalid-input', () => needString(m, args.questId, 'questId'))));
+	},
+
+	/**
+	 * `language.naming.point { state, objectId, tuning? }` → core's `pointAt`: `{ ok:
+	 * true, prompt, attemptsLeft }` or `{ ok: false, refusal }` (`unknown_object`,
+	 * `already_named`, `no_attempts_left`).
+	 */
+	'language.naming.point': (args) => {
+		const m = 'language.naming.point';
+		const state = namingStateArg(m, args.state, 'state');
+		const objectId = coded('invalid-input', () => {
+			const id = needString(m, args.objectId, 'objectId');
+			optNumber(m, state.attempts[id], `state.attempts.${id}`);
+			return id;
+		});
+		const tuning = tuningArg(m, args.tuning, 'tuning', NAMING_TUNING);
+		return plain(tuning ? pointAt(state, objectId, tuning) : pointAt(state, objectId));
+	},
+
+	/**
+	 * `language.naming.submit { state, objectId, input, tuning? }` → core's
+	 * `submitName`: `{ ok: true, state, correct, xp, attempts, revealed, toasts,
+	 * events }` or `{ ok: false, state, refusal: unknown_object }`.
+	 */
+	'language.naming.submit': (args) => {
+		const m = 'language.naming.submit';
+		const state = namingStateArg(m, args.state, 'state');
+		const [objectId, input] = coded('invalid-input', () => {
+			const id = needString(m, args.objectId, 'objectId');
+			optNumber(m, state.attempts[id], `state.attempts.${id}`);
+			const at = state.objects.findIndex((o) => o.objectId === id);
+			if (at >= 0) needString(m, state.objects[at].targetWord, `state.objects[${at}].targetWord`);
+			return [id, needString(m, args.input, 'input')];
+		});
+		const tuning = tuningArg(m, args.tuning, 'tuning', NAMING_TUNING);
+		return plain(tuning ? submitName(state, objectId, input, tuning) : submitName(state, objectId, input));
+	},
+
+	/** `language.objects.isSignRole { role }` → `{ sign }`: core's `isSignRole` (one of SIGN_ROLES, or a role naming a sign or notice). */
+	'language.objects.isSignRole': (args) => ({ sign: isSignRole(coded('invalid-input', () => needString('language.objects.isSignRole', args.role, 'role'))) }),
+
+	/** `language.objects.fluencyTier { fluency }` → `{ tier }`: core's `fluencyTier` (fluency in thousandths of a point). */
+	'language.objects.fluencyTier': (args) => ({ tier: fluencyTier(coded('invalid-input', () => needNumber('language.objects.fluencyTier', args.fluency, 'fluency'))) }),
+
+	/** `language.objects.nearest { objects, at, range? }` → `{ object }`: core's `nearestObject`, the closest role-bearing object within reach on x and z (the first on a tie), or null (absent or null range: core's 5). */
+	'language.objects.nearest': (args) => {
+		const m = 'language.objects.nearest';
+		const [objects, at, range] = coded('invalid-input', () => [
+			needArray(m, args.objects, 'objects').map((o, i) => worldObjectArg(m, o, `objects[${i}]`)),
+			xzArg(m, args.at, 'at'),
+			optNumber(m, args.range, 'range'),
+		]);
+		return { object: plain((range === undefined ? nearestObject(objects, at) : nearestObject(objects, at, range)) ?? null) };
+	},
+
+	/**
+	 * `language.objects.examine { objects, at, options }` → core's `examineNearest`:
+	 * `{ ok: true, action, title, description, tier, narrative, events }` (a sign read,
+	 * or an object examined) or `{ ok: false, refusal: nothing_in_reach }`. `options`
+	 * is `{ languageWorld, targetLanguage, fluency, range? }`.
+	 */
+	'language.objects.examine': (args) => {
+		const m = 'language.objects.examine';
+		const [objects, at, options] = coded('invalid-input', () => {
+			const opts = needObject(m, args.options, 'options');
+			if (typeof opts.languageWorld !== 'boolean') throw refuse(m, '`options.languageWorld` must be a boolean');
+			needString(m, opts.targetLanguage, 'options.targetLanguage');
+			needNumber(m, opts.fluency, 'options.fluency');
+			optNumber(m, opts.range, 'options.range');
+			return [needArray(m, args.objects, 'objects').map((o, i) => examinedObjectArg(m, o, `objects[${i}]`)), xzArg(m, args.at, 'at'), opts];
+		});
+		return plain(examineNearest(objects, at, options));
+	},
+
+	/** `language.writing.countWords { text }` → `{ words }`: core's `countWords`, the whitespace-separated words of the trimmed text. */
+	'language.writing.countWords': (args) => ({ words: countWords(coded('invalid-input', () => needString('language.writing.countWords', args.text, 'text'))) }),
+
+	/** `language.writing.view { config, text }` → `{ header, instructions, count, label, tone, canSubmit }`: core's `compositionView`, the modal while the player types. */
+	'language.writing.view': (args) => {
+		const m = 'language.writing.view';
+		const config = compositionConfigArg(m, args.config);
+		return plain(compositionView(config, coded('invalid-input', () => needString(m, args.text, 'text'))));
+	},
+
+	/** `language.writing.submit { config, text }` → core's `submitComposition`: `{ ok: true, text, wordCount, events }` or `{ ok: false, refusal }` (`empty`, `too_short`). */
+	'language.writing.submit': (args) => {
+		const m = 'language.writing.submit';
+		const config = compositionConfigArg(m, args.config);
+		return plain(submitComposition(config, coded('invalid-input', () => needString(m, args.text, 'text'))));
+	},
+
+	/** `language.listening.register { state, quest }` → `{ state }`: core's `registerListening` (a quest by its id replaces; the state starts as `[]`). */
+	'language.listening.register': (args) => {
+		const m = 'language.listening.register';
+		const state = listeningStateArg(m, args.state);
+		const quest = coded('invalid-input', () => {
+			needObject(m, args.quest, 'quest');
+			needString(m, args.quest.questId, 'quest.questId');
+			for (const k of ['storyNpcId', 'answerNpcId', 'targetLanguage']) optStringOrNull(m, args.quest[k], `quest.${k}`);
+			listeningQuestionsArg(m, args.quest.questions, 'quest.questions');
+			return args.quest;
+		});
+		return { state: plain(registerListening(state, quest)) };
+	},
+
+	/** `language.listening.prompt { state, npcId }` → `{ prompt }`: core's `listeningPrompt`, what the storyteller or the questioner is told, or null. */
+	'language.listening.prompt': (args) => {
+		const m = 'language.listening.prompt';
+		const state = listeningStateArg(m, args.state);
+		return { prompt: listeningPrompt(state, coded('invalid-input', () => needString(m, args.npcId, 'npcId'))) };
+	},
+
+	/** `language.listening.chat { state, npcId, player, npc }` → `{ state, captured, needsGrade }`: core's `listeningChat`, a storyteller's reply or a questioner's turn. */
+	'language.listening.chat': (args) => {
+		const m = 'language.listening.chat';
+		const state = listeningStateArg(m, args.state);
+		const [npcId, player, npc] = coded('invalid-input', () => [needString(m, args.npcId, 'npcId'), needString(m, args.player, 'player'), needString(m, args.npc, 'npc')]);
+		return plain(listeningChat(state, npcId, player, npc));
+	},
+
+	/** `language.listening.fallbackGrade { quest }` → `{ score, results }`: core's `fallbackGrade` over `{ questions, answers }`, the local grade. */
+	'language.listening.fallbackGrade': (args) => {
+		const m = 'language.listening.fallbackGrade';
+		const quest = coded('invalid-input', () => {
+			needObject(m, args.quest, 'quest');
+			listeningQuestionsArg(m, args.quest.questions, 'quest.questions');
+			stringList(m, args.quest.answers, 'quest.answers');
+			return args.quest;
+		});
+		return plain(fallbackGrade(quest));
+	},
+
+	/** `language.listening.grade { state, questId, score }` → `{ state, completed }`: core's `gradeListening`, the server's score, or null for the local grade (`score` stated, a number or null). */
+	'language.listening.grade': (args) => {
+		const m = 'language.listening.grade';
+		const state = listeningStateArg(m, args.state);
+		const [questId, score] = coded('invalid-input', () => {
+			if (args.score !== null && (typeof args.score !== 'number' || !Number.isFinite(args.score))) throw refuse(m, '`score` must be a finite number or null');
+			return [needString(m, args.questId, 'questId'), args.score];
+		});
+		return plain(gradeListening(state, questId, score));
 	},
 
 	// ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────

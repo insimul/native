@@ -714,7 +714,7 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   case as `tests/village_save_corpus.cpp` does: one row per op, `roundTrip` as a write
   whose two bodies are put over the save and then read, `stamp` as the four stamp
   readers, a refusal compared without its `message`.
-- **The language kernels, slices 1 and 2 (Unreal's `P9h.unreal.retire-language-copy`, after
+- **The language kernels, slices 1 to 3 (Unreal's `P9h.unreal.retire-language-copy`, after
   every slice of PL.native-language-rows; U118, U128, U107(2)).** Core's P9h language
   kernels are the `language.*` rows (`README.md`, "The language rows"). The retirement
   row binds them in place of the interim copy on unreal main (`234fc83`, read only):
@@ -725,9 +725,9 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `language_corpus` (+ `_negative`). The rows are stateless: the binding's `FSession`
   keeps the JSON states (the book, the collection, naming, identification, the prompt
   state, the hover state, a chat's session and difficulty state) and hands each to the
-  row that moves it. Slices 1 and 2 answer these, file by file of the header's list; the
-  rest (objects, collection quizzes and writing: slice 3; quest feedback and quest types:
-  slice 4) is the later slices', and the retirement waits on all of them.
+  row that moves it. Slices 1 to 3 answer these, file by file of the header's list; the
+  rest (quest feedback and quest types: slice 4) is the last slice's, and the retirement
+  waits on it.
 
   | Unreal's interim copy (`insimul::language`) | Row |
   |---|---|
@@ -743,15 +743,26 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   | slice 2, bank-profile.ts's tables: `WeaknessVolumePermille`, `WeaknessConfidencePermille` (and the copy's labels, tones, sorts, categories and dimensions) | `language.contract {}`: `weaknessVolumePermille`, `weaknessConfidencePermille`, `vocabularySorts`, `masteryLabels`, `masteryTones`, `dueLabel`, `dueTone`, `cardInteractions`, `weaknessMinAttempts`, `weaknessMinRatePermille`, `weaknessMax`, `improvementPermille`, `questCategories`, `skillDimensions`, `skillToCategories`, `learningHistoryStatuses` |
   | slice 2, adaptation.ts beyond the monitor: `StruggleSignals`, `StruggleScore`, `NpcHash`, `NpcLanguageMode`, `HintBehavior`, `ShowsVocabHint`, `FilterQuestsByCefr`, `CefrAdvancement`, `FrequencyDirective`, `ScaffoldingDirective`, `NpcAdaptation` | `language.difficulty.signals`, `.score`; `language.npc.hash`, `.mode`; `language.hints.behavior`, `.showsVocabHint`; `language.quests.filterByCefr`; `language.cefr.advancement`; `language.npc.frequencyDirective`, `.scaffoldingDirective`, `.adaptation`; core's `modeDirective` (the copy's `BaseModeDirective`, inside `NpcAdaptation`) and `isWordMastered` (inlined in the copy's `SeeWord`) are `language.npc.modeDirective`, `language.word.isMastered`; the band tables (`npcModePercent`, `hintBehavior`, `cefrAdvancement`, `frequencyRanges`, `textComplexity`, `questPoolSizes`) and the monitor's thresholds and weights are `language.contract`'s |
   | slice 2, pronunciation.ts and phonetic-similarity.ts: `PhoneticEncode`, `NormalizePhrase`, `WordSimilarity`, `ScorePhrase`, `ListenXp`, `HintPenalty`, `ListenAndRepeat` | `language.pronunciation.encode`, `.normalize`, `.wordSimilarity`, `.score`, `.xp`, `.hintPenalty`, `.listenAndRepeat`; core's `grade` (the copy's internal `Grade`) and `wordFeedback` (inlined in the copy's `ListenAndRepeat`) are `.grade`, `.wordFeedback`; the close threshold, phonetic weight, pass score and base XP are `language.contract`'s |
+  | slice 3, world-words.ts (the header's world-words section beyond slice 1's registers): `SeedDistractors`, `ObjectsInReach`, `RaiseQuiz`, `AnswerQuiz` | `language.collection.seed`, `.inReach` (`at` is `{ x, y, z }`), `.quiz` (`{ state, quiz }`), `.answer`; core's `quizDraw` (inside the copy's `RaiseQuiz`) is `language.collection.quizDraw` |
+  | slice 3, world-words.ts: `NormalizeAnswer`, `EditDistance`, `DistanceScore`, `RemoveQuestTargets`, `IdentificationPrompt`, `AnswerIdentification`, `QuestIdentification` | `language.identification.normalize`, `.editDistance`, `.distanceScore`, `.removeQuest`, `.prompt` (`{ prompt, events }`), `.answer`, `.quest` |
+  | slice 3, world-words.ts: `PointAt`, `SubmitName`, `ExamineNearest`, `IsSignRole` | `language.naming.point`, `.submit`; `language.objects.examine` (`options` `{ languageWorld, targetLanguage, fluency, range? }`), `language.objects.isSignRole`; core's `nearestObject` and `fluencyTier` (inside the copy's `ExamineNearest`) are `language.objects.nearest`, `.fluencyTier` |
+  | slice 3, world-words.ts: `CollectionTuning`, `IdentificationTuning`, `NamingTuning` (`{...DEFAULTS, ...Params}`), and the copy's refusal codes and sign roles | `language.contract {}`'s `collectionTuning`, `identificationTuning`, `namingTuning` with the game's params over them (each row's `tuning` absent or null is core's default); `worldWordRefusals`, `signRoles` |
+  | slice 3, reading-writing.ts (the header's reading-writing section beyond slice 1's hover): `CountWords`, `CompositionView`, `SubmitComposition` | `language.writing.countWords`, `.view`, `.submit` |
+  | slice 3, reading-writing.ts: `RegisterListening`, `ListeningPrompt`, `ListeningChat`, `GradeListening` (`ServerScore` nullptr = null) | `language.listening.register` (the state starts as `[]`), `.prompt`, `.chat`, `.grade` (`score` stated: a number, or null for the local grade); core's `fallbackGrade` (inside the copy's `GradeListening`) is `language.listening.fallbackGrade`; `LISTENING_PASS`, `STORY_MIN_LENGTH`, `COMPOSITION_REFUSALS` and `COMMON_ENGLISH_WORDS` are `language.contract`'s `listeningPass`, `storyMinLength`, `compositionRefusals`, `commonEnglishWords` |
   | `Utf32`, `JsLower`, `JsTrim`, `CompareUtf16` and the other JavaScript string semantics | gone with the copy: QuickJS is JavaScript |
 
-  Re-vendor `conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation}.json` from core at
-  this library's pin and drive each case as `tests/language_corpus.cpp` does: each op
+  Re-vendor `conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation,collection,objects,writing}.json`
+  from core at this library's pin (Unreal's `collection.json`, `objects.json` and
+  `writing.json` at `234fc83` are already byte-identical to core's at 45409ed) and drive
+  each case as `tests/language_corpus.cpp` does: each op
   composed from the rows as core's `runLanguageSystemsOp` composes its kernels (a case's
-  book is `language.book.empty` with the case's book over it, core's `bookOf`; a prompts
-  run's tunings are `language.contract`'s defaults with the case's params over them; a
-  mode case's roll is the hash mod 100, and its six bands and a reveal case's three
-  modes and three interactions are the runner's own lists, as in core's runner),
+  book is `language.book.empty` with the case's book over it, core's `bookOf`; a prompts,
+  collection, identify or naming run's tunings are `language.contract`'s defaults with the
+  case's params over them; a mode case's roll is the hash mod 100, and its six bands and a
+  reveal case's three modes and three interactions are the runner's own lists; a
+  normalize pair's score is over the expected answer's code points; a listening run starts
+  from `[]`, a chat's missing `player` or `npc` is `''`, a grade's absent score is null, and
+  each quest's `answers` is answered as their count, as in core's runner),
   exact comparison, key sets included. `chat-strip.json` (the NPC reply's marker strip,
   which `InsimulChatCefr` holds) is not this row's: it goes with PL.native-chat-cefr-rows.
 - **Run 22's cases, from the 45409ed pin** (PL.native-bundle-core-r2; U124, U126). What

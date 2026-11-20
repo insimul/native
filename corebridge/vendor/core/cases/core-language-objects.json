@@ -1,0 +1,3388 @@
+{
+ "area": "language-objects",
+ "description": "core's language corpus conformance/language/objects.json (P9h.core) through the language.* rows, each op as core's reference runner (src/language-learning/systems-corpus.ts, runLanguageSystemsOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/language/objects.json": "64f80a3376fc71596cc0db738eea38990deb99f618e7b1f05fcbdbe69885a83e"
+  }
+ },
+ "cases": [
+  {
+   "name": "language/objects normalize: normalize: case, punctuation, accents and spaces are off; scores are half-up percents of edit distance",
+   "steps": [
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "  Pomme! "
+     },
+     "expect": {
+      "normalized": "pomme"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "pomme"
+     },
+     "expect": {
+      "normalized": "pomme"
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": {
+       "$ref": "b0.normalized"
+      },
+      "b": {
+       "$ref": "b1.normalized"
+      }
+     },
+     "expect": {
+      "distance": 0
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": {
+       "$ref": "b2.distance"
+      },
+      "length": 5
+     },
+     "expect": {
+      "score": 100
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "créme brûlée"
+     },
+     "expect": {
+      "normalized": "creme brulee"
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "crème brûlée"
+     },
+     "expect": {
+      "normalized": "creme brulee"
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": {
+       "$ref": "b3.normalized"
+      },
+      "b": {
+       "$ref": "b4.normalized"
+      }
+     },
+     "expect": {
+      "distance": 0
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": {
+       "$ref": "b5.distance"
+      },
+      "length": 12
+     },
+     "expect": {
+      "score": 100
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "pome"
+     },
+     "expect": {
+      "normalized": "pome"
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "pomme"
+     },
+     "expect": {
+      "normalized": "pomme"
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": {
+       "$ref": "b6.normalized"
+      },
+      "b": {
+       "$ref": "b7.normalized"
+      }
+     },
+     "expect": {
+      "distance": 1
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": {
+       "$ref": "b8.distance"
+      },
+      "length": 5
+     },
+     "expect": {
+      "score": 80
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "pom"
+     },
+     "expect": {
+      "normalized": "pom"
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "pomme"
+     },
+     "expect": {
+      "normalized": "pomme"
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": {
+       "$ref": "b9.normalized"
+      },
+      "b": {
+       "$ref": "b10.normalized"
+      }
+     },
+     "expect": {
+      "distance": 2
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": {
+       "$ref": "b11.distance"
+      },
+      "length": 5
+     },
+     "expect": {
+      "score": 60
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "xyz"
+     },
+     "expect": {
+      "normalized": "xyz"
+     },
+     "bind": "b12"
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "pomme"
+     },
+     "expect": {
+      "normalized": "pomme"
+     },
+     "bind": "b13"
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": {
+       "$ref": "b12.normalized"
+      },
+      "b": {
+       "$ref": "b13.normalized"
+      }
+     },
+     "expect": {
+      "distance": 5
+     },
+     "bind": "b14"
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": {
+       "$ref": "b14.distance"
+      },
+      "length": 5
+     },
+     "expect": {
+      "score": 0
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "« Bonjour »"
+     },
+     "expect": {
+      "normalized": "bonjour"
+     },
+     "bind": "b15"
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "bonjour"
+     },
+     "expect": {
+      "normalized": "bonjour"
+     },
+     "bind": "b16"
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": {
+       "$ref": "b15.normalized"
+      },
+      "b": {
+       "$ref": "b16.normalized"
+      }
+     },
+     "expect": {
+      "distance": 0
+     },
+     "bind": "b17"
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": {
+       "$ref": "b17.distance"
+      },
+      "length": 7
+     },
+     "expect": {
+      "score": 100
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "abcdefgh"
+     },
+     "expect": {
+      "normalized": "abcdefgh"
+     },
+     "bind": "b18"
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "abcdefgx"
+     },
+     "expect": {
+      "normalized": "abcdefgx"
+     },
+     "bind": "b19"
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": {
+       "$ref": "b18.normalized"
+      },
+      "b": {
+       "$ref": "b19.normalized"
+      }
+     },
+     "expect": {
+      "distance": 1
+     },
+     "bind": "b20"
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": {
+       "$ref": "b20.distance"
+      },
+      "length": 8
+     },
+     "expect": {
+      "score": 88
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": ""
+     },
+     "expect": {
+      "normalized": ""
+     },
+     "bind": "b21"
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": ""
+     },
+     "expect": {
+      "normalized": ""
+     },
+     "bind": "b22"
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": {
+       "$ref": "b21.normalized"
+      },
+      "b": {
+       "$ref": "b22.normalized"
+      }
+     },
+     "expect": {
+      "distance": 0
+     },
+     "bind": "b23"
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": {
+       "$ref": "b23.distance"
+      },
+      "length": 0
+     },
+     "expect": {
+      "score": 100
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "a"
+     },
+     "expect": {
+      "normalized": "a"
+     },
+     "bind": "b24"
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": ""
+     },
+     "expect": {
+      "normalized": ""
+     },
+     "bind": "b25"
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": {
+       "$ref": "b24.normalized"
+      },
+      "b": {
+       "$ref": "b25.normalized"
+      }
+     },
+     "expect": {
+      "distance": 1
+     },
+     "bind": "b26"
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": {
+       "$ref": "b26.distance"
+      },
+      "length": 0
+     },
+     "expect": {
+      "score": 0
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "le pain"
+     },
+     "expect": {
+      "normalized": "le pain"
+     },
+     "bind": "b27"
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "pain"
+     },
+     "expect": {
+      "normalized": "pain"
+     },
+     "bind": "b28"
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": {
+       "$ref": "b27.normalized"
+      },
+      "b": {
+       "$ref": "b28.normalized"
+      }
+     },
+     "expect": {
+      "distance": 3
+     },
+     "bind": "b29"
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": {
+       "$ref": "b29.distance"
+      },
+      "length": 4
+     },
+     "expect": {
+      "score": 25
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects identify: identify: prompts, a hint after two tries, close and far misses, a pass, the quest done",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "bind": "b1"
+    },
+    {
+     "call": "language.identification.registerTargets",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "targets": [
+       {
+        "id": "apple",
+        "questId": "q_market",
+        "objectiveId": "o1",
+        "expected": "pomme",
+        "hint": "apple",
+        "accepted": [
+         "une pomme"
+        ],
+        "objectName": "Apple",
+        "category": "food"
+       },
+       {
+        "id": "baking",
+        "questId": "q_market",
+        "objectiveId": "o2",
+        "expected": "elle fait du pain",
+        "hint": "she is baking bread",
+        "isActivity": true
+       },
+       {
+        "id": "well",
+        "questId": "q_square",
+        "objectiveId": "o1",
+        "expected": "puits",
+        "hint": "well"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": [
+           "apple",
+           "baking",
+           "well"
+          ]
+         }
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "id": "apple",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "prompt": {
+       "targetId": "apple",
+       "questId": "q_market",
+       "objectiveId": "o1",
+       "promptText": "What is this? Answer in the target language.",
+       "isActivity": false
+      },
+      "events": [
+       {
+        "type": "identification_prompted",
+        "targetId": "apple",
+        "questId": "q_market",
+        "objectiveId": "o1",
+        "isActivity": false
+       },
+       {
+        "type": "visual_vocab_prompted",
+        "targetId": "apple",
+        "questId": "q_market",
+        "objectiveId": "o1",
+        "isActivity": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "id": "apple",
+      "input": "banane",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "passed": false,
+       "score": 11,
+       "feedback": "That doesn't seem right.",
+       "bestMatch": "une pomme",
+       "objectiveCompleted": false,
+       "events": [
+        {
+         "type": "identification_incorrect",
+         "targetId": "apple",
+         "questId": "q_market",
+         "score": 11,
+         "playerAnswer": "banane"
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "banane",
+         "correct": false
+        },
+        {
+         "type": "visual_vocab_answered",
+         "targetId": "apple",
+         "questId": "q_market",
+         "passed": false,
+         "score": 11,
+         "playerAnswer": "banane"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "progress": {
+          "$subset": {
+           "apple": {
+            "attempts": 1,
+            "identified": false,
+            "bestScore": 11
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "id": "apple",
+      "input": "pmxx",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "passed": false,
+       "score": 40,
+       "feedback": "Close! Try again. Hint: apple",
+       "bestMatch": "pomme",
+       "objectiveCompleted": false,
+       "events": [
+        {
+         "type": "identification_incorrect",
+         "targetId": "apple",
+         "questId": "q_market",
+         "score": 40,
+         "playerAnswer": "pmxx"
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "pmxx",
+         "correct": false
+        },
+        {
+         "type": "visual_vocab_answered",
+         "targetId": "apple",
+         "questId": "q_market",
+         "passed": false,
+         "score": 40,
+         "playerAnswer": "pmxx"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "progress": {
+          "$subset": {
+           "apple": {
+            "attempts": 2,
+            "identified": false,
+            "bestScore": 40
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "id": "apple",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "prompt": {
+       "targetId": "apple",
+       "questId": "q_market",
+       "objectiveId": "o1",
+       "promptText": "What is this? Answer in the target language.",
+       "isActivity": false,
+       "hint": "apple"
+      },
+      "events": [
+       {
+        "type": "identification_prompted",
+        "targetId": "apple",
+        "questId": "q_market",
+        "objectiveId": "o1",
+        "isActivity": false
+       },
+       {
+        "type": "visual_vocab_prompted",
+        "targetId": "apple",
+        "questId": "q_market",
+        "objectiveId": "o1",
+        "isActivity": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "id": "apple",
+      "input": "Une pomme.",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "passed": true,
+       "score": 100,
+       "feedback": "Excellent! Perfect identification!",
+       "bestMatch": "une pomme",
+       "objectiveCompleted": true,
+       "events": [
+        {
+         "type": "identification_correct",
+         "targetId": "apple",
+         "questId": "q_market",
+         "score": 100,
+         "playerAnswer": "Une pomme."
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "pomme",
+         "correct": true
+        },
+        {
+         "type": "visual_vocab_answered",
+         "targetId": "apple",
+         "questId": "q_market",
+         "passed": true,
+         "score": 100,
+         "playerAnswer": "Une pomme."
+        },
+        {
+         "type": "object_identified",
+         "objectId": "apple",
+         "objectName": "Apple",
+         "targetWord": "une pomme",
+         "category": "food"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "progress": {
+          "$subset": {
+           "apple": {
+            "attempts": 3,
+            "identified": true,
+            "bestScore": 100
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "id": "apple",
+      "input": "anything",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "passed": true,
+       "score": 100,
+       "feedback": "Already identified.",
+       "bestMatch": null,
+       "objectiveCompleted": true,
+       "events": [],
+       "state": {
+        "$subset": {
+         "progress": {
+          "$subset": {
+           "apple": {
+            "attempts": 3,
+            "identified": true,
+            "bestScore": 100
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "id": "apple",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "prompt": null,
+      "events": []
+     }
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "id": "baking",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "prompt": {
+       "targetId": "baking",
+       "questId": "q_market",
+       "objectiveId": "o2",
+       "promptText": "What is this person doing? Answer in the target language.",
+       "isActivity": true
+      },
+      "events": [
+       {
+        "type": "identification_prompted",
+        "targetId": "baking",
+        "questId": "q_market",
+        "objectiveId": "o2",
+        "isActivity": true
+       },
+       {
+        "type": "visual_vocab_prompted",
+        "targetId": "baking",
+        "questId": "q_market",
+        "objectiveId": "o2",
+        "isActivity": true
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "id": "baking",
+      "input": "elle fait le pain",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "passed": true,
+       "score": 88,
+       "feedback": "Great job! Correct!",
+       "bestMatch": "elle fait du pain",
+       "objectiveCompleted": true,
+       "events": [
+        {
+         "type": "identification_correct",
+         "targetId": "baking",
+         "questId": "q_market",
+         "score": 88,
+         "playerAnswer": "elle fait le pain"
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "elle fait du pain",
+         "correct": true
+        },
+        {
+         "type": "visual_vocab_answered",
+         "targetId": "baking",
+         "questId": "q_market",
+         "passed": true,
+         "score": 88,
+         "playerAnswer": "elle fait le pain"
+        },
+        {
+         "type": "object_identified",
+         "objectId": "baking",
+         "objectName": "baking",
+         "targetWord": "elle fait du pain"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "progress": {
+          "$subset": {
+           "baking": {
+            "attempts": 1,
+            "identified": true,
+            "bestScore": 88
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.identification.quest",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "questId": "q_market"
+     },
+     "expect": {
+      "identified": 2,
+      "total": 2,
+      "complete": true
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "id": "well",
+      "input": "puix",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "passed": true,
+       "score": 60,
+       "feedback": "Correct! Keep practicing for better accuracy.",
+       "bestMatch": "puits",
+       "objectiveCompleted": true,
+       "events": [
+        {
+         "type": "identification_correct",
+         "targetId": "well",
+         "questId": "q_square",
+         "score": 60,
+         "playerAnswer": "puix"
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "puits",
+         "correct": true
+        },
+        {
+         "type": "visual_vocab_answered",
+         "targetId": "well",
+         "questId": "q_square",
+         "passed": true,
+         "score": 60,
+         "playerAnswer": "puix"
+        },
+        {
+         "type": "object_identified",
+         "objectId": "well",
+         "objectName": "well",
+         "targetWord": "puits"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "progress": {
+          "$subset": {
+           "well": {
+            "attempts": 1,
+            "identified": true,
+            "bestScore": 60
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "id": "well",
+      "input": "pui",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "passed": true,
+       "score": 60,
+       "feedback": "Already identified.",
+       "bestMatch": null,
+       "objectiveCompleted": true,
+       "events": [],
+       "state": {
+        "$subset": {
+         "progress": {
+          "$subset": {
+           "well": {
+            "attempts": 1,
+            "identified": true,
+            "bestScore": 60
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.identification.quest",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "questId": "q_square"
+     },
+     "expect": {
+      "identified": 1,
+      "total": 1,
+      "complete": true
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "id": "tower",
+      "input": "tour",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": false,
+       "refusal": "unknown_object"
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "id": "tower",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "prompt": null,
+      "events": []
+     }
+    },
+    {
+     "call": "language.identification.removeQuest",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "questId": "q_market"
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": [
+           "well"
+          ]
+         }
+        }
+       }
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.identification.quest",
+     "args": {
+      "state": {
+       "$ref": "b11.state"
+      },
+      "questId": "q_market"
+     },
+     "expect": {
+      "identified": 0,
+      "total": 0,
+      "complete": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects identify: identify: a stricter pass score and an earlier hint",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "bind": "b1"
+    },
+    {
+     "call": "language.identification.registerTargets",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "targets": [
+       {
+        "id": "well",
+        "questId": "q_square",
+        "objectiveId": "o1",
+        "expected": "puits",
+        "hint": "well"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": [
+           "well"
+          ]
+         }
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "id": "well",
+      "tuning": {
+       "$ref": "b0.identificationTuning",
+       "$set": {
+        "passScore": 90,
+        "hintAfter": 1,
+        "promptForObject": "Name it."
+       }
+      }
+     },
+     "expect": {
+      "prompt": {
+       "targetId": "well",
+       "questId": "q_square",
+       "objectiveId": "o1",
+       "promptText": "Name it.",
+       "isActivity": false
+      },
+      "events": [
+       {
+        "type": "identification_prompted",
+        "targetId": "well",
+        "questId": "q_square",
+        "objectiveId": "o1",
+        "isActivity": false
+       },
+       {
+        "type": "visual_vocab_prompted",
+        "targetId": "well",
+        "questId": "q_square",
+        "objectiveId": "o1",
+        "isActivity": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "id": "well",
+      "input": "puix",
+      "tuning": {
+       "$ref": "b0.identificationTuning",
+       "$set": {
+        "passScore": 90,
+        "hintAfter": 1,
+        "promptForObject": "Name it."
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "passed": false,
+       "score": 60,
+       "feedback": "Close! Try again. Hint: well",
+       "bestMatch": "puits",
+       "objectiveCompleted": false,
+       "events": [
+        {
+         "type": "identification_incorrect",
+         "targetId": "well",
+         "questId": "q_square",
+         "score": 60,
+         "playerAnswer": "puix"
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "puix",
+         "correct": false
+        },
+        {
+         "type": "visual_vocab_answered",
+         "targetId": "well",
+         "questId": "q_square",
+         "passed": false,
+         "score": 60,
+         "playerAnswer": "puix"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "progress": {
+          "$subset": {
+           "well": {
+            "attempts": 1,
+            "identified": false,
+            "bestScore": 60
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "id": "well",
+      "tuning": {
+       "$ref": "b0.identificationTuning",
+       "$set": {
+        "passScore": 90,
+        "hintAfter": 1,
+        "promptForObject": "Name it."
+       }
+      }
+     },
+     "expect": {
+      "prompt": {
+       "targetId": "well",
+       "questId": "q_square",
+       "objectiveId": "o1",
+       "promptText": "Name it.",
+       "isActivity": false,
+       "hint": "well"
+      },
+      "events": [
+       {
+        "type": "identification_prompted",
+        "targetId": "well",
+        "questId": "q_square",
+        "objectiveId": "o1",
+        "isActivity": false
+       },
+       {
+        "type": "visual_vocab_prompted",
+        "targetId": "well",
+        "questId": "q_square",
+        "objectiveId": "o1",
+        "isActivity": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "id": "well",
+      "input": "Puits!",
+      "tuning": {
+       "$ref": "b0.identificationTuning",
+       "$set": {
+        "passScore": 90,
+        "hintAfter": 1,
+        "promptForObject": "Name it."
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "passed": true,
+       "score": 100,
+       "feedback": "Excellent! Perfect identification!",
+       "bestMatch": "puits",
+       "objectiveCompleted": true,
+       "events": [
+        {
+         "type": "identification_correct",
+         "targetId": "well",
+         "questId": "q_square",
+         "score": 100,
+         "playerAnswer": "Puits!"
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "puits",
+         "correct": true
+        },
+        {
+         "type": "visual_vocab_answered",
+         "targetId": "well",
+         "questId": "q_square",
+         "passed": true,
+         "score": 100,
+         "playerAnswer": "Puits!"
+        },
+        {
+         "type": "object_identified",
+         "objectId": "well",
+         "objectName": "well",
+         "targetWord": "puits"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "progress": {
+          "$subset": {
+           "well": {
+            "attempts": 2,
+            "identified": true,
+            "bestScore": 100
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects identify: identify: a tie between accepted answers keeps the first",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.identification.initial",
+     "args": {},
+     "bind": "b1"
+    },
+    {
+     "call": "language.identification.registerTargets",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "targets": [
+       {
+        "id": "cat",
+        "questId": "q_pets",
+        "objectiveId": "o1",
+        "expected": "chat",
+        "hint": "cat",
+        "accepted": [
+         "chas"
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "targets": {
+          "$ids": [
+           "cat"
+          ]
+         }
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "id": "cat",
+      "input": "cha",
+      "tuning": {
+       "$ref": "b0.identificationTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "passed": true,
+       "score": 75,
+       "feedback": "Great job! Correct!",
+       "bestMatch": "chat",
+       "objectiveCompleted": true,
+       "events": [
+        {
+         "type": "identification_correct",
+         "targetId": "cat",
+         "questId": "q_pets",
+         "score": 75,
+         "playerAnswer": "cha"
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "chat",
+         "correct": true
+        },
+        {
+         "type": "visual_vocab_answered",
+         "targetId": "cat",
+         "questId": "q_pets",
+         "passed": true,
+         "score": 75,
+         "playerAnswer": "cha"
+        },
+        {
+         "type": "object_identified",
+         "objectId": "cat",
+         "objectName": "cat",
+         "targetWord": "chat"
+        }
+       ],
+       "state": {
+        "$subset": {
+         "progress": {
+          "$subset": {
+           "cat": {
+            "attempts": 1,
+            "identified": true,
+            "bestScore": 75
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects naming: naming: a world's translated objects are nameable; three wrong tries reveal the word and stop pointing",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "bind": "b2"
+    },
+    {
+     "call": "language.naming.nameableObjects",
+     "args": {
+      "objects": [
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       },
+       {
+        "id": "w_barrel",
+        "role": "barrel",
+        "name": "barrel",
+        "description": "A barrel of ale.",
+        "position": {
+         "x": 0,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "tonneau"
+         }
+        }
+       },
+       {
+        "id": "w_sign",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 4,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_board",
+        "role": "board",
+        "name": "board",
+        "position": {
+         "x": -1,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s_notice",
+         "targetText": "Avis",
+         "nativeText": "Notice",
+         "category": "signs"
+        }
+       },
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       }
+      ],
+      "targetLanguage": "French"
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.naming.registerNameable",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "objects": {
+       "$ref": "b1.objects"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": [
+          {
+           "objectId": "anvil",
+           "targetWord": "enclume",
+           "meaning": "anvil",
+           "category": "tools",
+           "position": {
+            "x": 2,
+            "y": 0,
+            "z": 0
+           }
+          },
+          {
+           "objectId": "barrel",
+           "targetWord": "tonneau",
+           "meaning": "barrel",
+           "category": "general",
+           "position": {
+            "x": 0,
+            "y": 0,
+            "z": 3
+           }
+          },
+          {
+           "objectId": "shop_sign",
+           "targetWord": "Boulangerie",
+           "meaning": "Bakery",
+           "category": "places",
+           "position": {
+            "x": 4,
+            "y": 0,
+            "z": 3
+           }
+          }
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "objectId": "anvil",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "prompt": "Name this object in the target language (3 attempts left):",
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "objectId": "anvil",
+      "input": "marteau",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": false,
+       "xp": 0,
+       "attempts": 1,
+       "revealed": false,
+       "toasts": [
+        {
+         "title": "Try again",
+         "text": "That's not quite right. Expected: enclume"
+        }
+       ],
+       "events": [
+        {
+         "type": "vocabulary_used",
+         "word": "enclume",
+         "correct": false
+        }
+       ]
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "objectId": "anvil",
+      "input": "enclum",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": false,
+       "xp": 0,
+       "attempts": 2,
+       "revealed": false,
+       "toasts": [
+        {
+         "title": "Try again",
+         "text": "That's not quite right. Expected: enclume"
+        }
+       ],
+       "events": [
+        {
+         "type": "vocabulary_used",
+         "word": "enclume",
+         "correct": false
+        }
+       ]
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "objectId": "anvil",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "prompt": "Name this object in the target language (1 attempts left):",
+      "attemptsLeft": 1
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "objectId": "anvil",
+      "input": "tonneau",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": false,
+       "xp": 0,
+       "attempts": 3,
+       "revealed": true,
+       "toasts": [
+        {
+         "title": "Answer revealed",
+         "text": "The word is: enclume (anvil)"
+        },
+        {
+         "title": "Try again",
+         "text": "That's not quite right. Expected: enclume"
+        }
+       ],
+       "events": [
+        {
+         "type": "vocabulary_used",
+         "word": "enclume",
+         "correct": false
+        }
+       ]
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "objectId": "anvil",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "no_attempts_left"
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "objectId": "anvil",
+      "input": " ENCLUME ",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": true,
+       "xp": 2,
+       "attempts": 4,
+       "revealed": false,
+       "toasts": [
+        {
+         "title": "Correct!",
+         "text": "enclume = anvil (+2 XP)"
+        }
+       ],
+       "events": [
+        {
+         "type": "object_named",
+         "objectId": "anvil",
+         "targetWord": "enclume",
+         "category": "tools",
+         "correct": true,
+         "attempts": 4
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "enclume",
+         "correct": true
+        },
+        {
+         "type": "object_identified",
+         "objectId": "anvil",
+         "objectName": "anvil",
+         "targetWord": "enclume",
+         "category": "tools"
+        }
+       ]
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "objectId": "anvil",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "already_named"
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "objectId": "anvil",
+      "input": "enclume",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": true,
+       "xp": 0,
+       "attempts": 4,
+       "revealed": false,
+       "toasts": [],
+       "events": []
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "objectId": "barrel",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "prompt": "Name this object in the target language (3 attempts left):",
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "objectId": "barrel",
+      "input": "Tonneau",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": true,
+       "xp": 5,
+       "attempts": 1,
+       "revealed": false,
+       "toasts": [
+        {
+         "title": "Correct!",
+         "text": "tonneau = barrel (+5 XP)"
+        }
+       ],
+       "events": [
+        {
+         "type": "object_named",
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "category": "general",
+         "correct": true,
+         "attempts": 1
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "tonneau",
+         "correct": true
+        },
+        {
+         "type": "object_identified",
+         "objectId": "barrel",
+         "objectName": "barrel",
+         "targetWord": "tonneau",
+         "category": "general"
+        }
+       ]
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "objectId": "cart",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "unknown_object"
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "objectId": "cart",
+      "input": "charrette",
+      "tuning": {
+       "$ref": "b0.namingTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": false,
+       "refusal": "unknown_object"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects naming: naming: tuned: case counts, two tries, and a retry earns 3 XP",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.naming.initial",
+     "args": {},
+     "bind": "b1"
+    },
+    {
+     "call": "language.naming.registerNameable",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "objects": [
+       {
+        "objectId": "bread",
+        "targetWord": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "position": {
+         "x": 0,
+         "y": 0,
+         "z": 0
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "objects": [
+          {
+           "objectId": "bread",
+           "targetWord": "pain",
+           "meaning": "bread",
+           "category": "food",
+           "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+           }
+          }
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "objectId": "bread",
+      "input": "Pain",
+      "tuning": {
+       "$ref": "b0.namingTuning",
+       "$set": {
+        "caseInsensitive": false,
+        "maxAttempts": 2,
+        "xpRetry": 3
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": false,
+       "xp": 0,
+       "attempts": 1,
+       "revealed": false,
+       "toasts": [
+        {
+         "title": "Try again",
+         "text": "That's not quite right. Expected: pain"
+        }
+       ],
+       "events": [
+        {
+         "type": "vocabulary_used",
+         "word": "pain",
+         "correct": false
+        }
+       ]
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "objectId": "bread",
+      "tuning": {
+       "$ref": "b0.namingTuning",
+       "$set": {
+        "caseInsensitive": false,
+        "maxAttempts": 2,
+        "xpRetry": 3
+       }
+      }
+     },
+     "expect": {
+      "ok": true,
+      "prompt": "Name this object in the target language (1 attempts left):",
+      "attemptsLeft": 1
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "objectId": "bread",
+      "input": " pain ",
+      "tuning": {
+       "$ref": "b0.namingTuning",
+       "$set": {
+        "caseInsensitive": false,
+        "maxAttempts": 2,
+        "xpRetry": 3
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": true,
+       "xp": 3,
+       "attempts": 2,
+       "revealed": false,
+       "toasts": [
+        {
+         "title": "Correct!",
+         "text": "pain = bread (+3 XP)"
+        }
+       ],
+       "events": [
+        {
+         "type": "object_named",
+         "objectId": "bread",
+         "targetWord": "pain",
+         "category": "food",
+         "correct": true,
+         "attempts": 2
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "pain",
+         "correct": true
+        },
+        {
+         "type": "object_identified",
+         "objectId": "bread",
+         "objectName": "bread",
+         "targetWord": "pain",
+         "category": "food"
+        }
+       ]
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "objectId": "bread",
+      "tuning": {
+       "$ref": "b0.namingTuning",
+       "$set": {
+        "caseInsensitive": false,
+        "maxAttempts": 2,
+        "xpRetry": 3
+       }
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "already_named"
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: in a language world an object shows its word and pronunciation",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       },
+       {
+        "id": "w_barrel",
+        "role": "barrel",
+        "name": "barrel",
+        "description": "A barrel of ale.",
+        "position": {
+         "x": 0,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "tonneau"
+         }
+        }
+       },
+       {
+        "id": "w_sign",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 4,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_board",
+        "role": "board",
+        "name": "board",
+        "position": {
+         "x": -1,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s_notice",
+         "targetText": "Avis",
+         "nativeText": "Notice",
+         "category": "signs"
+        }
+       },
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       }
+      ],
+      "at": {
+       "x": 2,
+       "z": 1
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 0
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "examine_object",
+      "title": "enclume",
+      "description": "anvil [ahn-KLOOM]",
+      "tier": null,
+      "narrative": null,
+      "events": [
+       {
+        "type": "object_examined",
+        "objectId": "w_anvil",
+        "objectName": "anvil",
+        "targetWord": "enclume",
+        "targetLanguage": "French",
+        "pronunciation": "ahn-KLOOM",
+        "category": "tools"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: outside a language world it shows its name and description",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       },
+       {
+        "id": "w_barrel",
+        "role": "barrel",
+        "name": "barrel",
+        "description": "A barrel of ale.",
+        "position": {
+         "x": 0,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "tonneau"
+         }
+        }
+       },
+       {
+        "id": "w_sign",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 4,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_board",
+        "role": "board",
+        "name": "board",
+        "position": {
+         "x": -1,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s_notice",
+         "targetText": "Avis",
+         "nativeText": "Notice",
+         "category": "signs"
+        }
+       },
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 2
+      },
+      "options": {
+       "languageWorld": false,
+       "targetLanguage": "French",
+       "fluency": 0
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "examine_object",
+      "title": "barrel",
+      "description": "A barrel of ale.",
+      "tier": null,
+      "narrative": null,
+      "events": [
+       {
+        "type": "object_examined",
+        "objectId": "w_barrel",
+        "objectName": "barrel",
+        "targetWord": "tonneau",
+        "targetLanguage": "French"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: an object with no pronunciation in a language world",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       },
+       {
+        "id": "w_barrel",
+        "role": "barrel",
+        "name": "barrel",
+        "description": "A barrel of ale.",
+        "position": {
+         "x": 0,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "tonneau"
+         }
+        }
+       },
+       {
+        "id": "w_sign",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 4,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_board",
+        "role": "board",
+        "name": "board",
+        "position": {
+         "x": -1,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s_notice",
+         "targetText": "Avis",
+         "nativeText": "Notice",
+         "category": "signs"
+        }
+       },
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 2
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 0
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "examine_object",
+      "title": "tonneau",
+      "description": "barrel",
+      "tier": null,
+      "narrative": null,
+      "events": [
+       {
+        "type": "object_examined",
+        "objectId": "w_barrel",
+        "objectName": "barrel",
+        "targetWord": "tonneau",
+        "targetLanguage": "French"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: a shop sign reads with its translation for a beginner",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       },
+       {
+        "id": "w_barrel",
+        "role": "barrel",
+        "name": "barrel",
+        "description": "A barrel of ale.",
+        "position": {
+         "x": 0,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "tonneau"
+         }
+        }
+       },
+       {
+        "id": "w_sign",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 4,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_board",
+        "role": "board",
+        "name": "board",
+        "position": {
+         "x": -1,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s_notice",
+         "targetText": "Avis",
+         "nativeText": "Notice",
+         "category": "signs"
+        }
+       },
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       }
+      ],
+      "at": {
+       "x": 4,
+       "z": 2
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 29999
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "read_sign",
+      "title": "Boulangerie",
+      "description": "(Bakery)",
+      "tier": "beginner",
+      "narrative": "You read the sign: \"Boulangerie (Bakery)\"",
+      "events": [
+       {
+        "type": "sign_read",
+        "signId": "w_sign",
+        "objectId": "w_sign",
+        "targetText": "Boulangerie",
+        "nativeText": "Bakery",
+        "category": "places"
+       },
+       {
+        "type": "object_examined",
+        "objectId": "w_sign",
+        "objectName": "Bakery",
+        "targetWord": "Boulangerie",
+        "targetLanguage": "French",
+        "category": "places"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: the same sign for an intermediate reader, without the translation",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       },
+       {
+        "id": "w_barrel",
+        "role": "barrel",
+        "name": "barrel",
+        "description": "A barrel of ale.",
+        "position": {
+         "x": 0,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "tonneau"
+         }
+        }
+       },
+       {
+        "id": "w_sign",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 4,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_board",
+        "role": "board",
+        "name": "board",
+        "position": {
+         "x": -1,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s_notice",
+         "targetText": "Avis",
+         "nativeText": "Notice",
+         "category": "signs"
+        }
+       },
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       }
+      ],
+      "at": {
+       "x": 4,
+       "z": 2
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 30000
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "read_sign",
+      "title": "Boulangerie",
+      "description": "You read the sign.",
+      "tier": "intermediate",
+      "narrative": "You read the sign: \"Boulangerie\"",
+      "events": [
+       {
+        "type": "sign_read",
+        "signId": "w_sign",
+        "objectId": "w_sign",
+        "targetText": "Boulangerie",
+        "nativeText": "Bakery",
+        "category": "places"
+       },
+       {
+        "type": "object_examined",
+        "objectId": "w_sign",
+        "objectName": "Bakery",
+        "targetWord": "Boulangerie",
+        "targetLanguage": "French",
+        "category": "places"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: a board with sign text is a sign; an advanced reader",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       },
+       {
+        "id": "w_barrel",
+        "role": "barrel",
+        "name": "barrel",
+        "description": "A barrel of ale.",
+        "position": {
+         "x": 0,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "tonneau"
+         }
+        }
+       },
+       {
+        "id": "w_sign",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 4,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_board",
+        "role": "board",
+        "name": "board",
+        "position": {
+         "x": -1,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s_notice",
+         "targetText": "Avis",
+         "nativeText": "Notice",
+         "category": "signs"
+        }
+       },
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       }
+      ],
+      "at": {
+       "x": -1,
+       "z": 1
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 60000
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "read_sign",
+      "title": "Avis",
+      "description": "You read the sign.",
+      "tier": "advanced",
+      "narrative": "You read the sign: \"Avis\"",
+      "events": [
+       {
+        "type": "sign_read",
+        "signId": "s_notice",
+        "objectId": "w_board",
+        "targetText": "Avis",
+        "nativeText": "Notice",
+        "category": "signs"
+       },
+       {
+        "type": "object_examined",
+        "objectId": "w_board",
+        "objectName": "board",
+        "targetWord": "Avis",
+        "targetLanguage": "French",
+        "category": "signs"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: a sign outside a language world",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       },
+       {
+        "id": "w_barrel",
+        "role": "barrel",
+        "name": "barrel",
+        "description": "A barrel of ale.",
+        "position": {
+         "x": 0,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "tonneau"
+         }
+        }
+       },
+       {
+        "id": "w_sign",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 4,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_board",
+        "role": "board",
+        "name": "board",
+        "position": {
+         "x": -1,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s_notice",
+         "targetText": "Avis",
+         "nativeText": "Notice",
+         "category": "signs"
+        }
+       },
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       }
+      ],
+      "at": {
+       "x": -1,
+       "z": 1
+      },
+      "options": {
+       "languageWorld": false,
+       "targetLanguage": "French",
+       "fluency": 0
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "read_sign",
+      "title": "board",
+      "description": "You read the sign.",
+      "tier": "beginner",
+      "narrative": "You read the sign: \"Avis (Notice)\"",
+      "events": [
+       {
+        "type": "sign_read",
+        "signId": "s_notice",
+        "objectId": "w_board",
+        "targetText": "Avis",
+        "nativeText": "Notice",
+        "category": "signs"
+       },
+       {
+        "type": "object_examined",
+        "objectId": "w_board",
+        "objectName": "board",
+        "targetWord": "Avis",
+        "targetLanguage": "French",
+        "category": "signs"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: the nearest wins; an object with no role is never chosen; a tie goes to the first",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_barrel",
+        "role": "barrel",
+        "name": "barrel",
+        "description": "A barrel of ale.",
+        "position": {
+         "x": 1,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "tonneau"
+         }
+        }
+       },
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": -1,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 0
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "examine_object",
+      "title": "tonneau",
+      "description": "barrel",
+      "tier": null,
+      "narrative": null,
+      "events": [
+       {
+        "type": "object_examined",
+        "objectId": "w_barrel",
+        "objectName": "barrel",
+        "targetWord": "tonneau",
+        "targetLanguage": "French"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: nothing within reach (5 units, x and z only)",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       },
+       {
+        "id": "w_barrel",
+        "role": "barrel",
+        "name": "barrel",
+        "description": "A barrel of ale.",
+        "position": {
+         "x": 0,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "tonneau"
+         }
+        }
+       },
+       {
+        "id": "w_sign",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 4,
+         "z": 3
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie",
+          "category": "places"
+         }
+        }
+       },
+       {
+        "id": "w_board",
+        "role": "board",
+        "name": "board",
+        "position": {
+         "x": -1,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s_notice",
+         "targetText": "Avis",
+         "nativeText": "Notice",
+         "category": "signs"
+        }
+       },
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       }
+      ],
+      "at": {
+       "x": 40,
+       "z": 40
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 0
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "nothing_in_reach"
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: a role that names a sign is a sign",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_tavern",
+        "role": "tavern_signboard",
+        "name": "The Crooked Mug",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       }
+      ],
+      "at": {
+       "x": 1,
+       "z": 1
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 0
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "read_sign",
+      "title": "The Crooked Mug",
+      "description": "(The Crooked Mug)",
+      "tier": "beginner",
+      "narrative": "You read the sign: \"The Crooked Mug (The Crooked Mug)\"",
+      "events": [
+       {
+        "type": "sign_read",
+        "signId": "w_tavern",
+        "objectId": "w_tavern",
+        "targetText": "The Crooked Mug",
+        "nativeText": "The Crooked Mug"
+       },
+       {
+        "type": "object_examined",
+        "objectId": "w_tavern",
+        "objectName": "The Crooked Mug",
+        "targetWord": "The Crooked Mug",
+        "targetLanguage": "French"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: exactly at the default reach of 5",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 0
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "examine_object",
+      "title": "enclume",
+      "description": "anvil [ahn-KLOOM]",
+      "tier": null,
+      "narrative": null,
+      "events": [
+       {
+        "type": "object_examined",
+        "objectId": "w_anvil",
+        "objectName": "anvil",
+        "targetWord": "enclume",
+        "targetLanguage": "French",
+        "pronunciation": "ahn-KLOOM",
+        "category": "tools"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/objects examine: examine: a wider reach finds it",
+   "steps": [
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_anvil",
+        "role": "Anvil",
+        "name": "anvil",
+        "position": {
+         "x": 2,
+         "z": 0
+        },
+        "translations": {
+         "French": {
+          "targetWord": "enclume",
+          "pronunciation": "ahn-KLOOM",
+          "category": "tools"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 8,
+       "z": 0
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "German",
+       "fluency": 0,
+       "range": 6
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "examine_object",
+      "title": "anvil",
+      "description": "You examine the object closely.",
+      "tier": null,
+      "narrative": null,
+      "events": [
+       {
+        "type": "object_examined",
+        "objectId": "w_anvil",
+        "objectName": "anvil",
+        "targetWord": "",
+        "targetLanguage": "German"
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

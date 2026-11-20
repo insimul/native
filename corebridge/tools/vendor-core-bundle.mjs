@@ -88,8 +88,11 @@
 //       The language transcription guard's negative control: perturbs the vendored
 //       cases/core-language-*.json in memory (a dropped case, a dropped call, a first
 //       call changed, an answer expected nowhere, a call that is no language row, an
-//       answer weakened to a subset, a mode at one band dropped) and fails unless the
-//       guard names each (the core_vendor_language_negative ctest).
+//       answer weakened to a subset, a mode at one band dropped; slice 3: an
+//       identification answer dropped, an examine weakened, a collection run's first call
+//       changed, a collection's collected words expected nowhere, a listening chat dropped,
+//       a composition's submit weakened) and fails unless the guard names each (the
+//       core_vendor_language_negative ctest).
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --check-extension-keys <case dir>
 //       Only the save.rules extensionKeys check (below, SAVE_RULES_CASES_DIR) over
@@ -284,18 +287,24 @@ const PROGRESSION_CORPUS_FILES = [
 // directory's thirteen: the book (progress), the save block (save), the prompt selector
 // (prompts), hover (hover) and the chat metrics (chat); slice 2 three more: the bank and
 // the learning profile (bank), the difficulty monitor and the CEFR adaptation
-// (adaptation), and listen and repeat (pronunciation). The rest join with the slices
-// that bind them (chat-strip.json with PL.native-chat-cefr-rows). conformance/language/
+// (adaptation), and listen and repeat (pronunciation); slice 3 three more: knowledge
+// collection (collection), object identification, point and name and examine (objects),
+// and composition and listening (writing). The rest join with the slices that bind them
+// (quest-feedback and quest-types with slice 4, chat-strip.json with
+// PL.native-chat-cefr-rows). conformance/language/
 // is this set's alone, so a file an earlier pin left there is seen, hashed and removed.
 const LANGUAGE_CORPUS_FILES = [
   'conformance/language/adaptation.json',
   'conformance/language/bank.json',
   'conformance/language/chat.json',
+  'conformance/language/collection.json',
   'conformance/language/hover.json',
+  'conformance/language/objects.json',
   'conformance/language/progress.json',
   'conformance/language/prompts.json',
   'conformance/language/pronunciation.json',
   'conformance/language/save.json',
+  'conformance/language/writing.json',
 ];
 
 // Core modules the bundle must NOT carry (PL.native-interact-target, U94(2)/(3)): core's
@@ -465,6 +474,13 @@ const LANGUAGE_FIRST_CALL = {
     encode: 'language.pronunciation.encode', similarity: 'language.pronunciation.wordSimilarity', score: 'language.pronunciation.normalize',
     repeat: 'language.pronunciation.listenAndRepeat', xp: 'language.pronunciation.xp', hints: 'language.pronunciation.hintPenalty',
   },
+  collection: { run: 'language.contract' },
+  objects: { normalize: 'language.identification.normalize', identify: 'language.contract', naming: 'language.contract', examine: 'language.objects.examine' },
+  writing: {
+    composition: 'language.writing.countWords',
+    // the state starts as [] and the first step's row takes it
+    listening: (c) => ({ register: 'language.listening.register', prompt: 'language.listening.prompt', chat: 'language.listening.chat', grade: 'language.listening.grade' })[c.input.steps[0]?.do],
+  },
 };
 /**
  * The calls core's runner makes for one case (systems-corpus.ts, through the rows), as a
@@ -631,6 +647,54 @@ function languageCallsOf(base, c) {
     if (c.op === 'xp') add('language.pronunciation.xp', i.scores.length);
     if (c.op === 'hints') add('language.pronunciation.hintPenalty', i.revealed.length);
   }
+  if (base === 'collection') {
+    add('language.contract');
+    add('language.collection.initial');
+    add('language.collection.registerTags', count('register'));
+    add('language.collection.seed', count('seed'));
+    add('language.collection.inReach', count('reach'));
+    add('language.collection.quiz', count('quiz'));
+    add('language.collection.answer', count('answer'));
+  }
+  if (base === 'objects') {
+    if (c.op === 'normalize') {
+      // said and expected normalised, their distance, its score
+      add('language.identification.normalize', 2 * i.pairs.length);
+      add('language.identification.editDistance', i.pairs.length);
+      add('language.identification.distanceScore', i.pairs.length);
+    }
+    if (c.op === 'identify') {
+      add('language.contract');
+      add('language.identification.initial');
+      add('language.identification.registerTargets', count('register'));
+      add('language.identification.prompt', count('prompt'));
+      add('language.identification.answer', count('answer'));
+      add('language.identification.removeQuest', count('remove'));
+      add('language.identification.quest', count('quest'));
+    }
+    if (c.op === 'naming') {
+      add('language.contract');
+      add('language.naming.initial');
+      add('language.naming.nameableObjects', steps.filter((st) => st.do === 'register' && st.world).length);
+      add('language.naming.registerNameable', count('register'));
+      add('language.naming.point', count('point'));
+      add('language.naming.submit', count('name'));
+    }
+    if (c.op === 'examine') add('language.objects.examine');
+  }
+  if (base === 'writing') {
+    if (c.op === 'composition') {
+      add('language.writing.countWords', i.texts.length);
+      add('language.writing.view', i.texts.length);
+      add('language.writing.submit', i.texts.length);
+    }
+    if (c.op === 'listening') {
+      add('language.listening.register', count('register'));
+      add('language.listening.prompt', count('prompt'));
+      add('language.listening.chat', count('chat'));
+      add('language.listening.grade', count('grade'));
+    }
+  }
   return n;
 }
 
@@ -645,17 +709,26 @@ const LANGUAGE_RESHAPED_KEYS = {
   hover: ['do', 'cached', 'words'],
   chat: ['do', 'bookWords', 'grammarChecked'],
   adaptation: ['do'],
+  // slice 3: a register's ids as `$ids`, a listening quest's answers as a `$len`
+  collection: ['do', 'objects'],
+  objects: ['do', 'targets'],
+  writing: ['do', 'quests'],
 };
-// Slice 2's files hold EVERY case to the stated-value check, not only a run's steps: each
-// member of an answer (each member of each element, for a list of objects) must be stated
-// in some expectation of the case, except the members the runner echoes from the input or
-// derives itself (the emitter checks each of those against the input), listed per op here.
+// Slice 2's and slice 3's files hold EVERY case to the stated-value check, not only a run's
+// steps: each member of an answer (each member of each element, for a list of objects)
+// must be stated in some expectation of the case, except the members the runner echoes
+// from the input or derives itself (the emitter checks each of those against the input)
+// and, for slice 3's runs, the reshaped members above (`do`, a register's ids, a listening
+// quest's projection, each still expected in its own shape), listed per op here.
 const LANGUAGE_ANSWER_ECHOES = {
   bank: { cards: [], reveal: ['mode'], grammar: [], tables: [], profile: [], history: [] },
   adaptation: {
     struggle: [], difficulty: ['do'], mode: ['id', 'roll', 'modes'], npc: [], hint: ['level', 'index', 'difficulty', 'mastered'], quests: [], advance: [],
   },
   pronunciation: { encode: ['word'], similarity: ['expected', 'spoken'], score: [], repeat: [], xp: ['score'], hints: ['revealed'] },
+  collection: { run: ['do', 'objects'] },
+  objects: { normalize: [], identify: ['do', 'targets'], naming: ['do'], examine: [] },
+  writing: { composition: ['text'], listening: ['do', 'quests'] },
 };
 
 /** Every value a transcribed case's expectations state, as JSON text (a `$subset`'s contents count; other operators do not). */
@@ -801,6 +874,31 @@ function languageTranscriptionNegative() {
       const kase = d.cases.find((c) => c.steps.some((x) => x.call === 'language.npc.mode'));
       kase.steps.splice(kase.steps.findIndex((x) => x.call === 'language.npc.mode'), 1);
     }, "not transcribed as core's runner calls their op"],
+    // slice 3
+    ['an identification answer dropped', 'objects', (d) => {
+      const kase = d.cases.find((c) => c.steps.some((x) => x.call === 'language.identification.answer'));
+      kase.steps.splice(kase.steps.findIndex((x) => x.call === 'language.identification.answer'), 1);
+    }, "not transcribed as core's runner calls their op"],
+    ['an answer weakened to a subset (an examine without its events)', 'objects', (d) => {
+      const st = d.cases.flatMap((c) => c.steps).find((x) => x.call === 'language.objects.examine' && x.expect.ok === true);
+      st.expect = { $subset: { ok: true } };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a first call changed (a collection run that does not read the contract first)', 'collection', (d) => {
+      d.cases[0].steps[0].call = 'language.collection.initial';
+    }, "not transcribed as core's runner calls their op"],
+    ['an answer expected nowhere (a knowledge world\'s collected words)', 'collection', (d) => {
+      // Every collection answer of the knowledge-world case loses its collected words.
+      const kase = d.cases.find((c) => c.name.includes('knowledge world'));
+      for (const st of kase.steps) if (st.call === 'language.collection.answer') delete st.expect.$subset.state;
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a listening chat dropped', 'writing', (d) => {
+      const kase = d.cases.find((c) => c.steps.some((x) => x.call === 'language.listening.chat'));
+      kase.steps.splice(kase.steps.findIndex((x) => x.call === 'language.listening.chat'), 1);
+    }, "not transcribed as core's runner calls their op"],
+    ['an answer weakened to a subset (a submitted composition without its events)', 'writing', (d) => {
+      const st = d.cases.flatMap((c) => c.steps).find((x) => x.call === 'language.writing.submit' && x.expect.ok === true);
+      st.expect = { $subset: { ok: true } };
+    }, 'answer(s) of the corpus expected nowhere'],
   ];
   let named = 0;
   for (const [what, file, perturb, want] of perturbations) {

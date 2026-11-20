@@ -1,0 +1,779 @@
+{
+  "schema": "insimul.conformance.language/1",
+  "area": "language",
+  "file": "language/collection",
+  "phase": "P9h",
+  "description": "Knowledge and vocabulary collection: reach, the seeded quiz, answers and what the bus hears (src/language-learning/world-words.ts).",
+  "runner": "src/language-learning/systems-corpus.ts (runLanguageSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "language-knowledge-collection"
+  ],
+  "ops": [
+    "run"
+  ],
+  "steps": {
+    "run": [
+      "register",
+      "seed",
+      "reach",
+      "quiz",
+      "answer"
+    ]
+  },
+  "cases": [
+    {
+      "name": "run: register, reach, a seeded quiz, a wrong answer, a right one, and the word is collected",
+      "op": "run",
+      "note": "Reach is 5 units, compared squared (≤ 25): from (3, 0, 4) the bread stall and the anvil are exactly 5 away and in reach; from (3.01, 0, 4) the bread stall is just out. The quiz takes same-category distractors first, then others, and shuffles with the seeded draw; a collected object raises no quiz and leaves reach.",
+      "input": {
+        "seed": "brightwater",
+        "steps": [
+          {
+            "do": "register",
+            "tags": [
+              {
+                "objectId": "bread_stall",
+                "label": "pain",
+                "answer": "bread",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "partOfSpeech": "noun"
+              },
+              {
+                "objectId": "cheese_stall",
+                "label": "fromage",
+                "answer": "cheese",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 4
+                }
+              },
+              {
+                "objectId": "anvil",
+                "label": "enclume",
+                "answer": "anvil",
+                "category": "tools",
+                "difficulty": "intermediate",
+                "position": {
+                  "x": 6,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "do": "seed",
+            "category": "food",
+            "answers": [
+              "apple",
+              "bread",
+              "water"
+            ]
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 4
+            }
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 3.01,
+              "y": 0,
+              "z": 4
+            }
+          },
+          {
+            "do": "quiz",
+            "objectId": "bread_stall"
+          },
+          {
+            "do": "answer",
+            "objectId": "bread_stall",
+            "answer": "cheese"
+          },
+          {
+            "do": "answer",
+            "objectId": "bread_stall",
+            "answer": "BREAD"
+          },
+          {
+            "do": "quiz",
+            "objectId": "bread_stall"
+          },
+          {
+            "do": "answer",
+            "objectId": "bread_stall",
+            "answer": "bread"
+          },
+          {
+            "do": "answer",
+            "objectId": "bread_stall",
+            "answer": "nonsense"
+          },
+          {
+            "do": "quiz",
+            "objectId": "bread_stall"
+          },
+          {
+            "do": "reach",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "do": "quiz",
+            "objectId": "well"
+          },
+          {
+            "do": "answer",
+            "objectId": "well",
+            "answer": "water"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "objects": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "pool": [
+            [
+              "food",
+              [
+                "bread",
+                "cheese"
+              ]
+            ],
+            [
+              "tools",
+              [
+                "anvil"
+              ]
+            ]
+          ]
+        },
+        {
+          "do": "seed",
+          "pool": [
+            [
+              "food",
+              [
+                "bread",
+                "cheese",
+                "apple",
+                "water"
+              ]
+            ],
+            [
+              "tools",
+              [
+                "anvil"
+              ]
+            ]
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ]
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "cheese_stall",
+            "anvil"
+          ]
+        },
+        {
+          "do": "quiz",
+          "quiz": {
+            "objectId": "bread_stall",
+            "label": "pain",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"pain\" mean?",
+            "options": [
+              {
+                "text": "water",
+                "isCorrect": false
+              },
+              {
+                "text": "cheese",
+                "isCorrect": false
+              },
+              {
+                "text": "apple",
+                "isCorrect": false
+              },
+              {
+                "text": "bread",
+                "isCorrect": true
+              }
+            ]
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "correct": false,
+          "alreadyCollected": false,
+          "xp": 0,
+          "label": "pain",
+          "answer": "bread",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "pain",
+              "correct": false
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "pain",
+              "correct": false
+            }
+          ],
+          "collected": []
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "correct": false,
+          "alreadyCollected": false,
+          "xp": 0,
+          "label": "pain",
+          "answer": "bread",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "pain",
+              "correct": false
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "pain",
+              "correct": false
+            }
+          ],
+          "collected": []
+        },
+        {
+          "do": "quiz",
+          "quiz": {
+            "objectId": "bread_stall",
+            "label": "pain",
+            "category": "food",
+            "difficulty": "beginner",
+            "prompt": "What does \"pain\" mean?",
+            "options": [
+              {
+                "text": "water",
+                "isCorrect": false
+              },
+              {
+                "text": "bread",
+                "isCorrect": true
+              },
+              {
+                "text": "apple",
+                "isCorrect": false
+              },
+              {
+                "text": "cheese",
+                "isCorrect": false
+              }
+            ]
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "correct": true,
+          "alreadyCollected": false,
+          "xp": 3,
+          "label": "pain",
+          "answer": "bread",
+          "category": "food",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "pain",
+              "correct": true
+            },
+            {
+              "type": "item_collected",
+              "itemId": "vocab_bread_stall",
+              "itemName": "pain",
+              "quantity": 1,
+              "taxonomy": {
+                "category": "food",
+                "itemType": "vocabulary",
+                "baseType": "noun"
+              }
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "pain",
+              "correct": true
+            }
+          ],
+          "collected": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "correct": true,
+          "alreadyCollected": true,
+          "xp": 0,
+          "label": "pain",
+          "answer": "bread",
+          "category": "food",
+          "events": [],
+          "collected": [
+            "bread_stall"
+          ]
+        },
+        {
+          "do": "quiz",
+          "quiz": null
+        },
+        {
+          "do": "reach",
+          "inReach": [
+            "cheese_stall"
+          ]
+        },
+        {
+          "do": "quiz",
+          "quiz": null
+        },
+        {
+          "do": "answer",
+          "ok": false,
+          "refusal": "unknown_object"
+        }
+      ]
+    },
+    {
+      "name": "run: a small pool fills from other categories, and a knowledge world collects knowledge, not vocabulary",
+      "op": "run",
+      "input": {
+        "seed": "survival",
+        "params": {
+          "kind": "knowledge",
+          "options": 3,
+          "xpPerEntry": 7
+        },
+        "steps": [
+          {
+            "do": "register",
+            "tags": [
+              {
+                "objectId": "fern",
+                "label": "Bracken",
+                "answer": "a fern",
+                "category": "plants",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                }
+              },
+              {
+                "objectId": "fox",
+                "label": "Fox",
+                "answer": "a canid",
+                "category": "animals",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "do": "quiz",
+            "objectId": "fern"
+          },
+          {
+            "do": "answer",
+            "objectId": "fern",
+            "answer": "a canid"
+          },
+          {
+            "do": "answer",
+            "objectId": "fern",
+            "answer": "a fern"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "objects": [
+            "fern",
+            "fox"
+          ],
+          "pool": [
+            [
+              "plants",
+              [
+                "a fern"
+              ]
+            ],
+            [
+              "animals",
+              [
+                "a canid"
+              ]
+            ]
+          ]
+        },
+        {
+          "do": "quiz",
+          "quiz": {
+            "objectId": "fern",
+            "label": "Bracken",
+            "category": "plants",
+            "difficulty": "beginner",
+            "prompt": "What does \"Bracken\" mean?",
+            "options": [
+              {
+                "text": "a fern",
+                "isCorrect": true
+              },
+              {
+                "text": "a canid",
+                "isCorrect": false
+              }
+            ]
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "correct": false,
+          "alreadyCollected": false,
+          "xp": 0,
+          "label": "Bracken",
+          "answer": "a fern",
+          "category": "plants",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "Bracken",
+              "correct": false
+            }
+          ],
+          "collected": []
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "correct": true,
+          "alreadyCollected": false,
+          "xp": 7,
+          "label": "Bracken",
+          "answer": "a fern",
+          "category": "plants",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "Bracken",
+              "correct": true
+            },
+            {
+              "type": "item_collected",
+              "itemId": "knowledge_fern",
+              "itemName": "Bracken",
+              "quantity": 1,
+              "taxonomy": {
+                "category": "plants",
+                "itemType": "knowledge"
+              }
+            }
+          ],
+          "collected": [
+            "fern"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: the same object re-registered replaces its tag; the same seed and ordinal give the same options",
+      "op": "run",
+      "input": {
+        "seed": "brightwater",
+        "steps": [
+          {
+            "do": "register",
+            "tags": [
+              {
+                "objectId": "bread_stall",
+                "label": "pain",
+                "answer": "bread",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "partOfSpeech": "noun"
+              },
+              {
+                "objectId": "cheese_stall",
+                "label": "fromage",
+                "answer": "cheese",
+                "category": "food",
+                "difficulty": "beginner",
+                "position": {
+                  "x": 300,
+                  "y": 0,
+                  "z": 400
+                }
+              },
+              {
+                "objectId": "anvil",
+                "label": "enclume",
+                "answer": "anvil",
+                "category": "tools",
+                "difficulty": "intermediate",
+                "position": {
+                  "x": 600,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "do": "register",
+            "tags": [
+              {
+                "objectId": "anvil",
+                "label": "enclume",
+                "answer": "the anvil",
+                "category": "tools",
+                "difficulty": "intermediate",
+                "position": {
+                  "x": 600,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "do": "seed",
+            "category": "tools",
+            "answers": [
+              "hammer",
+              "tongs",
+              "hammer"
+            ]
+          },
+          {
+            "do": "quiz",
+            "objectId": "anvil"
+          },
+          {
+            "do": "answer",
+            "objectId": "anvil",
+            "answer": "anvil"
+          },
+          {
+            "do": "answer",
+            "objectId": "anvil",
+            "answer": "the anvil"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "register",
+          "objects": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "pool": [
+            [
+              "food",
+              [
+                "bread",
+                "cheese"
+              ]
+            ],
+            [
+              "tools",
+              [
+                "anvil"
+              ]
+            ]
+          ]
+        },
+        {
+          "do": "register",
+          "objects": [
+            "bread_stall",
+            "cheese_stall",
+            "anvil"
+          ],
+          "pool": [
+            [
+              "food",
+              [
+                "bread",
+                "cheese"
+              ]
+            ],
+            [
+              "tools",
+              [
+                "anvil",
+                "the anvil"
+              ]
+            ]
+          ]
+        },
+        {
+          "do": "seed",
+          "pool": [
+            [
+              "food",
+              [
+                "bread",
+                "cheese"
+              ]
+            ],
+            [
+              "tools",
+              [
+                "anvil",
+                "the anvil",
+                "hammer",
+                "tongs"
+              ]
+            ]
+          ]
+        },
+        {
+          "do": "quiz",
+          "quiz": {
+            "objectId": "anvil",
+            "label": "enclume",
+            "category": "tools",
+            "difficulty": "intermediate",
+            "prompt": "What does \"enclume\" mean?",
+            "options": [
+              {
+                "text": "the anvil",
+                "isCorrect": true
+              },
+              {
+                "text": "anvil",
+                "isCorrect": false
+              },
+              {
+                "text": "hammer",
+                "isCorrect": false
+              },
+              {
+                "text": "tongs",
+                "isCorrect": false
+              }
+            ]
+          }
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "correct": false,
+          "alreadyCollected": false,
+          "xp": 0,
+          "label": "enclume",
+          "answer": "the anvil",
+          "category": "tools",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "enclume",
+              "correct": false
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "enclume",
+              "correct": false
+            }
+          ],
+          "collected": []
+        },
+        {
+          "do": "answer",
+          "ok": true,
+          "correct": true,
+          "alreadyCollected": false,
+          "xp": 3,
+          "label": "enclume",
+          "answer": "the anvil",
+          "category": "tools",
+          "events": [
+            {
+              "type": "knowledge_applied",
+              "key": "enclume",
+              "correct": true
+            },
+            {
+              "type": "item_collected",
+              "itemId": "vocab_anvil",
+              "itemName": "enclume",
+              "quantity": 1,
+              "taxonomy": {
+                "category": "tools",
+                "itemType": "vocabulary",
+                "baseType": "noun"
+              }
+            },
+            {
+              "type": "vocabulary_used",
+              "word": "enclume",
+              "correct": true
+            }
+          ],
+          "collected": [
+            "anvil"
+          ]
+        }
+      ]
+    }
+  ]
+}

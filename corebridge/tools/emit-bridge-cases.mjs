@@ -668,8 +668,8 @@ function quests(root, coreCommit) {
 // last answered that state (the state has not changed since). Every value expected is
 // the corpus's own.
 
-/** The corpus files the language rows answer (slice 1, then slice 2), by their `file` key. */
-export const LANGUAGE_CASE_FILES = ['progress', 'save', 'prompts', 'hover', 'chat', 'bank', 'adaptation', 'pronunciation'];
+/** The corpus files the language rows answer (slice 1, slice 2, then slice 3), by their `file` key. */
+export const LANGUAGE_CASE_FILES = ['progress', 'save', 'prompts', 'hover', 'chat', 'bank', 'adaptation', 'pronunciation', 'collection', 'objects', 'writing'];
 
 class LanguageSteps {
 	constructor(where) {
@@ -1322,6 +1322,218 @@ function langPronunciation(S, c) {
 	throw new Error(`emit-bridge-cases: ${S.where}: pronunciation op ${c.op} has no transcription`);
 }
 
+// Slice 3: knowledge collection, object identification, point and name, examine
+// (world-words.ts), composition and listening (reading-writing.ts). A run's tuning is
+// the contract's default with the case's params over it (`$set`), as the runner spreads
+// them; a register step's ids are stated as `$ids`, a listening quest's answers as a
+// `$len` (core_vendor's LANGUAGE_RESHAPED_KEYS); every other member of every answer is
+// stated verbatim.
+
+/** The contract's default tuning `key` with the case's params over it (`{ ...DEFAULT, ...params }`). */
+function langTuning(S, contract, key, params) {
+	const over = params ?? {};
+	return { ...S.ref(contract, key), ...(Object.keys(over).length ? { $set: over } : {}) };
+}
+
+function langCollection(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	langCheck(c.op === 'run', S.where, `collection op ${c.op} has no transcription`);
+	const tuning = langTuning(S, S.call('language.contract', {}), 'collectionTuning', i.params);
+	let state = slotOf(S.call('language.collection.initial', { seed: i.seed }), 'state');
+	langCheck(e.length === i.steps.length, S.where, 'one answer per step');
+	i.steps.forEach((st, k) => {
+		const x = e[k];
+		langCheck(x.do === st.do, S.where, `step ${k} answers ${x.do}, not ${st.do}`);
+		switch (st.do) {
+			case 'register': {
+				const s = S.call('language.collection.registerTags', { state: S.cur(state), tags: st.tags });
+				S.want(s, ['state', 'tags'], { $ids: x.objects, $key: 'objectId' });
+				S.want(s, ['state', 'pool'], x.pool);
+				state = slotOf(s, 'state');
+				return;
+			}
+			case 'seed': {
+				const s = S.call('language.collection.seed', { state: S.cur(state), category: st.category, answers: st.answers });
+				S.want(s, ['state', 'pool'], x.pool);
+				state = slotOf(s, 'state');
+				return;
+			}
+			case 'reach':
+				S.call('language.collection.inReach', { state: S.cur(state), at: st.at, tuning }, { inReach: x.inReach });
+				return;
+			case 'quiz': {
+				const s = S.call('language.collection.quiz', { state: S.cur(state), objectId: st.objectId, tuning });
+				S.want(s, ['quiz'], x.quiz);
+				state = slotOf(s, 'state');
+				return;
+			}
+			case 'answer': {
+				const s = S.call('language.collection.answer', { state: S.cur(state), objectId: st.objectId, answer: st.answer, tuning });
+				S.want(s, ['ok'], x.ok);
+				if (x.ok) {
+					for (const key of ['correct', 'alreadyCollected', 'xp', 'label', 'answer', 'category', 'events']) S.want(s, [key], x[key]);
+					S.want(s, ['state', 'collected'], x.collected);
+				} else S.want(s, ['refusal'], x.refusal);
+				state = slotOf(s, 'state');
+				return;
+			}
+		}
+		throw new Error(`emit-bridge-cases: ${S.where}: collection run step ${st.do} has no transcription`);
+	});
+}
+
+function langObjects(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	switch (c.op) {
+		case 'normalize':
+			langCheck(e.length === i.pairs.length, S.where, 'one answer per pair');
+			i.pairs.forEach(([said, expected], k) => {
+				const a = S.call('language.identification.normalize', { text: said }, { normalized: e[k].said });
+				const b = S.call('language.identification.normalize', { text: expected }, { normalized: e[k].expected });
+				const d = S.call('language.identification.editDistance', { a: S.ref(a, 'normalized'), b: S.ref(b, 'normalized') }, { distance: e[k].distance });
+				// distanceScore's length is the expected answer's code points, as the runner counts them.
+				S.call('language.identification.distanceScore', { distance: S.ref(d, 'distance'), length: Array.from(e[k].expected).length }, { score: e[k].score });
+			});
+			return;
+		case 'identify': {
+			const tuning = langTuning(S, S.call('language.contract', {}), 'identificationTuning', i.params);
+			let state = slotOf(S.call('language.identification.initial', {}), 'state');
+			langCheck(e.length === i.steps.length, S.where, 'one answer per step');
+			i.steps.forEach((st, k) => {
+				const x = e[k];
+				langCheck(x.do === st.do, S.where, `step ${k} answers ${x.do}, not ${st.do}`);
+				switch (st.do) {
+					case 'register': {
+						const s = S.call('language.identification.registerTargets', { state: S.cur(state), targets: st.targets });
+						S.want(s, ['state', 'targets'], { $ids: x.targets });
+						state = slotOf(s, 'state');
+						return;
+					}
+					case 'prompt':
+						S.call('language.identification.prompt', { state: S.cur(state), id: st.id, tuning }, withoutKeys(x, 'do'));
+						return;
+					case 'answer': {
+						const s = S.call('language.identification.answer', { state: S.cur(state), id: st.id, input: st.input, tuning });
+						S.want(s, ['ok'], x.ok);
+						if (x.ok) {
+							for (const key of ['passed', 'score', 'feedback', 'bestMatch', 'objectiveCompleted', 'events']) S.want(s, [key], x[key]);
+							S.want(s, ['state', 'progress', st.id], x.progress);
+						} else S.want(s, ['refusal'], x.refusal);
+						state = slotOf(s, 'state');
+						return;
+					}
+					case 'remove': {
+						const s = S.call('language.identification.removeQuest', { state: S.cur(state), questId: st.questId });
+						S.want(s, ['state', 'targets'], { $ids: x.targets });
+						state = slotOf(s, 'state');
+						return;
+					}
+					case 'quest':
+						S.call('language.identification.quest', { state: S.cur(state), questId: st.questId }, withoutKeys(x, 'do'));
+						return;
+				}
+				throw new Error(`emit-bridge-cases: ${S.where}: objects identify step ${st.do} has no transcription`);
+			});
+			return;
+		}
+		case 'naming': {
+			const tuning = langTuning(S, S.call('language.contract', {}), 'namingTuning', i.params);
+			let state = slotOf(S.call('language.naming.initial', {}), 'state');
+			langCheck(e.length === i.steps.length, S.where, 'one answer per step');
+			i.steps.forEach((st, k) => {
+				const x = e[k];
+				langCheck(x.do === st.do, S.where, `step ${k} answers ${x.do}, not ${st.do}`);
+				switch (st.do) {
+					case 'register': {
+						let objects = st.objects;
+						if (st.world) objects = S.ref(S.call('language.naming.nameableObjects', { objects: st.world, targetLanguage: st.targetLanguage }), 'objects');
+						const s = S.call('language.naming.registerNameable', { state: S.cur(state), objects });
+						S.want(s, ['state', 'objects'], x.objects);
+						state = slotOf(s, 'state');
+						return;
+					}
+					case 'point':
+						S.call('language.naming.point', { state: S.cur(state), objectId: st.objectId, tuning }, withoutKeys(x, 'do'));
+						return;
+					case 'name': {
+						const s = S.call('language.naming.submit', { state: S.cur(state), objectId: st.objectId, input: st.input, tuning });
+						S.want(s, ['ok'], x.ok);
+						if (x.ok) for (const key of ['correct', 'xp', 'attempts', 'revealed', 'toasts', 'events']) S.want(s, [key], x[key]);
+						else S.want(s, ['refusal'], x.refusal);
+						state = slotOf(s, 'state');
+						return;
+					}
+				}
+				throw new Error(`emit-bridge-cases: ${S.where}: objects naming step ${st.do} has no transcription`);
+			});
+			return;
+		}
+		case 'examine':
+			S.call('language.objects.examine', { objects: i.objects ?? [], at: i.at, options: i.options }, e);
+			return;
+	}
+	throw new Error(`emit-bridge-cases: ${S.where}: objects op ${c.op} has no transcription`);
+}
+
+const LISTENING_STEP_ROWS = { register: 'language.listening.register', prompt: 'language.listening.prompt', chat: 'language.listening.chat', grade: 'language.listening.grade' };
+
+function langWriting(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	switch (c.op) {
+		case 'composition':
+			langCheck(e.length === i.texts.length, S.where, 'one answer per text');
+			i.texts.forEach((text, k) => {
+				langCheck(e[k].text === text, S.where, `text ${k} is not echoed`);
+				S.call('language.writing.countWords', { text }, { words: e[k].words });
+				S.call('language.writing.view', { config: i.config, text }, e[k].view);
+				S.call('language.writing.submit', { config: i.config, text }, e[k].submit);
+			});
+			return;
+		case 'listening': {
+			// The state starts as core's runner starts it: `[]`.
+			let state = null;
+			const cur = () => (state === null ? [] : S.cur(state));
+			langCheck(e.length === i.steps.length, S.where, 'one answer per step');
+			i.steps.forEach((st, k) => {
+				const x = e[k];
+				langCheck(x.do === st.do, S.where, `step ${k} answers ${x.do}, not ${st.do}`);
+				switch (st.do) {
+					case 'register': {
+						const s = S.call(LISTENING_STEP_ROWS.register, { state: cur(), quest: st.quest });
+						S.want(s, ['state'], { $ids: x.quests, $key: 'questId' });
+						state = slotOf(s, 'state');
+						return;
+					}
+					case 'prompt':
+						S.call(LISTENING_STEP_ROWS.prompt, { state: cur(), npcId: st.npcId }, { prompt: x.prompt });
+						return;
+					case 'chat': {
+						const s = S.call(LISTENING_STEP_ROWS.chat, { state: cur(), npcId: st.npcId, player: st.player ?? '', npc: st.npc ?? '' });
+						S.want(s, ['captured'], x.captured);
+						S.want(s, ['needsGrade'], x.needsGrade);
+						// Each quest as the runner projects it: its answers counted.
+						S.want(s, ['state'], x.quests.map((q) => sub({ questId: q.questId, storyHeard: q.storyHeard, answers: { $len: q.answers }, evaluated: q.evaluated, score: q.score })));
+						state = slotOf(s, 'state');
+						return;
+					}
+					case 'grade': {
+						const s = S.call(LISTENING_STEP_ROWS.grade, { state: cur(), questId: st.questId, score: typeof st.score === 'number' ? st.score : null });
+						S.want(s, ['completed'], x.completed);
+						state = slotOf(s, 'state');
+						return;
+					}
+				}
+				throw new Error(`emit-bridge-cases: ${S.where}: writing listening step ${st.do} has no transcription`);
+			});
+			return;
+		}
+	}
+	throw new Error(`emit-bridge-cases: ${S.where}: writing op ${c.op} has no transcription`);
+}
+
 const LANGUAGE_TRANSCRIBERS = {
 	progress: langProgress,
 	save: langSave,
@@ -1331,6 +1543,9 @@ const LANGUAGE_TRANSCRIBERS = {
 	bank: langBank,
 	adaptation: langAdaptation,
 	pronunciation: langPronunciation,
+	collection: langCollection,
+	objects: langObjects,
+	writing: langWriting,
 };
 
 /** One case file per language corpus file: `core-language-<file>.json`. */

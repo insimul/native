@@ -1,6 +1,6 @@
 {
  "area": "language",
- "description": "Hand-written (PL.native-language-rows slices 1 and 2): every language.* row, malformed books ([invalid-input] naming the keys core's own save reader names), refused inputs ([invalid-input] only for what core dereferences unread), and core's refusals as values in core's shape (empty_word, unknown_encounter, nothing_in_reach, no_prompt, no_quiz, no_target_language, empty_line, no_turns). Every expectation computed by core's own functions at the pin 45409ed (gen-bridge-language-cases.mts in the item's state record); core's corpora conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation}.json run as vendor/core/cases/core-language-*.json and in tests/language_corpus.cpp.",
+ "description": "Hand-written (PL.native-language-rows slices 1 to 3): every language.* row, malformed books ([invalid-input] naming the keys core's own save reader names), refused inputs ([invalid-input] only for what core dereferences unread), and core's refusals as values in core's shape (empty_word, unknown_encounter, nothing_in_reach, no_prompt, no_quiz, no_target_language, empty_line, no_turns, unknown_object, already_named, no_attempts_left, empty, too_short). Every expectation computed by core's own functions at the pin 45409ed (gen-bridge-language-cases.mts in the item's state record); core's corpora conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation,collection,objects,writing}.json run as vendor/core/cases/core-language-*.json and in tests/language_corpus.cpp.",
  "cases": [
   {
    "name": "language.contract states core's constants whole",
@@ -437,7 +437,199 @@
       "closeThreshold": 600,
       "phoneticWeight": 400,
       "passScore": 60,
-      "baseXp": 4
+      "baseXp": 4,
+      "worldWordRefusals": [
+       "unknown_object",
+       "already_named",
+       "no_attempts_left",
+       "nothing_in_reach"
+      ],
+      "signRoles": [
+       "sign",
+       "signpost",
+       "sign_post",
+       "notice",
+       "notice_board",
+       "billboard",
+       "plaque",
+       "marker",
+       "street_sign",
+       "shop_sign"
+      ],
+      "compositionRefusals": [
+       "empty",
+       "too_short"
+      ],
+      "commonEnglishWords": [
+       "the",
+       "a",
+       "an",
+       "is",
+       "are",
+       "was",
+       "were",
+       "be",
+       "been",
+       "being",
+       "have",
+       "has",
+       "had",
+       "do",
+       "does",
+       "did",
+       "will",
+       "would",
+       "could",
+       "should",
+       "may",
+       "might",
+       "shall",
+       "can",
+       "need",
+       "dare",
+       "ought",
+       "used",
+       "to",
+       "of",
+       "in",
+       "for",
+       "on",
+       "with",
+       "at",
+       "by",
+       "from",
+       "as",
+       "into",
+       "through",
+       "during",
+       "before",
+       "after",
+       "above",
+       "below",
+       "between",
+       "out",
+       "off",
+       "over",
+       "under",
+       "again",
+       "further",
+       "then",
+       "once",
+       "here",
+       "there",
+       "when",
+       "where",
+       "why",
+       "how",
+       "all",
+       "each",
+       "every",
+       "both",
+       "few",
+       "more",
+       "most",
+       "other",
+       "some",
+       "such",
+       "no",
+       "nor",
+       "not",
+       "only",
+       "own",
+       "same",
+       "so",
+       "than",
+       "too",
+       "very",
+       "just",
+       "because",
+       "but",
+       "and",
+       "or",
+       "if",
+       "while",
+       "although",
+       "i",
+       "me",
+       "my",
+       "myself",
+       "we",
+       "our",
+       "ours",
+       "ourselves",
+       "you",
+       "your",
+       "yours",
+       "yourself",
+       "yourselves",
+       "he",
+       "him",
+       "his",
+       "himself",
+       "she",
+       "her",
+       "hers",
+       "herself",
+       "it",
+       "its",
+       "itself",
+       "they",
+       "them",
+       "their",
+       "theirs",
+       "themselves",
+       "what",
+       "which",
+       "who",
+       "whom",
+       "this",
+       "that",
+       "these",
+       "those",
+       "am",
+       "about",
+       "up",
+       "down",
+       "don",
+       "t",
+       "hello",
+       "hi",
+       "yes",
+       "ok",
+       "okay",
+       "please",
+       "thank",
+       "thanks",
+       "sorry",
+       "well",
+       "oh",
+       "um",
+       "uh",
+       "like",
+       "know",
+       "think",
+       "want",
+       "get",
+       "go",
+       "come",
+       "make",
+       "see",
+       "look",
+       "say",
+       "said",
+       "tell",
+       "told",
+       "ask",
+       "asked",
+       "try",
+       "let",
+       "put",
+       "take",
+       "give",
+       "got"
+      ],
+      "listeningPass": 60,
+      "storyMinLength": 20
      }
     }
    ]
@@ -17567,6 +17759,8993 @@
       "questId": 5
      },
      "expectError": "[invalid-input] insimulcore: language.pronunciation.listenAndRepeat: `questId` must be a string"
+    }
+   ]
+  },
+  {
+   "name": "collection: distractors seeded, the seeded draw, reach at the default and a wider range, quizzes at four and two options and for an unknown object, answers wrong, right, again and unknown, a knowledge world",
+   "steps": [
+    {
+     "call": "language.collection.seed",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "category": "food",
+      "answers": [
+       "apple",
+       "bread",
+       "apple",
+       "cheese"
+      ]
+     },
+     "expect": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      }
+     }
+    },
+    {
+     "call": "language.collection.seed",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "category": "drinks",
+      "answers": [
+       "water",
+       "wine"
+      ]
+     },
+     "expect": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      }
+     }
+    },
+    {
+     "call": "language.collection.quizDraw",
+     "args": {
+      "seed": "hand",
+      "objectId": "bread_stall",
+      "quiz": 0,
+      "i": 1
+     },
+     "expect": {
+      "draw": 14837
+     }
+    },
+    {
+     "call": "language.collection.quizDraw",
+     "args": {
+      "seed": "hand",
+      "objectId": "bread_stall",
+      "quiz": 0,
+      "i": 2
+     },
+     "expect": {
+      "draw": 101590
+     }
+    },
+    {
+     "call": "language.collection.quizDraw",
+     "args": {
+      "seed": "hand",
+      "objectId": "bread_stall",
+      "quiz": 1,
+      "i": 1
+     },
+     "expect": {
+      "draw": 735388
+     }
+    },
+    {
+     "call": "language.collection.quizDraw",
+     "args": {
+      "seed": "brightwater",
+      "objectId": "anvil",
+      "quiz": 0,
+      "i": 3
+     },
+     "expect": {
+      "draw": 900522
+     }
+    },
+    {
+     "call": "language.collection.quizDraw",
+     "args": {
+      "seed": "",
+      "objectId": "",
+      "quiz": 0,
+      "i": 0
+     },
+     "expect": {
+      "draw": 990913
+     }
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "at": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      }
+     },
+     "expect": {
+      "inReach": [
+       "bread_stall",
+       "anvil"
+      ]
+     }
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "at": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "xpPerEntry": 3,
+       "options": 4,
+       "range": 10,
+       "kind": "vocabulary"
+      }
+     },
+     "expect": {
+      "inReach": [
+       "bread_stall",
+       "well",
+       "anvil"
+      ]
+     }
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "at": {
+       "x": 0,
+       "y": 3,
+       "z": 4
+      }
+     },
+     "expect": {
+      "inReach": [
+       "bread_stall",
+       "well"
+      ]
+     }
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "at": {
+       "x": 0,
+       "y": 3,
+       "z": 4
+      },
+      "tuning": {
+       "xpPerEntry": 3,
+       "options": 4,
+       "range": 10,
+       "kind": "vocabulary"
+      }
+     },
+     "expect": {
+      "inReach": [
+       "bread_stall",
+       "well",
+       "anvil"
+      ]
+     }
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "at": {
+       "x": 0,
+       "y": 6,
+       "z": 8.01
+      }
+     },
+     "expect": {
+      "inReach": [
+       "well"
+      ]
+     }
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "at": {
+       "x": 0,
+       "y": 6,
+       "z": 8.01
+      },
+      "tuning": {
+       "xpPerEntry": 3,
+       "options": 4,
+       "range": 10,
+       "kind": "vocabulary"
+      }
+     },
+     "expect": {
+      "inReach": [
+       "well",
+       "anvil"
+      ]
+     }
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "at": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": null
+     },
+     "expect": {
+      "inReach": [
+       "bread_stall",
+       "anvil"
+      ]
+     }
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "objectId": "bread_stall"
+     },
+     "expect": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {
+        "bread_stall": 1
+       }
+      },
+      "quiz": {
+       "objectId": "bread_stall",
+       "label": "pain",
+       "category": "food",
+       "difficulty": "beginner",
+       "prompt": "What does \"pain\" mean?",
+       "options": [
+        {
+         "text": "bread",
+         "isCorrect": true
+        },
+        {
+         "text": "water",
+         "isCorrect": false
+        },
+        {
+         "text": "cheese",
+         "isCorrect": false
+        },
+        {
+         "text": "apple",
+         "isCorrect": false
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {
+        "bread_stall": 1
+       }
+      },
+      "objectId": "bread_stall",
+      "tuning": {
+       "xpPerEntry": 3,
+       "options": 2,
+       "range": 5,
+       "kind": "vocabulary"
+      }
+     },
+     "expect": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "quiz": {
+       "objectId": "bread_stall",
+       "label": "pain",
+       "category": "food",
+       "difficulty": "beginner",
+       "prompt": "What does \"pain\" mean?",
+       "options": [
+        {
+         "text": "bread",
+         "isCorrect": true
+        },
+        {
+         "text": "cheese",
+         "isCorrect": false
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "objectId": "tower"
+     },
+     "expect": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "quiz": null
+     }
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "objectId": "bread_stall",
+      "answer": "Bread"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "correct": false,
+      "alreadyCollected": false,
+      "xp": 0,
+      "label": "pain",
+      "answer": "bread",
+      "category": "food",
+      "events": [
+       {
+        "type": "knowledge_applied",
+        "key": "pain",
+        "correct": false
+       },
+       {
+        "type": "vocabulary_used",
+        "word": "pain",
+        "correct": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "objectId": "bread_stall",
+      "answer": "bread"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "correct": true,
+      "alreadyCollected": false,
+      "xp": 3,
+      "label": "pain",
+      "answer": "bread",
+      "category": "food",
+      "events": [
+       {
+        "type": "knowledge_applied",
+        "key": "pain",
+        "correct": true
+       },
+       {
+        "type": "item_collected",
+        "itemId": "vocab_bread_stall",
+        "itemName": "pain",
+        "quantity": 1,
+        "taxonomy": {
+         "category": "food",
+         "itemType": "vocabulary",
+         "baseType": "noun"
+        }
+       },
+       {
+        "type": "vocabulary_used",
+        "word": "pain",
+        "correct": true
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "objectId": "bread_stall",
+      "answer": "nonsense"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "correct": true,
+      "alreadyCollected": true,
+      "xp": 0,
+      "label": "pain",
+      "answer": "bread",
+      "category": "food",
+      "events": []
+     }
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "objectId": "bread_stall"
+     },
+     "expect": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "quiz": null
+     }
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "at": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      }
+     },
+     "expect": {
+      "inReach": [
+       "anvil"
+      ]
+     }
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "objectId": "anvil",
+      "answer": "anvil",
+      "tuning": {
+       "xpPerEntry": 9,
+       "options": 3,
+       "range": 5,
+       "kind": "knowledge"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall",
+        "anvil"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "correct": true,
+      "alreadyCollected": false,
+      "xp": 9,
+      "label": "enclume",
+      "answer": "anvil",
+      "category": "tools",
+      "events": [
+       {
+        "type": "knowledge_applied",
+        "key": "enclume",
+        "correct": true
+       },
+       {
+        "type": "item_collected",
+        "itemId": "knowledge_anvil",
+        "itemName": "enclume",
+        "quantity": 1,
+        "taxonomy": {
+         "category": "tools",
+         "itemType": "knowledge"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "objectId": "anvil",
+      "answer": "hammer",
+      "tuning": {
+       "xpPerEntry": 9,
+       "options": 3,
+       "range": 5,
+       "kind": "knowledge"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "correct": false,
+      "alreadyCollected": false,
+      "xp": 0,
+      "label": "enclume",
+      "answer": "anvil",
+      "category": "tools",
+      "events": [
+       {
+        "type": "knowledge_applied",
+        "key": "enclume",
+        "correct": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "objectId": "tower",
+      "answer": "tower"
+     },
+     "expect": {
+      "ok": false,
+      "state": {
+       "seed": "hand",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        },
+        {
+         "objectId": "well",
+         "label": "puits",
+         "answer": "well",
+         "category": "places",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 6,
+          "z": 8
+         }
+        },
+        {
+         "objectId": "anvil",
+         "label": "enclume",
+         "answer": "anvil",
+         "category": "tools",
+         "difficulty": "intermediate",
+         "position": {
+          "x": 4,
+          "y": 0,
+          "z": 3
+         }
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread",
+          "apple",
+          "cheese"
+         ]
+        ],
+        [
+         "places",
+         [
+          "well"
+         ]
+        ],
+        [
+         "tools",
+         [
+          "anvil"
+         ]
+        ],
+        [
+         "drinks",
+         [
+          "water",
+          "wine"
+         ]
+        ]
+       ],
+       "collected": [
+        "bread_stall"
+       ],
+       "quizzes": {
+        "bread_stall": 2
+       }
+      },
+      "refusal": "unknown_object"
+     }
+    }
+   ]
+  },
+  {
+   "name": "collection refuses what core would dereference unread as [invalid-input]",
+   "steps": [
+    {
+     "call": "language.collection.seed",
+     "args": {
+      "state": [],
+      "category": "food",
+      "answers": []
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.seed: `state` must be a JSON object"
+    },
+    {
+     "call": "language.collection.seed",
+     "args": {
+      "state": {
+       "seed": "x",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "answers": []
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.seed: `category` must be a string"
+    },
+    {
+     "call": "language.collection.seed",
+     "args": {
+      "state": {
+       "seed": "x",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "category": "food",
+      "answers": [
+       1
+      ]
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.seed: `answers[0]` must be a string"
+    },
+    {
+     "call": "language.collection.quizDraw",
+     "args": {
+      "seed": "x",
+      "objectId": "a",
+      "quiz": "1",
+      "i": 0
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.quizDraw: `quiz` must be a finite number"
+    },
+    {
+     "call": "language.collection.quizDraw",
+     "args": {
+      "objectId": "a",
+      "quiz": 1,
+      "i": 0
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.quizDraw: `seed` must be a string"
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "x",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "at": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.inReach: `at.y` must be a finite number"
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "x",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0
+         },
+         "partOfSpeech": "noun"
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "at": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.inReach: `state.tags[0].position.z` must be a finite number"
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "x",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "at": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "xpPerEntry": 3,
+       "options": 4,
+       "range": "5",
+       "kind": "vocabulary"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.inReach: `tuning.range` must be a number (core's tuning)"
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "seed": "x",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "at": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "xpPerEntry": 3,
+       "options": 4,
+       "range": 5,
+       "kind": "lore"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.inReach: `tuning.kind` must be one of vocabulary, knowledge (got \"lore\")"
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "seed": "x",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "objectId": 5
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.quiz: `objectId` must be a string"
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "seed": "x",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {
+        "bread_stall": "x"
+       }
+      },
+      "objectId": "bread_stall"
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.quiz: `state.quizzes.bread_stall` must be a finite number"
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "seed": "x",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread"
+         ]
+        ]
+       ],
+       "collected": [],
+       "quizzes": {}
+      },
+      "objectId": "bread_stall",
+      "answer": null
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.answer: `answer` must be a string"
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "seed": "x",
+       "tags": [
+        {
+         "objectId": "bread_stall",
+         "label": "pain",
+         "answer": "bread",
+         "category": "food",
+         "difficulty": "beginner",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "partOfSpeech": "noun"
+        }
+       ],
+       "pool": [
+        [
+         "food",
+         [
+          "bread"
+         ]
+        ]
+       ],
+       "collected": [
+        3
+       ],
+       "quizzes": {}
+      },
+      "objectId": "bread_stall",
+      "answer": "bread"
+     },
+     "expectError": "[invalid-input] insimulcore: language.collection.answer: `state.collected[0]` must be a string"
+    }
+   ]
+  },
+  {
+   "name": "identification: normalised answers, edit distances over code points, distance scores, prompts at core's default tuning (an activity, an unknown target, the hint after two tries), answers far, close, accepted and after the pass, a quest's count, a quest removed",
+   "steps": [
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "  Ça VA, Élodie?! "
+     },
+     "expect": {
+      "normalized": "ca va elodie"
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "« le  pain »"
+     },
+     "expect": {
+      "normalized": "le pain"
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": ""
+     },
+     "expect": {
+      "normalized": ""
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "naïve—café"
+     },
+     "expect": {
+      "normalized": "naivecafe"
+     }
+    },
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": "Straße"
+     },
+     "expect": {
+      "normalized": "straße"
+     }
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": "pome",
+      "b": "pomme"
+     },
+     "expect": {
+      "distance": 1
+     }
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": "",
+      "b": "abc"
+     },
+     "expect": {
+      "distance": 3
+     }
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": "abc",
+      "b": ""
+     },
+     "expect": {
+      "distance": 3
+     }
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": "café",
+      "b": "cafe"
+     },
+     "expect": {
+      "distance": 1
+     }
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": "😀a",
+      "b": "a😀"
+     },
+     "expect": {
+      "distance": 2
+     }
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": "kitten",
+      "b": "sitting"
+     },
+     "expect": {
+      "distance": 3
+     }
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": 0,
+      "length": 0
+     },
+     "expect": {
+      "score": 100
+     }
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": 1,
+      "length": 0
+     },
+     "expect": {
+      "score": 0
+     }
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": 5,
+      "length": 4
+     },
+     "expect": {
+      "score": 0
+     }
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": 4,
+      "length": 4
+     },
+     "expect": {
+      "score": 0
+     }
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": 1,
+      "length": 5
+     },
+     "expect": {
+      "score": 80
+     }
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": 2,
+      "length": 3
+     },
+     "expect": {
+      "score": 33
+     }
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": 1,
+      "length": 8
+     },
+     "expect": {
+      "score": 88
+     }
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "apple"
+     },
+     "expect": {
+      "prompt": {
+       "targetId": "apple",
+       "questId": "q_market",
+       "objectiveId": "o1",
+       "promptText": "What is this? Answer in the target language.",
+       "isActivity": false
+      },
+      "events": [
+       {
+        "type": "identification_prompted",
+        "targetId": "apple",
+        "questId": "q_market",
+        "objectiveId": "o1",
+        "isActivity": false
+       },
+       {
+        "type": "visual_vocab_prompted",
+        "targetId": "apple",
+        "questId": "q_market",
+        "objectiveId": "o1",
+        "isActivity": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "baking",
+      "tuning": null
+     },
+     "expect": {
+      "prompt": {
+       "targetId": "baking",
+       "questId": "q_market",
+       "objectiveId": "o2",
+       "promptText": "What is this person doing? Answer in the target language.",
+       "isActivity": true
+      },
+      "events": [
+       {
+        "type": "identification_prompted",
+        "targetId": "baking",
+        "questId": "q_market",
+        "objectiveId": "o2",
+        "isActivity": true
+       },
+       {
+        "type": "visual_vocab_prompted",
+        "targetId": "baking",
+        "questId": "q_market",
+        "objectiveId": "o2",
+        "isActivity": true
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "tower"
+     },
+     "expect": {
+      "prompt": null,
+      "events": []
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "apple",
+      "input": "xyz"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 1,
+         "identified": false,
+         "bestScore": 0
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "passed": false,
+      "score": 0,
+      "feedback": "That doesn't seem right.",
+      "bestMatch": null,
+      "objectiveCompleted": false,
+      "events": [
+       {
+        "type": "identification_incorrect",
+        "targetId": "apple",
+        "questId": "q_market",
+        "score": 0,
+        "playerAnswer": "xyz"
+       },
+       {
+        "type": "vocabulary_used",
+        "word": "xyz",
+        "correct": false
+       },
+       {
+        "type": "visual_vocab_answered",
+        "targetId": "apple",
+        "questId": "q_market",
+        "passed": false,
+        "score": 0,
+        "playerAnswer": "xyz"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 1,
+         "identified": false,
+         "bestScore": 0
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "apple",
+      "input": "pomm"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "passed": true,
+      "score": 80,
+      "feedback": "Great job! Correct!",
+      "bestMatch": "pomme",
+      "objectiveCompleted": true,
+      "events": [
+       {
+        "type": "identification_correct",
+        "targetId": "apple",
+        "questId": "q_market",
+        "score": 80,
+        "playerAnswer": "pomm"
+       },
+       {
+        "type": "vocabulary_used",
+        "word": "pomme",
+        "correct": true
+       },
+       {
+        "type": "visual_vocab_answered",
+        "targetId": "apple",
+        "questId": "q_market",
+        "passed": true,
+        "score": 80,
+        "playerAnswer": "pomm"
+       },
+       {
+        "type": "object_identified",
+        "objectId": "apple",
+        "objectName": "Apple",
+        "targetWord": "pomme",
+        "category": "food"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "apple",
+      "input": "pomme rouge"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "passed": true,
+      "score": 80,
+      "feedback": "Already identified.",
+      "bestMatch": null,
+      "objectiveCompleted": true,
+      "events": []
+     }
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "apple"
+     },
+     "expect": {
+      "prompt": null,
+      "events": []
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "apple",
+      "input": "Une pomme!"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "passed": true,
+      "score": 80,
+      "feedback": "Already identified.",
+      "bestMatch": null,
+      "objectiveCompleted": true,
+      "events": []
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "apple",
+      "input": "anything"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "passed": true,
+      "score": 80,
+      "feedback": "Already identified.",
+      "bestMatch": null,
+      "objectiveCompleted": true,
+      "events": []
+     }
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "apple"
+     },
+     "expect": {
+      "prompt": null,
+      "events": []
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "well",
+      "input": "puis"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 1,
+         "identified": true,
+         "bestScore": 80
+        }
+       }
+      },
+      "passed": true,
+      "score": 80,
+      "feedback": "Great job! Correct!",
+      "bestMatch": "puits",
+      "objectiveCompleted": true,
+      "events": [
+       {
+        "type": "identification_correct",
+        "targetId": "well",
+        "questId": "q_square",
+        "score": 80,
+        "playerAnswer": "puis"
+       },
+       {
+        "type": "vocabulary_used",
+        "word": "puits",
+        "correct": true
+       },
+       {
+        "type": "visual_vocab_answered",
+        "targetId": "well",
+        "questId": "q_square",
+        "passed": true,
+        "score": 80,
+        "playerAnswer": "puis"
+       },
+       {
+        "type": "object_identified",
+        "objectId": "well",
+        "objectName": "well",
+        "targetWord": "puits"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "tower",
+      "input": "tour"
+     },
+     "expect": {
+      "ok": false,
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "refusal": "unknown_object"
+     }
+    },
+    {
+     "call": "language.identification.quest",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "questId": "q_market"
+     },
+     "expect": {
+      "identified": 1,
+      "total": 2,
+      "complete": false
+     }
+    },
+    {
+     "call": "language.identification.quest",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "questId": "q_square"
+     },
+     "expect": {
+      "identified": 0,
+      "total": 1,
+      "complete": false
+     }
+    },
+    {
+     "call": "language.identification.quest",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "questId": "q_none"
+     },
+     "expect": {
+      "identified": 0,
+      "total": 0,
+      "complete": false
+     }
+    },
+    {
+     "call": "language.identification.removeQuest",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "questId": "q_market"
+     },
+     "expect": {
+      "state": {
+       "targets": [
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "naming at core's default tuning: a prompt, an unknown object, a first-try name (any case, trimmed), a named object, three wrong tries revealing the word, a late right answer",
+   "steps": [
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {},
+       "named": []
+      },
+      "objectId": "anvil"
+     },
+     "expect": {
+      "ok": true,
+      "prompt": "Name this object in the target language (3 attempts left):",
+      "attemptsLeft": 3
+     }
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {},
+       "named": []
+      },
+      "objectId": "cart"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "unknown_object"
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {},
+       "named": []
+      },
+      "objectId": "barrel",
+      "input": " TONNEAU "
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "correct": true,
+      "xp": 5,
+      "attempts": 1,
+      "revealed": false,
+      "toasts": [
+       {
+        "title": "Correct!",
+        "text": "tonneau = barrel (+5 XP)"
+       }
+      ],
+      "events": [
+       {
+        "type": "object_named",
+        "objectId": "barrel",
+        "targetWord": "tonneau",
+        "category": "general",
+        "correct": true,
+        "attempts": 1
+       },
+       {
+        "type": "vocabulary_used",
+        "word": "tonneau",
+        "correct": true
+       },
+       {
+        "type": "object_identified",
+        "objectId": "barrel",
+        "objectName": "barrel",
+        "targetWord": "tonneau",
+        "category": "general"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "barrel"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "already_named"
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "barrel",
+      "input": "x"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "correct": true,
+      "xp": 0,
+      "attempts": 1,
+      "revealed": false,
+      "toasts": [],
+      "events": []
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "anvil",
+      "input": "marteau"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 1
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "correct": false,
+      "xp": 0,
+      "attempts": 1,
+      "revealed": false,
+      "toasts": [
+       {
+        "title": "Try again",
+        "text": "That's not quite right. Expected: Enclume"
+       }
+      ],
+      "events": [
+       {
+        "type": "vocabulary_used",
+        "word": "Enclume",
+        "correct": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 1
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "anvil",
+      "tuning": null
+     },
+     "expect": {
+      "ok": true,
+      "prompt": "Name this object in the target language (2 attempts left):",
+      "attemptsLeft": 2
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 1
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "anvil",
+      "input": "enclum"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 2
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "correct": false,
+      "xp": 0,
+      "attempts": 2,
+      "revealed": false,
+      "toasts": [
+       {
+        "title": "Try again",
+        "text": "That's not quite right. Expected: Enclume"
+       }
+      ],
+      "events": [
+       {
+        "type": "vocabulary_used",
+        "word": "Enclume",
+        "correct": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 2
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "anvil",
+      "tuning": null
+     },
+     "expect": {
+      "ok": true,
+      "prompt": "Name this object in the target language (1 attempts left):",
+      "attemptsLeft": 1
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 2
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "anvil",
+      "input": "tonneau"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 3
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "correct": false,
+      "xp": 0,
+      "attempts": 3,
+      "revealed": true,
+      "toasts": [
+       {
+        "title": "Answer revealed",
+        "text": "The word is: Enclume (anvil)"
+       },
+       {
+        "title": "Try again",
+        "text": "That's not quite right. Expected: Enclume"
+       }
+      ],
+      "events": [
+       {
+        "type": "vocabulary_used",
+        "word": "Enclume",
+        "correct": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 3
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "anvil",
+      "tuning": null
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "no_attempts_left"
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 3
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "anvil",
+      "input": "enclume"
+     },
+     "expect": {
+      "ok": true,
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 4
+       },
+       "named": [
+        "barrel",
+        "anvil"
+       ]
+      },
+      "correct": true,
+      "xp": 2,
+      "attempts": 4,
+      "revealed": false,
+      "toasts": [
+       {
+        "title": "Correct!",
+        "text": "Enclume = anvil (+2 XP)"
+       }
+      ],
+      "events": [
+       {
+        "type": "object_named",
+        "objectId": "anvil",
+        "targetWord": "Enclume",
+        "category": "tools",
+        "correct": true,
+        "attempts": 4
+       },
+       {
+        "type": "vocabulary_used",
+        "word": "Enclume",
+        "correct": true
+       },
+       {
+        "type": "object_identified",
+        "objectId": "anvil",
+        "objectName": "anvil",
+        "targetWord": "Enclume",
+        "category": "tools"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 3
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "cart",
+      "input": "charrette"
+     },
+     "expect": {
+      "ok": false,
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 3
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "refusal": "unknown_object"
+     }
+    }
+   ]
+  },
+  {
+   "name": "objects: sign roles, fluency tiers at their edges, the nearest object (the default reach absent or null, a narrower and a wider one, nothing in reach, a role-less object never chosen), examine with a null reach and outside a language world",
+   "steps": [
+    {
+     "call": "language.objects.isSignRole",
+     "args": {
+      "role": "sign"
+     },
+     "expect": {
+      "sign": true
+     }
+    },
+    {
+     "call": "language.objects.isSignRole",
+     "args": {
+      "role": "Shop_Sign"
+     },
+     "expect": {
+      "sign": true
+     }
+    },
+    {
+     "call": "language.objects.isSignRole",
+     "args": {
+      "role": "noticeboard"
+     },
+     "expect": {
+      "sign": true
+     }
+    },
+    {
+     "call": "language.objects.isSignRole",
+     "args": {
+      "role": "BILLBOARD"
+     },
+     "expect": {
+      "sign": true
+     }
+    },
+    {
+     "call": "language.objects.isSignRole",
+     "args": {
+      "role": "plaque"
+     },
+     "expect": {
+      "sign": true
+     }
+    },
+    {
+     "call": "language.objects.isSignRole",
+     "args": {
+      "role": "design"
+     },
+     "expect": {
+      "sign": true
+     }
+    },
+    {
+     "call": "language.objects.isSignRole",
+     "args": {
+      "role": "barrel"
+     },
+     "expect": {
+      "sign": false
+     }
+    },
+    {
+     "call": "language.objects.isSignRole",
+     "args": {
+      "role": ""
+     },
+     "expect": {
+      "sign": false
+     }
+    },
+    {
+     "call": "language.objects.fluencyTier",
+     "args": {
+      "fluency": 0
+     },
+     "expect": {
+      "tier": "beginner"
+     }
+    },
+    {
+     "call": "language.objects.fluencyTier",
+     "args": {
+      "fluency": 29999
+     },
+     "expect": {
+      "tier": "beginner"
+     }
+    },
+    {
+     "call": "language.objects.fluencyTier",
+     "args": {
+      "fluency": 30000
+     },
+     "expect": {
+      "tier": "intermediate"
+     }
+    },
+    {
+     "call": "language.objects.fluencyTier",
+     "args": {
+      "fluency": 59999
+     },
+     "expect": {
+      "tier": "intermediate"
+     }
+    },
+    {
+     "call": "language.objects.fluencyTier",
+     "args": {
+      "fluency": 60000
+     },
+     "expect": {
+      "tier": "advanced"
+     }
+    },
+    {
+     "call": "language.objects.fluencyTier",
+     "args": {
+      "fluency": 100000
+     },
+     "expect": {
+      "tier": "advanced"
+     }
+    },
+    {
+     "call": "language.objects.nearest",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_a",
+        "role": "barrel",
+        "name": "barrel",
+        "position": {
+         "x": 3,
+         "z": 4
+        }
+       },
+       {
+        "id": "w_b",
+        "role": "crate",
+        "position": {
+         "x": -3,
+         "z": -4
+        }
+       },
+       {
+        "id": "w_c",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 0,
+         "z": 7
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expect": {
+      "object": {
+       "id": "w_a",
+       "role": "barrel",
+       "name": "barrel",
+       "position": {
+        "x": 3,
+        "z": 4
+       }
+      }
+     }
+    },
+    {
+     "call": "language.objects.nearest",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_a",
+        "role": "barrel",
+        "name": "barrel",
+        "position": {
+         "x": 3,
+         "z": 4
+        }
+       },
+       {
+        "id": "w_b",
+        "role": "crate",
+        "position": {
+         "x": -3,
+         "z": -4
+        }
+       },
+       {
+        "id": "w_c",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 0,
+         "z": 7
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "range": null
+     },
+     "expect": {
+      "object": {
+       "id": "w_a",
+       "role": "barrel",
+       "name": "barrel",
+       "position": {
+        "x": 3,
+        "z": 4
+       }
+      }
+     }
+    },
+    {
+     "call": "language.objects.nearest",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_a",
+        "role": "barrel",
+        "name": "barrel",
+        "position": {
+         "x": 3,
+         "z": 4
+        }
+       },
+       {
+        "id": "w_b",
+        "role": "crate",
+        "position": {
+         "x": -3,
+         "z": -4
+        }
+       },
+       {
+        "id": "w_c",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 0,
+         "z": 7
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "range": 4
+     },
+     "expect": {
+      "object": null
+     }
+    },
+    {
+     "call": "language.objects.nearest",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_a",
+        "role": "barrel",
+        "name": "barrel",
+        "position": {
+         "x": 3,
+         "z": 4
+        }
+       },
+       {
+        "id": "w_b",
+        "role": "crate",
+        "position": {
+         "x": -3,
+         "z": -4
+        }
+       },
+       {
+        "id": "w_c",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 0,
+         "z": 7
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 2
+      },
+      "range": 10
+     },
+     "expect": {
+      "object": {
+       "id": "w_a",
+       "role": "barrel",
+       "name": "barrel",
+       "position": {
+        "x": 3,
+        "z": 4
+       }
+      }
+     }
+    },
+    {
+     "call": "language.objects.nearest",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_a",
+        "role": "barrel",
+        "name": "barrel",
+        "position": {
+         "x": 3,
+         "z": 4
+        }
+       },
+       {
+        "id": "w_b",
+        "role": "crate",
+        "position": {
+         "x": -3,
+         "z": -4
+        }
+       },
+       {
+        "id": "w_c",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 0,
+         "z": 7
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 9
+      }
+     },
+     "expect": {
+      "object": {
+       "id": "w_c",
+       "role": "shop_sign",
+       "name": "Bakery",
+       "position": {
+        "x": 0,
+        "z": 7
+       },
+       "translations": {
+        "French": {
+         "targetWord": "Boulangerie"
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_a",
+        "role": "barrel",
+        "name": "barrel",
+        "position": {
+         "x": 3,
+         "z": 4
+        }
+       },
+       {
+        "id": "w_b",
+        "role": "crate",
+        "position": {
+         "x": -3,
+         "z": -4
+        }
+       },
+       {
+        "id": "w_c",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 0,
+         "z": 7
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 6
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 45000,
+       "range": null
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "read_sign",
+      "title": "Boulangerie",
+      "description": "You read the sign.",
+      "tier": "intermediate",
+      "narrative": "You read the sign: \"Boulangerie\"",
+      "events": [
+       {
+        "type": "sign_read",
+        "signId": "w_c",
+        "objectId": "w_c",
+        "targetText": "Boulangerie",
+        "nativeText": "Bakery"
+       },
+       {
+        "type": "object_examined",
+        "objectId": "w_c",
+        "objectName": "Bakery",
+        "targetWord": "Boulangerie",
+        "targetLanguage": "French"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_a",
+        "role": "barrel",
+        "name": "barrel",
+        "position": {
+         "x": 3,
+         "z": 4
+        }
+       },
+       {
+        "id": "w_b",
+        "role": "crate",
+        "position": {
+         "x": -3,
+         "z": -4
+        }
+       },
+       {
+        "id": "w_c",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 0,
+         "z": 7
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": -3,
+       "z": -3
+      },
+      "options": {
+       "languageWorld": false,
+       "targetLanguage": "French",
+       "fluency": 45000,
+       "range": null
+      }
+     },
+     "expect": {
+      "ok": true,
+      "action": "examine_object",
+      "title": "crate",
+      "description": "You examine the object closely.",
+      "tier": null,
+      "narrative": null,
+      "events": [
+       {
+        "type": "object_examined",
+        "objectId": "w_b",
+        "objectName": "crate",
+        "targetWord": "",
+        "targetLanguage": "French"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "identification, naming and examine refuse what core would dereference unread as [invalid-input]",
+   "steps": [
+    {
+     "call": "language.identification.normalize",
+     "args": {
+      "text": 1
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.normalize: `text` must be a string"
+    },
+    {
+     "call": "language.identification.editDistance",
+     "args": {
+      "a": "x"
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.editDistance: `b` must be a string"
+    },
+    {
+     "call": "language.identification.distanceScore",
+     "args": {
+      "distance": 1,
+      "length": null
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.distanceScore: `length` must be a finite number"
+    },
+    {
+     "call": "language.identification.removeQuest",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.removeQuest: `questId` must be a string"
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "a"
+        }
+       ],
+       "progress": {}
+      },
+      "id": "a"
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.prompt: `state.progress.a` must be a JSON object"
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.prompt: `id` must be a string"
+    },
+    {
+     "call": "language.identification.prompt",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "well",
+      "tuning": {
+       "passScore": 45
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.prompt: `tuning.hintAfter` must be a number (core's tuning)"
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "a"
+        }
+       ],
+       "progress": {
+        "a": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "a",
+      "input": "x"
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.answer: `state.targets[0].expected` must be a string"
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "a",
+         "expected": "b",
+         "accepted": [
+          1
+         ]
+        }
+       ],
+       "progress": {
+        "a": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "a",
+      "input": "x"
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.answer: `state.targets[0].accepted[0]` must be a string"
+    },
+    {
+     "call": "language.identification.answer",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "id": "well"
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.answer: `input` must be a string"
+    },
+    {
+     "call": "language.identification.quest",
+     "args": {
+      "state": {
+       "targets": [
+        {
+         "id": "apple",
+         "questId": "q_market",
+         "objectiveId": "o1",
+         "expected": "pomme",
+         "hint": "apple",
+         "accepted": [
+          "une pomme"
+         ],
+         "objectName": "Apple",
+         "category": "food"
+        },
+        {
+         "id": "baking",
+         "questId": "q_market",
+         "objectiveId": "o2",
+         "expected": "elle fait du pain",
+         "hint": "baking",
+         "isActivity": true
+        },
+        {
+         "id": "well",
+         "questId": "q_square",
+         "objectiveId": "o1",
+         "expected": "puits",
+         "hint": "well"
+        }
+       ],
+       "progress": {
+        "apple": {
+         "attempts": 2,
+         "identified": true,
+         "bestScore": 80
+        },
+        "baking": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        },
+        "well": {
+         "attempts": 0,
+         "identified": false,
+         "bestScore": 0
+        }
+       }
+      },
+      "questId": 3
+     },
+     "expectError": "[invalid-input] insimulcore: language.identification.quest: `questId` must be a string"
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "anvil": "2"
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "anvil"
+     },
+     "expectError": "[invalid-input] insimulcore: language.naming.point: `state.attempts.anvil` must be a finite number"
+    },
+    {
+     "call": "language.naming.point",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 3
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "anvil",
+      "tuning": {
+       "range": 8,
+       "xpFirstTry": 5,
+       "xpRetry": 2,
+       "maxAttempts": 3,
+       "caseInsensitive": "yes"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.naming.point: `tuning.caseInsensitive` must be a boolean (core's tuning)"
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "a"
+        }
+       ],
+       "attempts": {},
+       "named": []
+      },
+      "objectId": "a",
+      "input": "x"
+     },
+     "expectError": "[invalid-input] insimulcore: language.naming.submit: `state.objects[0].targetWord` must be a string"
+    },
+    {
+     "call": "language.naming.submit",
+     "args": {
+      "state": {
+       "objects": [
+        {
+         "objectId": "anvil",
+         "targetWord": "Enclume",
+         "meaning": "anvil",
+         "category": "tools",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "objectId": "barrel",
+         "targetWord": "tonneau",
+         "meaning": "barrel",
+         "category": "general",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "attempts": {
+        "barrel": 1,
+        "anvil": 3
+       },
+       "named": [
+        "barrel"
+       ]
+      },
+      "objectId": "anvil"
+     },
+     "expectError": "[invalid-input] insimulcore: language.naming.submit: `input` must be a string"
+    },
+    {
+     "call": "language.objects.isSignRole",
+     "args": {
+      "role": null
+     },
+     "expectError": "[invalid-input] insimulcore: language.objects.isSignRole: `role` must be a string"
+    },
+    {
+     "call": "language.objects.fluencyTier",
+     "args": {
+      "fluency": "30000"
+     },
+     "expectError": "[invalid-input] insimulcore: language.objects.fluencyTier: `fluency` must be a finite number"
+    },
+    {
+     "call": "language.objects.nearest",
+     "args": {
+      "objects": {},
+      "at": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.objects.nearest: `objects` must be an array"
+    },
+    {
+     "call": "language.objects.nearest",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_a",
+        "role": "barrel",
+        "name": "barrel",
+        "position": {
+         "x": 3,
+         "z": 4
+        }
+       },
+       {
+        "id": "w_b",
+        "role": "crate",
+        "position": {
+         "x": -3,
+         "z": -4
+        }
+       },
+       {
+        "id": "w_c",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 0,
+         "z": 7
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.objects.nearest: `at.z` must be a finite number"
+    },
+    {
+     "call": "language.objects.nearest",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_a",
+        "role": "barrel",
+        "name": "barrel",
+        "position": {
+         "x": 3,
+         "z": 4
+        }
+       },
+       {
+        "id": "w_b",
+        "role": "crate",
+        "position": {
+         "x": -3,
+         "z": -4
+        }
+       },
+       {
+        "id": "w_c",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 0,
+         "z": 7
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "range": "far"
+     },
+     "expectError": "[invalid-input] insimulcore: language.objects.nearest: `range` must be a finite number"
+    },
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_a",
+        "role": "barrel",
+        "name": "barrel",
+        "position": {
+         "x": 3,
+         "z": 4
+        }
+       },
+       {
+        "id": "w_b",
+        "role": "crate",
+        "position": {
+         "x": -3,
+         "z": -4
+        }
+       },
+       {
+        "id": "w_c",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 0,
+         "z": 7
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.objects.examine: `options` must be a JSON object"
+    },
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "w_cart",
+        "role": "",
+        "name": "cart",
+        "position": {
+         "x": 0,
+         "z": 0
+        }
+       },
+       {
+        "id": "w_a",
+        "role": "barrel",
+        "name": "barrel",
+        "position": {
+         "x": 3,
+         "z": 4
+        }
+       },
+       {
+        "id": "w_b",
+        "role": "crate",
+        "position": {
+         "x": -3,
+         "z": -4
+        }
+       },
+       {
+        "id": "w_c",
+        "role": "shop_sign",
+        "name": "Bakery",
+        "position": {
+         "x": 0,
+         "z": 7
+        },
+        "translations": {
+         "French": {
+          "targetWord": "Boulangerie"
+         }
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "options": {
+       "languageWorld": "yes",
+       "targetLanguage": "French",
+       "fluency": 45000,
+       "range": null
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.objects.examine: `options.languageWorld` must be a boolean"
+    },
+    {
+     "call": "language.objects.examine",
+     "args": {
+      "objects": [
+       {
+        "id": "s",
+        "role": "board",
+        "position": {
+         "x": 0,
+         "z": 0
+        },
+        "sign": {
+         "signId": "s",
+         "targetText": "Avis"
+        }
+       }
+      ],
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "options": {
+       "languageWorld": true,
+       "targetLanguage": "French",
+       "fluency": 45000,
+       "range": null
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.objects.examine: `objects[0].sign.nativeText` must be a string"
+    }
+   ]
+  },
+  {
+   "name": "composition: word counts over every kind of space, the modal and the submit with no minimum (absent or null, read as core's default), a zero minimum describing the scene, a minimum of three",
+   "steps": [
+    {
+     "call": "language.writing.countWords",
+     "args": {
+      "text": ""
+     },
+     "expect": {
+      "words": 0
+     }
+    },
+    {
+     "call": "language.writing.countWords",
+     "args": {
+      "text": " \n\t "
+     },
+     "expect": {
+      "words": 0
+     }
+    },
+    {
+     "call": "language.writing.countWords",
+     "args": {
+      "text": "Bonjour"
+     },
+     "expect": {
+      "words": 1
+     }
+    },
+    {
+     "call": "language.writing.countWords",
+     "args": {
+      "text": "  un  deux\ttrois\nquatre  "
+     },
+     "expect": {
+      "words": 4
+     }
+    },
+    {
+     "call": "language.writing.view",
+     "args": {
+      "config": {
+       "questId": "q1",
+       "objectiveId": "o1",
+       "prompt": "p",
+       "minWords": null,
+       "objectiveType": null
+      },
+      "text": ""
+     },
+     "expect": {
+      "header": "Written Response",
+      "instructions": "Write your response in the target language below.",
+      "count": 0,
+      "label": "0 words",
+      "tone": "success",
+      "canSubmit": false
+     }
+    },
+    {
+     "call": "language.writing.submit",
+     "args": {
+      "config": {
+       "questId": "q1",
+       "objectiveId": "o1",
+       "prompt": "p",
+       "minWords": null,
+       "objectiveType": null
+      },
+      "text": ""
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "empty"
+     }
+    },
+    {
+     "call": "language.writing.view",
+     "args": {
+      "config": {
+       "questId": "q1",
+       "objectiveId": "o1",
+       "prompt": "p",
+       "minWords": null,
+       "objectiveType": null
+      },
+      "text": "Une fontaine"
+     },
+     "expect": {
+      "header": "Written Response",
+      "instructions": "Write your response in the target language below.",
+      "count": 2,
+      "label": "2 words",
+      "tone": "success",
+      "canSubmit": true
+     }
+    },
+    {
+     "call": "language.writing.submit",
+     "args": {
+      "config": {
+       "questId": "q1",
+       "objectiveId": "o1",
+       "prompt": "p",
+       "minWords": null,
+       "objectiveType": null
+      },
+      "text": "Une fontaine"
+     },
+     "expect": {
+      "ok": true,
+      "text": "Une fontaine",
+      "wordCount": 2,
+      "events": [
+       {
+        "type": "writing_submitted",
+        "text": "Une fontaine",
+        "wordCount": 2,
+        "questId": "q1"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.writing.view",
+     "args": {
+      "config": {
+       "questId": "q1",
+       "objectiveId": "o1",
+       "prompt": "p",
+       "minWords": null,
+       "objectiveType": null
+      },
+      "text": "  la  grande fontaine  "
+     },
+     "expect": {
+      "header": "Written Response",
+      "instructions": "Write your response in the target language below.",
+      "count": 3,
+      "label": "3 words",
+      "tone": "success",
+      "canSubmit": true
+     }
+    },
+    {
+     "call": "language.writing.submit",
+     "args": {
+      "config": {
+       "questId": "q1",
+       "objectiveId": "o1",
+       "prompt": "p",
+       "minWords": null,
+       "objectiveType": null
+      },
+      "text": "  la  grande fontaine  "
+     },
+     "expect": {
+      "ok": true,
+      "text": "la  grande fontaine",
+      "wordCount": 3,
+      "events": [
+       {
+        "type": "writing_submitted",
+        "text": "la  grande fontaine",
+        "wordCount": 3,
+        "questId": "q1"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.writing.view",
+     "args": {
+      "config": {
+       "questId": "q2",
+       "objectiveId": "o2",
+       "prompt": "p",
+       "minWords": 0,
+       "objectiveType": "describe_scene"
+      },
+      "text": ""
+     },
+     "expect": {
+      "header": "Describe the Scene",
+      "instructions": "Write your response in the target language below.",
+      "count": 0,
+      "label": "0 words",
+      "tone": "success",
+      "canSubmit": false
+     }
+    },
+    {
+     "call": "language.writing.submit",
+     "args": {
+      "config": {
+       "questId": "q2",
+       "objectiveId": "o2",
+       "prompt": "p",
+       "minWords": 0,
+       "objectiveType": "describe_scene"
+      },
+      "text": ""
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "empty"
+     }
+    },
+    {
+     "call": "language.writing.view",
+     "args": {
+      "config": {
+       "questId": "q2",
+       "objectiveId": "o2",
+       "prompt": "p",
+       "minWords": 0,
+       "objectiveType": "describe_scene"
+      },
+      "text": "Une fontaine"
+     },
+     "expect": {
+      "header": "Describe the Scene",
+      "instructions": "Write your response in the target language below.",
+      "count": 2,
+      "label": "2 words",
+      "tone": "success",
+      "canSubmit": true
+     }
+    },
+    {
+     "call": "language.writing.submit",
+     "args": {
+      "config": {
+       "questId": "q2",
+       "objectiveId": "o2",
+       "prompt": "p",
+       "minWords": 0,
+       "objectiveType": "describe_scene"
+      },
+      "text": "Une fontaine"
+     },
+     "expect": {
+      "ok": true,
+      "text": "Une fontaine",
+      "wordCount": 2,
+      "events": [
+       {
+        "type": "writing_submitted",
+        "text": "Une fontaine",
+        "wordCount": 2,
+        "questId": "q2"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.writing.view",
+     "args": {
+      "config": {
+       "questId": "q2",
+       "objectiveId": "o2",
+       "prompt": "p",
+       "minWords": 0,
+       "objectiveType": "describe_scene"
+      },
+      "text": "  la  grande fontaine  "
+     },
+     "expect": {
+      "header": "Describe the Scene",
+      "instructions": "Write your response in the target language below.",
+      "count": 3,
+      "label": "3 words",
+      "tone": "success",
+      "canSubmit": true
+     }
+    },
+    {
+     "call": "language.writing.submit",
+     "args": {
+      "config": {
+       "questId": "q2",
+       "objectiveId": "o2",
+       "prompt": "p",
+       "minWords": 0,
+       "objectiveType": "describe_scene"
+      },
+      "text": "  la  grande fontaine  "
+     },
+     "expect": {
+      "ok": true,
+      "text": "la  grande fontaine",
+      "wordCount": 3,
+      "events": [
+       {
+        "type": "writing_submitted",
+        "text": "la  grande fontaine",
+        "wordCount": 3,
+        "questId": "q2"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.writing.view",
+     "args": {
+      "config": {
+       "questId": "q3",
+       "objectiveId": "o3",
+       "prompt": "p",
+       "minWords": 3
+      },
+      "text": ""
+     },
+     "expect": {
+      "header": "Written Response",
+      "instructions": "Write your response in the target language below. Minimum 3 words required.",
+      "count": 0,
+      "label": "0 / 3 words",
+      "tone": "danger",
+      "canSubmit": false
+     }
+    },
+    {
+     "call": "language.writing.submit",
+     "args": {
+      "config": {
+       "questId": "q3",
+       "objectiveId": "o3",
+       "prompt": "p",
+       "minWords": 3
+      },
+      "text": ""
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "empty"
+     }
+    },
+    {
+     "call": "language.writing.view",
+     "args": {
+      "config": {
+       "questId": "q3",
+       "objectiveId": "o3",
+       "prompt": "p",
+       "minWords": 3
+      },
+      "text": "Une fontaine"
+     },
+     "expect": {
+      "header": "Written Response",
+      "instructions": "Write your response in the target language below. Minimum 3 words required.",
+      "count": 2,
+      "label": "2 / 3 words",
+      "tone": "danger",
+      "canSubmit": false
+     }
+    },
+    {
+     "call": "language.writing.submit",
+     "args": {
+      "config": {
+       "questId": "q3",
+       "objectiveId": "o3",
+       "prompt": "p",
+       "minWords": 3
+      },
+      "text": "Une fontaine"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": "too_short"
+     }
+    },
+    {
+     "call": "language.writing.view",
+     "args": {
+      "config": {
+       "questId": "q3",
+       "objectiveId": "o3",
+       "prompt": "p",
+       "minWords": 3
+      },
+      "text": "  la  grande fontaine  "
+     },
+     "expect": {
+      "header": "Written Response",
+      "instructions": "Write your response in the target language below. Minimum 3 words required.",
+      "count": 3,
+      "label": "3 / 3 words",
+      "tone": "success",
+      "canSubmit": true
+     }
+    },
+    {
+     "call": "language.writing.submit",
+     "args": {
+      "config": {
+       "questId": "q3",
+       "objectiveId": "o3",
+       "prompt": "p",
+       "minWords": 3
+      },
+      "text": "  la  grande fontaine  "
+     },
+     "expect": {
+      "ok": true,
+      "text": "la  grande fontaine",
+      "wordCount": 3,
+      "events": [
+       {
+        "type": "writing_submitted",
+        "text": "la  grande fontaine",
+        "wordCount": 3,
+        "questId": "q3"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "listening: registered with null NPCs and language, re-registered by id, both prompts and none, a grade before the answers, an answer past the last question, the local grade then a later server grade, the fallback grade on its own (short words, no questions, no answers, partial matches)",
+   "steps": [
+    {
+     "call": "language.listening.register",
+     "args": {
+      "state": [],
+      "quest": {
+       "questId": "q_story",
+       "storyNpcId": "cora",
+       "answerNpcId": "dov",
+       "questions": [
+        {
+         "question": "Who?",
+         "correctAnswer": "the old baker"
+        },
+        {
+         "question": "What?",
+         "correctAnswer": "a big loaf"
+        }
+       ]
+      }
+     },
+     "expect": {
+      "state": [
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.listening.register",
+     "args": {
+      "state": [
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "quest": {
+       "questId": "q_null",
+       "storyNpcId": null,
+       "answerNpcId": null,
+       "targetLanguage": null,
+       "questions": []
+      }
+     },
+     "expect": {
+      "state": [
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.listening.register",
+     "args": {
+      "state": [
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "quest": {
+       "questId": "q_story",
+       "storyNpcId": "cora",
+       "answerNpcId": "dov",
+       "targetLanguage": "French",
+       "questions": [
+        {
+         "question": "Who?",
+         "correctAnswer": "the old baker"
+        },
+        {
+         "question": "What?",
+         "correctAnswer": "a big loaf"
+        }
+       ]
+      }
+     },
+     "expect": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.listening.prompt",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "npcId": "cora"
+     },
+     "expect": {
+      "prompt": "\n\n[QUEST INSTRUCTION — LISTENING COMPREHENSION]\nYou have a special task: Tell the player a short story (3-5 sentences) in French. Use simple, clear vocabulary appropriate for a language learner. The story should include concrete details (names, colors, locations, actions) that the player can be quizzed on later. After telling the story, ask the player if they understood and encourage them to visit another NPC to discuss what they heard.\n"
+     }
+    },
+    {
+     "call": "language.listening.prompt",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "npcId": "nobody"
+     },
+     "expect": {
+      "prompt": null
+     }
+    },
+    {
+     "call": "language.listening.chat",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "npcId": "cora",
+      "player": "",
+      "npc": "Le vieux boulanger a fait un grand pain."
+     },
+     "expect": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "captured": "story",
+      "needsGrade": null
+     }
+    },
+    {
+     "call": "language.listening.prompt",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "npcId": "dov"
+     },
+     "expect": {
+      "prompt": "\n\n[QUEST INSTRUCTION — LISTENING COMPREHENSION CHECK]\nThe player just heard a story from another NPC. Your job is to check their comprehension.\nOriginal story: \"Le vieux boulanger a fait un grand pain.\"\n\nAsk these comprehension questions one at a time:\n  1. \"Who?\" (expected answer: \"the old baker\")\n  2. \"What?\" (expected answer: \"a big loaf\")\n\nAfter asking each question, wait for the player's response before moving to the next one. Be encouraging but don't give away the answers. After all questions have been answered, thank the player for their effort.\n"
+     }
+    },
+    {
+     "call": "language.listening.grade",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "questId": "q_story",
+      "score": null
+     },
+     "expect": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "completed": null
+     }
+    },
+    {
+     "call": "language.listening.chat",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "npcId": "dov",
+      "player": "The old baker",
+      "npc": "Bien."
+     },
+     "expect": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker"
+        ],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "captured": "answer",
+      "needsGrade": null
+     }
+    },
+    {
+     "call": "language.listening.chat",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker"
+        ],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "npcId": "dov",
+      "player": "a loaf",
+      "npc": "Merci."
+     },
+     "expect": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker",
+         "a loaf"
+        ],
+        "evaluated": true,
+        "score": null
+       }
+      ],
+      "captured": "answer",
+      "needsGrade": {
+       "questId": "q_story",
+       "story": "Le vieux boulanger a fait un grand pain.",
+       "questions": [
+        {
+         "question": "Who?",
+         "correctAnswer": "the old baker"
+        },
+        {
+         "question": "What?",
+         "correctAnswer": "a big loaf"
+        }
+       ],
+       "answers": [
+        "The old baker",
+        "a loaf"
+       ],
+       "targetLanguage": "French"
+      }
+     }
+    },
+    {
+     "call": "language.listening.chat",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker",
+         "a loaf"
+        ],
+        "evaluated": true,
+        "score": null
+       }
+      ],
+      "npcId": "dov",
+      "player": "more",
+      "npc": "Fini."
+     },
+     "expect": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker",
+         "a loaf"
+        ],
+        "evaluated": true,
+        "score": null
+       }
+      ],
+      "captured": null,
+      "needsGrade": null
+     }
+    },
+    {
+     "call": "language.listening.grade",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker",
+         "a loaf"
+        ],
+        "evaluated": true,
+        "score": null
+       }
+      ],
+      "questId": "q_story",
+      "score": null
+     },
+     "expect": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker",
+         "a loaf"
+        ],
+        "evaluated": true,
+        "score": 100
+       }
+      ],
+      "completed": {
+       "questId": "q_story",
+       "score": 100,
+       "passed": true,
+       "story": "Le vieux boulanger a fait un grand pain.",
+       "feedback": "You demonstrated good comprehension! Score: 100/100",
+       "results": [
+        {
+         "question": "Who?",
+         "correct": true,
+         "feedback": "Good answer!"
+        },
+        {
+         "question": "What?",
+         "correct": true,
+         "feedback": "Good answer!"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "language.listening.grade",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker",
+         "a loaf"
+        ],
+        "evaluated": true,
+        "score": 100
+       }
+      ],
+      "questId": "q_story",
+      "score": 100
+     },
+     "expect": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker",
+         "a loaf"
+        ],
+        "evaluated": true,
+        "score": 100
+       }
+      ],
+      "completed": null
+     }
+    },
+    {
+     "call": "language.listening.fallbackGrade",
+     "args": {
+      "quest": {
+       "questions": [
+        {
+         "question": "Q1",
+         "correctAnswer": "a an to"
+        },
+        {
+         "question": "Q2",
+         "correctAnswer": "red apple tree"
+        }
+       ],
+       "answers": [
+        "",
+        "the apple"
+       ]
+      }
+     },
+     "expect": {
+      "score": 50,
+      "results": [
+       {
+        "question": "Q1",
+        "correct": true,
+        "feedback": "Good answer!"
+       },
+       {
+        "question": "Q2",
+        "correct": false,
+        "feedback": "Expected something like: \"red apple tree\""
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.listening.fallbackGrade",
+     "args": {
+      "quest": {
+       "questions": [],
+       "answers": []
+      }
+     },
+     "expect": {
+      "score": 0,
+      "results": []
+     }
+    },
+    {
+     "call": "language.listening.fallbackGrade",
+     "args": {
+      "quest": {
+       "questions": [
+        {
+         "question": "Q",
+         "correctAnswer": "Big Red Barn"
+        }
+       ],
+       "answers": []
+      }
+     },
+     "expect": {
+      "score": 0,
+      "results": [
+       {
+        "question": "Q",
+        "correct": false,
+        "feedback": "Expected something like: \"Big Red Barn\""
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.listening.fallbackGrade",
+     "args": {
+      "quest": {
+       "questions": [
+        {
+         "question": "Q",
+         "correctAnswer": "one two three four"
+        },
+        {
+         "question": "R",
+         "correctAnswer": "blue"
+        },
+        {
+         "question": "S",
+         "correctAnswer": "green"
+        }
+       ],
+       "answers": [
+        "ONE and TWO",
+        "bluest",
+        "grey"
+       ]
+      }
+     },
+     "expect": {
+      "score": 67,
+      "results": [
+       {
+        "question": "Q",
+        "correct": true,
+        "feedback": "Good answer!"
+       },
+       {
+        "question": "R",
+        "correct": true,
+        "feedback": "Good answer!"
+       },
+       {
+        "question": "S",
+        "correct": false,
+        "feedback": "Expected something like: \"green\""
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "composition and listening refuse what core would dereference unread as [invalid-input]",
+   "steps": [
+    {
+     "call": "language.writing.countWords",
+     "args": {},
+     "expectError": "[invalid-input] insimulcore: language.writing.countWords: `text` must be a string"
+    },
+    {
+     "call": "language.writing.view",
+     "args": {
+      "config": {
+       "questId": "q",
+       "objectiveId": "o",
+       "prompt": "p",
+       "minWords": "5"
+      },
+      "text": "a"
+     },
+     "expectError": "[invalid-input] insimulcore: language.writing.view: `config.minWords` must be a finite number"
+    },
+    {
+     "call": "language.writing.view",
+     "args": {
+      "config": {
+       "questId": "q",
+       "objectiveId": "o",
+       "prompt": "p",
+       "objectiveType": "essay"
+      },
+      "text": "a"
+     },
+     "expectError": "[invalid-input] insimulcore: language.writing.view: `config.objectiveType` must be one of write_response, describe_scene (got \"essay\")"
+    },
+    {
+     "call": "language.writing.submit",
+     "args": {
+      "config": {
+       "objectiveId": "o"
+      },
+      "text": "a"
+     },
+     "expectError": "[invalid-input] insimulcore: language.writing.submit: `config.questId` must be a string"
+    },
+    {
+     "call": "language.writing.submit",
+     "args": {
+      "config": {
+       "questId": "q",
+       "objectiveId": "o",
+       "prompt": "p"
+      },
+      "text": null
+     },
+     "expectError": "[invalid-input] insimulcore: language.writing.submit: `text` must be a string"
+    },
+    {
+     "call": "language.listening.register",
+     "args": {
+      "state": {},
+      "quest": {
+       "questId": "q",
+       "questions": []
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.listening.register: `state` must be an array"
+    },
+    {
+     "call": "language.listening.register",
+     "args": {
+      "state": [],
+      "quest": {
+       "questId": "q",
+       "questions": [
+        {
+         "question": "q"
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.listening.register: `quest.questions[0].correctAnswer` must be a string"
+    },
+    {
+     "call": "language.listening.register",
+     "args": {
+      "state": [],
+      "quest": {
+       "questId": "q",
+       "storyNpcId": 4,
+       "questions": []
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.listening.register: `quest.storyNpcId` must be a string"
+    },
+    {
+     "call": "language.listening.prompt",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": "no",
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "npcId": "cora"
+     },
+     "expectError": "[invalid-input] insimulcore: language.listening.prompt: `state[0].storyHeard` must be a boolean"
+    },
+    {
+     "call": "language.listening.prompt",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [
+         1
+        ],
+        "evaluated": false,
+        "score": null
+       }
+      ],
+      "npcId": "cora"
+     },
+     "expectError": "[invalid-input] insimulcore: language.listening.prompt: `state[0].answers[0]` must be a string"
+    },
+    {
+     "call": "language.listening.chat",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker",
+         "a loaf"
+        ],
+        "evaluated": true,
+        "score": null
+       }
+      ],
+      "npcId": "dov",
+      "npc": "x"
+     },
+     "expectError": "[invalid-input] insimulcore: language.listening.chat: `player` must be a string"
+    },
+    {
+     "call": "language.listening.fallbackGrade",
+     "args": {
+      "quest": {
+       "questions": [],
+       "answers": [
+        1
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.listening.fallbackGrade: `quest.answers[0]` must be a string"
+    },
+    {
+     "call": "language.listening.grade",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker",
+         "a loaf"
+        ],
+        "evaluated": true,
+        "score": null
+       }
+      ],
+      "questId": "q_story"
+     },
+     "expectError": "[invalid-input] insimulcore: language.listening.grade: `score` must be a finite number or null"
+    },
+    {
+     "call": "language.listening.grade",
+     "args": {
+      "state": [
+       {
+        "questId": "q_null",
+        "storyNpcId": null,
+        "answerNpcId": null,
+        "questions": [],
+        "targetLanguage": null,
+        "story": null,
+        "storyHeard": false,
+        "answers": [],
+        "evaluated": false,
+        "score": null
+       },
+       {
+        "questId": "q_story",
+        "storyNpcId": "cora",
+        "answerNpcId": "dov",
+        "questions": [
+         {
+          "question": "Who?",
+          "correctAnswer": "the old baker"
+         },
+         {
+          "question": "What?",
+          "correctAnswer": "a big loaf"
+         }
+        ],
+        "targetLanguage": "French",
+        "story": "Le vieux boulanger a fait un grand pain.",
+        "storyHeard": true,
+        "answers": [
+         "The old baker",
+         "a loaf"
+        ],
+        "evaluated": true,
+        "score": null
+       }
+      ],
+      "questId": "q_story",
+      "score": "60"
+     },
+     "expectError": "[invalid-input] insimulcore: language.listening.grade: `score` must be a finite number or null"
     }
    ]
   }

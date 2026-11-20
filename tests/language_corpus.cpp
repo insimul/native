@@ -1,14 +1,15 @@
 // language_corpus.cpp — core's P9h language corpora, driven through
 // libinsimulcore's `language.*` rows.
 //
-// PL.native-language-rows, slices 1 and 2 (rulings U128, U118, U107(2), U101(1),
+// PL.native-language-rows, slices 1 to 3 (rulings U128, U118, U107(2), U101(1),
 // U49(3), U36). Core's language kernels (src/language-learning/: the book, the save
 // block, the prompt selector, hover and its word key, the chat metrics; slice 2: the
 // vocabulary bank and the learning profile, the rest of adaptation.ts, listen and
-// repeat; and src/prolog/player-language-state.ts, src/language/phonetic-similarity.ts)
-// are rows of corebridge/js/entry.js. This gate holds them to core's own corpora,
+// repeat; slice 3: the rest of world-words.ts and reading-writing.ts; and
+// src/prolog/player-language-state.ts, src/language/phonetic-similarity.ts) are rows of
+// corebridge/js/entry.js. This gate holds them to core's own corpora,
 // conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,
-// pronunciation}.json, COPIED byte for byte into corebridge/vendor/core/conformance/
+// pronunciation,collection,objects,writing}.json, COPIED byte for byte into corebridge/vendor/core/conformance/
 // language/ at the pin and sha256-checked by the `core_vendor` ctest. Nothing here
 // re-writes a case or computes an answer: every answer comes out of the rows; this
 // file only composes them per op, as core's reference runner
@@ -71,15 +72,36 @@
 //             repeat    language.pronunciation.listenAndRepeat (questId when a string)
 //             xp        language.pronunciation.xp per score
 //             hints     language.pronunciation.hintPenalty per revealed count
+//   collection run      language.contract (the default collection tuning, the case's params
+//                       over it), language.collection.initial (the seed), then per step:
+//                       register (registerTags), seed, reach (inReach), quiz, answer
+//   objects   normalize language.identification.normalize (said, then expected),
+//                       language.identification.editDistance, then
+//                       language.identification.distanceScore over the expected answer's code
+//                       points, per pair
+//             identify  language.contract (the identification tuning, params over it),
+//                       language.identification.initial, then per step: register
+//                       (registerTargets), prompt, answer (with the target's progress), remove
+//                       (removeQuest), quest
+//             naming    language.contract (the naming tuning, params over it),
+//                       language.naming.initial, then per step: register (nameableObjects then
+//                       registerNameable for a world, else registerNameable), point, name (submit)
+//             examine   language.objects.examine (objects ?? [])
+//   writing   composition language.writing.countWords, .view and .submit per text
+//             listening the state [] then per step: register, prompt, chat (player and npc ??
+//                       ''; each quest's answers counted), grade (the score when a number, else
+//                       null)
 //
 // Comparison is the corpora's own rule: exact, object key sets included. Each file's
 // declared `ops` and `steps` must be exactly the ones this runner drives (core's
 // LANGUAGE_SYSTEMS_CORPUS_OPS and _STEPS for the file), so a step core adds is a
 // failure here, never a skip. An unknown op or step fails its case. The refusal probes
 // show on every start that core's refusals are VALUES (empty_word, unknown_encounter,
-// no_target_language, empty_line, no_turns, nothing_in_reach, no_prompt, no_quiz), that
+// no_target_language, empty_line, no_turns, nothing_in_reach, no_prompt, no_quiz;
+// slice 3: unknown_object, already_named, no_attempts_left, empty, too_short), that
 // a book core's own save reader cannot read is the `[invalid-input]` ERROR naming its
-// key (as are a vocabulary sort and a band outside core's types), and that an unknown
+// key (as are a vocabulary sort and a band outside core's types, and a listening grade
+// with no score), and that an unknown
 // row is the method table's error. The run FAILS on a file
 // that is not a language corpus or holds no case, on an op of a file that no case
 // drives, on a row missing from the method table, on a session left open, and when its
@@ -115,7 +137,7 @@ using insimul::JsonValuePtr;
 namespace {
 
 // core's LANGUAGE_SYSTEMS_CORPUS_OPS and LANGUAGE_SYSTEMS_CORPUS_STEPS
-// (src/language-learning/systems-corpus.ts) for the files slices 1 and 2 bind.
+// (src/language-learning/systems-corpus.ts) for the files slices 1 to 3 bind.
 struct FileSpec {
 	const char *file;
 	std::vector<std::string> ops;
@@ -132,6 +154,11 @@ const std::vector<FileSpec> kFiles = {
     {"language/bank", {"cards", "reveal", "grammar", "tables", "profile", "history"}, {}},
     {"language/adaptation", {"struggle", "difficulty", "mode", "npc", "hint", "quests", "advance"}, {{"difficulty", {"turn"}}}},
     {"language/pronunciation", {"encode", "similarity", "score", "repeat", "xp", "hints"}, {}},
+    // slice 3
+    {"language/collection", {"run"}, {{"run", {"register", "seed", "reach", "quiz", "answer"}}}},
+    {"language/objects", {"normalize", "identify", "naming", "examine"},
+     {{"identify", {"register", "prompt", "answer", "remove", "quest"}}, {"naming", {"register", "point", "name"}}}},
+    {"language/writing", {"composition", "listening"}, {{"listening", {"register", "prompt", "chat", "grade"}}}},
 };
 
 // Every row this runner calls.
@@ -161,7 +188,15 @@ const char *const kRows[] = {
     "language.npc.adaptation",    "language.hints.showsVocabHint", "language.quests.filterByCefr",
     "language.cefr.advancement",  "language.pronunciation.encode", "language.pronunciation.wordSimilarity",
     "language.pronunciation.normalize", "language.pronunciation.score", "language.pronunciation.listenAndRepeat",
-    "language.pronunciation.xp",  "language.pronunciation.hintPenalty"};
+    "language.pronunciation.xp",  "language.pronunciation.hintPenalty",
+    // slice 3
+    "language.collection.seed",   "language.collection.inReach",  "language.collection.quiz",
+    "language.collection.answer", "language.identification.normalize", "language.identification.editDistance",
+    "language.identification.distanceScore", "language.identification.removeQuest", "language.identification.prompt",
+    "language.identification.answer", "language.identification.quest", "language.naming.point",
+    "language.naming.submit",     "language.objects.examine",     "language.writing.countWords",
+    "language.writing.view",      "language.writing.submit",      "language.listening.register",
+    "language.listening.prompt",  "language.listening.chat",      "language.listening.grade"};
 
 std::string read_file(const std::string &path, bool &ok) {
 	std::ifstream in(path, std::ios::binary);
@@ -1279,6 +1314,251 @@ JsonValuePtr pronunciation(Run &r, const std::string &op, const JsonValue &input
 	throw DriveError("op " + op + " is not one of core's language/pronunciation ops");
 }
 
+// ── collection (slice 3) ──────────────────────────────────────────────────────
+
+// A step's member as the row's argument, or a string the runner's `str(step.x ?? '')` reads as ''.
+JsonValuePtr or_empty_string(const JsonValue &st, const char *key) {
+	const JsonValue *v = st.find(key);
+	return v && !v->is_null() ? deep_copy(*v) : make_string("");
+}
+
+JsonValuePtr collection(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op != "run") throw DriveError("op " + op + " is not one of core's language/collection ops");
+	// t = { ...COLLECTION_TUNING, ...params }; s = initialCollection(seed)
+	auto contract = c.call("language.contract", Obj());
+	JsonValuePtr tuning = tuning_of(contract, "collectionTuning", input.find("params"));
+	JsonValuePtr state = member(c.call("language.collection.initial", Obj().put("seed", need(input, "seed", "the input"))), "state", "collection.initial");
+	std::vector<JsonValuePtr> out;
+	for (const auto &sp : items(need(input, "steps", "the input"), "steps")) {
+		const JsonValue &st = *sp;
+		const std::string d = do_of(st);
+		r.step_known(op, d);
+		Obj o;
+		o.put("do", d);
+		if (d == "register") {
+			state = member(c.call("language.collection.registerTags", Obj().put("state", state).put("tags", need(st, "tags", "a register step"))), "state", "registerTags");
+			o.put("objects", pluck(need(*state, "tags", "the collection"), "objectId", "a tag")).put("pool", need(*state, "pool", "the collection"));
+		} else if (d == "seed") {
+			Obj a;
+			a.put("state", state).put("category", need(st, "category", "a seed step")).put("answers", need(st, "answers", "a seed step"));
+			state = member(c.call("language.collection.seed", a), "state", "language.collection.seed");
+			o.put("pool", need(*state, "pool", "the collection"));
+		} else if (d == "reach") {
+			auto v = c.call("language.collection.inReach", Obj().put("state", state).put("at", need(st, "at", "a reach step")).put("tuning", tuning));
+			o.put("inReach", member(v, "inReach", "language.collection.inReach"));
+		} else if (d == "quiz") {
+			auto v = c.call("language.collection.quiz", Obj().put("state", state).put("objectId", need(st, "objectId", "a quiz step")).put("tuning", tuning));
+			state = member(v, "state", "language.collection.quiz");
+			o.put("quiz", member(v, "quiz", "language.collection.quiz"));
+		} else if (d == "answer") {
+			Obj a;
+			a.put("state", state).put("objectId", need(st, "objectId", "an answer step")).put("answer", need(st, "answer", "an answer step")).put("tuning", tuning);
+			auto v = c.call("language.collection.answer", a);
+			state = member(v, "state", "language.collection.answer");
+			if (ok_of(v, "language.collection.answer")) {
+				o.put("ok", make_bool(true));
+				for (const char *k : {"correct", "alreadyCollected", "xp", "label", "answer", "category", "events"}) o.put(k, member(v, k, "language.collection.answer"));
+				o.put("collected", need(*state, "collected", "the collection"));
+			} else {
+				o.put("ok", make_bool(false)).put("refusal", member(v, "refusal", "language.collection.answer"));
+			}
+		}
+		out.push_back(o.v);
+	}
+	return make_array(out);
+}
+
+// ── objects (slice 3) ─────────────────────────────────────────────────────────
+
+// `Array.from(s).length`: the code points of a UTF-8 string (every byte that is not a continuation byte).
+double code_points(const std::string &s) {
+	double n = 0;
+	for (unsigned char ch : s) {
+		if ((ch & 0xC0) != 0x80) n++;
+	}
+	return n;
+}
+
+JsonValuePtr objects(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "normalize") {
+		// per pair: a = normalizeAnswer(said), b = normalizeAnswer(expected), distance = editDistance(a, b),
+		// score = distanceScore(distance, Array.from(b).length)
+		std::vector<JsonValuePtr> out;
+		for (const auto &p : items(need(input, "pairs", "the input"), "pairs")) {
+			const auto &pair = items(*p, "a pair");
+			if (pair.size() != 2) throw DriveError("a pair is not two strings");
+			auto a = member(c.call("language.identification.normalize", Obj().put("text", *pair[0])), "normalized", "normalize");
+			auto b = member(c.call("language.identification.normalize", Obj().put("text", *pair[1])), "normalized", "normalize");
+			auto distance = member(c.call("language.identification.editDistance", Obj().put("a", a).put("b", b)), "distance", "editDistance");
+			if (!b->is_string()) throw DriveError("normalize answered no string");
+			auto score = member(c.call("language.identification.distanceScore", Obj().put("distance", distance).put("length", make_number(code_points(b->string_value)))), "score", "distanceScore");
+			out.push_back(Obj().put("said", a).put("expected", b).put("distance", distance).put("score", score).v);
+		}
+		return make_array(out);
+	}
+	if (op == "identify") {
+		auto contract = c.call("language.contract", Obj());
+		JsonValuePtr tuning = tuning_of(contract, "identificationTuning", input.find("params"));
+		JsonValuePtr state = member(c.call("language.identification.initial", Obj()), "state", "identification.initial");
+		std::vector<JsonValuePtr> out;
+		for (const auto &sp : items(need(input, "steps", "the input"), "steps")) {
+			const JsonValue &st = *sp;
+			const std::string d = do_of(st);
+			r.step_known(op, d);
+			Obj o;
+			o.put("do", d);
+			if (d == "register") {
+				state = member(c.call("language.identification.registerTargets", Obj().put("state", state).put("targets", need(st, "targets", "a register step"))), "state", "registerTargets");
+				o.put("targets", pluck(need(*state, "targets", "the identification state"), "id", "a target"));
+			} else if (d == "prompt") {
+				auto v = c.call("language.identification.prompt", Obj().put("state", state).put("id", need(st, "id", "a prompt step")).put("tuning", tuning));
+				for (const auto &kv : v->object_items) o.put(kv.first, *kv.second);
+			} else if (d == "answer") {
+				const JsonValue &id = need(st, "id", "an answer step");
+				Obj a;
+				a.put("state", state).put("id", id).put("input", need(st, "input", "an answer step")).put("tuning", tuning);
+				auto v = c.call("language.identification.answer", a);
+				state = member(v, "state", "language.identification.answer");
+				if (ok_of(v, "language.identification.answer")) {
+					o.put("ok", make_bool(true));
+					for (const char *k : {"passed", "score", "feedback", "bestMatch", "objectiveCompleted", "events"}) o.put(k, member(v, k, "language.identification.answer"));
+					if (!id.is_string()) throw DriveError("an answer step's id is not a string");
+					o.put("progress", need(need(*state, "progress", "the identification state"), id.string_value.c_str(), "the progress"));
+				} else {
+					o.put("ok", make_bool(false)).put("refusal", member(v, "refusal", "language.identification.answer"));
+				}
+			} else if (d == "remove") {
+				state = member(c.call("language.identification.removeQuest", Obj().put("state", state).put("questId", need(st, "questId", "a remove step"))), "state", "removeQuest");
+				o.put("targets", pluck(need(*state, "targets", "the identification state"), "id", "a target"));
+			} else if (d == "quest") {
+				auto v = c.call("language.identification.quest", Obj().put("state", state).put("questId", need(st, "questId", "a quest step")));
+				for (const auto &kv : v->object_items) o.put(kv.first, *kv.second);
+			}
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	if (op == "naming") {
+		auto contract = c.call("language.contract", Obj());
+		JsonValuePtr tuning = tuning_of(contract, "namingTuning", input.find("params"));
+		JsonValuePtr state = member(c.call("language.naming.initial", Obj()), "state", "naming.initial");
+		std::vector<JsonValuePtr> out;
+		for (const auto &sp : items(need(input, "steps", "the input"), "steps")) {
+			const JsonValue &st = *sp;
+			const std::string d = do_of(st);
+			r.step_known(op, d);
+			Obj o;
+			o.put("do", d);
+			if (d == "register") {
+				// registerNameable(s, step.world ? nameableObjects(step.world, targetLanguage) : step.objects)
+				const JsonValue *world = st.find("world");
+				JsonValuePtr objs;
+				if (world && !world->is_null()) {
+					Obj a;
+					a.put("objects", *world).put("targetLanguage", need(st, "targetLanguage", "a register step"));
+					objs = member(c.call("language.naming.nameableObjects", a), "objects", "nameableObjects");
+				} else {
+					objs = deep_copy(need(st, "objects", "a register step"));
+				}
+				state = member(c.call("language.naming.registerNameable", Obj().put("state", state).put("objects", objs)), "state", "registerNameable");
+				o.put("objects", need(*state, "objects", "the naming state"));
+			} else if (d == "point") {
+				auto v = c.call("language.naming.point", Obj().put("state", state).put("objectId", need(st, "objectId", "a point step")).put("tuning", tuning));
+				for (const auto &kv : v->object_items) o.put(kv.first, *kv.second);
+			} else if (d == "name") {
+				Obj a;
+				a.put("state", state).put("objectId", need(st, "objectId", "a name step")).put("input", need(st, "input", "a name step")).put("tuning", tuning);
+				auto v = c.call("language.naming.submit", a);
+				state = member(v, "state", "language.naming.submit");
+				if (ok_of(v, "language.naming.submit")) {
+					o.put("ok", make_bool(true));
+					for (const char *k : {"correct", "xp", "attempts", "revealed", "toasts", "events"}) o.put(k, member(v, k, "language.naming.submit"));
+				} else {
+					o.put("ok", make_bool(false)).put("refusal", member(v, "refusal", "language.naming.submit"));
+				}
+			}
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	if (op == "examine") {
+		// examineNearest(input.objects ?? [], input.at, input.options)
+		const JsonValue *objs = input.find("objects");
+		Obj a;
+		a.put("objects", objs && !objs->is_null() ? deep_copy(*objs) : make_array());
+		a.put("at", need(input, "at", "the input")).put("options", need(input, "options", "the input"));
+		return c.call("language.objects.examine", a);
+	}
+	throw DriveError("op " + op + " is not one of core's language/objects ops");
+}
+
+// ── writing (slice 3) ─────────────────────────────────────────────────────────
+
+JsonValuePtr writing(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "composition") {
+		// per text: { text, words: countWords(text), view: compositionView(c, text), submit: submitComposition(c, text) }
+		const JsonValue &config = need(input, "config", "the input");
+		std::vector<JsonValuePtr> out;
+		for (const auto &t : items(need(input, "texts", "the input"), "texts")) {
+			Obj o;
+			o.put("text", *t);
+			o.put("words", member(c.call("language.writing.countWords", Obj().put("text", *t)), "words", "countWords"));
+			o.put("view", c.call("language.writing.view", Obj().put("config", config).put("text", *t)));
+			o.put("submit", c.call("language.writing.submit", Obj().put("config", config).put("text", *t)));
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	if (op == "listening") {
+		JsonValuePtr state = make_array();
+		std::vector<JsonValuePtr> out;
+		for (const auto &sp : items(need(input, "steps", "the input"), "steps")) {
+			const JsonValue &st = *sp;
+			const std::string d = do_of(st);
+			r.step_known(op, d);
+			Obj o;
+			o.put("do", d);
+			if (d == "register") {
+				state = member(c.call("language.listening.register", Obj().put("state", state).put("quest", need(st, "quest", "a register step"))), "state", "listening.register");
+				o.put("quests", pluck(*state, "questId", "a listening quest"));
+			} else if (d == "prompt") {
+				auto v = c.call("language.listening.prompt", Obj().put("state", state).put("npcId", need(st, "npcId", "a prompt step")));
+				o.put("prompt", member(v, "prompt", "listening.prompt"));
+			} else if (d == "chat") {
+				Obj a;
+				a.put("state", state).put("npcId", need(st, "npcId", "a chat step")).put("player", or_empty_string(st, "player")).put("npc", or_empty_string(st, "npc"));
+				auto v = c.call("language.listening.chat", a);
+				state = member(v, "state", "listening.chat");
+				o.put("captured", member(v, "captured", "listening.chat")).put("needsGrade", member(v, "needsGrade", "listening.chat"));
+				// quests: s.map((q) => ({ questId, storyHeard, answers: q.answers.length, evaluated, score }))
+				std::vector<JsonValuePtr> quests;
+				for (const auto &q : items(*state, "the listening state")) {
+					Obj e;
+					e.put("questId", need(*q, "questId", "a quest")).put("storyHeard", need(*q, "storyHeard", "a quest"));
+					e.put("answers", make_number(static_cast<double>(items(need(*q, "answers", "a quest"), "answers").size())));
+					e.put("evaluated", need(*q, "evaluated", "a quest")).put("score", need(*q, "score", "a quest"));
+					quests.push_back(e.v);
+				}
+				o.put("quests", make_array(quests));
+			} else if (d == "grade") {
+				// gradeListening(s, questId, typeof step.score === 'number' ? step.score : null)
+				const JsonValue *score = st.find("score");
+				Obj a;
+				a.put("state", state).put("questId", need(st, "questId", "a grade step")).put("score", score && score->type == JsonType::Number ? deep_copy(*score) : make_null());
+				auto v = c.call("language.listening.grade", a);
+				state = member(v, "state", "listening.grade");
+				o.put("completed", member(v, "completed", "listening.grade"));
+			}
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	throw DriveError("op " + op + " is not one of core's language/writing ops");
+}
+
 JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	for (const auto &spec : kFiles) {
 		if (r.file != spec.file) continue;
@@ -1294,6 +1574,9 @@ JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	if (r.file == "language/bank") return bank(r, op, input);
 	if (r.file == "language/adaptation") return adaptation(r, op, input);
 	if (r.file == "language/pronunciation") return pronunciation(r, op, input);
+	if (r.file == "language/collection") return collection(r, op, input);
+	if (r.file == "language/objects") return objects(r, op, input);
+	if (r.file == "language/writing") return writing(r, op, input);
 	throw DriveError("file " + r.file + " is not one this runner drives");
 }
 
@@ -1387,7 +1670,32 @@ void refusal_probes(Caller &c, std::map<std::string, int> &sink, Probes &p) {
 		p.check(!m && c.last_error.find("[invalid-input]") != std::string::npos && c.last_error.find("`level`") != std::string::npos,
 		        "an unknown band was not [invalid-input] naming level");
 	}
-	// 10. An unknown row is the method table's error.
+	// 10. Slice 3: the world words' and the composition's refusals are values (unknown_object,
+	// already_named, no_attempts_left, nothing_in_reach, empty, too_short), and a listening grade
+	// with no score stated (core's serverScore is number | null) is the [invalid-input] ERROR.
+	{
+		const std::string coll = "{\"seed\":\"s\",\"tags\":[],\"pool\":[],\"collected\":[],\"quizzes\":{}}";
+		auto a = c.try_call("language.collection.answer", "{\"state\":" + coll + ",\"objectId\":\"well\",\"answer\":\"water\"}");
+		p.check(refusal_of(a) == "unknown_object" && a->find("state"), "a collection answer for an unknown object was not refused unknown_object with the state");
+		auto i = c.try_call("language.identification.answer", "{\"state\":{\"targets\":[],\"progress\":{}},\"id\":\"tower\",\"input\":\"tour\"}");
+		p.check(refusal_of(i) == "unknown_object", "an identification answer for an unknown target was not refused unknown_object");
+		const std::string obj = "{\"objectId\":\"anvil\",\"targetWord\":\"enclume\",\"meaning\":\"anvil\",\"category\":\"tools\",\"position\":{\"x\":0,\"y\":0,\"z\":0}}";
+		auto n = c.try_call("language.naming.point", "{\"state\":{\"objects\":[" + obj + "],\"attempts\":{},\"named\":[\"anvil\"]},\"objectId\":\"anvil\"}");
+		p.check(refusal_of(n) == "already_named", "pointing at a named object was not refused already_named");
+		auto t = c.try_call("language.naming.point", "{\"state\":{\"objects\":[" + obj + "],\"attempts\":{\"anvil\":3},\"named\":[]},\"objectId\":\"anvil\"}");
+		p.check(refusal_of(t) == "no_attempts_left", "pointing after the last try was not refused no_attempts_left");
+		auto e = c.try_call("language.objects.examine", "{\"objects\":[],\"at\":{\"x\":0,\"z\":0},\"options\":{\"languageWorld\":true,\"targetLanguage\":\"French\",\"fluency\":0}}");
+		p.check(refusal_of(e) == "nothing_in_reach", "examining nothing was not refused nothing_in_reach");
+		const std::string config = "{\"questId\":\"q\",\"objectiveId\":\"o\",\"prompt\":\"p\",\"minWords\":3}";
+		auto w0 = c.try_call("language.writing.submit", "{\"config\":" + config + ",\"text\":\"   \"}");
+		p.check(refusal_of(w0) == "empty", "an empty composition was not refused empty");
+		auto w1 = c.try_call("language.writing.submit", "{\"config\":" + config + ",\"text\":\"Bonjour Ada\"}");
+		p.check(refusal_of(w1) == "too_short", "a short composition was not refused too_short");
+		auto g = c.try_call("language.listening.grade", "{\"state\":[],\"questId\":\"q\"}");
+		p.check(!g && c.last_error.find("[invalid-input]") != std::string::npos && c.last_error.find("`score`") != std::string::npos,
+		        "a listening grade with no score was not [invalid-input] naming score");
+	}
+	// 11. An unknown row is the method table's error.
 	{
 		auto r = c.try_call("language.book.fly", "{}");
 		p.check(!r && c.last_error.find("unknown method") != std::string::npos, "an unknown row was answered");
@@ -1442,8 +1750,9 @@ int main(int argc, char **argv) {
 	refusal_probes(c, probe_steps, probes);
 	if (probes.passed != probes.total) failed++;
 	std::printf("refusals: %d of %d probe(s) refused as core refuses (values: empty_word, unknown_encounter, no_target_language, "
-	            "empty_line, no_turns, nothing_in_reach, no_prompt, no_quiz; errors: [invalid-input] for an unreadable book, an "
-	            "unknown vocabulary sort, an unknown band, an unknown row; an unknown op or step fails its case)\n",
+	            "empty_line, no_turns, nothing_in_reach, no_prompt, no_quiz, unknown_object, already_named, no_attempts_left, "
+	            "empty, too_short; errors: [invalid-input] for an unreadable book, an unknown vocabulary sort, an unknown band, "
+	            "a listening grade with no score, an unknown row; an unknown op or step fails its case)\n",
 	            probes.passed, probes.total);
 
 	int total_cases = 0, total_driven = 0, refused = 0, accepted = 0;

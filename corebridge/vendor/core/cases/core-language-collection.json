@@ -1,0 +1,1071 @@
+{
+ "area": "language-collection",
+ "description": "core's language corpus conformance/language/collection.json (P9h.core) through the language.* rows, each op as core's reference runner (src/language-learning/systems-corpus.ts, runLanguageSystemsOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/language/collection.json": "e5c9c75eeb5e334324d9dcb743e85117dd4b4543b86025bbd6eab6cf9cca67b4"
+  }
+ },
+ "cases": [
+  {
+   "name": "language/collection run: run: register, reach, a seeded quiz, a wrong answer, a right one, and the word is collected",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.collection.initial",
+     "args": {
+      "seed": "brightwater"
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.collection.registerTags",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "tags": [
+       {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "answer": "bread",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 0,
+         "y": 0,
+         "z": 0
+        },
+        "partOfSpeech": "noun"
+       },
+       {
+        "objectId": "cheese_stall",
+        "label": "fromage",
+        "answer": "cheese",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 3,
+         "y": 0,
+         "z": 4
+        }
+       },
+       {
+        "objectId": "anvil",
+        "label": "enclume",
+        "answer": "anvil",
+        "category": "tools",
+        "difficulty": "intermediate",
+        "position": {
+         "x": 6,
+         "y": 0,
+         "z": 0
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "tags": {
+          "$ids": [
+           "bread_stall",
+           "cheese_stall",
+           "anvil"
+          ],
+          "$key": "objectId"
+         },
+         "pool": [
+          [
+           "food",
+           [
+            "bread",
+            "cheese"
+           ]
+          ],
+          [
+           "tools",
+           [
+            "anvil"
+           ]
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.collection.seed",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "category": "food",
+      "answers": [
+       "apple",
+       "bread",
+       "water"
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "pool": [
+          [
+           "food",
+           [
+            "bread",
+            "cheese",
+            "apple",
+            "water"
+           ]
+          ],
+          [
+           "tools",
+           [
+            "anvil"
+           ]
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "at": {
+       "x": 3,
+       "y": 0,
+       "z": 4
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "inReach": [
+       "bread_stall",
+       "cheese_stall",
+       "anvil"
+      ]
+     }
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "at": {
+       "x": 3.01,
+       "y": 0,
+       "z": 4
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "inReach": [
+       "cheese_stall",
+       "anvil"
+      ]
+     }
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "objectId": "bread_stall",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "quiz": {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"pain\" mean?",
+        "options": [
+         {
+          "text": "water",
+          "isCorrect": false
+         },
+         {
+          "text": "cheese",
+          "isCorrect": false
+         },
+         {
+          "text": "apple",
+          "isCorrect": false
+         },
+         {
+          "text": "bread",
+          "isCorrect": true
+         }
+        ]
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "objectId": "bread_stall",
+      "answer": "cheese",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": false,
+       "alreadyCollected": false,
+       "xp": 0,
+       "label": "pain",
+       "answer": "bread",
+       "category": "food",
+       "events": [
+        {
+         "type": "knowledge_applied",
+         "key": "pain",
+         "correct": false
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "pain",
+         "correct": false
+        }
+       ],
+       "state": {
+        "$subset": {
+         "collected": []
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "objectId": "bread_stall",
+      "answer": "BREAD",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": false,
+       "alreadyCollected": false,
+       "xp": 0,
+       "label": "pain",
+       "answer": "bread",
+       "category": "food",
+       "events": [
+        {
+         "type": "knowledge_applied",
+         "key": "pain",
+         "correct": false
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "pain",
+         "correct": false
+        }
+       ],
+       "state": {
+        "$subset": {
+         "collected": []
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "objectId": "bread_stall",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "quiz": {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "category": "food",
+        "difficulty": "beginner",
+        "prompt": "What does \"pain\" mean?",
+        "options": [
+         {
+          "text": "water",
+          "isCorrect": false
+         },
+         {
+          "text": "bread",
+          "isCorrect": true
+         },
+         {
+          "text": "apple",
+          "isCorrect": false
+         },
+         {
+          "text": "cheese",
+          "isCorrect": false
+         }
+        ]
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "objectId": "bread_stall",
+      "answer": "bread",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": true,
+       "alreadyCollected": false,
+       "xp": 3,
+       "label": "pain",
+       "answer": "bread",
+       "category": "food",
+       "events": [
+        {
+         "type": "knowledge_applied",
+         "key": "pain",
+         "correct": true
+        },
+        {
+         "type": "item_collected",
+         "itemId": "vocab_bread_stall",
+         "itemName": "pain",
+         "quantity": 1,
+         "taxonomy": {
+          "category": "food",
+          "itemType": "vocabulary",
+          "baseType": "noun"
+         }
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "pain",
+         "correct": true
+        }
+       ],
+       "state": {
+        "$subset": {
+         "collected": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "objectId": "bread_stall",
+      "answer": "nonsense",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": true,
+       "alreadyCollected": true,
+       "xp": 0,
+       "label": "pain",
+       "answer": "bread",
+       "category": "food",
+       "events": [],
+       "state": {
+        "$subset": {
+         "collected": [
+          "bread_stall"
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "objectId": "bread_stall",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "quiz": null
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.collection.inReach",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "at": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "inReach": [
+       "cheese_stall"
+      ]
+     }
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "objectId": "well",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "quiz": null
+      }
+     },
+     "bind": "b11"
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "$ref": "b11.state"
+      },
+      "objectId": "well",
+      "answer": "water",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": false,
+       "refusal": "unknown_object"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/collection run: run: a small pool fills from other categories, and a knowledge world collects knowledge, not vocabulary",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.collection.initial",
+     "args": {
+      "seed": "survival"
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.collection.registerTags",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "tags": [
+       {
+        "objectId": "fern",
+        "label": "Bracken",
+        "answer": "a fern",
+        "category": "plants",
+        "difficulty": "beginner",
+        "position": {
+         "x": 0,
+         "y": 0,
+         "z": 0
+        }
+       },
+       {
+        "objectId": "fox",
+        "label": "Fox",
+        "answer": "a canid",
+        "category": "animals",
+        "difficulty": "beginner",
+        "position": {
+         "x": 1,
+         "y": 0,
+         "z": 0
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "tags": {
+          "$ids": [
+           "fern",
+           "fox"
+          ],
+          "$key": "objectId"
+         },
+         "pool": [
+          [
+           "plants",
+           [
+            "a fern"
+           ]
+          ],
+          [
+           "animals",
+           [
+            "a canid"
+           ]
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "objectId": "fern",
+      "tuning": {
+       "$ref": "b0.collectionTuning",
+       "$set": {
+        "kind": "knowledge",
+        "options": 3,
+        "xpPerEntry": 7
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "quiz": {
+        "objectId": "fern",
+        "label": "Bracken",
+        "category": "plants",
+        "difficulty": "beginner",
+        "prompt": "What does \"Bracken\" mean?",
+        "options": [
+         {
+          "text": "a fern",
+          "isCorrect": true
+         },
+         {
+          "text": "a canid",
+          "isCorrect": false
+         }
+        ]
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "objectId": "fern",
+      "answer": "a canid",
+      "tuning": {
+       "$ref": "b0.collectionTuning",
+       "$set": {
+        "kind": "knowledge",
+        "options": 3,
+        "xpPerEntry": 7
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": false,
+       "alreadyCollected": false,
+       "xp": 0,
+       "label": "Bracken",
+       "answer": "a fern",
+       "category": "plants",
+       "events": [
+        {
+         "type": "knowledge_applied",
+         "key": "Bracken",
+         "correct": false
+        }
+       ],
+       "state": {
+        "$subset": {
+         "collected": []
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "objectId": "fern",
+      "answer": "a fern",
+      "tuning": {
+       "$ref": "b0.collectionTuning",
+       "$set": {
+        "kind": "knowledge",
+        "options": 3,
+        "xpPerEntry": 7
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": true,
+       "alreadyCollected": false,
+       "xp": 7,
+       "label": "Bracken",
+       "answer": "a fern",
+       "category": "plants",
+       "events": [
+        {
+         "type": "knowledge_applied",
+         "key": "Bracken",
+         "correct": true
+        },
+        {
+         "type": "item_collected",
+         "itemId": "knowledge_fern",
+         "itemName": "Bracken",
+         "quantity": 1,
+         "taxonomy": {
+          "category": "plants",
+          "itemType": "knowledge"
+         }
+        }
+       ],
+       "state": {
+        "$subset": {
+         "collected": [
+          "fern"
+         ]
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/collection run: run: the same object re-registered replaces its tag; the same seed and ordinal give the same options",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.collection.initial",
+     "args": {
+      "seed": "brightwater"
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.collection.registerTags",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "tags": [
+       {
+        "objectId": "bread_stall",
+        "label": "pain",
+        "answer": "bread",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 0,
+         "y": 0,
+         "z": 0
+        },
+        "partOfSpeech": "noun"
+       },
+       {
+        "objectId": "cheese_stall",
+        "label": "fromage",
+        "answer": "cheese",
+        "category": "food",
+        "difficulty": "beginner",
+        "position": {
+         "x": 300,
+         "y": 0,
+         "z": 400
+        }
+       },
+       {
+        "objectId": "anvil",
+        "label": "enclume",
+        "answer": "anvil",
+        "category": "tools",
+        "difficulty": "intermediate",
+        "position": {
+         "x": 600,
+         "y": 0,
+         "z": 0
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "tags": {
+          "$ids": [
+           "bread_stall",
+           "cheese_stall",
+           "anvil"
+          ],
+          "$key": "objectId"
+         },
+         "pool": [
+          [
+           "food",
+           [
+            "bread",
+            "cheese"
+           ]
+          ],
+          [
+           "tools",
+           [
+            "anvil"
+           ]
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.collection.registerTags",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "tags": [
+       {
+        "objectId": "anvil",
+        "label": "enclume",
+        "answer": "the anvil",
+        "category": "tools",
+        "difficulty": "intermediate",
+        "position": {
+         "x": 600,
+         "y": 0,
+         "z": 0
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "tags": {
+          "$ids": [
+           "bread_stall",
+           "cheese_stall",
+           "anvil"
+          ],
+          "$key": "objectId"
+         },
+         "pool": [
+          [
+           "food",
+           [
+            "bread",
+            "cheese"
+           ]
+          ],
+          [
+           "tools",
+           [
+            "anvil",
+            "the anvil"
+           ]
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.collection.seed",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "category": "tools",
+      "answers": [
+       "hammer",
+       "tongs",
+       "hammer"
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "state": {
+        "$subset": {
+         "pool": [
+          [
+           "food",
+           [
+            "bread",
+            "cheese"
+           ]
+          ],
+          [
+           "tools",
+           [
+            "anvil",
+            "the anvil",
+            "hammer",
+            "tongs"
+           ]
+          ]
+         ]
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.collection.quiz",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "objectId": "anvil",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "quiz": {
+        "objectId": "anvil",
+        "label": "enclume",
+        "category": "tools",
+        "difficulty": "intermediate",
+        "prompt": "What does \"enclume\" mean?",
+        "options": [
+         {
+          "text": "the anvil",
+          "isCorrect": true
+         },
+         {
+          "text": "anvil",
+          "isCorrect": false
+         },
+         {
+          "text": "hammer",
+          "isCorrect": false
+         },
+         {
+          "text": "tongs",
+          "isCorrect": false
+         }
+        ]
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "objectId": "anvil",
+      "answer": "anvil",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": false,
+       "alreadyCollected": false,
+       "xp": 0,
+       "label": "enclume",
+       "answer": "the anvil",
+       "category": "tools",
+       "events": [
+        {
+         "type": "knowledge_applied",
+         "key": "enclume",
+         "correct": false
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "enclume",
+         "correct": false
+        }
+       ],
+       "state": {
+        "$subset": {
+         "collected": []
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.collection.answer",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "objectId": "anvil",
+      "answer": "the anvil",
+      "tuning": {
+       "$ref": "b0.collectionTuning"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "correct": true,
+       "alreadyCollected": false,
+       "xp": 3,
+       "label": "enclume",
+       "answer": "the anvil",
+       "category": "tools",
+       "events": [
+        {
+         "type": "knowledge_applied",
+         "key": "enclume",
+         "correct": true
+        },
+        {
+         "type": "item_collected",
+         "itemId": "vocab_anvil",
+         "itemName": "enclume",
+         "quantity": 1,
+         "taxonomy": {
+          "category": "tools",
+          "itemType": "vocabulary",
+          "baseType": "noun"
+         }
+        },
+        {
+         "type": "vocabulary_used",
+         "word": "enclume",
+         "correct": true
+        }
+       ],
+       "state": {
+        "$subset": {
+         "collected": [
+          "anvil"
+         ]
+        }
+       }
+      }
+     }
+    }
+   ]
+  }
+ ]
+}
