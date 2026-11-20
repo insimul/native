@@ -1,0 +1,1457 @@
+{
+  "schema": "insimul.conformance.language/1",
+  "area": "language",
+  "file": "language/adaptation",
+  "phase": "P9h",
+  "description": "Adaptive conversation difficulty (struggle in thousandths, scaffold and stretch) and CEFR adaptation of NPC speech, hints, quests and advancement (src/language-learning/adaptation.ts).",
+  "runner": "src/language-learning/systems-corpus.ts (runLanguageSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "language-adaptive-conversation-difficulty",
+    "language-cefr-npc-adaptation"
+  ],
+  "ops": [
+    "struggle",
+    "difficulty",
+    "mode",
+    "npc",
+    "hint",
+    "quests",
+    "advance"
+  ],
+  "steps": {
+    "difficulty": [
+      "turn"
+    ]
+  },
+  "cases": [
+    {
+      "name": "struggle: each signal and the weighted score in thousandths",
+      "op": "struggle",
+      "input": {
+        "turns": [
+          {
+            "grammarErrors": 0,
+            "grammarChecked": 0,
+            "targetWords": 0,
+            "totalWords": 0
+          },
+          {
+            "grammarErrors": 0,
+            "grammarChecked": 0,
+            "targetWords": 1,
+            "totalWords": 1
+          },
+          {
+            "grammarErrors": 3,
+            "grammarChecked": 4,
+            "targetWords": 0,
+            "totalWords": 2,
+            "quality": 10
+          },
+          {
+            "grammarErrors": 0,
+            "grammarChecked": 4,
+            "targetWords": 8,
+            "totalWords": 10,
+            "quality": 95
+          },
+          {
+            "grammarErrors": 1,
+            "grammarChecked": 4,
+            "targetWords": 3,
+            "totalWords": 6,
+            "quality": 60
+          },
+          {
+            "grammarErrors": 1,
+            "grammarChecked": 2,
+            "targetWords": 1,
+            "totalWords": 4
+          },
+          {
+            "grammarErrors": 0,
+            "grammarChecked": 3,
+            "targetWords": 5,
+            "totalWords": 10
+          },
+          {
+            "grammarErrors": 2,
+            "grammarChecked": 4,
+            "targetWords": 2,
+            "totalWords": 10,
+            "quality": 30
+          },
+          {
+            "grammarErrors": 5,
+            "grammarChecked": 4,
+            "targetWords": 9,
+            "totalWords": 8,
+            "quality": 0
+          },
+          {
+            "grammarErrors": 1,
+            "grammarChecked": 3,
+            "targetWords": 2,
+            "totalWords": 7,
+            "quality": 100
+          }
+        ]
+      },
+      "expected": [
+        {
+          "signals": {
+            "grammar": 0,
+            "targetLanguage": 1000,
+            "length": 1000,
+            "quality": 0
+          },
+          "score": 500
+        },
+        {
+          "signals": {
+            "grammar": 0,
+            "targetLanguage": 0,
+            "length": 1000,
+            "quality": 0
+          },
+          "score": 200
+        },
+        {
+          "signals": {
+            "grammar": 750,
+            "targetLanguage": 1000,
+            "length": 1000,
+            "quality": 900
+          },
+          "score": 905
+        },
+        {
+          "signals": {
+            "grammar": 0,
+            "targetLanguage": 0,
+            "length": 0,
+            "quality": 50
+          },
+          "score": 10
+        },
+        {
+          "signals": {
+            "grammar": 250,
+            "targetLanguage": 0,
+            "length": 333,
+            "quality": 400
+          },
+          "score": 221
+        },
+        {
+          "signals": {
+            "grammar": 500,
+            "targetLanguage": 500,
+            "length": 666,
+            "quality": 0
+          },
+          "score": 433
+        },
+        {
+          "signals": {
+            "grammar": 0,
+            "targetLanguage": 0,
+            "length": 0,
+            "quality": 0
+          },
+          "score": 0
+        },
+        {
+          "signals": {
+            "grammar": 500,
+            "targetLanguage": 600,
+            "length": 0,
+            "quality": 700
+          },
+          "score": 470
+        },
+        {
+          "signals": {
+            "grammar": 1250,
+            "targetLanguage": 0,
+            "length": 0,
+            "quality": 1000
+          },
+          "score": 575
+        },
+        {
+          "signals": {
+            "grammar": 333,
+            "targetLanguage": 428,
+            "length": 166,
+            "quality": 0
+          },
+          "score": 261
+        }
+      ]
+    },
+    {
+      "name": "difficulty: two struggling turns scaffold; two easier ones in a row return to normal",
+      "op": "difficulty",
+      "input": {
+        "steps": [
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 3,
+              "grammarChecked": 4,
+              "targetWords": 0,
+              "totalWords": 2,
+              "quality": 10
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 3,
+              "grammarChecked": 4,
+              "targetWords": 0,
+              "totalWords": 2,
+              "quality": 10
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 3,
+              "grammarChecked": 4,
+              "targetWords": 0,
+              "totalWords": 2,
+              "quality": 10
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 1,
+              "grammarChecked": 4,
+              "targetWords": 3,
+              "totalWords": 6,
+              "quality": 60
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 1,
+              "grammarChecked": 4,
+              "targetWords": 3,
+              "totalWords": 6,
+              "quality": 60
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 3,
+              "grammarChecked": 4,
+              "targetWords": 0,
+              "totalWords": 2,
+              "quality": 10
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 3,
+              "grammarChecked": 4,
+              "targetWords": 0,
+              "totalWords": 2,
+              "quality": 10
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "turn",
+          "struggle": 905,
+          "level": "none",
+          "high": 1,
+          "low": 0,
+          "turns": 1,
+          "scaffolded": 0,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 905,
+          "level": "scaffolded",
+          "high": 2,
+          "low": 0,
+          "turns": 2,
+          "scaffolded": 1,
+          "stretched": 0,
+          "adjustment": {
+            "level": "scaffolded",
+            "reason": "Player is struggling: high grammar error rate, low target language usage, very short responses, low conversation quality. Activating scaffolding.",
+            "struggle": 905,
+            "consecutiveTurns": 2
+          }
+        },
+        {
+          "do": "turn",
+          "struggle": 905,
+          "level": "scaffolded",
+          "high": 3,
+          "low": 0,
+          "turns": 3,
+          "scaffolded": 1,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 221,
+          "level": "scaffolded",
+          "high": 0,
+          "low": 0,
+          "turns": 4,
+          "scaffolded": 1,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 221,
+          "level": "none",
+          "high": 0,
+          "low": 0,
+          "turns": 5,
+          "scaffolded": 1,
+          "stretched": 0,
+          "adjustment": {
+            "level": "none",
+            "reason": "Player is recovering — returning to normal difficulty.",
+            "struggle": 221,
+            "consecutiveTurns": 0
+          }
+        },
+        {
+          "do": "turn",
+          "struggle": 905,
+          "level": "none",
+          "high": 1,
+          "low": 0,
+          "turns": 6,
+          "scaffolded": 1,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 905,
+          "level": "scaffolded",
+          "high": 2,
+          "low": 0,
+          "turns": 7,
+          "scaffolded": 2,
+          "stretched": 0,
+          "adjustment": {
+            "level": "scaffolded",
+            "reason": "Player is struggling: high grammar error rate, low target language usage, very short responses, low conversation quality. Activating scaffolding.",
+            "struggle": 905,
+            "consecutiveTurns": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "difficulty: three easy turns stretch; two harder ones return; scaffolding straight from stretch",
+      "op": "difficulty",
+      "input": {
+        "steps": [
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 0,
+              "grammarChecked": 4,
+              "targetWords": 8,
+              "totalWords": 10,
+              "quality": 95
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 0,
+              "grammarChecked": 4,
+              "targetWords": 8,
+              "totalWords": 10,
+              "quality": 95
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 0,
+              "grammarChecked": 4,
+              "targetWords": 8,
+              "totalWords": 10,
+              "quality": 95
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 0,
+              "grammarChecked": 4,
+              "targetWords": 8,
+              "totalWords": 10,
+              "quality": 95
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 1,
+              "grammarChecked": 4,
+              "targetWords": 3,
+              "totalWords": 6,
+              "quality": 60
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 1,
+              "grammarChecked": 4,
+              "targetWords": 3,
+              "totalWords": 6,
+              "quality": 60
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 0,
+              "grammarChecked": 4,
+              "targetWords": 8,
+              "totalWords": 10,
+              "quality": 95
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 0,
+              "grammarChecked": 4,
+              "targetWords": 8,
+              "totalWords": 10,
+              "quality": 95
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 0,
+              "grammarChecked": 4,
+              "targetWords": 8,
+              "totalWords": 10,
+              "quality": 95
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 3,
+              "grammarChecked": 4,
+              "targetWords": 0,
+              "totalWords": 2,
+              "quality": 10
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 3,
+              "grammarChecked": 4,
+              "targetWords": 0,
+              "totalWords": 2,
+              "quality": 10
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "turn",
+          "struggle": 10,
+          "level": "none",
+          "high": 0,
+          "low": 1,
+          "turns": 1,
+          "scaffolded": 0,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 10,
+          "level": "none",
+          "high": 0,
+          "low": 2,
+          "turns": 2,
+          "scaffolded": 0,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 10,
+          "level": "stretch",
+          "high": 0,
+          "low": 3,
+          "turns": 3,
+          "scaffolded": 0,
+          "stretched": 1,
+          "adjustment": {
+            "level": "stretch",
+            "reason": "Player is performing exceptionally well — increasing complexity.",
+            "struggle": 10,
+            "consecutiveTurns": 3
+          }
+        },
+        {
+          "do": "turn",
+          "struggle": 10,
+          "level": "stretch",
+          "high": 0,
+          "low": 4,
+          "turns": 4,
+          "scaffolded": 0,
+          "stretched": 1,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 221,
+          "level": "stretch",
+          "high": 0,
+          "low": 0,
+          "turns": 5,
+          "scaffolded": 0,
+          "stretched": 1,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 221,
+          "level": "none",
+          "high": 0,
+          "low": 0,
+          "turns": 6,
+          "scaffolded": 0,
+          "stretched": 1,
+          "adjustment": {
+            "level": "none",
+            "reason": "Returning to standard difficulty after stretch challenge.",
+            "struggle": 221,
+            "consecutiveTurns": 0
+          }
+        },
+        {
+          "do": "turn",
+          "struggle": 10,
+          "level": "none",
+          "high": 0,
+          "low": 1,
+          "turns": 7,
+          "scaffolded": 0,
+          "stretched": 1,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 10,
+          "level": "none",
+          "high": 0,
+          "low": 2,
+          "turns": 8,
+          "scaffolded": 0,
+          "stretched": 1,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 10,
+          "level": "stretch",
+          "high": 0,
+          "low": 3,
+          "turns": 9,
+          "scaffolded": 0,
+          "stretched": 2,
+          "adjustment": {
+            "level": "stretch",
+            "reason": "Player is performing exceptionally well — increasing complexity.",
+            "struggle": 10,
+            "consecutiveTurns": 3
+          }
+        },
+        {
+          "do": "turn",
+          "struggle": 905,
+          "level": "stretch",
+          "high": 1,
+          "low": 0,
+          "turns": 10,
+          "scaffolded": 0,
+          "stretched": 2,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 905,
+          "level": "scaffolded",
+          "high": 2,
+          "low": 0,
+          "turns": 11,
+          "scaffolded": 1,
+          "stretched": 2,
+          "adjustment": {
+            "level": "scaffolded",
+            "reason": "Player is struggling: high grammar error rate, low target language usage, very short responses, low conversation quality. Activating scaffolding.",
+            "struggle": 905,
+            "consecutiveTurns": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "difficulty: the reason names only the signals that apply",
+      "op": "difficulty",
+      "note": "Half the grammar wrong is not \"high\" (it must be over half); no target words in two words is low usage and very short: 150 + 300 + 200 = 650. Without a named signal the struggle tops out at 573 (2 of 4 wrong, 1 of 4 target words, quality 30: 150 + 150 + 133 + 140), which never scaffolds.",
+      "input": {
+        "steps": [
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 2,
+              "grammarChecked": 4,
+              "targetWords": 1,
+              "totalWords": 3,
+              "quality": 30
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 1,
+              "grammarChecked": 2,
+              "targetWords": 0,
+              "totalWords": 2
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 1,
+              "grammarChecked": 2,
+              "targetWords": 0,
+              "totalWords": 2
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "turn",
+          "struggle": 556,
+          "level": "none",
+          "high": 0,
+          "low": 0,
+          "turns": 1,
+          "scaffolded": 0,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 650,
+          "level": "none",
+          "high": 1,
+          "low": 0,
+          "turns": 2,
+          "scaffolded": 0,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 650,
+          "level": "scaffolded",
+          "high": 2,
+          "low": 0,
+          "turns": 3,
+          "scaffolded": 1,
+          "stretched": 0,
+          "adjustment": {
+            "level": "scaffolded",
+            "reason": "Player is struggling: low target language usage, very short responses. Activating scaffolding.",
+            "struggle": 650,
+            "consecutiveTurns": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "difficulty: errors over half and exactly a fifth target words name only the grammar",
+      "op": "difficulty",
+      "note": "3 of 4 wrong, 1 of 5 target words (not under a fifth), 5 words, quality 10: 225 + 180 + 100 + 180 = 685.",
+      "input": {
+        "steps": [
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 3,
+              "grammarChecked": 4,
+              "targetWords": 1,
+              "totalWords": 5,
+              "quality": 10
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 3,
+              "grammarChecked": 4,
+              "targetWords": 1,
+              "totalWords": 5,
+              "quality": 10
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "turn",
+          "struggle": 685,
+          "level": "none",
+          "high": 1,
+          "low": 0,
+          "turns": 1,
+          "scaffolded": 0,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 685,
+          "level": "scaffolded",
+          "high": 2,
+          "low": 0,
+          "turns": 2,
+          "scaffolded": 1,
+          "stretched": 0,
+          "adjustment": {
+            "level": "scaffolded",
+            "reason": "Player is struggling: high grammar error rate, low conversation quality. Activating scaffolding.",
+            "struggle": 685,
+            "consecutiveTurns": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "difficulty: a struggle of exactly 600 after scaffolding is still struggling, so the next easier turn does not return",
+      "op": "difficulty",
+      "note": "All grammar wrong, no target words, eight words, no quality: 300 + 300 = 600, which counts as struggling. The way back needs the previous turn under 600, so the first easier turn after it stays scaffolded and the second returns.",
+      "input": {
+        "steps": [
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 3,
+              "grammarChecked": 4,
+              "targetWords": 0,
+              "totalWords": 2,
+              "quality": 10
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 3,
+              "grammarChecked": 4,
+              "targetWords": 0,
+              "totalWords": 2,
+              "quality": 10
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 4,
+              "grammarChecked": 4,
+              "targetWords": 0,
+              "totalWords": 8
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 1,
+              "grammarChecked": 4,
+              "targetWords": 3,
+              "totalWords": 6,
+              "quality": 60
+            }
+          },
+          {
+            "do": "turn",
+            "metrics": {
+              "grammarErrors": 1,
+              "grammarChecked": 4,
+              "targetWords": 3,
+              "totalWords": 6,
+              "quality": 60
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "turn",
+          "struggle": 905,
+          "level": "none",
+          "high": 1,
+          "low": 0,
+          "turns": 1,
+          "scaffolded": 0,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 905,
+          "level": "scaffolded",
+          "high": 2,
+          "low": 0,
+          "turns": 2,
+          "scaffolded": 1,
+          "stretched": 0,
+          "adjustment": {
+            "level": "scaffolded",
+            "reason": "Player is struggling: high grammar error rate, low target language usage, very short responses, low conversation quality. Activating scaffolding.",
+            "struggle": 905,
+            "consecutiveTurns": 2
+          }
+        },
+        {
+          "do": "turn",
+          "struggle": 600,
+          "level": "scaffolded",
+          "high": 3,
+          "low": 0,
+          "turns": 3,
+          "scaffolded": 1,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 221,
+          "level": "scaffolded",
+          "high": 0,
+          "low": 0,
+          "turns": 4,
+          "scaffolded": 1,
+          "stretched": 0,
+          "adjustment": null
+        },
+        {
+          "do": "turn",
+          "struggle": 221,
+          "level": "none",
+          "high": 0,
+          "low": 0,
+          "turns": 5,
+          "scaffolded": 1,
+          "stretched": 0,
+          "adjustment": {
+            "level": "none",
+            "reason": "Player is recovering — returning to normal difficulty.",
+            "struggle": 221,
+            "consecutiveTurns": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "mode: each NPC's hash, roll and language mode at every band",
+      "op": "mode",
+      "input": {
+        "npcs": [
+          "ada",
+          "bram",
+          "cora",
+          "dov",
+          "npc_7",
+          "Élodie",
+          "",
+          "innkeeper_cora"
+        ]
+      },
+      "expected": [
+        {
+          "id": "ada",
+          "hash": 96414,
+          "roll": 14,
+          "modes": {
+            "A1": "bilingual",
+            "A2": "bilingual",
+            "B1": "natural",
+            "B2": "natural",
+            "C1": "natural",
+            "C2": "natural"
+          }
+        },
+        {
+          "id": "bram",
+          "hash": 3032188,
+          "roll": 88,
+          "modes": {
+            "A1": "simplified",
+            "A2": "simplified",
+            "B1": "natural",
+            "B2": "natural",
+            "C1": "natural",
+            "C2": "natural"
+          }
+        },
+        {
+          "id": "cora",
+          "hash": 3059611,
+          "roll": 11,
+          "modes": {
+            "A1": "bilingual",
+            "A2": "bilingual",
+            "B1": "natural",
+            "B2": "natural",
+            "C1": "natural",
+            "C2": "natural"
+          }
+        },
+        {
+          "id": "dov",
+          "hash": 99659,
+          "roll": 59,
+          "modes": {
+            "A1": "bilingual",
+            "A2": "simplified",
+            "B1": "natural",
+            "B2": "natural",
+            "C1": "natural",
+            "C2": "natural"
+          }
+        },
+        {
+          "id": "npc_7",
+          "hash": 105022041,
+          "roll": 41,
+          "modes": {
+            "A1": "bilingual",
+            "A2": "simplified",
+            "B1": "natural",
+            "B2": "natural",
+            "C1": "natural",
+            "C2": "natural"
+          }
+        },
+        {
+          "id": "Élodie",
+          "hash": 1562638580,
+          "roll": 80,
+          "modes": {
+            "A1": "simplified",
+            "A2": "simplified",
+            "B1": "natural",
+            "B2": "natural",
+            "C1": "natural",
+            "C2": "natural"
+          }
+        },
+        {
+          "id": "",
+          "hash": 0,
+          "roll": 0,
+          "modes": {
+            "A1": "bilingual",
+            "A2": "bilingual",
+            "B1": "bilingual",
+            "B2": "natural",
+            "C1": "natural",
+            "C2": "natural"
+          }
+        },
+        {
+          "id": "innkeeper_cora",
+          "hash": 1552641729,
+          "roll": 29,
+          "modes": {
+            "A1": "bilingual",
+            "A2": "bilingual",
+            "B1": "natural",
+            "B2": "natural",
+            "C1": "natural",
+            "C2": "natural"
+          }
+        }
+      ]
+    },
+    {
+      "name": "npc: an A1 learner talking to Ada, scaffolded",
+      "op": "npc",
+      "input": {
+        "level": "A1",
+        "npcId": "ada",
+        "target": "French",
+        "scaffolding": "scaffolded"
+      },
+      "expected": {
+        "mode": "bilingual",
+        "directive": "LANGUAGE MODE — BILINGUAL:\nMix English and French in your responses. Say important words in both languages. For example: \"Le pain — the bread — c'est très bon!\" Gradually use more French as the conversation progresses. If the player writes in English, respond with a mix but lean toward French.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 200 most common words in French\n- Only the most basic, high-frequency everyday words (greetings, numbers, common nouns/verbs)\n- Stick to concrete nouns (bread, house, water), basic verbs (eat, go, see, do), simple adjectives (big, small, good, bad), and common function words\n- If you MUST use a less common word, immediately provide the English translation in brackets: \"le boulanger [baker]\"\n- Prefer simple present tense and imperative mood\n",
+        "scaffolding": "\nDYNAMIC SCAFFOLDING — ACTIVE:\nThe player is struggling. Adjust your speech NOW:\n- Reduce French usage by 20% compared to your normal mode\n- Use shorter sentences (max 5-7 words)\n- Add inline translations in brackets for key words, like: \"le pain [bread]\"\n- Repeat important words naturally\n- Ask simple yes/no or choice questions to keep the player engaged\n- If the player responds in English, acknowledge and gently guide back to French\nDo NOT mention that you are simplifying. Be natural and encouraging.\n",
+        "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 2,
+          "newWordHintFrequency": 1,
+          "advancedVocabOnly": false
+        },
+        "frequency": {
+          "min": 1,
+          "max": 200,
+          "label": "top 200 most common words",
+          "description": "Only the most basic, high-frequency everyday words (greetings, numbers, common nouns/verbs)"
+        },
+        "text": {
+          "maxSentenceWords": 8,
+          "maxParagraphs": 2,
+          "vocabularyTier": "basic",
+          "questionType": "true_false"
+        },
+        "questPool": 30
+      }
+    },
+    {
+      "name": "npc: a B2 learner talking to Bram in Spanish, stretched, native German",
+      "op": "npc",
+      "input": {
+        "level": "B2",
+        "npcId": "bram",
+        "target": "Spanish",
+        "native": "German",
+        "scaffolding": "stretch"
+      },
+      "expected": {
+        "mode": "natural",
+        "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in Spanish at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n\nVOCABULARY RANGE: Use the full range of Spanish vocabulary including abstract concepts, idioms, and domain-specific terms. No frequency restrictions.\n",
+        "scaffolding": "\nSTRETCH CHALLENGE — ACTIVE:\nThe player is performing exceptionally well. Increase complexity:\n- Use more advanced vocabulary and natural idioms in Spanish\n- Use longer, more complex sentence structures\n- Reduce translations and explanations\n- Ask open-ended questions that require detailed responses\n- Introduce cultural references or wordplay when appropriate\nDo NOT mention that you are increasing difficulty. Be natural.\n",
+        "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+        },
+        "frequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary",
+          "description": "Full vocabulary including abstract concepts, idioms, and specialized terms"
+        },
+        "text": {
+          "maxSentenceWords": 30,
+          "maxParagraphs": 8,
+          "vocabularyTier": "advanced",
+          "questionType": "analytical"
+        },
+        "questPool": 10
+      }
+    },
+    {
+      "name": "npc: an A2 learner and a simplified NPC",
+      "op": "npc",
+      "input": {
+        "level": "A2",
+        "npcId": "bram",
+        "target": "French"
+      },
+      "expected": {
+        "mode": "simplified",
+        "directive": "LANGUAGE MODE — SIMPLIFIED:\nUse only very simple French. Short sentences (5-7 words max). Use only high-frequency, concrete vocabulary. If the player seems confused, offer a translation in brackets like [bread]. Repeat key words naturally. Speak slowly and clearly.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 500 most common words in French\n- Common situational vocabulary (shopping, directions, food, travel, daily routines)\n- Include everyday situational vocabulary (shopping, travel, food, directions)\n- For any word outside the top 500, provide an inline translation: \"la boulangerie [bakery]\"\n- Use present, near future (aller + infinitive), and simple past (passé composé)\n",
+        "scaffolding": "",
+        "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 1,
+          "newWordHintFrequency": 3,
+          "advancedVocabOnly": false
+        },
+        "frequency": {
+          "min": 1,
+          "max": 500,
+          "label": "top 500 most common words",
+          "description": "Common situational vocabulary (shopping, directions, food, travel, daily routines)"
+        },
+        "text": {
+          "maxSentenceWords": 12,
+          "maxParagraphs": 3,
+          "vocabularyTier": "common",
+          "questionType": "simple_factual"
+        },
+        "questPool": 25
+      }
+    },
+    {
+      "name": "npc: a B1 learner talking to Cora: the top-1500 frequency constraint",
+      "op": "npc",
+      "input": {
+        "level": "B1",
+        "npcId": "cora",
+        "target": "French"
+      },
+      "expected": {
+        "mode": "natural",
+        "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in French at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 1500 most common words in French\n- General vocabulary for most everyday topics (work, education, culture, opinions)\n- Use general vocabulary for everyday and some abstract topics\n- For specialized or uncommon words (outside top 1500), provide brief context or inline translation\n- All tenses are acceptable including subjunctive for common expressions\n",
+        "scaffolding": "",
+        "hints": {
+          "translationMode": "hover",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+        },
+        "frequency": {
+          "min": 1,
+          "max": 1500,
+          "label": "top 1500 most common words",
+          "description": "General vocabulary for most everyday topics (work, education, culture, opinions)"
+        },
+        "text": {
+          "maxSentenceWords": 20,
+          "maxParagraphs": 5,
+          "vocabularyTier": "varied",
+          "questionType": "inferential"
+        },
+        "questPool": 15
+      }
+    },
+    {
+      "name": "npc: a C1 learner talking to Dov in Spanish: the constraint with only its label and description",
+      "op": "npc",
+      "input": {
+        "level": "C1",
+        "npcId": "dov",
+        "target": "Spanish"
+      },
+      "expected": {
+        "mode": "natural",
+        "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in Spanish at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the unrestricted vocabulary with sophisticated register in Spanish\n- Full vocabulary including academic, literary, and nuanced register-appropriate terms\n",
+        "scaffolding": "",
+        "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+        },
+        "frequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary with sophisticated register",
+          "description": "Full vocabulary including academic, literary, and nuanced register-appropriate terms"
+        },
+        "text": {
+          "maxSentenceWords": 40,
+          "maxParagraphs": 10,
+          "vocabularyTier": "sophisticated",
+          "questionType": "analytical"
+        },
+        "questPool": 8
+      }
+    },
+    {
+      "name": "npc: a C2 learner talking to Ada, native German",
+      "op": "npc",
+      "input": {
+        "level": "C2",
+        "npcId": "ada",
+        "target": "French",
+        "native": "German"
+      },
+      "expected": {
+        "mode": "natural",
+        "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in French at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the native-level unrestricted vocabulary in French\n- Complete native-speaker vocabulary including rare, archaic, dialectal, and highly specialized terms\n",
+        "scaffolding": "",
+        "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+        },
+        "frequency": {
+          "min": 1,
+          "max": null,
+          "label": "native-level unrestricted vocabulary",
+          "description": "Complete native-speaker vocabulary including rare, archaic, dialectal, and highly specialized terms"
+        },
+        "text": {
+          "maxSentenceWords": 50,
+          "maxParagraphs": 12,
+          "vocabularyTier": "native",
+          "questionType": "analytical"
+        },
+        "questPool": 5
+      }
+    },
+    {
+      "name": "hint: new-word hints by band, cadence, difficulty and mastery",
+      "op": "hint",
+      "input": {
+        "checks": [
+          {
+            "level": "A1",
+            "index": 0,
+            "difficulty": "beginner"
+          },
+          {
+            "level": "A1",
+            "index": 7,
+            "difficulty": "beginner",
+            "mastered": true
+          },
+          {
+            "level": "A2",
+            "index": 3,
+            "difficulty": "beginner"
+          },
+          {
+            "level": "A2",
+            "index": 4,
+            "difficulty": "advanced"
+          },
+          {
+            "level": "B1",
+            "index": 0,
+            "difficulty": "intermediate"
+          },
+          {
+            "level": "B1",
+            "index": 5,
+            "difficulty": "advanced"
+          },
+          {
+            "level": "C1",
+            "index": 0,
+            "difficulty": "beginner"
+          },
+          {
+            "level": "C2",
+            "index": 2,
+            "difficulty": "advanced"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "level": "A1",
+          "index": 0,
+          "difficulty": "beginner",
+          "show": true
+        },
+        {
+          "level": "A1",
+          "index": 7,
+          "difficulty": "beginner",
+          "mastered": true,
+          "show": false
+        },
+        {
+          "level": "A2",
+          "index": 3,
+          "difficulty": "beginner",
+          "show": true
+        },
+        {
+          "level": "A2",
+          "index": 4,
+          "difficulty": "advanced",
+          "show": false
+        },
+        {
+          "level": "B1",
+          "index": 0,
+          "difficulty": "intermediate",
+          "show": false
+        },
+        {
+          "level": "B1",
+          "index": 5,
+          "difficulty": "advanced",
+          "show": true
+        },
+        {
+          "level": "C1",
+          "index": 0,
+          "difficulty": "beginner",
+          "show": false
+        },
+        {
+          "level": "C2",
+          "index": 2,
+          "difficulty": "advanced",
+          "show": true
+        }
+      ]
+    },
+    {
+      "name": "quests: untagged always, within one band, closest first",
+      "op": "quests",
+      "input": {
+        "level": "B1",
+        "quests": [
+          {
+            "id": "q_c1",
+            "cefrLevel": "C1"
+          },
+          {
+            "id": "q_b2",
+            "cefrLevel": "B2"
+          },
+          {
+            "id": "q_none"
+          },
+          {
+            "id": "q_a2",
+            "cefrLevel": "A2"
+          },
+          {
+            "id": "q_b1",
+            "cefrLevel": "B1"
+          },
+          {
+            "id": "q_a1",
+            "cefrLevel": "A1"
+          },
+          {
+            "id": "q_null",
+            "cefrLevel": null
+          }
+        ]
+      },
+      "expected": {
+        "shown": [
+          "q_none",
+          "q_b1",
+          "q_null",
+          "q_b2",
+          "q_a2"
+        ]
+      }
+    },
+    {
+      "name": "advance: progress toward the next band in thousandths; texts count only where a band asks for them",
+      "op": "advance",
+      "input": {
+        "snapshots": [
+          {
+            "level": "A1",
+            "wordsLearned": 49,
+            "conversations": 3,
+            "textsRead": 0
+          },
+          {
+            "level": "A1",
+            "wordsLearned": 50,
+            "conversations": 3,
+            "textsRead": 0
+          },
+          {
+            "level": "A2",
+            "wordsLearned": 300,
+            "conversations": 5,
+            "textsRead": 2
+          },
+          {
+            "level": "A2",
+            "wordsLearned": 150,
+            "conversations": 10,
+            "textsRead": 4
+          },
+          {
+            "level": "B2",
+            "wordsLearned": 500,
+            "conversations": 50,
+            "textsRead": 30
+          },
+          {
+            "level": "C2",
+            "wordsLearned": 0,
+            "conversations": 0,
+            "textsRead": 0
+          }
+        ]
+      },
+      "expected": [
+        {
+          "advance": false,
+          "next": "A2",
+          "progress": 993,
+          "words": 980,
+          "conversations": 1000,
+          "texts": 1000
+        },
+        {
+          "advance": true,
+          "next": "A2",
+          "progress": 1000,
+          "words": 1000,
+          "conversations": 1000,
+          "texts": 1000
+        },
+        {
+          "advance": false,
+          "next": "B1",
+          "progress": 633,
+          "words": 1000,
+          "conversations": 500,
+          "texts": 400
+        },
+        {
+          "advance": false,
+          "next": "B1",
+          "progress": 933,
+          "words": 1000,
+          "conversations": 1000,
+          "texts": 800
+        },
+        {
+          "advance": true,
+          "next": "C1",
+          "progress": 1000,
+          "words": 1000,
+          "conversations": 1000,
+          "texts": 1000
+        },
+        {
+          "advance": false,
+          "next": null,
+          "progress": 1000,
+          "words": 1000,
+          "conversations": 1000,
+          "texts": 1000
+        }
+      ]
+    }
+  ]
+}

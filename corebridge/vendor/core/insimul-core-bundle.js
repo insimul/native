@@ -184,17 +184,17 @@
   function listSessions() {
     return [...SESSIONS.entries()].sort((a, b) => a[0] - b[0]).map(([handle, s]) => ({ session: handle, kind: s.kind }));
   }
-  async function applyOps(method, s, args, table) {
+  async function applyOps(method, s, args, table2) {
     const ops = args.ops;
     if (!Array.isArray(ops)) throw new Error(`insimulcore: ${method}: \`ops\` must be an array of { op, \u2026 }`);
     const results = [];
     for (let i = 0; i < ops.length; i++) {
       const op = ops[i];
       const name = op && typeof op === "object" ? op.op : void 0;
-      const fn = typeof name === "string" && Object.prototype.hasOwnProperty.call(table, name) ? table[name] : null;
+      const fn = typeof name === "string" && Object.prototype.hasOwnProperty.call(table2, name) ? table2[name] : null;
       if (!fn) {
         throw new Error(
-          `insimulcore: ${method}: ops[${i}] has no known op ${JSON.stringify(name ?? null)} (known: ${Object.keys(table).join(", ")})`
+          `insimulcore: ${method}: ops[${i}] has no known op ${JSON.stringify(name ?? null)} (known: ${Object.keys(table2).join(", ")})`
         );
       }
       try {
@@ -7607,8 +7607,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     const timed = records.filter((r) => r.status === "completed" && r.completionMs != null && r.estimatedMs != null && r.estimatedMs > 0);
     let time = 500;
     if (timed.length > 0) {
-      const ratio = roundDiv(timed.reduce((s, r) => s + roundDiv(r.completionMs * 1e3, r.estimatedMs), 0), timed.length);
-      time = Math.max(0, Math.min(1e3, roundDiv((2e3 - ratio) * 2, 3)));
+      const ratio2 = roundDiv(timed.reduce((s, r) => s + roundDiv(r.completionMs * 1e3, r.estimatedMs), 0), timed.length);
+      time = Math.max(0, Math.min(1e3, roundDiv((2e3 - ratio2) * 2, 3)));
     }
     const score = roundDiv(success * 4 + objectives * 3 + attempts * 2 + time, 10);
     return { score, success, objectives, attempts, time };
@@ -35768,9 +35768,9 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
   }
   function slotRows(results, config, activeSlot, busy = false) {
     const size = slotTableSize(config);
-    const table = slotTable(results, size);
-    const model = new SaveSlotModel(table);
-    const cont = continueSlot(table, size);
+    const table2 = slotTable(results, size);
+    const model = new SaveSlotModel(table2);
+    const cont = continueSlot(table2, size);
     return model.slots().map((v) => {
       const isManual = v.index < config.slotCount;
       return {
@@ -38349,11 +38349,11 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
         const words = nonEmpty3(n.item) ? n.item.replace(/_/g, " ") : n.id;
         offer(actions, { action: "gather", kind: "node", id: n.id, prompt: `Gather ${words}`, distance: dist(n.position) }, reach.gather);
       }
-      const table = input.actionTable ?? DEFAULT_PHYSICAL_ACTION_TUNING;
+      const table2 = input.actionTable ?? DEFAULT_PHYSICAL_ACTION_TUNING;
       for (const h of input.hotspots ?? []) {
         if (!h || !nonEmpty3(h.id) || !nonEmpty3(h.actionType) || !finitePoint2(h.position)) continue;
-        if (!(table.actions ?? []).some((a) => a.id === h.actionType)) continue;
-        offer(actions, { action: "perform", kind: "hotspot", id: h.id, prompt: actionPrompt(table, h.actionType), distance: dist(h.position) }, reach.perform);
+        if (!(table2.actions ?? []).some((a) => a.id === h.actionType)) continue;
+        offer(actions, { action: "perform", kind: "hotspot", id: h.id, prompt: actionPrompt(table2, h.actionType), distance: dist(h.position) }, reach.perform);
       }
     }
     const nearest = (list2) => {
@@ -38481,6 +38481,67 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     C1: { bilingual: 0, simplified: 0, natural: 100 },
     C2: { bilingual: 0, simplified: 0, natural: 100 }
   });
+  function npcHash(id4) {
+    let h = 0;
+    for (let i = 0; i < id4.length; i++) h = (h << 5) - h + id4.charCodeAt(i) | 0;
+    return Math.abs(h);
+  }
+  function npcLanguageMode(level, npcId) {
+    const d = NPC_MODE_PERCENT[level];
+    const roll2 = npcHash(npcId) % 100;
+    if (roll2 < d.bilingual) return "bilingual";
+    if (roll2 < d.bilingual + d.simplified) return "simplified";
+    return "natural";
+  }
+  function modeDirective(mode, target, native = "English", level) {
+    const base = baseModeDirective(mode, target, native);
+    return level ? base + "\n" + frequencyDirective(level, target) : base;
+  }
+  function baseModeDirective(mode, target, native) {
+    switch (mode) {
+      case "bilingual":
+        return `LANGUAGE MODE \u2014 BILINGUAL:
+Mix ${native} and ${target} in your responses. Say important words in both languages. For example: "Le pain \u2014 the bread \u2014 c'est tr\xE8s bon!" Gradually use more ${target} as the conversation progresses. If the player writes in ${native}, respond with a mix but lean toward ${target}.
+`;
+      case "simplified":
+        return `LANGUAGE MODE \u2014 SIMPLIFIED:
+Use only very simple ${target}. Short sentences (5-7 words max). Use only high-frequency, concrete vocabulary. If the player seems confused, offer a translation in brackets like [bread]. Repeat key words naturally. Speak slowly and clearly.
+`;
+      case "natural":
+        return `LANGUAGE MODE \u2014 NATURAL:
+Speak entirely in ${target} at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.
+`;
+    }
+  }
+  function scaffoldingDirective(level, target, native = "English") {
+    switch (level) {
+      case "none":
+        return "";
+      case "scaffolded":
+        return `
+DYNAMIC SCAFFOLDING \u2014 ACTIVE:
+The player is struggling. Adjust your speech NOW:
+- Reduce ${target} usage by 20% compared to your normal mode
+- Use shorter sentences (max 5-7 words)
+- Add inline translations in brackets for key words, like: "le pain [bread]"
+- Repeat important words naturally
+- Ask simple yes/no or choice questions to keep the player engaged
+- If the player responds in ${native}, acknowledge and gently guide back to ${target}
+Do NOT mention that you are simplifying. Be natural and encouraging.
+`;
+      case "stretch":
+        return `
+STRETCH CHALLENGE \u2014 ACTIVE:
+The player is performing exceptionally well. Increase complexity:
+- Use more advanced vocabulary and natural idioms in ${target}
+- Use longer, more complex sentence structures
+- Reduce translations and explanations
+- Ask open-ended questions that require detailed responses
+- Introduce cultural references or wordplay when appropriate
+Do NOT mention that you are increasing difficulty. Be natural.
+`;
+    }
+  }
   var HINT_BEHAVIOR = Object.freeze({
     A1: { translationMode: "inline", showTranslateButton: true, translateButtonProminence: 2, newWordHintFrequency: 1, advancedVocabOnly: false },
     A2: { translationMode: "inline", showTranslateButton: true, translateButtonProminence: 1, newWordHintFrequency: 3, advancedVocabOnly: false },
@@ -38497,6 +38558,11 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     if (c.newWordHintFrequency === 0) return difficulty === "advanced";
     return encounterIndex % c.newWordHintFrequency === 0;
   }
+  var rank = (l) => CEFR_ORDER.indexOf(l);
+  function filterQuestsByCefr(quests, player) {
+    const dist = (q) => Math.abs(rank(q.cefrLevel ?? player) - rank(player));
+    return quests.filter((q) => !q.cefrLevel || Math.abs(rank(q.cefrLevel) - rank(player)) <= 1).sort((a, b) => dist(a) - dist(b)).map((q) => q.id);
+  }
   var CEFR_ADVANCEMENT = Object.freeze({
     "A1\u2192A2": { wordsLearned: 50, conversations: 3, textsRead: 0 },
     "A2\u2192B1": { wordsLearned: 150, conversations: 10, textsRead: 5 },
@@ -38504,6 +38570,16 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     "B2\u2192C1": { wordsLearned: 500, conversations: 50, textsRead: 30 },
     "C1\u2192C2": { wordsLearned: 800, conversations: 100, textsRead: 50 }
   });
+  function cefrAdvancement(s) {
+    const next = CEFR_ORDER[rank(s.level) + 1];
+    if (!next) return { advance: false, next: null, progress: 1e3, words: 1e3, conversations: 1e3, texts: 1e3 };
+    const t = CEFR_ADVANCEMENT[`${s.level}\u2192${next}`];
+    const part = (n, of) => of > 0 ? Math.min(1e3, Math.floor(n * 1e3 / of)) : 1e3;
+    const words = part(s.wordsLearned, t.wordsLearned);
+    const conversations = part(s.conversations, t.conversations);
+    const texts = part(s.textsRead, t.textsRead);
+    return { advance: words >= 1e3 && conversations >= 1e3 && texts >= 1e3, next, progress: Math.floor((words + conversations + texts) / 3), words, conversations, texts };
+  }
   var FREQUENCY_RANGES = Object.freeze({
     A1: { min: 1, max: 200, label: "top 200 most common words", description: "Only the most basic, high-frequency everyday words (greetings, numbers, common nouns/verbs)" },
     A2: { min: 1, max: 500, label: "top 500 most common words", description: "Common situational vocabulary (shopping, directions, food, travel, daily routines)" },
@@ -38512,6 +38588,46 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     C1: { min: 1, max: null, label: "unrestricted vocabulary with sophisticated register", description: "Full vocabulary including academic, literary, and nuanced register-appropriate terms" },
     C2: { min: 1, max: null, label: "native-level unrestricted vocabulary", description: "Complete native-speaker vocabulary including rare, archaic, dialectal, and highly specialized terms" }
   });
+  function frequencyDirective(level, target) {
+    const range = FREQUENCY_RANGES[level];
+    if (level === "B2") {
+      return `VOCABULARY RANGE: Use the full range of ${target} vocabulary including abstract concepts, idioms, and domain-specific terms. No frequency restrictions.
+`;
+    }
+    let directive = `VOCABULARY FREQUENCY CONSTRAINT:
+`;
+    directive += `- Use ONLY the ${range.label} in ${target}
+`;
+    directive += `- ${range.description}
+`;
+    switch (level) {
+      case "A1":
+        directive += `- Stick to concrete nouns (bread, house, water), basic verbs (eat, go, see, do), simple adjectives (big, small, good, bad), and common function words
+`;
+        directive += `- If you MUST use a less common word, immediately provide the English translation in brackets: "le boulanger [baker]"
+`;
+        directive += `- Prefer simple present tense and imperative mood
+`;
+        break;
+      case "A2":
+        directive += `- Include everyday situational vocabulary (shopping, travel, food, directions)
+`;
+        directive += `- For any word outside the top 500, provide an inline translation: "la boulangerie [bakery]"
+`;
+        directive += `- Use present, near future (aller + infinitive), and simple past (pass\xE9 compos\xE9)
+`;
+        break;
+      case "B1":
+        directive += `- Use general vocabulary for everyday and some abstract topics
+`;
+        directive += `- For specialized or uncommon words (outside top 1500), provide brief context or inline translation
+`;
+        directive += `- All tenses are acceptable including subjunctive for common expressions
+`;
+        break;
+    }
+    return directive;
+  }
   var TEXT_COMPLEXITY = Object.freeze({
     A1: { maxSentenceWords: 8, maxParagraphs: 2, vocabularyTier: "basic", questionType: "true_false" },
     A2: { maxSentenceWords: 12, maxParagraphs: 3, vocabularyTier: "common", questionType: "simple_factual" },
@@ -38521,16 +38637,150 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     C2: { maxSentenceWords: 50, maxParagraphs: 12, vocabularyTier: "native", questionType: "analytical" }
   });
   var QUEST_POOL_SIZES = Object.freeze({ A1: 30, A2: 25, B1: 15, B2: 10, C1: 8, C2: 5 });
+  function npcAdaptation(level, npcId, target, native = "English", scaffolding = "none") {
+    const mode = npcLanguageMode(level, npcId);
+    return {
+      mode,
+      directive: modeDirective(mode, target, native, level),
+      scaffolding: scaffoldingDirective(scaffolding, target, native),
+      hints: hintBehavior(level),
+      frequency: { ...FREQUENCY_RANGES[level] },
+      text: { ...TEXT_COMPLEXITY[level] },
+      questPool: QUEST_POOL_SIZES[level]
+    };
+  }
 
   // @insimul/core/src/language-learning/bank-profile.ts
   var VOCABULARY_SORTS = Object.freeze(["mastery", "alpha", "recent", "used", "review"]);
   var MASTERY_LABELS = Object.freeze({ new: "New", learning: "Learning", familiar: "Familiar", mastered: "Mastered" });
   var MASTERY_TONES = Object.freeze({ new: "danger", learning: "warning", familiar: "success", mastered: "quest" });
   var MASTERY_RANK = Object.freeze({ mastered: 0, familiar: 1, learning: 2, new: 3 });
+  var DUE_LABEL = "Review!";
+  var DUE_TONE = "accent";
+  var categoryOf = (w) => w.category || "general";
+  function bankCategories(book) {
+    const seen = [];
+    for (const w of book.words) if (!seen.includes(categoryOf(w))) seen.push(categoryOf(w));
+    return seen;
+  }
+  function bankCards(book, q = {}) {
+    const due = new Set(q.due ?? []);
+    const sort = q.sort ?? "mastery";
+    if (!VOCABULARY_SORTS.includes(sort)) throw new Error(`unknown vocabulary sort ${sort}`);
+    const category = q.category ?? "all";
+    const rows = book.words.filter((w) => category === "all" || categoryOf(w) === category);
+    const m = (w) => masteryOf(w.encountered, w.halves);
+    const ordered = [...rows];
+    switch (sort) {
+      case "mastery":
+        ordered.sort((a, b) => MASTERY_RANK[m(a)] - MASTERY_RANK[m(b)]);
+        break;
+      case "alpha":
+        ordered.sort((a, b) => compareIds(a.word, b.word));
+        break;
+      case "recent":
+        ordered.sort((a, b) => b.last - a.last);
+        break;
+      case "used":
+        ordered.sort((a, b) => b.correct + b.encountered - (a.correct + a.encountered));
+        break;
+      case "review":
+        ordered.sort((a, b) => {
+          const ad = due.has(a.word) ? 0 : 1;
+          const bd = due.has(b.word) ? 0 : 1;
+          return ad !== bd ? ad - bd : a.last - b.last;
+        });
+        break;
+    }
+    const capped = q.limit !== void 0 && q.limit >= 0 ? ordered.slice(0, q.limit) : ordered;
+    const reveal = hintBehavior(q.cefr ?? "A1").translationMode;
+    return capped.map((w) => {
+      const isDue = due.has(w.word);
+      const mastery = m(w);
+      return {
+        word: w.word,
+        meaning: w.meaning,
+        category: categoryOf(w),
+        mastery,
+        label: isDue ? DUE_LABEL : MASTERY_LABELS[mastery],
+        tone: isDue ? DUE_TONE : MASTERY_TONES[mastery],
+        usage: `${w.correct}/${w.encountered}`,
+        due: isDue,
+        reveal
+      };
+    });
+  }
   var CARD_INTERACTIONS = Object.freeze(["idle", "gaze", "select"]);
+  function revealsMeaning(reveal, interaction) {
+    if (reveal === "inline") return true;
+    if (reveal === "hover") return interaction === "gaze" || interaction === "select";
+    return interaction === "select";
+  }
+  function grammarTab(book) {
+    return book.grammar.map((g) => {
+      const attempts = g.correct + g.incorrect;
+      return {
+        pattern: g.pattern,
+        correct: g.correct,
+        incorrect: g.incorrect,
+        attempts,
+        accuracy: attempts > 0 ? halfUpPercent(g.correct, attempts) : null,
+        mastered: g.mastered,
+        weak: isWeak(g)
+      };
+    });
+  }
   var halfUpPercent = (n, d) => Math.floor((n * 200 + d) / (2 * d));
+  var WEAKNESS_MIN_ATTEMPTS = 3;
+  var WEAKNESS_MIN_RATE_PERMILLE = 500;
+  var WEAKNESS_MAX = 5;
+  var IMPROVEMENT_PERMILLE = 100;
   var WEAKNESS_VOLUME_PERMILLE = Object.freeze(Array.from({ length: 9 }, (_, k) => k === 0 ? 0 : Math.min(25e3, Math.floor(Math.log2(k) * 8e3))));
   var WEAKNESS_CONFIDENCE_PERMILLE = Object.freeze(Array.from({ length: 18 }, (_, k) => k === 0 ? 0 : Math.min(25e3, Math.floor(Math.log2(k) * 6e3))));
+  var table = (t, k) => k < t.length ? t[k] : 25e3;
+  var rateOf = (g) => {
+    const total = g.correct + g.incorrect;
+    return total > 0 ? Math.floor(g.incorrect * 1e3 / total) : 0;
+  };
+  function weaknessPriority(incorrect, total) {
+    const rate = total > 0 ? Math.floor(incorrect * 5e4 / total) : 0;
+    return rate + table(WEAKNESS_VOLUME_PERMILLE, incorrect + 1) + table(WEAKNESS_CONFIDENCE_PERMILLE, total + 1);
+  }
+  function analyzeWeaknesses(book, o = {}) {
+    const minRate = o.minRatePermille ?? WEAKNESS_MIN_RATE_PERMILLE;
+    const minAttempts = o.minAttempts ?? WEAKNESS_MIN_ATTEMPTS;
+    const max = o.max ?? WEAKNESS_MAX;
+    const stats = [];
+    const weaknesses = [];
+    const improved = [];
+    for (const g of book.grammar) {
+      const total = g.correct + g.incorrect;
+      const rate = rateOf(g);
+      stats.push({ pattern: g.pattern, correct: g.correct, incorrect: g.incorrect, total, ratePermille: rate, mastered: g.mastered });
+      const prev = o.previous?.[g.pattern];
+      if (prev !== void 0 && rate < prev - IMPROVEMENT_PERMILLE) improved.push(g.pattern);
+      if (total < minAttempts) continue;
+      if (g.incorrect * 1e3 < minRate * total) continue;
+      weaknesses.push({
+        pattern: g.pattern,
+        correct: g.correct,
+        incorrect: g.incorrect,
+        total,
+        ratePermille: rate,
+        explanations: [...g.explanations],
+        examples: [...g.examples],
+        priority: weaknessPriority(g.incorrect, total)
+      });
+    }
+    weaknesses.sort((a, b) => b.priority - a.priority);
+    return { weaknesses: weaknesses.slice(0, max), stats, improved };
+  }
+  function strongPatterns(book, max = 3) {
+    return book.grammar.filter((g) => {
+      const total = g.correct + g.incorrect;
+      return total >= 3 && g.incorrect * 5 < total && g.correct >= 5;
+    }).sort((a, b) => a.incorrect * (b.correct + b.incorrect) - b.incorrect * (a.correct + a.incorrect)).slice(0, max).map((g) => g.pattern);
+  }
   var QUEST_CATEGORIES = Object.freeze([
     "conversation",
     "vocabulary",
@@ -38554,6 +38804,76 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     pronunciation: ["pronunciation", "conversation", "listening_comprehension"]
   });
   var LEARNING_HISTORY_STATUSES = Object.freeze(["completed", "failed", "abandoned"]);
+  function learningHistory(quests) {
+    const out = [];
+    for (const q of quests) {
+      const status = q.status;
+      if (typeof status !== "string" || !LEARNING_HISTORY_STATUSES.includes(status)) continue;
+      const objectives = Array.isArray(q.objectives) ? q.objectives : [];
+      out.push({
+        id: typeof q.id === "string" ? q.id : "",
+        questType: typeof q.questType === "string" && q.questType.length > 0 ? q.questType : null,
+        status,
+        completedAtMs: Number.isInteger(q.completedAtMs) ? q.completedAtMs : null,
+        objectives: objectives.map((o) => ({ completed: Boolean(o !== null && typeof o === "object" && o.completed) }))
+      });
+    }
+    return out;
+  }
+  function learningProfile(history, assessments) {
+    const byCategory = /* @__PURE__ */ new Map();
+    for (const q of history) {
+      if (!q.questType) continue;
+      if (!byCategory.has(q.questType)) byCategory.set(q.questType, []);
+      byCategory.get(q.questType).push(q);
+    }
+    const categories = [...byCategory.entries()].map(([category, quests]) => {
+      const completed = quests.filter((q) => q.status === "completed").length;
+      const failed = quests.filter((q) => q.status === "failed" || q.status === "abandoned").length;
+      const shares = quests.filter((q) => q.objectives && q.objectives.length > 0).map((q) => Math.floor(q.objectives.filter((o) => o.completed).length * 1e3 / q.objectives.length));
+      const objectivePermille = shares.length > 0 ? Math.floor(shares.reduce((s, x) => s + x, 0) / shares.length) : 0;
+      const last = quests.reduce((best, q) => (q.completedAtMs ?? 0) > (best.completedAtMs ?? 0) ? q : best, quests[0]);
+      return {
+        category,
+        attempted: quests.length,
+        completed,
+        failed,
+        successPermille: Math.floor(completed * 1e3 / quests.length),
+        objectivePermille,
+        lastAttemptedAtMs: last.completedAtMs ?? 0
+      };
+    });
+    const sums = {};
+    const counts = {};
+    for (const a of assessments) {
+      if (!a.dimensionScores || Object.keys(a.dimensionScores).length === 0) continue;
+      for (const d of SKILL_DIMENSIONS) {
+        const s = a.dimensionScores[d];
+        if (s !== void 0) {
+          sums[d] = (sums[d] ?? 0) + s;
+          counts[d] = (counts[d] ?? 0) + 1;
+        }
+      }
+    }
+    const skills = Object.fromEntries(
+      SKILL_DIMENSIONS.map((d) => [d, counts[d] ? Math.max(0, Math.min(1e3, Math.floor((sums[d] - counts[d]) * 1e3 / (4 * counts[d])))) : 500])
+    );
+    const withCefr = assessments.filter((a) => a.cefrLevel);
+    const latest = withCefr.length === 0 ? null : [...withCefr].sort((a, b) => (b.completedAtMs ?? 0) - (a.completedAtMs ?? 0))[0].cefrLevel;
+    const tried = new Set(categories.map((c) => c.category));
+    return {
+      cefrLevel: latest,
+      categories,
+      skills,
+      weakCategories: categories.filter((c) => c.attempted >= 2 && c.completed * 2 < c.attempted).map((c) => c.category),
+      strongCategories: categories.filter((c) => c.attempted >= 2 && c.completed * 5 >= c.attempted * 4).map((c) => c.category),
+      weakSkills: SKILL_DIMENSIONS.filter((d) => skills[d] < 400),
+      strongSkills: SKILL_DIMENSIONS.filter((d) => skills[d] >= 700),
+      unexplored: QUEST_CATEGORIES.filter((c) => !tried.has(c)),
+      completed: history.filter((q) => q.status === "completed").length,
+      attempted: history.filter((q) => q.status === "completed" || q.status === "failed" || q.status === "abandoned").length
+    };
+  }
 
   // @insimul/core/src/language-learning/world-words.ts
   var within = (a, b, range) => {
@@ -39261,6 +39581,171 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     if (!end.ok) return { ok: false, book, refusal: end.refusal };
     const r = recordConversation(book, end.conversation);
     return { ok: true, book: r.book, conversation: end.conversation, result: r.result, signals: r.signals };
+  }
+
+  // @insimul/core/src/language/phonetic-similarity.ts
+  var PHONETIC_RULES = [
+    // Silent/reduced patterns
+    [/(?:ght)/g, "T"],
+    [/(?:tion|sion)/g, "SN"],
+    [/(?:tch)/g, "CH"],
+    [/(?:sch)/g, "SH"],
+    // Digraphs and trigraphs
+    [/(?:th)/g, "T"],
+    [/(?:sh|ch(?!r))/g, "SH"],
+    [/(?:ph)/g, "F"],
+    [/(?:wh)/g, "W"],
+    [/(?:kn|gn)/g, "N"],
+    [/(?:wr)/g, "R"],
+    [/(?:ck)/g, "K"],
+    [/(?:qu)/g, "KW"],
+    [/(?:dg)/g, "J"],
+    [/(?:gh)/g, ""],
+    // often silent
+    // French-specific patterns
+    [/(?:eau|aux)/g, "O"],
+    [/(?:ou)/g, "U"],
+    [/(?:oi)/g, "WA"],
+    [/(?:ai|ei)/g, "E"],
+    [/(?:an|en|am|em)(?=[^aeiou]|$)/g, "AN"],
+    [/(?:on|om)(?=[^aeiou]|$)/g, "ON"],
+    [/(?:in|im|ain|ein)(?=[^aeiou]|$)/g, "AN"],
+    [/(?:un|um)(?=[^aeiou]|$)/g, "AN"],
+    [/(?:gn)/g, "NY"],
+    [/(?:ll)/g, "L"],
+    // Spanish-specific patterns
+    [/(?:rr)/g, "R"],
+    [/(?:ñ)/g, "NY"],
+    [/(?:ll)/g, "Y"],
+    // Vowel clusters
+    [/(?:oo|uu)/g, "U"],
+    [/(?:ee|ea)/g, "E"],
+    [/(?:ow|ou)/g, "AW"],
+    [/(?:aw|au)/g, "AW"],
+    // Consonant equivalences
+    [/c(?=[ei])/g, "S"],
+    [/c/g, "K"],
+    [/g(?=[ei])/g, "J"],
+    [/x/g, "KS"],
+    [/z/g, "S"],
+    [/v/g, "V"],
+    [/w/g, "W"],
+    [/y(?=[aeiou])/g, "Y"],
+    [/j/g, "J"],
+    [/q/g, "K"]
+  ];
+  function phoneticEncode(word) {
+    let encoded = word.toLowerCase().trim();
+    encoded = encoded.replace(/[^a-zà-öø-ÿñ]/g, "");
+    if (encoded.length === 0) return "";
+    for (const [pattern, replacement] of PHONETIC_RULES) {
+      encoded = encoded.replace(pattern, replacement);
+    }
+    encoded = encoded.replace(/(.)\1+/g, "$1");
+    const first = encoded[0];
+    const rest = encoded.slice(1).replace(/[aeiou]/g, "");
+    return (first + rest).toUpperCase();
+  }
+
+  // @insimul/core/src/language-learning/pronunciation.ts
+  var CLOSE_THRESHOLD = 600;
+  var PHONETIC_WEIGHT = 400;
+  var PASS_SCORE = 60;
+  var BASE_XP = 4;
+  function normalizePhrase(text4) {
+    return text4.toLowerCase().replace(/[.,!?;:'"()[\]{}\-\u2014\u2013\u2026]/g, "").replace(/\s+/g, " ").trim();
+  }
+  var ratio = (a, b) => {
+    if (a === b) return 1e3;
+    const n = Math.max(Array.from(a).length, Array.from(b).length);
+    if (n === 0) return 1e3;
+    return Math.floor((n - editDistance(a, b)) * 1e3 / n);
+  };
+  function wordSimilarity(expected, spoken) {
+    const e = expected.toLowerCase().trim();
+    const s = spoken.toLowerCase().trim();
+    const expectedCode = phoneticEncode(e);
+    const spokenCode = phoneticEncode(s);
+    if (e === s) return { similarity: 1e3, text: 1e3, phonetic: 1e3, expectedCode, spokenCode };
+    const text4 = ratio(e, s);
+    const phonetic = ratio(expectedCode, spokenCode);
+    const blended = Math.floor((text4 * (1e3 - PHONETIC_WEIGHT) + phonetic * PHONETIC_WEIGHT) / 1e3);
+    return { similarity: Math.max(blended, text4), text: text4, phonetic, expectedCode, spokenCode };
+  }
+  function scorePhrase(expected, spoken) {
+    const ew = normalizePhrase(expected).split(" ").filter((w) => w.length > 0);
+    const sw = normalizePhrase(spoken).split(" ").filter((w) => w.length > 0);
+    if (ew.length === 0) return { score: 100, words: [], feedback: "No expected phrase to compare." };
+    const words = [];
+    const used = /* @__PURE__ */ new Set();
+    for (const e of ew) {
+      let best = -1;
+      let bestSim = 0;
+      for (let j = 0; j < sw.length; j++) {
+        if (used.has(j)) continue;
+        const sim = e === sw[j] ? 1e3 : wordSimilarity(e, sw[j]).similarity;
+        if (sim > bestSim) {
+          bestSim = sim;
+          best = j;
+        }
+      }
+      if (best >= 0 && bestSim >= CLOSE_THRESHOLD) {
+        used.add(best);
+        words.push({ expected: e, spoken: sw[best], match: bestSim === 1e3 ? "exact" : "close", similarity: bestSim });
+      } else {
+        words.push({ expected: e, spoken: null, match: "missed", similarity: 0 });
+      }
+    }
+    sw.forEach((w, j) => {
+      if (!used.has(j)) words.push({ expected: "", spoken: w, match: "extra", similarity: 0 });
+    });
+    const total = words.filter((w) => w.match !== "extra").reduce((s, w) => s + w.similarity, 0);
+    const n = ew.length;
+    const score = Math.floor((total * 2 + n * 10) / (n * 20));
+    let feedback;
+    if (score >= 90) feedback = "Excellent pronunciation!";
+    else if (score >= 70) {
+      feedback = "Good attempt!";
+      const close = words.filter((w) => w.match === "close");
+      if (close.length > 0) feedback += ` Close on: ${close.slice(0, 2).map((w) => `"${w.spoken}" \u2192 try "${w.expected}"`).join(", ")}`;
+    } else if (score >= 40) {
+      feedback = "Keep practicing!";
+      const missed = words.filter((w) => w.match === "missed");
+      if (missed.length > 0) feedback += ` Missed: ${missed.slice(0, 3).map((w) => `"${w.expected}"`).join(", ")}`;
+    } else feedback = `Try again \u2014 listen carefully to: "${expected}"`;
+    return { score, words, feedback };
+  }
+  var grade = (score) => score >= 90 ? "A" : score >= 70 ? "B" : score >= 40 ? "C" : "D";
+  function wordFeedback(words) {
+    return words.filter((w) => w.match !== "extra").map((w) => ({ word: w.expected, status: w.match === "missed" ? "missed" : w.similarity >= 900 ? "good" : w.similarity >= 600 ? "acceptable" : "needs_work", similarity: w.similarity }));
+  }
+  function listenXp(score) {
+    if (score >= 90) return BASE_XP;
+    if (score < PASS_SCORE) return 1;
+    return Math.floor((score - 45) / 10);
+  }
+  function hintPenalty(score, penaltiesPermille, revealed) {
+    if (penaltiesPermille.length === 0 || revealed <= 0) return score;
+    const total = penaltiesPermille.slice(0, revealed).reduce((s, p) => s + p, 0);
+    return Math.floor(score * Math.max(0, 1e3 - total) / 1e3);
+  }
+  function listenAndRepeat(phrase, spoken, questId) {
+    const r = scorePhrase(phrase.targetPhrase, spoken);
+    const passed = r.score >= PASS_SCORE;
+    const xp = listenXp(r.score);
+    const event = { type: "pronunciation_attempt", phrase: phrase.targetPhrase, score: r.score, passed };
+    if (questId !== void 0) event.questId = questId;
+    return {
+      score: r.score,
+      passed,
+      xp,
+      grade: grade(r.score),
+      feedback: r.feedback,
+      message: passed ? "Good pronunciation!" : "Keep practicing!",
+      narrative: passed ? `You repeated "${phrase.targetPhrase}" \u2014 ${r.feedback}` : `You tried to repeat "${phrase.targetPhrase}" \u2014 ${r.feedback}`,
+      words: wordFeedback(r.words),
+      events: [event]
+    };
   }
 
   // @insimul/core/src/system-packs/composer.ts
@@ -41110,8 +41595,8 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     if (doorFoot === null) return null;
     const foundation = (Math.max(doorFoot, bottom) - bottom) * Math.max(0.05, factor);
     if (foundation <= PAIRING_STEP_M * 1.5) return null;
-    const ratio = (foundation - PAIRING_STEP_M) / foundation * 100;
-    const sink = (ratio < 0 ? -Math.round(-ratio) : Math.round(ratio)) / 100;
+    const ratio2 = (foundation - PAIRING_STEP_M) / foundation * 100;
+    const sink = (ratio2 < 0 ? -Math.round(-ratio2) : Math.round(ratio2)) / 100;
     return Math.min(PAIRING_MAX_SEAT_SINK, sink);
   }
 
@@ -42751,12 +43236,12 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
       workReachM: 0.8
     }
   });
-  function byLongestPrefix(table, archetype) {
+  function byLongestPrefix(table2, archetype) {
     let best = null;
-    for (const k of Object.keys(table)) {
+    for (const k of Object.keys(table2)) {
       if ((archetype === k || archetype.startsWith(`${k}.`)) && (best === null || k.length > best.length)) best = k;
     }
-    return best === null ? null : table[best];
+    return best === null ? null : table2[best];
   }
   function underAnyPrefix(prefixes, archetype) {
     return prefixes.some((k) => archetype === k || archetype.startsWith(`${k}.`));
@@ -42918,14 +43403,14 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
   function nearestAnchor(anchors, kinds, p, reach, exceptId) {
     let best = null;
     for (const a of anchors) {
-      const rank = kinds.indexOf(a.kind);
-      if (rank < 0 || a.id === exceptId) continue;
+      const rank2 = kinds.indexOf(a.kind);
+      if (rank2 < 0 || a.id === exceptId) continue;
       const r = a.reach([p.x, p.z]);
       if (r === null) continue;
       const edge = Math.max(0, r.edge - p.radius);
       if (edge > reach + COMPOSITION_SLACK) continue;
-      const better = best === null || edge < best.edge - COMPOSITION_SLACK || Math.abs(edge - best.edge) <= COMPOSITION_SLACK && (rank < best.rank || rank === best.rank && a.id < best.a.id);
-      if (better) best = { a, edge, at: r.at, inside: r.inside, rank };
+      const better = best === null || edge < best.edge - COMPOSITION_SLACK || Math.abs(edge - best.edge) <= COMPOSITION_SLACK && (rank2 < best.rank || rank2 === best.rank && a.id < best.a.id);
+      if (better) best = { a, edge, at: r.at, inside: r.inside, rank: rank2 };
     }
     return best;
   }
@@ -45864,6 +46349,96 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
       return value;
     });
   }
+  var TRANSLATION_DISPLAY_MODES = ["inline", "hover", "click"];
+  var SCAFFOLDING_LEVELS = ["none", "scaffolded", "stretch"];
+  var NPC_LANGUAGE_MODES = ["bilingual", "simplified", "natural"];
+  var WORD_DIFFICULTIES = ["beginner", "intermediate", "advanced"];
+  var WORD_MATCHES = ["exact", "close", "missed", "extra"];
+  function bankQueryArg(method, value) {
+    return coded("invalid-input", () => {
+      if (value === void 0 || value === null) return {};
+      needObject(method, value, "query");
+      const q = {};
+      if (value.category !== void 0 && value.category !== null) q.category = needString(method, value.category, "query.category");
+      if (value.sort !== void 0 && value.sort !== null) q.sort = oneOf(method, value.sort, VOCABULARY_SORTS, "query.sort");
+      if (value.limit !== void 0) q.limit = needNumber(method, value.limit, "query.limit");
+      if (value.due !== void 0 && value.due !== null) q.due = stringList(method, value.due, "query.due");
+      if (value.cefr !== void 0 && value.cefr !== null) q.cefr = oneOf(method, value.cefr, CEFR_ORDER, "query.cefr");
+      return q;
+    });
+  }
+  function weaknessOptionsArg(method, value) {
+    return coded("invalid-input", () => {
+      if (value === void 0 || value === null) return {};
+      needObject(method, value, "options");
+      const o = {};
+      for (const k of ["minRatePermille", "minAttempts", "max"]) {
+        if (value[k] !== void 0 && value[k] !== null) o[k] = needNumber(method, value[k], `options.${k}`);
+      }
+      if (value.previous !== void 0 && value.previous !== null) {
+        needObject(method, value.previous, "options.previous");
+        for (const [k, v] of Object.entries(value.previous)) needNumber(method, v, `options.previous.${k}`);
+        o.previous = value.previous;
+      }
+      return o;
+    });
+  }
+  function grammarCountsArg(method, value, name = "row") {
+    return coded("invalid-input", () => {
+      needObject(method, value, name);
+      needNumber(method, value.correct, `${name}.correct`);
+      needNumber(method, value.incorrect, `${name}.incorrect`);
+      return value;
+    });
+  }
+  function learningQuestsArg(method, value) {
+    return coded("invalid-input", () => {
+      needArray(method, value, "quests").forEach((q, i) => needObject(method, q, `quests[${i}]`));
+      return value;
+    });
+  }
+  function questRecordsArg(method, value) {
+    return coded("invalid-input", () => {
+      needArray(method, value, "history").forEach((q, i) => {
+        const at = `history[${i}]`;
+        needObject(method, q, at);
+        optStringOrNull(method, q.questType, `${at}.questType`);
+        needString(method, q.status, `${at}.status`);
+        optNumber(method, q.completedAtMs, `${at}.completedAtMs`);
+        (optArrayValue(method, q.objectives, `${at}.objectives`) ?? []).forEach((o, k) => needObject(method, o, `${at}.objectives[${k}]`));
+      });
+      return value;
+    });
+  }
+  function assessmentsArg(method, value) {
+    return coded("invalid-input", () => {
+      needArray(method, value, "assessments").forEach((a, i) => {
+        const at = `assessments[${i}]`;
+        needObject(method, a, at);
+        optStringOrNull(method, a.cefrLevel, `${at}.cefrLevel`);
+        if (a.dimensionScores !== void 0 && a.dimensionScores !== null) {
+          needObject(method, a.dimensionScores, `${at}.dimensionScores`);
+          for (const [k, v] of Object.entries(a.dimensionScores)) needNumber(method, v, `${at}.dimensionScores.${k}`);
+        }
+        optNumber(method, a.completedAtMs, `${at}.completedAtMs`);
+      });
+      return value;
+    });
+  }
+  function defaultedString(method, value, name) {
+    return coded("invalid-input", () => value === void 0 || value === null ? void 0 : needString(method, value, name));
+  }
+  function wordResultsArg(method, value) {
+    return coded("invalid-input", () => {
+      needArray(method, value, "words").forEach((w, i) => {
+        needObject(method, w, `words[${i}]`);
+        needString(method, w.expected, `words[${i}].expected`);
+        oneOf(method, w.match, WORD_MATCHES, `words[${i}].match`);
+        needNumber(method, w.similarity, `words[${i}].similarity`);
+      });
+      return value;
+    });
+  }
   var QUEST_STATUSES = ["available", "active", "completed"];
   var QUEST_FILTERS = ["all", "active", "completed", "available"];
   function questEntry(method, entry) {
@@ -46264,17 +46839,24 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     "save.village.conversations.timestamp": (args) => ({ timestamp: conversationTimestampOf(args.epochMs) }),
     /** `save.village.conversations.epochMs { timestamp }` → `{ epochMs }`: core's `epochMsOfConversationTimestamp`, the round trip back, or null. */
     "save.village.conversations.epochMs": (args) => ({ epochMs: epochMsOfConversationTimestamp(args.timestamp) }),
-    // ── language learning (PL.native-language-rows, slice 1) ────────────────────
+    // ── language learning (PL.native-language-rows, slices 1 and 2) ─────────────
     // One core function per row, state in and out as JSON (README "The language
     // rows"). Core's corpus runner composes them per op; tests/language_corpus.cpp
-    // replays conformance/language/{progress,save,prompts,hover,chat}.json the same way.
+    // replays conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,
+    // pronunciation}.json the same way.
     /**
      * `language.contract` → the constants a binding must not hard-code: the CEFR
      * bands, the encounter kinds and their weights in halves, the grammar and
      * fluency thresholds, the book's refusals, the save block's extension key,
      * members and row keys, the prompt selector's refusals and examine reach, the
      * three default tunings (a game's own are these with its parameters over them),
-     * the hover and chat refusals and the chat's percent per word per turn.
+     * the hover and chat refusals and the chat's percent per word per turn; and
+     * (slice 2) the bank's sorts, labels, tones, due marker and card interactions,
+     * the weakness thresholds and log2 tables, the quest categories and skill
+     * dimensions, the history's statuses, the difficulty monitor's thresholds and
+     * weights, the NPC mode shares, hint behaviour, band advancement, frequency
+     * ranges, text complexity and quest pool sizes by band, and listen and repeat's
+     * close threshold, phonetic weight, pass score and base XP.
      */
     "language.contract": () => ({
       cefrOrder: [...CEFR_ORDER],
@@ -46301,7 +46883,41 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
       collectionTuning: { ...COLLECTION_TUNING },
       hoverRefusals: [...HOVER_REFUSALS],
       chatRefusals: [...CHAT_REFUSALS],
-      chatPercentPerWordPerTurn: CHAT_PERCENT_PER_WORD_PER_TURN
+      chatPercentPerWordPerTurn: CHAT_PERCENT_PER_WORD_PER_TURN,
+      // Slice 2: the bank, weakness analysis and the profile (bank-profile.ts).
+      vocabularySorts: [...VOCABULARY_SORTS],
+      masteryLabels: { ...MASTERY_LABELS },
+      masteryTones: { ...MASTERY_TONES },
+      dueLabel: DUE_LABEL,
+      dueTone: DUE_TONE,
+      cardInteractions: [...CARD_INTERACTIONS],
+      weaknessMinAttempts: WEAKNESS_MIN_ATTEMPTS,
+      weaknessMinRatePermille: WEAKNESS_MIN_RATE_PERMILLE,
+      weaknessMax: WEAKNESS_MAX,
+      improvementPermille: IMPROVEMENT_PERMILLE,
+      weaknessVolumePermille: [...WEAKNESS_VOLUME_PERMILLE],
+      weaknessConfidencePermille: [...WEAKNESS_CONFIDENCE_PERMILLE],
+      questCategories: [...QUEST_CATEGORIES],
+      skillDimensions: [...SKILL_DIMENSIONS],
+      skillToCategories: plain(SKILL_TO_CATEGORIES),
+      learningHistoryStatuses: [...LEARNING_HISTORY_STATUSES],
+      // The difficulty monitor and the CEFR adaptation (adaptation.ts).
+      scaffoldingThreshold: SCAFFOLDING_THRESHOLD,
+      scaffoldingTurns: SCAFFOLDING_TURNS,
+      stretchThreshold: STRETCH_THRESHOLD,
+      stretchTurns: STRETCH_TURNS,
+      signalWeights: { ...SIGNAL_WEIGHTS },
+      npcModePercent: plain(NPC_MODE_PERCENT),
+      hintBehavior: plain(HINT_BEHAVIOR),
+      cefrAdvancement: plain(CEFR_ADVANCEMENT),
+      frequencyRanges: plain(FREQUENCY_RANGES),
+      textComplexity: plain(TEXT_COMPLEXITY),
+      questPoolSizes: { ...QUEST_POOL_SIZES },
+      // Listen and repeat (pronunciation.ts).
+      closeThreshold: CLOSE_THRESHOLD,
+      phoneticWeight: PHONETIC_WEIGHT,
+      passScore: PASS_SCORE,
+      baseXp: BASE_XP
     }),
     // The language book (progress.ts) and the player's CEFR facts (prolog/player-language-state.ts).
     /** `language.book.empty { language? }` → `{ book }`: core's `emptyBook` (absent: core's default, 'target'). */
@@ -46727,6 +47343,210 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
       const m = "language.difficulty.recordTurn";
       const state = difficultyStateArg(m, args.state);
       return plain(recordTurn(state, turnMetricsArg(m, args.metrics)));
+    },
+    // Slice 2. The vocabulary bank, its grammar tab, weakness analysis and the learning profile (bank-profile.ts).
+    /** `language.bank.categories { book }` → `{ categories }`: core's `bankCategories`, first-seen order, `general` for an untagged word. */
+    "language.bank.categories": (args) => ({ categories: plain(bankCategories(languageBookArg("language.bank.categories", args.book))) }),
+    /**
+     * `language.bank.cards { book, query? }` → `{ cards }`: core's `bankCards` (`query`:
+     * `{ category?, sort?, limit?, due?, cefr? }`, each absent or null read as core's
+     * default; a sort outside core's VOCABULARY_SORTS is `[invalid-input]`).
+     */
+    "language.bank.cards": (args) => {
+      const m = "language.bank.cards";
+      const book = languageBookArg(m, args.book);
+      return { cards: plain(bankCards(book, bankQueryArg(m, args.query))) };
+    },
+    /** `language.bank.revealsMeaning { reveal, interaction }` → `{ reveals }`: core's `revealsMeaning` (inline always, hover on gaze or select, click on select). */
+    "language.bank.revealsMeaning": (args) => {
+      const m = "language.bank.revealsMeaning";
+      const [reveal, interaction] = coded("invalid-input", () => [
+        oneOf(m, args.reveal, TRANSLATION_DISPLAY_MODES, "reveal"),
+        oneOf(m, args.interaction, CARD_INTERACTIONS, "interaction")
+      ]);
+      return { reveals: revealsMeaning(reveal, interaction) };
+    },
+    /** `language.bank.grammarTab { book }` → `{ tab }`: core's `grammarTab`, each pattern's attempts, half-up accuracy (null with none), mastered and weak. */
+    "language.bank.grammarTab": (args) => ({ tab: plain(grammarTab(languageBookArg("language.bank.grammarTab", args.book))) }),
+    /** `language.bank.halfUpPercent { n, d }` → `{ percent }`: core's `halfUpPercent`, `Math.round(n / d × 100)` exactly for non-negative integers. */
+    "language.bank.halfUpPercent": (args) => {
+      const m = "language.bank.halfUpPercent";
+      const [n, d] = coded("invalid-input", () => [needNumber(m, args.n, "n"), needNumber(m, args.d, "d")]);
+      return { percent: plain(halfUpPercent(n, d)) };
+    },
+    /** `language.bank.rateOf { row }` → `{ ratePermille }`: core's `rateOf`, a grammar row's error rate in thousandths (0 with no attempt). */
+    "language.bank.rateOf": (args) => ({ ratePermille: rateOf(grammarCountsArg("language.bank.rateOf", args.row)) }),
+    /** `language.bank.weaknessPriority { incorrect, total }` → `{ priority }`: core's `weaknessPriority` in thousandths. */
+    "language.bank.weaknessPriority": (args) => {
+      const m = "language.bank.weaknessPriority";
+      const [incorrect, total] = coded("invalid-input", () => [needNumber(m, args.incorrect, "incorrect"), needNumber(m, args.total, "total")]);
+      return { priority: weaknessPriority(incorrect, total) };
+    },
+    /**
+     * `language.bank.analyzeWeaknesses { book, options? }` → `{ weaknesses, stats,
+     * improved }`: core's `analyzeWeaknesses` (`options`: `{ minRatePermille?,
+     * minAttempts?, max?, previous? }`, absent or null read as core's defaults).
+     */
+    "language.bank.analyzeWeaknesses": (args) => {
+      const m = "language.bank.analyzeWeaknesses";
+      const book = languageBookArg(m, args.book);
+      return plain(analyzeWeaknesses(book, weaknessOptionsArg(m, args.options)));
+    },
+    /** `language.bank.strongPatterns { book, max? }` → `{ patterns }`: core's `strongPatterns`, lowest error rate first (absent or null max: core's 3). */
+    "language.bank.strongPatterns": (args) => {
+      const m = "language.bank.strongPatterns";
+      const book = languageBookArg(m, args.book);
+      const max = coded("invalid-input", () => optNumber(m, args.max, "max"));
+      return { patterns: plain(max === void 0 ? strongPatterns(book) : strongPatterns(book, max)) };
+    },
+    /** `language.profile.history { quests }` → `{ history }`: core's `learningHistory`, the finished quest records a learning profile holds. */
+    "language.profile.history": (args) => ({ history: plain(learningHistory(learningQuestsArg("language.profile.history", args.quests))) }),
+    /** `language.profile.build { history, assessments }` → core's `learningProfile` over `learningHistory`'s rows and the assessments. */
+    "language.profile.build": (args) => {
+      const m = "language.profile.build";
+      return plain(learningProfile(questRecordsArg(m, args.history), assessmentsArg(m, args.assessments)));
+    },
+    // The rest of adaptation.ts: the struggle signals, NPC language modes and directives, hints, quests by band, advancement.
+    /** `language.difficulty.signals { metrics }` → `{ signals }`: core's `struggleSignals`, the monitor's four signals in thousandths. */
+    "language.difficulty.signals": (args) => ({ signals: plain(struggleSignals(turnMetricsArg("language.difficulty.signals", args.metrics))) }),
+    /** `language.difficulty.score { metrics }` → `{ score }`: core's `struggleScore`, the weighted struggle in thousandths. */
+    "language.difficulty.score": (args) => ({ score: struggleScore(turnMetricsArg("language.difficulty.score", args.metrics)) }),
+    /** `language.npc.hash { id }` → `{ hash }`: core's `npcHash`, the 32-bit hash of an NPC's id (UTF-16 code units), absolute. */
+    "language.npc.hash": (args) => ({ hash: npcHash(coded("invalid-input", () => needString("language.npc.hash", args.id, "id"))) }),
+    /** `language.npc.mode { level, npcId }` → `{ mode }`: core's `npcLanguageMode`, the NPC's language mode at the learner's band. */
+    "language.npc.mode": (args) => {
+      const m = "language.npc.mode";
+      const level = cefrArg(m, args.level, "level");
+      return { mode: npcLanguageMode(level, coded("invalid-input", () => needString(m, args.npcId, "npcId"))) };
+    },
+    /** `language.npc.modeDirective { mode, target, native?, level? }` → `{ directive }`: core's `modeDirective` (absent native: core's 'English'; with a band, its frequency constraint appended). */
+    "language.npc.modeDirective": (args) => {
+      const m = "language.npc.modeDirective";
+      const [mode, target] = coded("invalid-input", () => [oneOf(m, args.mode, NPC_LANGUAGE_MODES, "mode"), needString(m, args.target, "target")]);
+      const native = defaultedString(m, args.native, "native");
+      const level = args.level === void 0 || args.level === null ? void 0 : cefrArg(m, args.level, "level");
+      return { directive: modeDirective(mode, target, native, level) };
+    },
+    /** `language.npc.scaffoldingDirective { level, target, native? }` → `{ directive }`: core's `scaffoldingDirective` ('' at none). */
+    "language.npc.scaffoldingDirective": (args) => {
+      const m = "language.npc.scaffoldingDirective";
+      const [level, target] = coded("invalid-input", () => [oneOf(m, args.level, SCAFFOLDING_LEVELS, "level"), needString(m, args.target, "target")]);
+      return { directive: scaffoldingDirective(level, target, defaultedString(m, args.native, "native")) };
+    },
+    /** `language.npc.frequencyDirective { level, target }` → `{ directive }`: core's `frequencyDirective`, the band's vocabulary constraint. */
+    "language.npc.frequencyDirective": (args) => {
+      const m = "language.npc.frequencyDirective";
+      const level = cefrArg(m, args.level, "level");
+      return { directive: frequencyDirective(level, coded("invalid-input", () => needString(m, args.target, "target"))) };
+    },
+    /**
+     * `language.npc.adaptation { level, npcId, target, native?, scaffolding? }` → core's
+     * `npcAdaptation`: `{ mode, directive, scaffolding, hints, frequency, text,
+     * questPool }` (absent native: 'English'; absent scaffolding: 'none').
+     */
+    "language.npc.adaptation": (args) => {
+      const m = "language.npc.adaptation";
+      const level = cefrArg(m, args.level, "level");
+      const [npcId, target] = coded("invalid-input", () => [needString(m, args.npcId, "npcId"), needString(m, args.target, "target")]);
+      const native = defaultedString(m, args.native, "native");
+      const scaffolding = args.scaffolding === void 0 || args.scaffolding === null ? void 0 : coded("invalid-input", () => oneOf(m, args.scaffolding, SCAFFOLDING_LEVELS, "scaffolding"));
+      return plain(npcAdaptation(level, npcId, target, native, scaffolding));
+    },
+    /** `language.hints.behavior { level }` → `{ behavior }`: core's `hintBehavior`, the band's translation display, translate button and new-word hint cadence. */
+    "language.hints.behavior": (args) => ({ behavior: plain(hintBehavior(cefrArg("language.hints.behavior", args.level, "level"))) }),
+    /** `language.hints.showsVocabHint { level, index, difficulty?, mastered? }` → `{ show }`: core's `showsVocabHint` (absent: 'beginner', not mastered). */
+    "language.hints.showsVocabHint": (args) => {
+      const m = "language.hints.showsVocabHint";
+      const level = cefrArg(m, args.level, "level");
+      const [index, difficulty, mastered] = coded("invalid-input", () => [
+        needNumber(m, args.index, "index"),
+        args.difficulty === void 0 || args.difficulty === null ? void 0 : oneOf(m, args.difficulty, WORD_DIFFICULTIES, "difficulty"),
+        optBoolean(m, args.mastered, "mastered") ?? void 0
+      ]);
+      return { show: showsVocabHint(level, index, difficulty, mastered) };
+    },
+    /** `language.word.isMastered { encountered, correct }` → `{ mastered }`: core's `isWordMastered` (adaptation.ts re-exports it). */
+    "language.word.isMastered": (args) => {
+      const m = "language.word.isMastered";
+      const [encountered, correct] = coded("invalid-input", () => [needNumber(m, args.encountered, "encountered"), needNumber(m, args.correct, "correct")]);
+      return { mastered: isWordMastered(encountered, correct) };
+    },
+    /** `language.quests.filterByCefr { quests, level }` → `{ shown }`: core's `filterQuestsByCefr`, the ids of untagged quests and those within one band, closest first. */
+    "language.quests.filterByCefr": (args) => {
+      const m = "language.quests.filterByCefr";
+      const quests = coded("invalid-input", () => {
+        needArray(m, args.quests, "quests").forEach((q, i) => {
+          needObject(m, q, `quests[${i}]`);
+          needString(m, q.id, `quests[${i}].id`);
+          optStringOrNull(m, q.cefrLevel, `quests[${i}].cefrLevel`);
+        });
+        return args.quests;
+      });
+      return { shown: plain(filterQuestsByCefr(quests, cefrArg(m, args.level, "level"))) };
+    },
+    /**
+     * `language.cefr.advancement { snapshot }` → core's `cefrAdvancement`: `{ advance,
+     * next, progress, words, conversations, texts }` in thousandths (`snapshot`:
+     * `{ level, wordsLearned, conversations, textsRead }`).
+     */
+    "language.cefr.advancement": (args) => {
+      const m = "language.cefr.advancement";
+      const snapshot2 = coded("invalid-input", () => {
+        needObject(m, args.snapshot, "snapshot");
+        oneOf(m, args.snapshot.level, CEFR_ORDER, "snapshot.level");
+        for (const k of ["wordsLearned", "conversations", "textsRead"]) needNumber(m, args.snapshot[k], `snapshot.${k}`);
+        return args.snapshot;
+      });
+      return plain(cefrAdvancement(snapshot2));
+    },
+    // Listen and repeat (pronunciation.ts) and the phonetic code it blends (language/phonetic-similarity.ts).
+    /** `language.pronunciation.encode { word }` → `{ code }`: core's `phoneticEncode`. */
+    "language.pronunciation.encode": (args) => ({ code: phoneticEncode(coded("invalid-input", () => needString("language.pronunciation.encode", args.word, "word"))) }),
+    /** `language.pronunciation.normalize { text }` → `{ normalized }`: core's `normalizePhrase` (lower case, punctuation dropped, spaces collapsed). */
+    "language.pronunciation.normalize": (args) => ({ normalized: normalizePhrase(coded("invalid-input", () => needString("language.pronunciation.normalize", args.text, "text"))) }),
+    /** `language.pronunciation.wordSimilarity { expected, spoken }` → core's `wordSimilarity`: `{ similarity, text, phonetic, expectedCode, spokenCode }` in thousandths. */
+    "language.pronunciation.wordSimilarity": (args) => {
+      const m = "language.pronunciation.wordSimilarity";
+      const [expected, spoken] = coded("invalid-input", () => [needString(m, args.expected, "expected"), needString(m, args.spoken, "spoken")]);
+      return plain(wordSimilarity(expected, spoken));
+    },
+    /** `language.pronunciation.score { expected, spoken }` → core's `scorePhrase`: `{ score, words, feedback }`. */
+    "language.pronunciation.score": (args) => {
+      const m = "language.pronunciation.score";
+      const [expected, spoken] = coded("invalid-input", () => [needString(m, args.expected, "expected"), needString(m, args.spoken, "spoken")]);
+      return plain(scorePhrase(expected, spoken));
+    },
+    /** `language.pronunciation.grade { score }` → `{ grade }`: core's `grade` (A at 90, B at 70, C at 40, else D). */
+    "language.pronunciation.grade": (args) => ({ grade: grade(coded("invalid-input", () => needNumber("language.pronunciation.grade", args.score, "score"))) }),
+    /** `language.pronunciation.wordFeedback { words }` → `{ words }`: core's `wordFeedback`, each expected word's status (extras dropped). */
+    "language.pronunciation.wordFeedback": (args) => ({ words: plain(wordFeedback(wordResultsArg("language.pronunciation.wordFeedback", args.words))) }),
+    /** `language.pronunciation.xp { score }` → `{ xp }`: core's `listenXp` (1 below the pass score, 4 from 90). */
+    "language.pronunciation.xp": (args) => ({ xp: listenXp(coded("invalid-input", () => needNumber("language.pronunciation.xp", args.score, "score"))) }),
+    /** `language.pronunciation.hintPenalty { score, penalties, revealed }` → `{ score }`: core's `hintPenalty`, the revealed hints' penalties (thousandths) off the score, floored. */
+    "language.pronunciation.hintPenalty": (args) => {
+      const m = "language.pronunciation.hintPenalty";
+      const [score, penalties, revealed] = coded("invalid-input", () => [
+        needNumber(m, args.score, "score"),
+        needArray(m, args.penalties, "penalties").map((p, i) => needNumber(m, p, `penalties[${i}]`)),
+        needNumber(m, args.revealed, "revealed")
+      ]);
+      return { score: hintPenalty(score, penalties, revealed) };
+    },
+    /**
+     * `language.pronunciation.listenAndRepeat { phrase, spoken, questId? }` → core's
+     * `listenAndRepeat`: `{ score, passed, xp, grade, feedback, message, narrative,
+     * words, events }` (core reads the phrase's `targetPhrase`; the event carries
+     * `questId` when one is given).
+     */
+    "language.pronunciation.listenAndRepeat": (args) => {
+      const m = "language.pronunciation.listenAndRepeat";
+      const [phrase, spoken] = coded("invalid-input", () => {
+        needObject(m, args.phrase, "phrase");
+        needString(m, args.phrase.targetPhrase, "phrase.targetPhrase");
+        return [args.phrase, needString(m, args.spoken, "spoken")];
+      });
+      const questId = defaultedString(m, args.questId, "questId");
+      return plain(questId === void 0 ? listenAndRepeat(phrase, spoken) : listenAndRepeat(phrase, spoken, questId));
     },
     // ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
     /** `ui.notifications.create {}` → `{ session, view }` — core's `Notifications` toast queue. */

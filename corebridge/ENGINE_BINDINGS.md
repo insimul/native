@@ -714,7 +714,7 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   case as `tests/village_save_corpus.cpp` does: one row per op, `roundTrip` as a write
   whose two bodies are put over the save and then read, `stamp` as the four stamp
   readers, a refusal compared without its `message`.
-- **The language kernels, slice 1 (Unreal's `P9h.unreal.retire-language-copy`, after
+- **The language kernels, slices 1 and 2 (Unreal's `P9h.unreal.retire-language-copy`, after
   every slice of PL.native-language-rows; U118, U128, U107(2)).** Core's P9h language
   kernels are the `language.*` rows (`README.md`, "The language rows"). The retirement
   row binds them in place of the interim copy on unreal main (`234fc83`, read only):
@@ -725,10 +725,9 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `language_corpus` (+ `_negative`). The rows are stateless: the binding's `FSession`
   keeps the JSON states (the book, the collection, naming, identification, the prompt
   state, the hover state, a chat's session and difficulty state) and hands each to the
-  row that moves it. Slice 1 answers these, file by file of the header's list; the rest
-  (bank and profile, adaptation beyond the monitor, pronunciation, objects, collection
-  quizzes and writing, quest feedback, quest types) is the later slices', and the
-  retirement waits on all of them.
+  row that moves it. Slices 1 and 2 answer these, file by file of the header's list; the
+  rest (objects, collection quizzes and writing: slice 3; quest feedback and quest types:
+  slice 4) is the later slices', and the retirement waits on all of them.
 
   | Unreal's interim copy (`insimul::language`) | Row |
   |---|---|
@@ -740,13 +739,19 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   | prompt-selector.ts (`InsimulLanguagePrompts.cpp`): `InitialPrompts`, `ExaminePick`, `PickTargetIds`, `PromptOnPick`, `StandingPick`, `AnswerPick`, `QuizOnReach`, `AnswerStandingQuiz` | `language.prompts.initial`, `props.interactables.examinePick` (already bound for the E press), `language.prompts.pickTargetIds`, `.onPick`, `.standing`, `.answer`, `.quizOnReach`, `.answerQuiz` |
   | word-key.ts and the hover half of reading-writing.ts: `StripPunctuation`/`StripWordEdges`, `HoverKey`/`ChatKey`, `Tokenize`, `InitialHover`, `AddHints`, `SeeWord`, `SetMastery`, `IsLikelyTarget`, `Lookup`, `ResolveLookup`, `HoverDisplay` | `language.word.stripEdges`, `language.word.key`, `language.hover.tokenize`, `.initial`, `.addHints`, `.seeWord`, `.setMastery`, `.isLikelyTarget`, `.lookup`, `.resolve`, `.display` |
   | chat-metrics.ts (`InsimulLanguageChat.cpp`): `LineTokens`, `ChatLineWords`, `ChatQuestUsages`, `ChatTargetPercent`, `StartChat`, `CheckErrors`, `HearChatGrammar`, `ChatLine`, `EndChat`, `FinishChat`; adaptation.ts's `InitialDifficulty`, `RecordTurn` (the monitor a line's metrics feed) | `language.chat.lineTokens`, `.lineWords`, `.questUsages`, `.targetPercent`, `.start`, `.checkErrors`, `.hear`, `.line`, `.end`, `.finish`; `language.difficulty.initial`, `.recordTurn` |
+  | slice 2, bank-profile.ts: `BankCategories`, `BankCards` (its unknown-sort throw), `RevealsMeaning`, `GrammarTab`, `HalfUpPercent`, `AnalyzeWeaknesses`, `StrongPatterns`, `LearningHistory`, `LearningProfile` | `language.bank.categories`, `.cards` (a sort outside `vocabularySorts` is `[invalid-input]`), `.revealsMeaning`, `.grammarTab`, `.halfUpPercent`, `.analyzeWeaknesses`, `.strongPatterns`; `language.profile.history`, `language.profile.build`; core's `rateOf` and `weaknessPriority` are `language.bank.rateOf`, `.weaknessPriority` (the copy folds them into `AnalyzeWeaknesses`) |
+  | slice 2, bank-profile.ts's tables: `WeaknessVolumePermille`, `WeaknessConfidencePermille` (and the copy's labels, tones, sorts, categories and dimensions) | `language.contract {}`: `weaknessVolumePermille`, `weaknessConfidencePermille`, `vocabularySorts`, `masteryLabels`, `masteryTones`, `dueLabel`, `dueTone`, `cardInteractions`, `weaknessMinAttempts`, `weaknessMinRatePermille`, `weaknessMax`, `improvementPermille`, `questCategories`, `skillDimensions`, `skillToCategories`, `learningHistoryStatuses` |
+  | slice 2, adaptation.ts beyond the monitor: `StruggleSignals`, `StruggleScore`, `NpcHash`, `NpcLanguageMode`, `HintBehavior`, `ShowsVocabHint`, `FilterQuestsByCefr`, `CefrAdvancement`, `FrequencyDirective`, `ScaffoldingDirective`, `NpcAdaptation` | `language.difficulty.signals`, `.score`; `language.npc.hash`, `.mode`; `language.hints.behavior`, `.showsVocabHint`; `language.quests.filterByCefr`; `language.cefr.advancement`; `language.npc.frequencyDirective`, `.scaffoldingDirective`, `.adaptation`; core's `modeDirective` (the copy's `BaseModeDirective`, inside `NpcAdaptation`) and `isWordMastered` (inlined in the copy's `SeeWord`) are `language.npc.modeDirective`, `language.word.isMastered`; the band tables (`npcModePercent`, `hintBehavior`, `cefrAdvancement`, `frequencyRanges`, `textComplexity`, `questPoolSizes`) and the monitor's thresholds and weights are `language.contract`'s |
+  | slice 2, pronunciation.ts and phonetic-similarity.ts: `PhoneticEncode`, `NormalizePhrase`, `WordSimilarity`, `ScorePhrase`, `ListenXp`, `HintPenalty`, `ListenAndRepeat` | `language.pronunciation.encode`, `.normalize`, `.wordSimilarity`, `.score`, `.xp`, `.hintPenalty`, `.listenAndRepeat`; core's `grade` (the copy's internal `Grade`) and `wordFeedback` (inlined in the copy's `ListenAndRepeat`) are `.grade`, `.wordFeedback`; the close threshold, phonetic weight, pass score and base XP are `language.contract`'s |
   | `Utf32`, `JsLower`, `JsTrim`, `CompareUtf16` and the other JavaScript string semantics | gone with the copy: QuickJS is JavaScript |
 
-  Re-vendor `conformance/language/{progress,save,prompts,hover,chat}.json` from core at
+  Re-vendor `conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation}.json` from core at
   this library's pin and drive each case as `tests/language_corpus.cpp` does: each op
   composed from the rows as core's `runLanguageSystemsOp` composes its kernels (a case's
   book is `language.book.empty` with the case's book over it, core's `bookOf`; a prompts
-  run's tunings are `language.contract`'s defaults with the case's params over them),
+  run's tunings are `language.contract`'s defaults with the case's params over them; a
+  mode case's roll is the hash mod 100, and its six bands and a reveal case's three
+  modes and three interactions are the runner's own lists, as in core's runner),
   exact comparison, key sets included. `chat-strip.json` (the NPC reply's marker strip,
   which `InsimulChatCefr` holds) is not this row's: it goes with PL.native-chat-cefr-rows.
 - **Run 22's cases, from the 45409ed pin** (PL.native-bundle-core-r2; U124, U126). What

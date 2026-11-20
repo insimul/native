@@ -1,0 +1,981 @@
+{
+ "area": "language-pronunciation",
+ "description": "core's language corpus conformance/language/pronunciation.json (P9h.core) through the language.* rows, each op as core's reference runner (src/language-learning/systems-corpus.ts, runLanguageSystemsOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/language/pronunciation.json": "238650134ab22c7b13453e1991f7284bb1ba5342f09fe0607ff659b441db3a01"
+  }
+ },
+ "cases": [
+  {
+   "name": "language/pronunciation encode: encode: the phonetic code of each word",
+   "steps": [
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "bonjour"
+     },
+     "expect": {
+      "code": "BONJUR"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "merci"
+     },
+     "expect": {
+      "code": "MRS"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "boulangerie"
+     },
+     "expect": {
+      "code": "BULANJR"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "chateau"
+     },
+     "expect": {
+      "code": "SHTO"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "knight"
+     },
+     "expect": {
+      "code": "NT"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "photograph"
+     },
+     "expect": {
+      "code": "FTGRF"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "quatre"
+     },
+     "expect": {
+      "code": "KWTR"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "Ça"
+     },
+     "expect": {
+      "code": "Ç"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": ""
+     },
+     "expect": {
+      "code": ""
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "123"
+     },
+     "expect": {
+      "code": ""
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "ñandu"
+     },
+     "expect": {
+      "code": "NYAND"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "gigantesque"
+     },
+     "expect": {
+      "code": "JGANTSKW"
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation similarity: similarity: text and phonetic similarity in thousandths, the 60/40 blend, the larger kept",
+   "steps": [
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "bonjour",
+      "spoken": "bonjour"
+     },
+     "expect": {
+      "similarity": 1000,
+      "text": 1000,
+      "phonetic": 1000,
+      "expectedCode": "BONJUR",
+      "spokenCode": "BONJUR"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "bonjour",
+      "spoken": "bonjur"
+     },
+     "expect": {
+      "similarity": 857,
+      "text": 857,
+      "phonetic": 833,
+      "expectedCode": "BONJUR",
+      "spokenCode": "BONJR"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "merci",
+      "spoken": "mersi"
+     },
+     "expect": {
+      "similarity": 880,
+      "text": 800,
+      "phonetic": 1000,
+      "expectedCode": "MRS",
+      "spokenCode": "MRS"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "chateau",
+      "spoken": "shato"
+     },
+     "expect": {
+      "similarity": 556,
+      "text": 428,
+      "phonetic": 750,
+      "expectedCode": "SHTO",
+      "spokenCode": "SHT"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "pain",
+      "spoken": "pan"
+     },
+     "expect": {
+      "similarity": 750,
+      "text": 750,
+      "phonetic": 666,
+      "expectedCode": "PEN",
+      "spokenCode": "PAN"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "eau",
+      "spoken": "o"
+     },
+     "expect": {
+      "similarity": 400,
+      "text": 0,
+      "phonetic": 1000,
+      "expectedCode": "O",
+      "spokenCode": "O"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "fromage",
+      "spoken": "xyz"
+     },
+     "expect": {
+      "similarity": 0,
+      "text": 0,
+      "phonetic": 0,
+      "expectedCode": "FRMJ",
+      "spokenCode": "KSYS"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "Merci",
+      "spoken": " merci "
+     },
+     "expect": {
+      "similarity": 1000,
+      "text": 1000,
+      "phonetic": 1000,
+      "expectedCode": "MRS",
+      "spokenCode": "MRS"
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation score: score: every word exact",
+   "steps": [
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {
+      "text": "bonjour madame"
+     },
+     "expect": {
+      "normalized": "bonjour madame"
+     }
+    },
+    {
+     "call": "language.pronunciation.score",
+     "args": {
+      "expected": "Bonjour, madame!",
+      "spoken": "bonjour madame"
+     },
+     "expect": {
+      "score": 100,
+      "words": [
+       {
+        "expected": "bonjour",
+        "spoken": "bonjour",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "madame",
+        "spoken": "madame",
+        "match": "exact",
+        "similarity": 1000
+       }
+      ],
+      "feedback": "Excellent pronunciation!"
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation score: score: close words, good attempt with tips",
+   "steps": [
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {
+      "text": "je voudre du pan"
+     },
+     "expect": {
+      "normalized": "je voudre du pan"
+     }
+    },
+    {
+     "call": "language.pronunciation.score",
+     "args": {
+      "expected": "je voudrais du pain",
+      "spoken": "je voudre du pan"
+     },
+     "expect": {
+      "score": 85,
+      "words": [
+       {
+        "expected": "je",
+        "spoken": "je",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "voudrais",
+        "spoken": "voudre",
+        "match": "close",
+        "similarity": 641
+       },
+       {
+        "expected": "du",
+        "spoken": "du",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "pain",
+        "spoken": "pan",
+        "match": "close",
+        "similarity": 750
+       }
+      ],
+      "feedback": "Good attempt! Close on: \"voudre\" → try \"voudrais\", \"pan\" → try \"pain\""
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation score: score: a missed word and an extra one, keep practicing",
+   "steps": [
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {
+      "text": "une baguette vous plait merci"
+     },
+     "expect": {
+      "normalized": "une baguette vous plait merci"
+     }
+    },
+    {
+     "call": "language.pronunciation.score",
+     "args": {
+      "expected": "une baguette s il vous plait",
+      "spoken": "une baguette vous plait merci"
+     },
+     "expect": {
+      "score": 67,
+      "words": [
+       {
+        "expected": "une",
+        "spoken": "une",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "baguette",
+        "spoken": "baguette",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "s",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "il",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "vous",
+        "spoken": "vous",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "plait",
+        "spoken": "plait",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "",
+        "spoken": "merci",
+        "match": "extra",
+        "similarity": 0
+       }
+      ],
+      "feedback": "Keep practicing! Missed: \"s\", \"il\""
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation score: score: far off, try again",
+   "steps": [
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {
+      "text": "hello"
+     },
+     "expect": {
+      "normalized": "hello"
+     }
+    },
+    {
+     "call": "language.pronunciation.score",
+     "args": {
+      "expected": "où est la gare",
+      "spoken": "hello"
+     },
+     "expect": {
+      "score": 0,
+      "words": [
+       {
+        "expected": "où",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "est",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "la",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "gare",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "",
+        "spoken": "hello",
+        "match": "extra",
+        "similarity": 0
+       }
+      ],
+      "feedback": "Try again — listen carefully to: \"où est la gare\""
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation score: score: a spoken word answers one expected word only",
+   "steps": [
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {
+      "text": "le chat"
+     },
+     "expect": {
+      "normalized": "le chat"
+     }
+    },
+    {
+     "call": "language.pronunciation.score",
+     "args": {
+      "expected": "le le chat",
+      "spoken": "le chat"
+     },
+     "expect": {
+      "score": 67,
+      "words": [
+       {
+        "expected": "le",
+        "spoken": "le",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "le",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "chat",
+        "spoken": "chat",
+        "match": "exact",
+        "similarity": 1000
+       }
+      ],
+      "feedback": "Keep practicing! Missed: \"le\""
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation score: score: seven of ten words is exactly a good attempt",
+   "steps": [
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {
+      "text": "un deux trois quatre cinq six sept"
+     },
+     "expect": {
+      "normalized": "un deux trois quatre cinq six sept"
+     }
+    },
+    {
+     "call": "language.pronunciation.score",
+     "args": {
+      "expected": "un deux trois quatre cinq six sept huit neuf dix",
+      "spoken": "un deux trois quatre cinq six sept"
+     },
+     "expect": {
+      "score": 70,
+      "words": [
+       {
+        "expected": "un",
+        "spoken": "un",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "deux",
+        "spoken": "deux",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "trois",
+        "spoken": "trois",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "quatre",
+        "spoken": "quatre",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "cinq",
+        "spoken": "cinq",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "six",
+        "spoken": "six",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "sept",
+        "spoken": "sept",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "huit",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "neuf",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "dix",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       }
+      ],
+      "feedback": "Good attempt!"
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation score: score: nothing expected scores 100",
+   "steps": [
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {
+      "text": "bonjour"
+     },
+     "expect": {
+      "normalized": "bonjour"
+     }
+    },
+    {
+     "call": "language.pronunciation.score",
+     "args": {
+      "expected": "...",
+      "spoken": "bonjour"
+     },
+     "expect": {
+      "score": 100,
+      "words": [],
+      "feedback": "No expected phrase to compare."
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation score: score: nothing spoken",
+   "steps": [
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {
+      "text": ""
+     },
+     "expect": {
+      "normalized": ""
+     }
+    },
+    {
+     "call": "language.pronunciation.score",
+     "args": {
+      "expected": "merci beaucoup",
+      "spoken": ""
+     },
+     "expect": {
+      "score": 0,
+      "words": [
+       {
+        "expected": "merci",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "beaucoup",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       }
+      ],
+      "feedback": "Try again — listen carefully to: \"merci beaucoup\""
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation repeat: repeat: a pass, its XP and the word feedback",
+   "steps": [
+    {
+     "call": "language.pronunciation.listenAndRepeat",
+     "args": {
+      "phrase": {
+       "phraseId": "p1",
+       "targetPhrase": "Bonjour madame",
+       "nativeTranslation": "Hello madam",
+       "language": "fr",
+       "npcId": "ada",
+       "npcName": "Ada Thatch"
+      },
+      "spoken": "bonjour madam",
+      "questId": "q_greet"
+     },
+     "expect": {
+      "score": 92,
+      "passed": true,
+      "xp": 4,
+      "grade": "A",
+      "feedback": "Excellent pronunciation!",
+      "message": "Good pronunciation!",
+      "narrative": "You repeated \"Bonjour madame\" — Excellent pronunciation!",
+      "words": [
+       {
+        "word": "bonjour",
+        "status": "good",
+        "similarity": 1000
+       },
+       {
+        "word": "madame",
+        "status": "acceptable",
+        "similarity": 833
+       }
+      ],
+      "events": [
+       {
+        "type": "pronunciation_attempt",
+        "phrase": "Bonjour madame",
+        "score": 92,
+        "passed": true,
+        "questId": "q_greet"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation repeat: repeat: a fail earns 1 XP",
+   "steps": [
+    {
+     "call": "language.pronunciation.listenAndRepeat",
+     "args": {
+      "phrase": {
+       "phraseId": "p2",
+       "targetPhrase": "Où est la boulangerie",
+       "language": "fr",
+       "npcId": "bram",
+       "npcName": "Bram Cole"
+      },
+      "spoken": "ou est la"
+     },
+     "expect": {
+      "score": 50,
+      "passed": false,
+      "xp": 1,
+      "grade": "C",
+      "feedback": "Keep practicing! Missed: \"où\", \"boulangerie\"",
+      "message": "Keep practicing!",
+      "narrative": "You tried to repeat \"Où est la boulangerie\" — Keep practicing! Missed: \"où\", \"boulangerie\"",
+      "words": [
+       {
+        "word": "où",
+        "status": "missed",
+        "similarity": 0
+       },
+       {
+        "word": "est",
+        "status": "good",
+        "similarity": 1000
+       },
+       {
+        "word": "la",
+        "status": "good",
+        "similarity": 1000
+       },
+       {
+        "word": "boulangerie",
+        "status": "missed",
+        "similarity": 0
+       }
+      ],
+      "events": [
+       {
+        "type": "pronunciation_attempt",
+        "phrase": "Où est la boulangerie",
+        "score": 50,
+        "passed": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation xp: xp: 1 below 60, round(1 + (score − 60) / 10) to 89, 4 from 90",
+   "steps": [
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 0
+     },
+     "expect": {
+      "xp": 1
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 59
+     },
+     "expect": {
+      "xp": 1
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 60
+     },
+     "expect": {
+      "xp": 1
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 64
+     },
+     "expect": {
+      "xp": 1
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 65
+     },
+     "expect": {
+      "xp": 2
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 74
+     },
+     "expect": {
+      "xp": 2
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 75
+     },
+     "expect": {
+      "xp": 3
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 84
+     },
+     "expect": {
+      "xp": 3
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 85
+     },
+     "expect": {
+      "xp": 4
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 89
+     },
+     "expect": {
+      "xp": 4
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 90
+     },
+     "expect": {
+      "xp": 4
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 95
+     },
+     "expect": {
+      "xp": 4
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 100
+     },
+     "expect": {
+      "xp": 4
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation hints: hints: each revealed hint takes its penalty off the score, floored, never below 0",
+   "steps": [
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 87,
+      "penalties": [
+       100,
+       250,
+       800
+      ],
+      "revealed": 0
+     },
+     "expect": {
+      "score": 87
+     }
+    },
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 87,
+      "penalties": [
+       100,
+       250,
+       800
+      ],
+      "revealed": 1
+     },
+     "expect": {
+      "score": 78
+     }
+    },
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 87,
+      "penalties": [
+       100,
+       250,
+       800
+      ],
+      "revealed": 2
+     },
+     "expect": {
+      "score": 56
+     }
+    },
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 87,
+      "penalties": [
+       100,
+       250,
+       800
+      ],
+      "revealed": 3
+     },
+     "expect": {
+      "score": 0
+     }
+    },
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 87,
+      "penalties": [
+       100,
+       250,
+       800
+      ],
+      "revealed": 4
+     },
+     "expect": {
+      "score": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/pronunciation hints: hints: no hints, no penalty",
+   "steps": [
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 87,
+      "penalties": [],
+      "revealed": 2
+     },
+     "expect": {
+      "score": 87
+     }
+    }
+   ]
+  }
+ ]
+}

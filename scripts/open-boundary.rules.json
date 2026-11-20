@@ -714,6 +714,33 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language-learning/bank-profile",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.bank.* and language.profile.* rows (core's vocabulary bank cards, grammar tab, grammar-weakness analysis, learning history and learning profile) (PL.native-language-rows slice 2, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s2-bank-adaptation-pronunciation (Features Gauntlet PL.native-language-rows slice 2)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language-learning/pronunciation",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.pronunciation.* rows (core's listen-and-repeat scoring: phrase normalisation, word similarity, phrase score, grade, word feedback, XP and hint penalties) (PL.native-language-rows slice 2, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s2-bank-adaptation-pronunciation (Features Gauntlet PL.native-language-rows slice 2)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language/phonetic-similarity",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the language.pronunciation.encode row (core's phoneticEncode, the phonetic code core's pronunciation scoring blends) (PL.native-language-rows slice 2, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-language-rows-s2-bank-adaptation-pronunciation (Features Gauntlet PL.native-language-rows slice 2)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/progression/skill-kb",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the skill.kb.* rows (core's skill KB that sees the live facts: which facts a skill KB holds, the program a recomposing host consults, and its reference session, PL.core-skill-kb-live-facts and PL.core-skill-kb-rule-head-facts) (PL.native-bundle-core-r2, rulings U124, U126 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

@@ -1,0 +1,2415 @@
+{
+ "area": "language-adaptation",
+ "description": "core's language corpus conformance/language/adaptation.json (P9h.core) through the language.* rows, each op as core's reference runner (src/language-learning/systems-corpus.ts, runLanguageSystemsOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/language/adaptation.json": "af9f9630967580b7098b387de707e06ad8089ecf074baff461d38be4520b4e9f"
+  }
+ },
+ "cases": [
+  {
+   "name": "language/adaptation struggle: struggle: each signal and the weighted score in thousandths",
+   "steps": [
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 0,
+       "targetWords": 0,
+       "totalWords": 0
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 0,
+       "targetLanguage": 1000,
+       "length": 1000,
+       "quality": 0
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 0,
+       "targetWords": 0,
+       "totalWords": 0
+      }
+     },
+     "expect": {
+      "score": 500
+     }
+    },
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 0,
+       "targetWords": 1,
+       "totalWords": 1
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 0,
+       "targetLanguage": 0,
+       "length": 1000,
+       "quality": 0
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 0,
+       "targetWords": 1,
+       "totalWords": 1
+      }
+     },
+     "expect": {
+      "score": 200
+     }
+    },
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 2,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 750,
+       "targetLanguage": 1000,
+       "length": 1000,
+       "quality": 900
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 2,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "score": 905
+     }
+    },
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 4,
+       "targetWords": 8,
+       "totalWords": 10,
+       "quality": 95
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 0,
+       "targetLanguage": 0,
+       "length": 0,
+       "quality": 50
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 4,
+       "targetWords": 8,
+       "totalWords": 10,
+       "quality": 95
+      }
+     },
+     "expect": {
+      "score": 10
+     }
+    },
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 4,
+       "targetWords": 3,
+       "totalWords": 6,
+       "quality": 60
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 250,
+       "targetLanguage": 0,
+       "length": 333,
+       "quality": 400
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 4,
+       "targetWords": 3,
+       "totalWords": 6,
+       "quality": 60
+      }
+     },
+     "expect": {
+      "score": 221
+     }
+    },
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 2,
+       "targetWords": 1,
+       "totalWords": 4
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 500,
+       "targetLanguage": 500,
+       "length": 666,
+       "quality": 0
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 2,
+       "targetWords": 1,
+       "totalWords": 4
+      }
+     },
+     "expect": {
+      "score": 433
+     }
+    },
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 3,
+       "targetWords": 5,
+       "totalWords": 10
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 0,
+       "targetLanguage": 0,
+       "length": 0,
+       "quality": 0
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 3,
+       "targetWords": 5,
+       "totalWords": 10
+      }
+     },
+     "expect": {
+      "score": 0
+     }
+    },
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 2,
+       "grammarChecked": 4,
+       "targetWords": 2,
+       "totalWords": 10,
+       "quality": 30
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 500,
+       "targetLanguage": 600,
+       "length": 0,
+       "quality": 700
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 2,
+       "grammarChecked": 4,
+       "targetWords": 2,
+       "totalWords": 10,
+       "quality": 30
+      }
+     },
+     "expect": {
+      "score": 470
+     }
+    },
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 5,
+       "grammarChecked": 4,
+       "targetWords": 9,
+       "totalWords": 8,
+       "quality": 0
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 1250,
+       "targetLanguage": 0,
+       "length": 0,
+       "quality": 1000
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 5,
+       "grammarChecked": 4,
+       "targetWords": 9,
+       "totalWords": 8,
+       "quality": 0
+      }
+     },
+     "expect": {
+      "score": 575
+     }
+    },
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 3,
+       "targetWords": 2,
+       "totalWords": 7,
+       "quality": 100
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 333,
+       "targetLanguage": 428,
+       "length": 166,
+       "quality": 0
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 3,
+       "targetWords": 2,
+       "totalWords": 7,
+       "quality": 100
+      }
+     },
+     "expect": {
+      "score": 261
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation difficulty: difficulty: two struggling turns scaffold; two easier ones in a row return to normal",
+   "steps": [
+    {
+     "call": "language.difficulty.initial",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 2,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 905,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 1,
+         "low": 0,
+         "turns": 1,
+         "scaffolded": 0,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 2,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 905,
+       "adjustment": {
+        "level": "scaffolded",
+        "reason": "Player is struggling: high grammar error rate, low target language usage, very short responses, low conversation quality. Activating scaffolding.",
+        "struggle": 905,
+        "consecutiveTurns": 2
+       },
+       "state": {
+        "$subset": {
+         "level": "scaffolded",
+         "high": 2,
+         "low": 0,
+         "turns": 2,
+         "scaffolded": 1,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 2,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 905,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "scaffolded",
+         "high": 3,
+         "low": 0,
+         "turns": 3,
+         "scaffolded": 1,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 4,
+       "targetWords": 3,
+       "totalWords": 6,
+       "quality": 60
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 221,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "scaffolded",
+         "high": 0,
+         "low": 0,
+         "turns": 4,
+         "scaffolded": 1,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 4,
+       "targetWords": 3,
+       "totalWords": 6,
+       "quality": 60
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 221,
+       "adjustment": {
+        "level": "none",
+        "reason": "Player is recovering — returning to normal difficulty.",
+        "struggle": 221,
+        "consecutiveTurns": 0
+       },
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 0,
+         "low": 0,
+         "turns": 5,
+         "scaffolded": 1,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 2,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 905,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 1,
+         "low": 0,
+         "turns": 6,
+         "scaffolded": 1,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 2,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 905,
+       "adjustment": {
+        "level": "scaffolded",
+        "reason": "Player is struggling: high grammar error rate, low target language usage, very short responses, low conversation quality. Activating scaffolding.",
+        "struggle": 905,
+        "consecutiveTurns": 2
+       },
+       "state": {
+        "$subset": {
+         "level": "scaffolded",
+         "high": 2,
+         "low": 0,
+         "turns": 7,
+         "scaffolded": 2,
+         "stretched": 0
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation difficulty: difficulty: three easy turns stretch; two harder ones return; scaffolding straight from stretch",
+   "steps": [
+    {
+     "call": "language.difficulty.initial",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 4,
+       "targetWords": 8,
+       "totalWords": 10,
+       "quality": 95
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 10,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 0,
+         "low": 1,
+         "turns": 1,
+         "scaffolded": 0,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 4,
+       "targetWords": 8,
+       "totalWords": 10,
+       "quality": 95
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 10,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 0,
+         "low": 2,
+         "turns": 2,
+         "scaffolded": 0,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 4,
+       "targetWords": 8,
+       "totalWords": 10,
+       "quality": 95
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 10,
+       "adjustment": {
+        "level": "stretch",
+        "reason": "Player is performing exceptionally well — increasing complexity.",
+        "struggle": 10,
+        "consecutiveTurns": 3
+       },
+       "state": {
+        "$subset": {
+         "level": "stretch",
+         "high": 0,
+         "low": 3,
+         "turns": 3,
+         "scaffolded": 0,
+         "stretched": 1
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 4,
+       "targetWords": 8,
+       "totalWords": 10,
+       "quality": 95
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 10,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "stretch",
+         "high": 0,
+         "low": 4,
+         "turns": 4,
+         "scaffolded": 0,
+         "stretched": 1
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 4,
+       "targetWords": 3,
+       "totalWords": 6,
+       "quality": 60
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 221,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "stretch",
+         "high": 0,
+         "low": 0,
+         "turns": 5,
+         "scaffolded": 0,
+         "stretched": 1
+        }
+       }
+      }
+     },
+     "bind": "b5"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b5.state"
+      },
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 4,
+       "targetWords": 3,
+       "totalWords": 6,
+       "quality": 60
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 221,
+       "adjustment": {
+        "level": "none",
+        "reason": "Returning to standard difficulty after stretch challenge.",
+        "struggle": 221,
+        "consecutiveTurns": 0
+       },
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 0,
+         "low": 0,
+         "turns": 6,
+         "scaffolded": 0,
+         "stretched": 1
+        }
+       }
+      }
+     },
+     "bind": "b6"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b6.state"
+      },
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 4,
+       "targetWords": 8,
+       "totalWords": 10,
+       "quality": 95
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 10,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 0,
+         "low": 1,
+         "turns": 7,
+         "scaffolded": 0,
+         "stretched": 1
+        }
+       }
+      }
+     },
+     "bind": "b7"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b7.state"
+      },
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 4,
+       "targetWords": 8,
+       "totalWords": 10,
+       "quality": 95
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 10,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 0,
+         "low": 2,
+         "turns": 8,
+         "scaffolded": 0,
+         "stretched": 1
+        }
+       }
+      }
+     },
+     "bind": "b8"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b8.state"
+      },
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 4,
+       "targetWords": 8,
+       "totalWords": 10,
+       "quality": 95
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 10,
+       "adjustment": {
+        "level": "stretch",
+        "reason": "Player is performing exceptionally well — increasing complexity.",
+        "struggle": 10,
+        "consecutiveTurns": 3
+       },
+       "state": {
+        "$subset": {
+         "level": "stretch",
+         "high": 0,
+         "low": 3,
+         "turns": 9,
+         "scaffolded": 0,
+         "stretched": 2
+        }
+       }
+      }
+     },
+     "bind": "b9"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b9.state"
+      },
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 2,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 905,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "stretch",
+         "high": 1,
+         "low": 0,
+         "turns": 10,
+         "scaffolded": 0,
+         "stretched": 2
+        }
+       }
+      }
+     },
+     "bind": "b10"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b10.state"
+      },
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 2,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 905,
+       "adjustment": {
+        "level": "scaffolded",
+        "reason": "Player is struggling: high grammar error rate, low target language usage, very short responses, low conversation quality. Activating scaffolding.",
+        "struggle": 905,
+        "consecutiveTurns": 2
+       },
+       "state": {
+        "$subset": {
+         "level": "scaffolded",
+         "high": 2,
+         "low": 0,
+         "turns": 11,
+         "scaffolded": 1,
+         "stretched": 2
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation difficulty: difficulty: the reason names only the signals that apply",
+   "steps": [
+    {
+     "call": "language.difficulty.initial",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "metrics": {
+       "grammarErrors": 2,
+       "grammarChecked": 4,
+       "targetWords": 1,
+       "totalWords": 3,
+       "quality": 30
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 556,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 0,
+         "low": 0,
+         "turns": 1,
+         "scaffolded": 0,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 2,
+       "targetWords": 0,
+       "totalWords": 2
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 650,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 1,
+         "low": 0,
+         "turns": 2,
+         "scaffolded": 0,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 2,
+       "targetWords": 0,
+       "totalWords": 2
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 650,
+       "adjustment": {
+        "level": "scaffolded",
+        "reason": "Player is struggling: low target language usage, very short responses. Activating scaffolding.",
+        "struggle": 650,
+        "consecutiveTurns": 2
+       },
+       "state": {
+        "$subset": {
+         "level": "scaffolded",
+         "high": 2,
+         "low": 0,
+         "turns": 3,
+         "scaffolded": 1,
+         "stretched": 0
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation difficulty: difficulty: errors over half and exactly a fifth target words name only the grammar",
+   "steps": [
+    {
+     "call": "language.difficulty.initial",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 1,
+       "totalWords": 5,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 685,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 1,
+         "low": 0,
+         "turns": 1,
+         "scaffolded": 0,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 1,
+       "totalWords": 5,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 685,
+       "adjustment": {
+        "level": "scaffolded",
+        "reason": "Player is struggling: high grammar error rate, low conversation quality. Activating scaffolding.",
+        "struggle": 685,
+        "consecutiveTurns": 2
+       },
+       "state": {
+        "$subset": {
+         "level": "scaffolded",
+         "high": 2,
+         "low": 0,
+         "turns": 2,
+         "scaffolded": 1,
+         "stretched": 0
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation difficulty: difficulty: a struggle of exactly 600 after scaffolding is still struggling, so the next easier turn does not return",
+   "steps": [
+    {
+     "call": "language.difficulty.initial",
+     "args": {},
+     "bind": "b0"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b0.state"
+      },
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 2,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 905,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 1,
+         "low": 0,
+         "turns": 1,
+         "scaffolded": 0,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b1"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b1.state"
+      },
+      "metrics": {
+       "grammarErrors": 3,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 2,
+       "quality": 10
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 905,
+       "adjustment": {
+        "level": "scaffolded",
+        "reason": "Player is struggling: high grammar error rate, low target language usage, very short responses, low conversation quality. Activating scaffolding.",
+        "struggle": 905,
+        "consecutiveTurns": 2
+       },
+       "state": {
+        "$subset": {
+         "level": "scaffolded",
+         "high": 2,
+         "low": 0,
+         "turns": 2,
+         "scaffolded": 1,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b2"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b2.state"
+      },
+      "metrics": {
+       "grammarErrors": 4,
+       "grammarChecked": 4,
+       "targetWords": 0,
+       "totalWords": 8
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 600,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "scaffolded",
+         "high": 3,
+         "low": 0,
+         "turns": 3,
+         "scaffolded": 1,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b3"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b3.state"
+      },
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 4,
+       "targetWords": 3,
+       "totalWords": 6,
+       "quality": 60
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 221,
+       "adjustment": null,
+       "state": {
+        "$subset": {
+         "level": "scaffolded",
+         "high": 0,
+         "low": 0,
+         "turns": 4,
+         "scaffolded": 1,
+         "stretched": 0
+        }
+       }
+      }
+     },
+     "bind": "b4"
+    },
+    {
+     "call": "language.difficulty.recordTurn",
+     "args": {
+      "state": {
+       "$ref": "b4.state"
+      },
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 4,
+       "targetWords": 3,
+       "totalWords": 6,
+       "quality": 60
+      }
+     },
+     "expect": {
+      "$subset": {
+       "struggle": 221,
+       "adjustment": {
+        "level": "none",
+        "reason": "Player is recovering — returning to normal difficulty.",
+        "struggle": 221,
+        "consecutiveTurns": 0
+       },
+       "state": {
+        "$subset": {
+         "level": "none",
+         "high": 0,
+         "low": 0,
+         "turns": 5,
+         "scaffolded": 1,
+         "stretched": 0
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation mode: mode: each NPC's hash, roll and language mode at every band",
+   "steps": [
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": "ada"
+     },
+     "expect": {
+      "hash": 96414
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1",
+      "npcId": "ada"
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A2",
+      "npcId": "ada"
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B1",
+      "npcId": "ada"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B2",
+      "npcId": "ada"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C1",
+      "npcId": "ada"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C2",
+      "npcId": "ada"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": "bram"
+     },
+     "expect": {
+      "hash": 3032188
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1",
+      "npcId": "bram"
+     },
+     "expect": {
+      "mode": "simplified"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A2",
+      "npcId": "bram"
+     },
+     "expect": {
+      "mode": "simplified"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B1",
+      "npcId": "bram"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B2",
+      "npcId": "bram"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C1",
+      "npcId": "bram"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C2",
+      "npcId": "bram"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": "cora"
+     },
+     "expect": {
+      "hash": 3059611
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1",
+      "npcId": "cora"
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A2",
+      "npcId": "cora"
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B1",
+      "npcId": "cora"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B2",
+      "npcId": "cora"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C1",
+      "npcId": "cora"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C2",
+      "npcId": "cora"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": "dov"
+     },
+     "expect": {
+      "hash": 99659
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1",
+      "npcId": "dov"
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A2",
+      "npcId": "dov"
+     },
+     "expect": {
+      "mode": "simplified"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B1",
+      "npcId": "dov"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B2",
+      "npcId": "dov"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C1",
+      "npcId": "dov"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C2",
+      "npcId": "dov"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": "npc_7"
+     },
+     "expect": {
+      "hash": 105022041
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1",
+      "npcId": "npc_7"
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A2",
+      "npcId": "npc_7"
+     },
+     "expect": {
+      "mode": "simplified"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B1",
+      "npcId": "npc_7"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B2",
+      "npcId": "npc_7"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C1",
+      "npcId": "npc_7"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C2",
+      "npcId": "npc_7"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": "Élodie"
+     },
+     "expect": {
+      "hash": 1562638580
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1",
+      "npcId": "Élodie"
+     },
+     "expect": {
+      "mode": "simplified"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A2",
+      "npcId": "Élodie"
+     },
+     "expect": {
+      "mode": "simplified"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B1",
+      "npcId": "Élodie"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B2",
+      "npcId": "Élodie"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C1",
+      "npcId": "Élodie"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C2",
+      "npcId": "Élodie"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": ""
+     },
+     "expect": {
+      "hash": 0
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1",
+      "npcId": ""
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A2",
+      "npcId": ""
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B1",
+      "npcId": ""
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B2",
+      "npcId": ""
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C1",
+      "npcId": ""
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C2",
+      "npcId": ""
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": "innkeeper_cora"
+     },
+     "expect": {
+      "hash": 1552641729
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1",
+      "npcId": "innkeeper_cora"
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A2",
+      "npcId": "innkeeper_cora"
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B1",
+      "npcId": "innkeeper_cora"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B2",
+      "npcId": "innkeeper_cora"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C1",
+      "npcId": "innkeeper_cora"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "C2",
+      "npcId": "innkeeper_cora"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation npc: npc: an A1 learner talking to Ada, scaffolded",
+   "steps": [
+    {
+     "call": "language.npc.adaptation",
+     "args": {
+      "level": "A1",
+      "npcId": "ada",
+      "target": "French",
+      "scaffolding": "scaffolded"
+     },
+     "expect": {
+      "mode": "bilingual",
+      "directive": "LANGUAGE MODE — BILINGUAL:\nMix English and French in your responses. Say important words in both languages. For example: \"Le pain — the bread — c'est très bon!\" Gradually use more French as the conversation progresses. If the player writes in English, respond with a mix but lean toward French.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 200 most common words in French\n- Only the most basic, high-frequency everyday words (greetings, numbers, common nouns/verbs)\n- Stick to concrete nouns (bread, house, water), basic verbs (eat, go, see, do), simple adjectives (big, small, good, bad), and common function words\n- If you MUST use a less common word, immediately provide the English translation in brackets: \"le boulanger [baker]\"\n- Prefer simple present tense and imperative mood\n",
+      "scaffolding": "\nDYNAMIC SCAFFOLDING — ACTIVE:\nThe player is struggling. Adjust your speech NOW:\n- Reduce French usage by 20% compared to your normal mode\n- Use shorter sentences (max 5-7 words)\n- Add inline translations in brackets for key words, like: \"le pain [bread]\"\n- Repeat important words naturally\n- Ask simple yes/no or choice questions to keep the player engaged\n- If the player responds in English, acknowledge and gently guide back to French\nDo NOT mention that you are simplifying. Be natural and encouraging.\n",
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      },
+      "frequency": {
+       "min": 1,
+       "max": 200,
+       "label": "top 200 most common words",
+       "description": "Only the most basic, high-frequency everyday words (greetings, numbers, common nouns/verbs)"
+      },
+      "text": {
+       "maxSentenceWords": 8,
+       "maxParagraphs": 2,
+       "vocabularyTier": "basic",
+       "questionType": "true_false"
+      },
+      "questPool": 30
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation npc: npc: a B2 learner talking to Bram in Spanish, stretched, native German",
+   "steps": [
+    {
+     "call": "language.npc.adaptation",
+     "args": {
+      "level": "B2",
+      "npcId": "bram",
+      "target": "Spanish",
+      "native": "German",
+      "scaffolding": "stretch"
+     },
+     "expect": {
+      "mode": "natural",
+      "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in Spanish at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n\nVOCABULARY RANGE: Use the full range of Spanish vocabulary including abstract concepts, idioms, and domain-specific terms. No frequency restrictions.\n",
+      "scaffolding": "\nSTRETCH CHALLENGE — ACTIVE:\nThe player is performing exceptionally well. Increase complexity:\n- Use more advanced vocabulary and natural idioms in Spanish\n- Use longer, more complex sentence structures\n- Reduce translations and explanations\n- Ask open-ended questions that require detailed responses\n- Introduce cultural references or wordplay when appropriate\nDo NOT mention that you are increasing difficulty. Be natural.\n",
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "frequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary",
+       "description": "Full vocabulary including abstract concepts, idioms, and specialized terms"
+      },
+      "text": {
+       "maxSentenceWords": 30,
+       "maxParagraphs": 8,
+       "vocabularyTier": "advanced",
+       "questionType": "analytical"
+      },
+      "questPool": 10
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation npc: npc: an A2 learner and a simplified NPC",
+   "steps": [
+    {
+     "call": "language.npc.adaptation",
+     "args": {
+      "level": "A2",
+      "npcId": "bram",
+      "target": "French",
+      "scaffolding": "none"
+     },
+     "expect": {
+      "mode": "simplified",
+      "directive": "LANGUAGE MODE — SIMPLIFIED:\nUse only very simple French. Short sentences (5-7 words max). Use only high-frequency, concrete vocabulary. If the player seems confused, offer a translation in brackets like [bread]. Repeat key words naturally. Speak slowly and clearly.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 500 most common words in French\n- Common situational vocabulary (shopping, directions, food, travel, daily routines)\n- Include everyday situational vocabulary (shopping, travel, food, directions)\n- For any word outside the top 500, provide an inline translation: \"la boulangerie [bakery]\"\n- Use present, near future (aller + infinitive), and simple past (passé composé)\n",
+      "scaffolding": "",
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      },
+      "frequency": {
+       "min": 1,
+       "max": 500,
+       "label": "top 500 most common words",
+       "description": "Common situational vocabulary (shopping, directions, food, travel, daily routines)"
+      },
+      "text": {
+       "maxSentenceWords": 12,
+       "maxParagraphs": 3,
+       "vocabularyTier": "common",
+       "questionType": "simple_factual"
+      },
+      "questPool": 25
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation npc: npc: a B1 learner talking to Cora: the top-1500 frequency constraint",
+   "steps": [
+    {
+     "call": "language.npc.adaptation",
+     "args": {
+      "level": "B1",
+      "npcId": "cora",
+      "target": "French",
+      "scaffolding": "none"
+     },
+     "expect": {
+      "mode": "natural",
+      "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in French at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 1500 most common words in French\n- General vocabulary for most everyday topics (work, education, culture, opinions)\n- Use general vocabulary for everyday and some abstract topics\n- For specialized or uncommon words (outside top 1500), provide brief context or inline translation\n- All tenses are acceptable including subjunctive for common expressions\n",
+      "scaffolding": "",
+      "hints": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "frequency": {
+       "min": 1,
+       "max": 1500,
+       "label": "top 1500 most common words",
+       "description": "General vocabulary for most everyday topics (work, education, culture, opinions)"
+      },
+      "text": {
+       "maxSentenceWords": 20,
+       "maxParagraphs": 5,
+       "vocabularyTier": "varied",
+       "questionType": "inferential"
+      },
+      "questPool": 15
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation npc: npc: a C1 learner talking to Dov in Spanish: the constraint with only its label and description",
+   "steps": [
+    {
+     "call": "language.npc.adaptation",
+     "args": {
+      "level": "C1",
+      "npcId": "dov",
+      "target": "Spanish",
+      "scaffolding": "none"
+     },
+     "expect": {
+      "mode": "natural",
+      "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in Spanish at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the unrestricted vocabulary with sophisticated register in Spanish\n- Full vocabulary including academic, literary, and nuanced register-appropriate terms\n",
+      "scaffolding": "",
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "frequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary with sophisticated register",
+       "description": "Full vocabulary including academic, literary, and nuanced register-appropriate terms"
+      },
+      "text": {
+       "maxSentenceWords": 40,
+       "maxParagraphs": 10,
+       "vocabularyTier": "sophisticated",
+       "questionType": "analytical"
+      },
+      "questPool": 8
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation npc: npc: a C2 learner talking to Ada, native German",
+   "steps": [
+    {
+     "call": "language.npc.adaptation",
+     "args": {
+      "level": "C2",
+      "npcId": "ada",
+      "target": "French",
+      "native": "German",
+      "scaffolding": "none"
+     },
+     "expect": {
+      "mode": "natural",
+      "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in French at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the native-level unrestricted vocabulary in French\n- Complete native-speaker vocabulary including rare, archaic, dialectal, and highly specialized terms\n",
+      "scaffolding": "",
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "frequency": {
+       "min": 1,
+       "max": null,
+       "label": "native-level unrestricted vocabulary",
+       "description": "Complete native-speaker vocabulary including rare, archaic, dialectal, and highly specialized terms"
+      },
+      "text": {
+       "maxSentenceWords": 50,
+       "maxParagraphs": 12,
+       "vocabularyTier": "native",
+       "questionType": "analytical"
+      },
+      "questPool": 5
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation hint: hint: new-word hints by band, cadence, difficulty and mastery",
+   "steps": [
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "A1",
+      "index": 0,
+      "difficulty": "beginner",
+      "mastered": false
+     },
+     "expect": {
+      "show": true
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "A1",
+      "index": 7,
+      "difficulty": "beginner",
+      "mastered": true
+     },
+     "expect": {
+      "show": false
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "A2",
+      "index": 3,
+      "difficulty": "beginner",
+      "mastered": false
+     },
+     "expect": {
+      "show": true
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "A2",
+      "index": 4,
+      "difficulty": "advanced",
+      "mastered": false
+     },
+     "expect": {
+      "show": false
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "B1",
+      "index": 0,
+      "difficulty": "intermediate",
+      "mastered": false
+     },
+     "expect": {
+      "show": false
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "B1",
+      "index": 5,
+      "difficulty": "advanced",
+      "mastered": false
+     },
+     "expect": {
+      "show": true
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "C1",
+      "index": 0,
+      "difficulty": "beginner",
+      "mastered": false
+     },
+     "expect": {
+      "show": false
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "C2",
+      "index": 2,
+      "difficulty": "advanced",
+      "mastered": false
+     },
+     "expect": {
+      "show": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation quests: quests: untagged always, within one band, closest first",
+   "steps": [
+    {
+     "call": "language.quests.filterByCefr",
+     "args": {
+      "quests": [
+       {
+        "id": "q_c1",
+        "cefrLevel": "C1"
+       },
+       {
+        "id": "q_b2",
+        "cefrLevel": "B2"
+       },
+       {
+        "id": "q_none"
+       },
+       {
+        "id": "q_a2",
+        "cefrLevel": "A2"
+       },
+       {
+        "id": "q_b1",
+        "cefrLevel": "B1"
+       },
+       {
+        "id": "q_a1",
+        "cefrLevel": "A1"
+       },
+       {
+        "id": "q_null",
+        "cefrLevel": null
+       }
+      ],
+      "level": "B1"
+     },
+     "expect": {
+      "shown": [
+       "q_none",
+       "q_b1",
+       "q_null",
+       "q_b2",
+       "q_a2"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/adaptation advance: advance: progress toward the next band in thousandths; texts count only where a band asks for them",
+   "steps": [
+    {
+     "call": "language.cefr.advancement",
+     "args": {
+      "snapshot": {
+       "level": "A1",
+       "wordsLearned": 49,
+       "conversations": 3,
+       "textsRead": 0
+      }
+     },
+     "expect": {
+      "advance": false,
+      "next": "A2",
+      "progress": 993,
+      "words": 980,
+      "conversations": 1000,
+      "texts": 1000
+     }
+    },
+    {
+     "call": "language.cefr.advancement",
+     "args": {
+      "snapshot": {
+       "level": "A1",
+       "wordsLearned": 50,
+       "conversations": 3,
+       "textsRead": 0
+      }
+     },
+     "expect": {
+      "advance": true,
+      "next": "A2",
+      "progress": 1000,
+      "words": 1000,
+      "conversations": 1000,
+      "texts": 1000
+     }
+    },
+    {
+     "call": "language.cefr.advancement",
+     "args": {
+      "snapshot": {
+       "level": "A2",
+       "wordsLearned": 300,
+       "conversations": 5,
+       "textsRead": 2
+      }
+     },
+     "expect": {
+      "advance": false,
+      "next": "B1",
+      "progress": 633,
+      "words": 1000,
+      "conversations": 500,
+      "texts": 400
+     }
+    },
+    {
+     "call": "language.cefr.advancement",
+     "args": {
+      "snapshot": {
+       "level": "A2",
+       "wordsLearned": 150,
+       "conversations": 10,
+       "textsRead": 4
+      }
+     },
+     "expect": {
+      "advance": false,
+      "next": "B1",
+      "progress": 933,
+      "words": 1000,
+      "conversations": 1000,
+      "texts": 800
+     }
+    },
+    {
+     "call": "language.cefr.advancement",
+     "args": {
+      "snapshot": {
+       "level": "B2",
+       "wordsLearned": 500,
+       "conversations": 50,
+       "textsRead": 30
+      }
+     },
+     "expect": {
+      "advance": true,
+      "next": "C1",
+      "progress": 1000,
+      "words": 1000,
+      "conversations": 1000,
+      "texts": 1000
+     }
+    },
+    {
+     "call": "language.cefr.advancement",
+     "args": {
+      "snapshot": {
+       "level": "C2",
+       "wordsLearned": 0,
+       "conversations": 0,
+       "textsRead": 0
+      }
+     },
+     "expect": {
+      "advance": false,
+      "next": null,
+      "progress": 1000,
+      "words": 1000,
+      "conversations": 1000,
+      "texts": 1000
+     }
+    }
+   ]
+  }
+ ]
+}

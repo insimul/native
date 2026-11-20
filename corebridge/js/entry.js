@@ -718,7 +718,83 @@ import {
 	lineTokens,
 	startChat,
 } from '@insimul/core/language-learning/chat-metrics';
-import { initialDifficulty, recordTurn } from '@insimul/core/language-learning/adaptation';
+// Slice 2 (U128, U118, U107(2)): the vocabulary bank, its grammar tab, weakness analysis and the
+// learning profile (bank-profile.ts); the rest of adaptation.ts (the struggle signals, NPC
+// language modes and their directives, hint behaviour, quest filtering by band, band advancement,
+// the frequency constraint); pronunciation.ts with the phonetic code it blends
+// (language/phonetic-similarity.ts phoneticEncode).
+import {
+	CEFR_ADVANCEMENT,
+	FREQUENCY_RANGES,
+	HINT_BEHAVIOR,
+	NPC_MODE_PERCENT,
+	QUEST_POOL_SIZES,
+	SCAFFOLDING_THRESHOLD,
+	SCAFFOLDING_TURNS,
+	SIGNAL_WEIGHTS,
+	STRETCH_THRESHOLD,
+	STRETCH_TURNS,
+	TEXT_COMPLEXITY,
+	cefrAdvancement,
+	filterQuestsByCefr,
+	frequencyDirective,
+	hintBehavior,
+	initialDifficulty,
+	isWordMastered,
+	modeDirective,
+	npcAdaptation,
+	npcHash,
+	npcLanguageMode,
+	recordTurn,
+	scaffoldingDirective,
+	showsVocabHint,
+	struggleScore,
+	struggleSignals,
+} from '@insimul/core/language-learning/adaptation';
+import {
+	CARD_INTERACTIONS,
+	DUE_LABEL,
+	DUE_TONE,
+	IMPROVEMENT_PERMILLE,
+	LEARNING_HISTORY_STATUSES,
+	MASTERY_LABELS,
+	MASTERY_TONES,
+	QUEST_CATEGORIES,
+	SKILL_DIMENSIONS,
+	SKILL_TO_CATEGORIES,
+	VOCABULARY_SORTS,
+	WEAKNESS_CONFIDENCE_PERMILLE,
+	WEAKNESS_MAX,
+	WEAKNESS_MIN_ATTEMPTS,
+	WEAKNESS_MIN_RATE_PERMILLE,
+	WEAKNESS_VOLUME_PERMILLE,
+	analyzeWeaknesses,
+	bankCards,
+	bankCategories,
+	grammarTab,
+	halfUpPercent,
+	learningHistory,
+	learningProfile,
+	rateOf,
+	revealsMeaning,
+	strongPatterns,
+	weaknessPriority,
+} from '@insimul/core/language-learning/bank-profile';
+import {
+	BASE_XP,
+	CLOSE_THRESHOLD,
+	PASS_SCORE,
+	PHONETIC_WEIGHT,
+	grade as pronunciationGrade,
+	hintPenalty,
+	listenAndRepeat,
+	listenXp,
+	normalizePhrase,
+	scorePhrase,
+	wordFeedback,
+	wordSimilarity,
+} from '@insimul/core/language-learning/pronunciation';
+import { phoneticEncode } from '@insimul/core/language/phonetic-similarity';
 
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
@@ -2422,6 +2498,118 @@ function turnMetricsArg(method, value) {
 	});
 }
 
+// Slice 2's boundary (bank-profile.ts, adaptation.ts, pronunciation.ts). The enumerations
+// below are core's declared TypeScript types, which leave no value at run time: core's
+// `TranslationDisplayMode`, `ScaffoldingLevel`, `NpcLanguageMode`, `WordDifficulty` and
+// `WordMatch` (the vocabulary sorts and the card interactions core exports, and they are
+// imported above).
+const TRANSLATION_DISPLAY_MODES = ['inline', 'hover', 'click'];
+const SCAFFOLDING_LEVELS = ['none', 'scaffolded', 'stretch'];
+const NPC_LANGUAGE_MODES = ['bilingual', 'simplified', 'natural'];
+const WORD_DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
+const WORD_MATCHES = ['exact', 'close', 'missed', 'extra'];
+
+/** A `BankQuery`: absent or null is `{}`; each member absent or null reads as core's `??` default (a `limit` must be a number: core slices by it). */
+function bankQueryArg(method, value) {
+	return coded('invalid-input', () => {
+		if (value === undefined || value === null) return {};
+		needObject(method, value, 'query');
+		const q = {};
+		if (value.category !== undefined && value.category !== null) q.category = needString(method, value.category, 'query.category');
+		if (value.sort !== undefined && value.sort !== null) q.sort = oneOf(method, value.sort, VOCABULARY_SORTS, 'query.sort');
+		if (value.limit !== undefined) q.limit = needNumber(method, value.limit, 'query.limit');
+		if (value.due !== undefined && value.due !== null) q.due = stringList(method, value.due, 'query.due');
+		if (value.cefr !== undefined && value.cefr !== null) q.cefr = oneOf(method, value.cefr, CEFR_ORDER, 'query.cefr');
+		return q;
+	});
+}
+
+/** `WeaknessOptions`: absent or null is `{}`; the three numbers absent or null (core's `??` defaults), `previous` a record of numbers. */
+function weaknessOptionsArg(method, value) {
+	return coded('invalid-input', () => {
+		if (value === undefined || value === null) return {};
+		needObject(method, value, 'options');
+		const o = {};
+		for (const k of ['minRatePermille', 'minAttempts', 'max']) {
+			if (value[k] !== undefined && value[k] !== null) o[k] = needNumber(method, value[k], `options.${k}`);
+		}
+		if (value.previous !== undefined && value.previous !== null) {
+			needObject(method, value.previous, 'options.previous');
+			for (const [k, v] of Object.entries(value.previous)) needNumber(method, v, `options.previous.${k}`);
+			o.previous = value.previous;
+		}
+		return o;
+	});
+}
+
+/** A grammar row's `correct` and `incorrect` (core's `rateOf` reads only these). */
+function grammarCountsArg(method, value, name = 'row') {
+	return coded('invalid-input', () => {
+		needObject(method, value, name);
+		needNumber(method, value.correct, `${name}.correct`);
+		needNumber(method, value.incorrect, `${name}.incorrect`);
+		return value;
+	});
+}
+
+/** The host's quest records (`LearningQuestIn[]`): a list of objects; core reads each field whatever its type. */
+function learningQuestsArg(method, value) {
+	return coded('invalid-input', () => {
+		needArray(method, value, 'quests').forEach((q, i) => needObject(method, q, `quests[${i}]`));
+		return value;
+	});
+}
+
+/** `QuestRecordIn[]` (learningHistory's rows): `questType` a string or null, `status` a string, `completedAtMs` a number or null, `objectives` a list of objects. */
+function questRecordsArg(method, value) {
+	return coded('invalid-input', () => {
+		needArray(method, value, 'history').forEach((q, i) => {
+			const at = `history[${i}]`;
+			needObject(method, q, at);
+			optStringOrNull(method, q.questType, `${at}.questType`);
+			needString(method, q.status, `${at}.status`);
+			optNumber(method, q.completedAtMs, `${at}.completedAtMs`);
+			(optArrayValue(method, q.objectives, `${at}.objectives`) ?? []).forEach((o, k) => needObject(method, o, `${at}.objectives[${k}]`));
+		});
+		return value;
+	});
+}
+
+/** `AssessmentIn[]`: `cefrLevel` a string or null, `dimensionScores` a record of numbers, `completedAtMs` a number or null. */
+function assessmentsArg(method, value) {
+	return coded('invalid-input', () => {
+		needArray(method, value, 'assessments').forEach((a, i) => {
+			const at = `assessments[${i}]`;
+			needObject(method, a, at);
+			optStringOrNull(method, a.cefrLevel, `${at}.cefrLevel`);
+			if (a.dimensionScores !== undefined && a.dimensionScores !== null) {
+				needObject(method, a.dimensionScores, `${at}.dimensionScores`);
+				for (const [k, v] of Object.entries(a.dimensionScores)) needNumber(method, v, `${at}.dimensionScores.${k}`);
+			}
+			optNumber(method, a.completedAtMs, `${at}.completedAtMs`);
+		});
+		return value;
+	});
+}
+
+/** A string argument core defaults when absent (`native = 'English'`): absent or null passes nothing, so core's default applies. */
+function defaultedString(method, value, name) {
+	return coded('invalid-input', () => (value === undefined || value === null ? undefined : needString(method, value, name)));
+}
+
+/** `WordResult[]` (scorePhrase's words): `expected` a string, `match` core's `WordMatch`, `similarity` a number (`spoken` core does not read). */
+function wordResultsArg(method, value) {
+	return coded('invalid-input', () => {
+		needArray(method, value, 'words').forEach((w, i) => {
+			needObject(method, w, `words[${i}]`);
+			needString(method, w.expected, `words[${i}].expected`);
+			oneOf(method, w.match, WORD_MATCHES, `words[${i}].match`);
+			needNumber(method, w.similarity, `words[${i}].similarity`);
+		});
+		return value;
+	});
+}
+
 // ── quests ────────────────────────────────────────────────────────────────────
 
 const QUEST_STATUSES = ['available', 'active', 'completed'];
@@ -2895,10 +3083,11 @@ const METHODS = {
 	/** `save.village.conversations.epochMs { timestamp }` → `{ epochMs }`: core's `epochMsOfConversationTimestamp`, the round trip back, or null. */
 	'save.village.conversations.epochMs': (args) => ({ epochMs: epochMsOfConversationTimestamp(args.timestamp) }),
 
-	// ── language learning (PL.native-language-rows, slice 1) ────────────────────
+	// ── language learning (PL.native-language-rows, slices 1 and 2) ─────────────
 	// One core function per row, state in and out as JSON (README "The language
 	// rows"). Core's corpus runner composes them per op; tests/language_corpus.cpp
-	// replays conformance/language/{progress,save,prompts,hover,chat}.json the same way.
+	// replays conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,
+	// pronunciation}.json the same way.
 
 	/**
 	 * `language.contract` → the constants a binding must not hard-code: the CEFR
@@ -2906,7 +3095,13 @@ const METHODS = {
 	 * fluency thresholds, the book's refusals, the save block's extension key,
 	 * members and row keys, the prompt selector's refusals and examine reach, the
 	 * three default tunings (a game's own are these with its parameters over them),
-	 * the hover and chat refusals and the chat's percent per word per turn.
+	 * the hover and chat refusals and the chat's percent per word per turn; and
+	 * (slice 2) the bank's sorts, labels, tones, due marker and card interactions,
+	 * the weakness thresholds and log2 tables, the quest categories and skill
+	 * dimensions, the history's statuses, the difficulty monitor's thresholds and
+	 * weights, the NPC mode shares, hint behaviour, band advancement, frequency
+	 * ranges, text complexity and quest pool sizes by band, and listen and repeat's
+	 * close threshold, phonetic weight, pass score and base XP.
 	 */
 	'language.contract': () => ({
 		cefrOrder: [...CEFR_ORDER],
@@ -2934,6 +3129,40 @@ const METHODS = {
 		hoverRefusals: [...HOVER_REFUSALS],
 		chatRefusals: [...CHAT_REFUSALS],
 		chatPercentPerWordPerTurn: CHAT_PERCENT_PER_WORD_PER_TURN,
+		// Slice 2: the bank, weakness analysis and the profile (bank-profile.ts).
+		vocabularySorts: [...VOCABULARY_SORTS],
+		masteryLabels: { ...MASTERY_LABELS },
+		masteryTones: { ...MASTERY_TONES },
+		dueLabel: DUE_LABEL,
+		dueTone: DUE_TONE,
+		cardInteractions: [...CARD_INTERACTIONS],
+		weaknessMinAttempts: WEAKNESS_MIN_ATTEMPTS,
+		weaknessMinRatePermille: WEAKNESS_MIN_RATE_PERMILLE,
+		weaknessMax: WEAKNESS_MAX,
+		improvementPermille: IMPROVEMENT_PERMILLE,
+		weaknessVolumePermille: [...WEAKNESS_VOLUME_PERMILLE],
+		weaknessConfidencePermille: [...WEAKNESS_CONFIDENCE_PERMILLE],
+		questCategories: [...QUEST_CATEGORIES],
+		skillDimensions: [...SKILL_DIMENSIONS],
+		skillToCategories: plain(SKILL_TO_CATEGORIES),
+		learningHistoryStatuses: [...LEARNING_HISTORY_STATUSES],
+		// The difficulty monitor and the CEFR adaptation (adaptation.ts).
+		scaffoldingThreshold: SCAFFOLDING_THRESHOLD,
+		scaffoldingTurns: SCAFFOLDING_TURNS,
+		stretchThreshold: STRETCH_THRESHOLD,
+		stretchTurns: STRETCH_TURNS,
+		signalWeights: { ...SIGNAL_WEIGHTS },
+		npcModePercent: plain(NPC_MODE_PERCENT),
+		hintBehavior: plain(HINT_BEHAVIOR),
+		cefrAdvancement: plain(CEFR_ADVANCEMENT),
+		frequencyRanges: plain(FREQUENCY_RANGES),
+		textComplexity: plain(TEXT_COMPLEXITY),
+		questPoolSizes: { ...QUEST_POOL_SIZES },
+		// Listen and repeat (pronunciation.ts).
+		closeThreshold: CLOSE_THRESHOLD,
+		phoneticWeight: PHONETIC_WEIGHT,
+		passScore: PASS_SCORE,
+		baseXp: BASE_XP,
 	}),
 
 	// The language book (progress.ts) and the player's CEFR facts (prolog/player-language-state.ts).
@@ -3418,6 +3647,246 @@ const METHODS = {
 		const m = 'language.difficulty.recordTurn';
 		const state = difficultyStateArg(m, args.state);
 		return plain(recordTurn(state, turnMetricsArg(m, args.metrics)));
+	},
+
+	// Slice 2. The vocabulary bank, its grammar tab, weakness analysis and the learning profile (bank-profile.ts).
+
+	/** `language.bank.categories { book }` → `{ categories }`: core's `bankCategories`, first-seen order, `general` for an untagged word. */
+	'language.bank.categories': (args) => ({ categories: plain(bankCategories(languageBookArg('language.bank.categories', args.book))) }),
+
+	/**
+	 * `language.bank.cards { book, query? }` → `{ cards }`: core's `bankCards` (`query`:
+	 * `{ category?, sort?, limit?, due?, cefr? }`, each absent or null read as core's
+	 * default; a sort outside core's VOCABULARY_SORTS is `[invalid-input]`).
+	 */
+	'language.bank.cards': (args) => {
+		const m = 'language.bank.cards';
+		const book = languageBookArg(m, args.book);
+		return { cards: plain(bankCards(book, bankQueryArg(m, args.query))) };
+	},
+
+	/** `language.bank.revealsMeaning { reveal, interaction }` → `{ reveals }`: core's `revealsMeaning` (inline always, hover on gaze or select, click on select). */
+	'language.bank.revealsMeaning': (args) => {
+		const m = 'language.bank.revealsMeaning';
+		const [reveal, interaction] = coded('invalid-input', () => [
+			oneOf(m, args.reveal, TRANSLATION_DISPLAY_MODES, 'reveal'),
+			oneOf(m, args.interaction, CARD_INTERACTIONS, 'interaction'),
+		]);
+		return { reveals: revealsMeaning(reveal, interaction) };
+	},
+
+	/** `language.bank.grammarTab { book }` → `{ tab }`: core's `grammarTab`, each pattern's attempts, half-up accuracy (null with none), mastered and weak. */
+	'language.bank.grammarTab': (args) => ({ tab: plain(grammarTab(languageBookArg('language.bank.grammarTab', args.book))) }),
+
+	/** `language.bank.halfUpPercent { n, d }` → `{ percent }`: core's `halfUpPercent`, `Math.round(n / d × 100)` exactly for non-negative integers. */
+	'language.bank.halfUpPercent': (args) => {
+		const m = 'language.bank.halfUpPercent';
+		const [n, d] = coded('invalid-input', () => [needNumber(m, args.n, 'n'), needNumber(m, args.d, 'd')]);
+		return { percent: plain(halfUpPercent(n, d)) };
+	},
+
+	/** `language.bank.rateOf { row }` → `{ ratePermille }`: core's `rateOf`, a grammar row's error rate in thousandths (0 with no attempt). */
+	'language.bank.rateOf': (args) => ({ ratePermille: rateOf(grammarCountsArg('language.bank.rateOf', args.row)) }),
+
+	/** `language.bank.weaknessPriority { incorrect, total }` → `{ priority }`: core's `weaknessPriority` in thousandths. */
+	'language.bank.weaknessPriority': (args) => {
+		const m = 'language.bank.weaknessPriority';
+		const [incorrect, total] = coded('invalid-input', () => [needNumber(m, args.incorrect, 'incorrect'), needNumber(m, args.total, 'total')]);
+		return { priority: weaknessPriority(incorrect, total) };
+	},
+
+	/**
+	 * `language.bank.analyzeWeaknesses { book, options? }` → `{ weaknesses, stats,
+	 * improved }`: core's `analyzeWeaknesses` (`options`: `{ minRatePermille?,
+	 * minAttempts?, max?, previous? }`, absent or null read as core's defaults).
+	 */
+	'language.bank.analyzeWeaknesses': (args) => {
+		const m = 'language.bank.analyzeWeaknesses';
+		const book = languageBookArg(m, args.book);
+		return plain(analyzeWeaknesses(book, weaknessOptionsArg(m, args.options)));
+	},
+
+	/** `language.bank.strongPatterns { book, max? }` → `{ patterns }`: core's `strongPatterns`, lowest error rate first (absent or null max: core's 3). */
+	'language.bank.strongPatterns': (args) => {
+		const m = 'language.bank.strongPatterns';
+		const book = languageBookArg(m, args.book);
+		const max = coded('invalid-input', () => optNumber(m, args.max, 'max'));
+		return { patterns: plain(max === undefined ? strongPatterns(book) : strongPatterns(book, max)) };
+	},
+
+	/** `language.profile.history { quests }` → `{ history }`: core's `learningHistory`, the finished quest records a learning profile holds. */
+	'language.profile.history': (args) => ({ history: plain(learningHistory(learningQuestsArg('language.profile.history', args.quests))) }),
+
+	/** `language.profile.build { history, assessments }` → core's `learningProfile` over `learningHistory`'s rows and the assessments. */
+	'language.profile.build': (args) => {
+		const m = 'language.profile.build';
+		return plain(learningProfile(questRecordsArg(m, args.history), assessmentsArg(m, args.assessments)));
+	},
+
+	// The rest of adaptation.ts: the struggle signals, NPC language modes and directives, hints, quests by band, advancement.
+
+	/** `language.difficulty.signals { metrics }` → `{ signals }`: core's `struggleSignals`, the monitor's four signals in thousandths. */
+	'language.difficulty.signals': (args) => ({ signals: plain(struggleSignals(turnMetricsArg('language.difficulty.signals', args.metrics))) }),
+
+	/** `language.difficulty.score { metrics }` → `{ score }`: core's `struggleScore`, the weighted struggle in thousandths. */
+	'language.difficulty.score': (args) => ({ score: struggleScore(turnMetricsArg('language.difficulty.score', args.metrics)) }),
+
+	/** `language.npc.hash { id }` → `{ hash }`: core's `npcHash`, the 32-bit hash of an NPC's id (UTF-16 code units), absolute. */
+	'language.npc.hash': (args) => ({ hash: npcHash(coded('invalid-input', () => needString('language.npc.hash', args.id, 'id'))) }),
+
+	/** `language.npc.mode { level, npcId }` → `{ mode }`: core's `npcLanguageMode`, the NPC's language mode at the learner's band. */
+	'language.npc.mode': (args) => {
+		const m = 'language.npc.mode';
+		const level = cefrArg(m, args.level, 'level');
+		return { mode: npcLanguageMode(level, coded('invalid-input', () => needString(m, args.npcId, 'npcId'))) };
+	},
+
+	/** `language.npc.modeDirective { mode, target, native?, level? }` → `{ directive }`: core's `modeDirective` (absent native: core's 'English'; with a band, its frequency constraint appended). */
+	'language.npc.modeDirective': (args) => {
+		const m = 'language.npc.modeDirective';
+		const [mode, target] = coded('invalid-input', () => [oneOf(m, args.mode, NPC_LANGUAGE_MODES, 'mode'), needString(m, args.target, 'target')]);
+		const native = defaultedString(m, args.native, 'native');
+		const level = args.level === undefined || args.level === null ? undefined : cefrArg(m, args.level, 'level');
+		return { directive: modeDirective(mode, target, native, level) };
+	},
+
+	/** `language.npc.scaffoldingDirective { level, target, native? }` → `{ directive }`: core's `scaffoldingDirective` ('' at none). */
+	'language.npc.scaffoldingDirective': (args) => {
+		const m = 'language.npc.scaffoldingDirective';
+		const [level, target] = coded('invalid-input', () => [oneOf(m, args.level, SCAFFOLDING_LEVELS, 'level'), needString(m, args.target, 'target')]);
+		return { directive: scaffoldingDirective(level, target, defaultedString(m, args.native, 'native')) };
+	},
+
+	/** `language.npc.frequencyDirective { level, target }` → `{ directive }`: core's `frequencyDirective`, the band's vocabulary constraint. */
+	'language.npc.frequencyDirective': (args) => {
+		const m = 'language.npc.frequencyDirective';
+		const level = cefrArg(m, args.level, 'level');
+		return { directive: frequencyDirective(level, coded('invalid-input', () => needString(m, args.target, 'target'))) };
+	},
+
+	/**
+	 * `language.npc.adaptation { level, npcId, target, native?, scaffolding? }` → core's
+	 * `npcAdaptation`: `{ mode, directive, scaffolding, hints, frequency, text,
+	 * questPool }` (absent native: 'English'; absent scaffolding: 'none').
+	 */
+	'language.npc.adaptation': (args) => {
+		const m = 'language.npc.adaptation';
+		const level = cefrArg(m, args.level, 'level');
+		const [npcId, target] = coded('invalid-input', () => [needString(m, args.npcId, 'npcId'), needString(m, args.target, 'target')]);
+		const native = defaultedString(m, args.native, 'native');
+		const scaffolding = args.scaffolding === undefined || args.scaffolding === null ? undefined : coded('invalid-input', () => oneOf(m, args.scaffolding, SCAFFOLDING_LEVELS, 'scaffolding'));
+		return plain(npcAdaptation(level, npcId, target, native, scaffolding));
+	},
+
+	/** `language.hints.behavior { level }` → `{ behavior }`: core's `hintBehavior`, the band's translation display, translate button and new-word hint cadence. */
+	'language.hints.behavior': (args) => ({ behavior: plain(hintBehavior(cefrArg('language.hints.behavior', args.level, 'level'))) }),
+
+	/** `language.hints.showsVocabHint { level, index, difficulty?, mastered? }` → `{ show }`: core's `showsVocabHint` (absent: 'beginner', not mastered). */
+	'language.hints.showsVocabHint': (args) => {
+		const m = 'language.hints.showsVocabHint';
+		const level = cefrArg(m, args.level, 'level');
+		const [index, difficulty, mastered] = coded('invalid-input', () => [
+			needNumber(m, args.index, 'index'),
+			args.difficulty === undefined || args.difficulty === null ? undefined : oneOf(m, args.difficulty, WORD_DIFFICULTIES, 'difficulty'),
+			optBoolean(m, args.mastered, 'mastered') ?? undefined,
+		]);
+		return { show: showsVocabHint(level, index, difficulty, mastered) };
+	},
+
+	/** `language.word.isMastered { encountered, correct }` → `{ mastered }`: core's `isWordMastered` (adaptation.ts re-exports it). */
+	'language.word.isMastered': (args) => {
+		const m = 'language.word.isMastered';
+		const [encountered, correct] = coded('invalid-input', () => [needNumber(m, args.encountered, 'encountered'), needNumber(m, args.correct, 'correct')]);
+		return { mastered: isWordMastered(encountered, correct) };
+	},
+
+	/** `language.quests.filterByCefr { quests, level }` → `{ shown }`: core's `filterQuestsByCefr`, the ids of untagged quests and those within one band, closest first. */
+	'language.quests.filterByCefr': (args) => {
+		const m = 'language.quests.filterByCefr';
+		const quests = coded('invalid-input', () => {
+			needArray(m, args.quests, 'quests').forEach((q, i) => {
+				needObject(m, q, `quests[${i}]`);
+				needString(m, q.id, `quests[${i}].id`);
+				optStringOrNull(m, q.cefrLevel, `quests[${i}].cefrLevel`);
+			});
+			return args.quests;
+		});
+		return { shown: plain(filterQuestsByCefr(quests, cefrArg(m, args.level, 'level'))) };
+	},
+
+	/**
+	 * `language.cefr.advancement { snapshot }` → core's `cefrAdvancement`: `{ advance,
+	 * next, progress, words, conversations, texts }` in thousandths (`snapshot`:
+	 * `{ level, wordsLearned, conversations, textsRead }`).
+	 */
+	'language.cefr.advancement': (args) => {
+		const m = 'language.cefr.advancement';
+		const snapshot = coded('invalid-input', () => {
+			needObject(m, args.snapshot, 'snapshot');
+			oneOf(m, args.snapshot.level, CEFR_ORDER, 'snapshot.level');
+			for (const k of ['wordsLearned', 'conversations', 'textsRead']) needNumber(m, args.snapshot[k], `snapshot.${k}`);
+			return args.snapshot;
+		});
+		return plain(cefrAdvancement(snapshot));
+	},
+
+	// Listen and repeat (pronunciation.ts) and the phonetic code it blends (language/phonetic-similarity.ts).
+
+	/** `language.pronunciation.encode { word }` → `{ code }`: core's `phoneticEncode`. */
+	'language.pronunciation.encode': (args) => ({ code: phoneticEncode(coded('invalid-input', () => needString('language.pronunciation.encode', args.word, 'word'))) }),
+
+	/** `language.pronunciation.normalize { text }` → `{ normalized }`: core's `normalizePhrase` (lower case, punctuation dropped, spaces collapsed). */
+	'language.pronunciation.normalize': (args) => ({ normalized: normalizePhrase(coded('invalid-input', () => needString('language.pronunciation.normalize', args.text, 'text'))) }),
+
+	/** `language.pronunciation.wordSimilarity { expected, spoken }` → core's `wordSimilarity`: `{ similarity, text, phonetic, expectedCode, spokenCode }` in thousandths. */
+	'language.pronunciation.wordSimilarity': (args) => {
+		const m = 'language.pronunciation.wordSimilarity';
+		const [expected, spoken] = coded('invalid-input', () => [needString(m, args.expected, 'expected'), needString(m, args.spoken, 'spoken')]);
+		return plain(wordSimilarity(expected, spoken));
+	},
+
+	/** `language.pronunciation.score { expected, spoken }` → core's `scorePhrase`: `{ score, words, feedback }`. */
+	'language.pronunciation.score': (args) => {
+		const m = 'language.pronunciation.score';
+		const [expected, spoken] = coded('invalid-input', () => [needString(m, args.expected, 'expected'), needString(m, args.spoken, 'spoken')]);
+		return plain(scorePhrase(expected, spoken));
+	},
+
+	/** `language.pronunciation.grade { score }` → `{ grade }`: core's `grade` (A at 90, B at 70, C at 40, else D). */
+	'language.pronunciation.grade': (args) => ({ grade: pronunciationGrade(coded('invalid-input', () => needNumber('language.pronunciation.grade', args.score, 'score'))) }),
+
+	/** `language.pronunciation.wordFeedback { words }` → `{ words }`: core's `wordFeedback`, each expected word's status (extras dropped). */
+	'language.pronunciation.wordFeedback': (args) => ({ words: plain(wordFeedback(wordResultsArg('language.pronunciation.wordFeedback', args.words))) }),
+
+	/** `language.pronunciation.xp { score }` → `{ xp }`: core's `listenXp` (1 below the pass score, 4 from 90). */
+	'language.pronunciation.xp': (args) => ({ xp: listenXp(coded('invalid-input', () => needNumber('language.pronunciation.xp', args.score, 'score'))) }),
+
+	/** `language.pronunciation.hintPenalty { score, penalties, revealed }` → `{ score }`: core's `hintPenalty`, the revealed hints' penalties (thousandths) off the score, floored. */
+	'language.pronunciation.hintPenalty': (args) => {
+		const m = 'language.pronunciation.hintPenalty';
+		const [score, penalties, revealed] = coded('invalid-input', () => [
+			needNumber(m, args.score, 'score'),
+			needArray(m, args.penalties, 'penalties').map((p, i) => needNumber(m, p, `penalties[${i}]`)),
+			needNumber(m, args.revealed, 'revealed'),
+		]);
+		return { score: hintPenalty(score, penalties, revealed) };
+	},
+
+	/**
+	 * `language.pronunciation.listenAndRepeat { phrase, spoken, questId? }` → core's
+	 * `listenAndRepeat`: `{ score, passed, xp, grade, feedback, message, narrative,
+	 * words, events }` (core reads the phrase's `targetPhrase`; the event carries
+	 * `questId` when one is given).
+	 */
+	'language.pronunciation.listenAndRepeat': (args) => {
+		const m = 'language.pronunciation.listenAndRepeat';
+		const [phrase, spoken] = coded('invalid-input', () => {
+			needObject(m, args.phrase, 'phrase');
+			needString(m, args.phrase.targetPhrase, 'phrase.targetPhrase');
+			return [args.phrase, needString(m, args.spoken, 'spoken')];
+		});
+		const questId = defaultedString(m, args.questId, 'questId');
+		return plain(questId === undefined ? listenAndRepeat(phrase, spoken) : listenAndRepeat(phrase, spoken, questId));
 	},
 
 	// ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────

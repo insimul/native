@@ -148,7 +148,7 @@ game; **meta** = about the bridge itself.
 | `save.village.conversations.records` | `{ rows }` → `{ records }`: the rows split back, one record per conversation | `save-file-game-state` `conversationRecordsOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
 | `save.village.conversations.timestamp` | `{ epochMs }` → `{ timestamp }` (null outside the range) | `save-file-game-state` `conversationTimestampOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
 | `save.village.conversations.epochMs` | `{ timestamp }` → `{ epochMs }` (null unless it writes back to itself) | `save-file-game-state` `epochMsOfConversationTimestamp` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
-| `language.contract` | `{}` → `{ cefrOrder, encounterTypes, encounterHalves, grammarWeaknessMinAttempts, grammarWeaknessRate, grammarMasteryCorrectUses, fluencyMax, fluencyGainMin, fluencyGainMax, bookRefusals, extensionKey, blockMembers, bookKeys, wordKeys, grammarKeys, namingKeys, identificationKeys, promptRefusals, examineRange, identificationTuning, namingTuning, collectionTuning, hoverRefusals, chatRefusals, chatPercentPerWordPerTurn }` | `language-learning/{progress,language-save,prompt-selector,world-words,reading-writing,chat-metrics}` constants | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.contract` | `{}` → `{ cefrOrder, encounterTypes, encounterHalves, grammarWeaknessMinAttempts, grammarWeaknessRate, grammarMasteryCorrectUses, fluencyMax, fluencyGainMin, fluencyGainMax, bookRefusals, extensionKey, blockMembers, bookKeys, wordKeys, grammarKeys, namingKeys, identificationKeys, promptRefusals, examineRange, identificationTuning, namingTuning, collectionTuning, hoverRefusals, chatRefusals, chatPercentPerWordPerTurn, vocabularySorts, masteryLabels, masteryTones, dueLabel, dueTone, cardInteractions, weaknessMinAttempts, weaknessMinRatePermille, weaknessMax, improvementPermille, weaknessVolumePermille, weaknessConfidencePermille, questCategories, skillDimensions, skillToCategories, learningHistoryStatuses, scaffoldingThreshold, scaffoldingTurns, stretchThreshold, stretchTurns, signalWeights, npcModePercent, hintBehavior, cefrAdvancement, frequencyRanges, textComplexity, questPoolSizes, closeThreshold, phoneticWeight, passScore, baseXp }` | `language-learning/{progress,language-save,prompt-selector,world-words,reading-writing,chat-metrics,bank-profile,adaptation,pronunciation}` constants | P9h language (PL.native-language-rows slices 1 and 2; core's P9h.core) |
 | `language.book.empty` | `{ language? }` → `{ book }` | `language-learning/progress` `emptyBook` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
 | `language.book.mastery` | `{ encountered, halves }` → `{ mastery }` | `language-learning/progress` `masteryOf` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
 | `language.book.wordView` | `{ row }` → `{ view }` (a row core's save reader cannot read: `[invalid-input]`) | `language-learning/progress` `wordView` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
@@ -205,6 +205,39 @@ game; **meta** = about the bridge itself.
 | `language.chat.finish` | `{ book, session }` → `{ ok: true, book, conversation, result, signals }` or `{ ok: false, book, refusal }` | `language-learning/chat-metrics` `finishChat` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
 | `language.difficulty.initial` | `{}` → `{ state }` | `language-learning/adaptation` `initialDifficulty` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
 | `language.difficulty.recordTurn` | `{ state, metrics }` → `{ state, struggle, adjustment }` | `language-learning/adaptation` `recordTurn` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
+| `language.bank.categories` | `{ book }` → `{ categories }`: first-seen order, `general` for an untagged word | `language-learning/bank-profile` `bankCategories` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.bank.cards` | `{ book, query? }` → `{ cards }` (`query`: `{ category?, sort?, limit?, due?, cefr? }`, absent or null members read as core's defaults; a sort outside `vocabularySorts` is `[invalid-input]`) | `language-learning/bank-profile` `bankCards` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.bank.revealsMeaning` | `{ reveal, interaction }` → `{ reveals }` | `language-learning/bank-profile` `revealsMeaning` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.bank.grammarTab` | `{ book }` → `{ tab }`: each pattern's attempts, half-up accuracy (null with none), mastered, weak | `language-learning/bank-profile` `grammarTab` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.bank.halfUpPercent` | `{ n, d }` → `{ percent }` | `language-learning/bank-profile` `halfUpPercent` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.bank.rateOf` | `{ row: { correct, incorrect } }` → `{ ratePermille }` | `language-learning/bank-profile` `rateOf` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.bank.weaknessPriority` | `{ incorrect, total }` → `{ priority }` (thousandths) | `language-learning/bank-profile` `weaknessPriority` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.bank.analyzeWeaknesses` | `{ book, options? }` → `{ weaknesses, stats, improved }` (`options`: `{ minRatePermille?, minAttempts?, max?, previous? }`) | `language-learning/bank-profile` `analyzeWeaknesses` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.bank.strongPatterns` | `{ book, max? }` → `{ patterns }` (absent max: core's 3) | `language-learning/bank-profile` `strongPatterns` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.profile.history` | `{ quests }` → `{ history }`: the finished records (completed, failed, abandoned), one row each | `language-learning/bank-profile` `learningHistory` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.profile.build` | `{ history, assessments }` → `{ cefrLevel, categories, skills, weakCategories, strongCategories, weakSkills, strongSkills, unexplored, completed, attempted }` | `language-learning/bank-profile` `learningProfile` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.difficulty.signals` | `{ metrics }` → `{ signals: { grammar, targetLanguage, length, quality } }` (thousandths) | `language-learning/adaptation` `struggleSignals` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.difficulty.score` | `{ metrics }` → `{ score }` (thousandths) | `language-learning/adaptation` `struggleScore` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.npc.hash` | `{ id }` → `{ hash }` | `language-learning/adaptation` `npcHash` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.npc.mode` | `{ level, npcId }` → `{ mode }` (`bilingual`, `simplified`, `natural`) | `language-learning/adaptation` `npcLanguageMode` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.npc.modeDirective` | `{ mode, target, native?, level? }` → `{ directive }` (absent native: `English`; with a band, its frequency constraint appended) | `language-learning/adaptation` `modeDirective` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.npc.scaffoldingDirective` | `{ level, target, native? }` → `{ directive }` (`''` at `none`) | `language-learning/adaptation` `scaffoldingDirective` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.npc.frequencyDirective` | `{ level, target }` → `{ directive }` | `language-learning/adaptation` `frequencyDirective` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.npc.adaptation` | `{ level, npcId, target, native?, scaffolding? }` → `{ mode, directive, scaffolding, hints, frequency, text, questPool }` | `language-learning/adaptation` `npcAdaptation` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.hints.behavior` | `{ level }` → `{ behavior: { translationMode, showTranslateButton, translateButtonProminence, newWordHintFrequency, advancedVocabOnly } }` | `language-learning/adaptation` `hintBehavior` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.hints.showsVocabHint` | `{ level, index, difficulty?, mastered? }` → `{ show }` | `language-learning/adaptation` `showsVocabHint` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.word.isMastered` | `{ encountered, correct }` → `{ mastered }` | `language-learning/adaptation` `isWordMastered` (core's `language/mastery`, re-exported) | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.quests.filterByCefr` | `{ quests, level }` → `{ shown }` (ids: untagged, then within one band, closest first) | `language-learning/adaptation` `filterQuestsByCefr` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.cefr.advancement` | `{ snapshot: { level, wordsLearned, conversations, textsRead } }` → `{ advance, next, progress, words, conversations, texts }` | `language-learning/adaptation` `cefrAdvancement` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.pronunciation.encode` | `{ word }` → `{ code }` | `language/phonetic-similarity` `phoneticEncode` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.pronunciation.normalize` | `{ text }` → `{ normalized }` | `language-learning/pronunciation` `normalizePhrase` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.pronunciation.wordSimilarity` | `{ expected, spoken }` → `{ similarity, text, phonetic, expectedCode, spokenCode }` (thousandths) | `language-learning/pronunciation` `wordSimilarity` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.pronunciation.score` | `{ expected, spoken }` → `{ score, words, feedback }` | `language-learning/pronunciation` `scorePhrase` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.pronunciation.grade` | `{ score }` → `{ grade }` (`A`..`D`) | `language-learning/pronunciation` `grade` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.pronunciation.wordFeedback` | `{ words }` → `{ words: [{ word, status, similarity }] }` | `language-learning/pronunciation` `wordFeedback` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.pronunciation.xp` | `{ score }` → `{ xp }` | `language-learning/pronunciation` `listenXp` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.pronunciation.hintPenalty` | `{ score, penalties, revealed }` → `{ score }` | `language-learning/pronunciation` `hintPenalty` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
+| `language.pronunciation.listenAndRepeat` | `{ phrase, spoken, questId? }` → `{ score, passed, xp, grade, feedback, message, narrative, words, events }` | `language-learning/pronunciation` `listenAndRepeat` | P9h language (PL.native-language-rows slice 2; core's P9h.core) |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `ui.loadRefusal` | `{ refusal }` → `{ outcome, message }`: every string `invalid_format` with its message; any other value `{ outcome: null, message: '' }` | `ui/save-slot-model` `slotOutcomeOfLoadRefusal`, `loadRefusalMessage` | P1 refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1), U126(2)) |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
@@ -2022,7 +2055,7 @@ foreign-world and foreign-runtime ownership through `ownership` and `readRuntime
 the checked write and read, the conversation clock, the sky against a `weather.create`
 session), every expectation computed by core's own functions at the pin.
 
-### The language rows: the book, the save block, the prompt selector, hover, the chat (PL.native-language-rows, slice 1)
+### The language rows: the book, the save block, the prompt selector, hover, the chat, the bank and profile, adaptation, pronunciation (PL.native-language-rows, slices 1 and 2)
 
 Core's P9h language kernels (`src/language-learning/`, `docs/language-systems.md`) are
 rows (U118, U128), so an engine binds them instead of keeping a copy (Unreal's interim
@@ -2030,10 +2063,11 @@ rows (U118, U128), so an engine binds them instead of keeping a copy (Unreal's i
 row's last slice lands; `ENGINE_BINDINGS.md` maps them function by function). Core's
 kernels are PURE: each takes a state and returns a new one, so each row takes the state
 as JSON and answers core's result as JSON, and the host keeps the state between calls
-(no session). Slice 1 binds five of core's thirteen corpus files; the bank and learning
-profile, adaptation, pronunciation, objects, collection and writing, then the quest
-feedback and the quest types follow in later slices (`chat-strip.json`, the NPC reply's
-marker strip, is the chat-cefr copy's and goes with `PL.native-chat-cefr-rows`).
+(no session). Slice 1 binds five of core's thirteen corpus files and slice 2 three more
+(the bank and learning profile, adaptation, pronunciation); objects, collection and
+writing (slice 3), then the quest feedback and the quest types (slice 4) follow
+(`chat-strip.json`, the NPC reply's marker strip, is the chat-cefr copy's and goes with
+`PL.native-chat-cefr-rows`).
 
 - **The book** (`progress.ts`): `language.book.empty`, `.recordEncounter`, `.advance`,
   `.recordGrammar`, `.recordConversation`, `.setCefr` move a book; `.findWord`,
@@ -2068,30 +2102,58 @@ marker strip, is the chat-cefr copy's and goes with `PL.native-chat-cefr-rows`).
   `.end`, `.finish`, `.lineTokens`, `.lineWords`, `.questUsages`, `.targetPercent`,
   `.checkErrors`; a line's metrics feed core's difficulty monitor,
   `language.difficulty.initial` and `.recordTurn` (`adaptation.ts`; the rest of
-  adaptation is a later slice).
+  adaptation is slice 2's, below).
+- **The bank and the learning profile** (slice 2, `bank-profile.ts`):
+  `language.bank.categories`, `.cards` (core's `BankQuery`, each member absent or null
+  read as core's `??` default; a sort outside `vocabularySorts` is `[invalid-input]`
+  before core would throw, and a `limit` must be a number, since core slices by it),
+  `.revealsMeaning`, `.grammarTab`, `.analyzeWeaknesses`, `.strongPatterns` and the
+  arithmetic rows `.halfUpPercent`, `.rateOf`, `.weaknessPriority`; `language.profile.history`
+  is `learningHistory` (which of a host's quest records a profile holds: finished ones
+  only) and `language.profile.build` is `learningProfile` over those rows and the
+  assessments. The weakness tables, labels, tones, quest categories and skill dimensions
+  are `language.contract`'s.
+- **Adaptation** (slice 2, the rest of `adaptation.ts`): `language.difficulty.signals`
+  and `.score` (the struggle the monitor reads), `language.npc.hash`, `.mode`,
+  `.modeDirective`, `.scaffoldingDirective`, `.frequencyDirective` and `.adaptation`
+  (what an NPC's chat request carries), `language.hints.behavior` and `.showsVocabHint`,
+  `language.word.isMastered` (core's `language/mastery`, which `adaptation.ts`
+  re-exports), `language.quests.filterByCefr` and `language.cefr.advancement`. A
+  default argument (`native = 'English'`, `scaffolding = 'none'`, a word's difficulty)
+  is core's when the member is absent or null.
+- **Pronunciation** (slice 2, `pronunciation.ts`): `language.pronunciation.normalize`,
+  `.wordSimilarity`, `.score`, `.grade`, `.wordFeedback`, `.xp`, `.hintPenalty` and
+  `.listenAndRepeat` (core reads a phrase's `targetPhrase` only), and `.encode`, core's
+  `language/phonetic-similarity.ts` `phoneticEncode`, the code the similarity blends.
+  The STT transcript and the TTS voice stay the host's.
 - **Refusals are values** in core's shape: `empty_word`, `unknown_encounter`
   (the book handed back unchanged), `no_target_language`, `empty_line`, `no_turns`,
   `nothing_in_reach`, `no_prompt`, `no_quiz`. Core states them as codes with no message,
   so none is added. **`[invalid-input]` only for what core dereferences unread**: a book
   core's reader cannot read, a state, list or string a kernel indexes, an enumeration
   core's types declare (a CEFR band, a grammar status, a word difficulty, a tuning's
-  kind). **`language.contract`** states the constants a binding must not hard-code.
+  kind; slice 2: a vocabulary sort, a card interaction, a translation display mode, a
+  scaffolding level, an NPC language mode, a word match), each checked as core's
+  declared TypeScript type reads it (slice 1's line). **`language.contract`** states the
+  constants a binding must not hard-code, every one imported from core.
 
 Evidence: `language_corpus` (`tests/language_corpus.cpp`) drives core's
-`conformance/language/{progress,save,prompts,hover,chat}.json` (76 cases at 45409ed:
-14, 12, 10, 20 and 20), copied byte for byte at the pin, each op composed from the
+`conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation}.json`
+(131 cases at 45409ed: 14, 12, 10, 20 and 20; slice 2's 24, 16 and 15), copied byte for byte at the pin, each op composed from the
 rows as core's reference runner (`systems-corpus.ts`, `runLanguageSystemsOp`) composes
 core's kernels, and needs each file's declared `ops` and `steps` to be exactly the ones
-it drives (0 undriven, every step driven). Its refusal probes show that core's eight
-refusals are values, that an unreadable book is `[invalid-input]` naming its key, that an
-unknown op or step fails its case and that an unknown row is the method table's error.
-`language_corpus_negative` perturbs every case's expectation. The same 76 cases also run
+it drives (0 undriven, every step driven). Its 14 refusal probes show that core's eight
+refusals are values, that an unreadable book, a vocabulary sort and a band outside core's
+types are `[invalid-input]` naming the member, that an unknown op or step fails its case
+and that an unknown row is the method table's error.
+`language_corpus_negative` perturbs every case's expectation. The same 131 cases also run
 on both case legs (and `corebridge_cases_parity`) as
-`vendor/core/cases/core-language-{progress,save,prompts,hover,chat}.json`, which
+`vendor/core/cases/core-language-<file>.json`, which
 `emit-bridge-cases.mjs` transcribes and `core_vendor` holds to the vendored corpora case by
 case (by name, by the calls core's runner makes for it, row for row and count for count,
-and with every answer of a run's steps stated in some expectation); `core_vendor_language_negative`
-proves the guard names five perturbations of those files.
+and with every answer of a run's steps stated in some expectation; for slice 2's files every
+member of every answer, except the input echoes the runner makes, which the emitter checks);
+`core_vendor_language_negative` proves the guard names seven perturbations of those files.
 Hand cases: `tests/cases/bridge-language.json` (every row; malformed books and the
 `[invalid-input]` boundary of every state; core's refusals as values; a game's own
 tunings), every expectation computed by core's own functions at the pin.
@@ -2204,7 +2266,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `corebridge_radiant`, `corebridge_radiant_none` | the radiant corpus through core's real radiant engine on the native Prolog engine |
 | `core_vendor` | every vendored file matches its recorded sha256 and the pin; `cases/core-ui-save-slots.json` carries core's `load_refusals` as `ui.loadRefusal` cases (with `--check --core`, exactly as many as core states at the pin); every `save.rules` case under `tests/cases/` states exactly the sorted extension keys the vendored bundle's registry answers (22 at 45409ed; with `--check --core`, also the keys of core's `extensionRegistry` in `src/save-extensions.ts` at the pin) |
 | `core_vendor_extension_keys_negative` | that extension-key check alone over `tests/save-extension-keys-negative/`: a dropped key, a reordered list, an unregistered key, a list loosened to any array and a dropped key inside `$subset`, each named, and the run failed |
-| `core_vendor_language_negative` | the language transcription guard alone, over five in-memory perturbations of `cases/core-language-*.json` (a dropped case, a dropped call, a first call changed, an answer expected nowhere, a call that is no language row): passes only when the guard names all five |
+| `core_vendor_language_negative` | the language transcription guard alone, over seven in-memory perturbations of `cases/core-language-*.json` (a dropped case, a dropped call, a first call changed, an answer expected nowhere, a call that is no language row, an answer weakened to a subset, an NPC's mode at one band dropped): passes only when the guard names all seven |
 | `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (132 of 147 cases at 72c658c; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (129 cases at 431c95b, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
@@ -2217,7 +2279,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `build_corpus`, `build_corpus_negative` | core's P10 headless build corpus (`conformance/build/headless.json`, 233 cases at 6cd4b4e) driven whole through the `build.*` rows by `tests/build_corpus.cpp` (credential markers expanded as core's runner does; 0 undriven; `build.contract` held to the file's contract; no credential repeated in a detail or a line; every out-dir refusal asked of the fold rows, with at least one case only the macOS fold catches and one only the Windows fold catches), and EVERY case's expectation perturbed and seen as wrong, with purposeful perturbations (a credential not caught or shown, a path escaping the build folder under either fold, an artefact outside it, a path outside the project) each refused |
 | `progression_corpus`, `progression_corpus_negative` | core's P9i progression corpora (`conformance/progression/{gamification,modules,skills,save}.json`, 87 cases at 45409ed with skills.json's `compose` and `kb` through the `skill.kb.*` rows, 73 at 6cd4b4e), its skill-tree corpora (`conformance/skills/*.json`, 52) and the `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json` (3) driven whole through the `progression.*` and `skill.*` rows by `tests/progression_corpus.cpp` (0 undriven per file; a gamification `run` one `progression.gamification.step` per step, every step kind driven; each progression file's catalog, ops and steps held to core's; a KB-backed `skill.unlock` per `can_unlock` case, with a no-KB control; refusal probes for an unknown op, step, area and row); the negative pass perturbs every expectation and needs every one refused |
 | `village_save_corpus`, `village_save_corpus_negative` | core's village-state save corpus (`conformance/saves/village-state.json`, 399 cases at 45409ed) driven whole through the `save.village.*` rows and `skill.kb.loadJson` by `tests/village_save_corpus.cpp`, each op as core's reference runner composes it (0 undriven; `save.village.contract` held to the file's contract; refusal probes for another version, an unregistered extension, another world and runtime, `[invalid-input]` and an unknown op or row); the negative perturbs every case |
-| `language_corpus`, `language_corpus_negative` | core's P9h language corpora `conformance/language/{progress,save,prompts,hover,chat}.json` (76 cases at 45409ed) driven whole through the `language.*` rows (and `props.interactables.examinePick` for the prompts' examine pick) by `tests/language_corpus.cpp`, each op as core's reference runner composes it (every op and step of each file driven, 0 undriven; each file's declared ops and steps held to the runner's; refusal probes for core's eight refusal values, an unreadable book's `[invalid-input]`, an unknown op, step or row); the negative perturbs every case |
+| `language_corpus`, `language_corpus_negative` | core's P9h language corpora `conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation}.json` (131 cases at 45409ed) driven whole through the `language.*` rows (and `props.interactables.examinePick` for the prompts' examine pick) by `tests/language_corpus.cpp`, each op as core's reference runner composes it (every op and step of each file driven, 0 undriven; each file's declared ops and steps held to the runner's; refusal probes for core's eight refusal values, the `[invalid-input]` of an unreadable book, a vocabulary sort and a band outside core's types, an unknown op, step or row); the negative perturbs every case |
 | `tutorial_progress_corpus`, `tutorial_progress_corpus_negative` | core's tutorial progress corpus driven whole through `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows' `save` op (23 cases, 0 undriven; contract tables held to `ui.tutorial.contract`, the runner lists to the steps it maps), and a wrong contract table, a wrong runner list, four wrong answers and an undrivable step seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's

@@ -868,20 +868,28 @@
   never import `save-file-game-state-corpus` (core's runner), which stays refused.
 - **The language rows (PL.native-language-rows, U118, U128; landed in SLICES) run core's
   `conformance/language/*.json` UNCHANGED**, copied as the language set
-  (`LANGUAGE_CORPUS_FILES`; slice 1: progress, save, prompts, hover, chat) and driven by
+  (`LANGUAGE_CORPUS_FILES`; slice 1: progress, save, prompts, hover, chat; slice 2: bank,
+  adaptation, pronunciation, 131 cases in all) and driven by
   `tests/language_corpus.cpp` as `language_corpus` (+ `_negative`), which composes each op
   as core's `systems-corpus.ts` composes its kernels and fails unless each file's declared
   `ops` and `steps` are exactly the ones it drives; `emit-bridge-cases.mjs` transcribes each
   file into `vendor/core/cases/core-language-<file>.json` and `core_vendor` holds each
   transcription to its corpus by name, by the calls core's runner makes (row for row,
-  count for count) and by every run answer being stated (`core_vendor_language_negative`
-  must see five perturbations named). `language.<area>.<fn>` is one core
+  count for count) and by every run answer being stated, for slice 2's files every
+  answer member but the runner's input echoes (`LANGUAGE_ANSWER_ECHOES`;
+  `core_vendor_language_negative` must see seven perturbations named). `language.<area>.<fn>` is one core
   kernel each, STATELESS (a JSON state in, core's result out; the host keeps the state), a
   refusal a value in core's shape (core's codes, no message: core states none). A book is
   read with core's own `readLanguageBlock` (the village save's reader), so an unreadable one
-  is `[invalid-input]` naming core's keys. A later slice adds its files to the set, its
-  steps to the runner's table and its rows; never import `language-learning/systems-corpus`
-  (core's runner). `chat-strip.json` belongs to PL.native-chat-cefr-rows.
+  is `[invalid-input]` naming core's keys. Slice 2 binds `bank-profile.ts`, the rest of
+  `adaptation.ts` and `pronunciation.ts` (with `language/phonetic-similarity.ts`'s
+  `phoneticEncode`); every constant they export is a `language.contract` member imported
+  from core, and an enumeration core declares only as a TypeScript type (a translation
+  display mode, a scaffolding level, an NPC mode, a word match) is checked at the boundary
+  as `[invalid-input]`. A later slice (3: objects, collection, writing; 4: quest feedback,
+  quest types) adds its files to the set, its steps to the runner's table and its rows;
+  never import `language-learning/systems-corpus` (core's runner). `chat-strip.json`
+  belongs to PL.native-chat-cefr-rows.
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

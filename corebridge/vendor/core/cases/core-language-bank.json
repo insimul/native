@@ -1,0 +1,5199 @@
+{
+ "area": "language-bank",
+ "description": "core's language corpus conformance/language/bank.json (P9h.core) through the language.* rows, each op as core's reference runner (src/language-learning/systems-corpus.ts, runLanguageSystemsOp) composes it.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/language/bank.json": "d992682d538b3be92c45b6c7178ba13e544b5659732d2fa2fe2b757b43aa006f"
+  }
+ },
+ "cases": [
+  {
+   "name": "language/bank cards: cards: by mastery (mastered first, stable within a band), categories in first-seen order, untagged as general",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.bank.categories",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "categories": [
+       "food",
+       "tools",
+       "general",
+       "places"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      },
+      "query": {}
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "mastered",
+        "label": "Mastered",
+        "tone": "quest",
+        "usage": "8/9",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "enclume",
+        "meaning": "anvil",
+        "category": "tools",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "1/12",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "5/7",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bonjour",
+        "meaning": "hello",
+        "category": "general",
+        "mastery": "learning",
+        "label": "Learning",
+        "tone": "warning",
+        "usage": "3/3",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "learning",
+        "label": "Learning",
+        "tone": "warning",
+        "usage": "4/6",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Auberge",
+        "meaning": "inn",
+        "category": "places",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "école",
+        "meaning": "school",
+        "category": "places",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank cards: cards: A-Z by code unit (capitals first, accents after)",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.bank.categories",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "categories": [
+       "food",
+       "tools",
+       "general",
+       "places"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      },
+      "query": {
+       "sort": "alpha"
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "Auberge",
+        "meaning": "inn",
+        "category": "places",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "5/7",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bonjour",
+        "meaning": "hello",
+        "category": "general",
+        "mastery": "learning",
+        "label": "Learning",
+        "tone": "warning",
+        "usage": "3/3",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "enclume",
+        "meaning": "anvil",
+        "category": "tools",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "1/12",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "learning",
+        "label": "Learning",
+        "tone": "warning",
+        "usage": "4/6",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "mastered",
+        "label": "Mastered",
+        "tone": "quest",
+        "usage": "8/9",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "école",
+        "meaning": "school",
+        "category": "places",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank cards: cards: most recent first, a tie keeps book order",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.bank.categories",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "categories": [
+       "food",
+       "tools",
+       "general",
+       "places"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      },
+      "query": {
+       "sort": "recent"
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "enclume",
+        "meaning": "anvil",
+        "category": "tools",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "1/12",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "learning",
+        "label": "Learning",
+        "tone": "warning",
+        "usage": "4/6",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bonjour",
+        "meaning": "hello",
+        "category": "general",
+        "mastery": "learning",
+        "label": "Learning",
+        "tone": "warning",
+        "usage": "3/3",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "mastered",
+        "label": "Mastered",
+        "tone": "quest",
+        "usage": "8/9",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "5/7",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Auberge",
+        "meaning": "inn",
+        "category": "places",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "école",
+        "meaning": "school",
+        "category": "places",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank cards: cards: most used (right uses plus encounters) first",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.bank.categories",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "categories": [
+       "food",
+       "tools",
+       "general",
+       "places"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      },
+      "query": {
+       "sort": "used"
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "mastered",
+        "label": "Mastered",
+        "tone": "quest",
+        "usage": "8/9",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "enclume",
+        "meaning": "anvil",
+        "category": "tools",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "1/12",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "5/7",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "learning",
+        "label": "Learning",
+        "tone": "warning",
+        "usage": "4/6",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bonjour",
+        "meaning": "hello",
+        "category": "general",
+        "mastery": "learning",
+        "label": "Learning",
+        "tone": "warning",
+        "usage": "3/3",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Auberge",
+        "meaning": "inn",
+        "category": "places",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "école",
+        "meaning": "school",
+        "category": "places",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank cards: cards: review puts the due words first (oldest first), marks them Review!",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.bank.categories",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "categories": [
+       "food",
+       "tools",
+       "general",
+       "places"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      },
+      "query": {
+       "sort": "review",
+       "due": [
+        "bière",
+        "marteau"
+       ]
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Review!",
+        "tone": "accent",
+        "usage": "5/7",
+        "due": true,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "learning",
+        "label": "Review!",
+        "tone": "accent",
+        "usage": "4/6",
+        "due": true,
+        "reveal": "inline"
+       },
+       {
+        "word": "école",
+        "meaning": "school",
+        "category": "places",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Auberge",
+        "meaning": "inn",
+        "category": "places",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "mastered",
+        "label": "Mastered",
+        "tone": "quest",
+        "usage": "8/9",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bonjour",
+        "meaning": "hello",
+        "category": "general",
+        "mastery": "learning",
+        "label": "Learning",
+        "tone": "warning",
+        "usage": "3/3",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "enclume",
+        "meaning": "anvil",
+        "category": "tools",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "1/12",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank cards: cards: one category, capped at one, revealed on hover at B1",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.bank.categories",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "categories": [
+       "food",
+       "tools",
+       "general",
+       "places"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      },
+      "query": {
+       "category": "tools",
+       "limit": 1,
+       "cefr": "B1"
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "enclume",
+        "meaning": "anvil",
+        "category": "tools",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "1/12",
+        "due": false,
+        "reveal": "hover"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank cards: cards: the general category; click at C1",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.bank.categories",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "categories": [
+       "food",
+       "tools",
+       "general",
+       "places"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "language": "fr",
+        "words": [
+         {
+          "word": "pain",
+          "language": "fr",
+          "meaning": "bread",
+          "category": "food",
+          "context": null,
+          "encountered": 9,
+          "correct": 8,
+          "incorrect": 0,
+          "halves": 17,
+          "last": 4000,
+          "types": {
+           "active_use": 8,
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "enclume",
+          "language": "fr",
+          "meaning": "anvil",
+          "category": "tools",
+          "context": null,
+          "encountered": 12,
+          "correct": 1,
+          "incorrect": 0,
+          "halves": 13,
+          "last": 9000,
+          "types": {
+           "active_use": 1,
+           "passive_read": 11
+          }
+         },
+         {
+          "word": "bière",
+          "language": "fr",
+          "meaning": "beer",
+          "category": "food",
+          "context": null,
+          "encountered": 7,
+          "correct": 5,
+          "incorrect": 1,
+          "halves": 11,
+          "last": 2000,
+          "types": {
+           "active_use": 5,
+           "passive_read": 1,
+           "quiz_incorrect": 1
+          }
+         },
+         {
+          "word": "bonjour",
+          "language": "fr",
+          "meaning": "hello",
+          "category": null,
+          "context": null,
+          "encountered": 3,
+          "correct": 3,
+          "incorrect": 0,
+          "halves": 6,
+          "last": 7000,
+          "types": {
+           "active_use": 3
+          }
+         },
+         {
+          "word": "Auberge",
+          "language": "fr",
+          "meaning": "inn",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 1000,
+          "types": {
+           "passive_read": 1
+          }
+         },
+         {
+          "word": "marteau",
+          "language": "fr",
+          "meaning": "hammer",
+          "category": "tools",
+          "context": null,
+          "encountered": 6,
+          "correct": 4,
+          "incorrect": 2,
+          "halves": 8,
+          "last": 9000,
+          "types": {
+           "active_use": 4,
+           "quiz_incorrect": 2
+          }
+         },
+         {
+          "word": "école",
+          "language": "fr",
+          "meaning": "school",
+          "category": "places",
+          "context": null,
+          "encountered": 1,
+          "correct": 0,
+          "incorrect": 0,
+          "halves": 1,
+          "last": 500,
+          "types": {
+           "passive_read": 1
+          }
+         }
+        ]
+       }
+      },
+      "query": {
+       "category": "general",
+       "cefr": "C1"
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "bonjour",
+        "meaning": "hello",
+        "category": "general",
+        "mastery": "learning",
+        "label": "Learning",
+        "tone": "warning",
+        "usage": "3/3",
+        "due": false,
+        "reveal": "click"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank cards: cards: an empty bank",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.bank.categories",
+     "args": {
+      "book": {
+       "$ref": "b0.book"
+      }
+     },
+     "expect": {
+      "categories": []
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "$ref": "b0.book"
+      },
+      "query": {
+       "limit": 0
+      }
+     },
+     "expect": {
+      "cards": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank reveal: reveal: inline always, hover on gaze or select, click on select",
+   "steps": [
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "inline",
+      "interaction": "idle"
+     },
+     "expect": {
+      "reveals": true
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "inline",
+      "interaction": "gaze"
+     },
+     "expect": {
+      "reveals": true
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "inline",
+      "interaction": "select"
+     },
+     "expect": {
+      "reveals": true
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "hover",
+      "interaction": "idle"
+     },
+     "expect": {
+      "reveals": false
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "hover",
+      "interaction": "gaze"
+     },
+     "expect": {
+      "reveals": true
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "hover",
+      "interaction": "select"
+     },
+     "expect": {
+      "reveals": true
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "click",
+      "interaction": "idle"
+     },
+     "expect": {
+      "reveals": false
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "click",
+      "interaction": "gaze"
+     },
+     "expect": {
+      "reveals": false
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "click",
+      "interaction": "select"
+     },
+     "expect": {
+      "reveals": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank grammar: grammar: the tab, weaknesses by priority, stats and strong patterns",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.bank.grammarTab",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "grammar": [
+         {
+          "pattern": "article agreement",
+          "correct": 2,
+          "incorrect": 4,
+          "mastered": false,
+          "examples": [
+           "la maison"
+          ],
+          "explanations": [
+           "maison is feminine"
+          ]
+         },
+         {
+          "pattern": "past tense",
+          "correct": 1,
+          "incorrect": 1,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "plural",
+          "correct": 5,
+          "incorrect": 5,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "gender",
+          "correct": 9,
+          "incorrect": 1,
+          "mastered": true,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "negation",
+          "correct": 6,
+          "incorrect": 1,
+          "mastered": true,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "word order",
+          "correct": 0,
+          "incorrect": 30,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "questions",
+          "correct": 5,
+          "incorrect": 0,
+          "mastered": true,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "subjunctive",
+          "correct": 0,
+          "incorrect": 0,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "pronouns",
+          "correct": 3,
+          "incorrect": 2,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "liaison",
+          "correct": 1,
+          "incorrect": 2,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "elision",
+          "correct": 8,
+          "incorrect": 2,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "tab": [
+       {
+        "pattern": "article agreement",
+        "correct": 2,
+        "incorrect": 4,
+        "attempts": 6,
+        "accuracy": 33,
+        "mastered": false,
+        "weak": true
+       },
+       {
+        "pattern": "past tense",
+        "correct": 1,
+        "incorrect": 1,
+        "attempts": 2,
+        "accuracy": 50,
+        "mastered": false,
+        "weak": false
+       },
+       {
+        "pattern": "plural",
+        "correct": 5,
+        "incorrect": 5,
+        "attempts": 10,
+        "accuracy": 50,
+        "mastered": false,
+        "weak": true
+       },
+       {
+        "pattern": "gender",
+        "correct": 9,
+        "incorrect": 1,
+        "attempts": 10,
+        "accuracy": 90,
+        "mastered": true,
+        "weak": false
+       },
+       {
+        "pattern": "negation",
+        "correct": 6,
+        "incorrect": 1,
+        "attempts": 7,
+        "accuracy": 86,
+        "mastered": true,
+        "weak": false
+       },
+       {
+        "pattern": "word order",
+        "correct": 0,
+        "incorrect": 30,
+        "attempts": 30,
+        "accuracy": 0,
+        "mastered": false,
+        "weak": true
+       },
+       {
+        "pattern": "questions",
+        "correct": 5,
+        "incorrect": 0,
+        "attempts": 5,
+        "accuracy": 100,
+        "mastered": true,
+        "weak": false
+       },
+       {
+        "pattern": "subjunctive",
+        "correct": 0,
+        "incorrect": 0,
+        "attempts": 0,
+        "accuracy": null,
+        "mastered": false,
+        "weak": false
+       },
+       {
+        "pattern": "pronouns",
+        "correct": 3,
+        "incorrect": 2,
+        "attempts": 5,
+        "accuracy": 60,
+        "mastered": false,
+        "weak": true
+       },
+       {
+        "pattern": "liaison",
+        "correct": 1,
+        "incorrect": 2,
+        "attempts": 3,
+        "accuracy": 33,
+        "mastered": false,
+        "weak": false
+       },
+       {
+        "pattern": "elision",
+        "correct": 8,
+        "incorrect": 2,
+        "attempts": 10,
+        "accuracy": 80,
+        "mastered": false,
+        "weak": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.analyzeWeaknesses",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "grammar": [
+         {
+          "pattern": "article agreement",
+          "correct": 2,
+          "incorrect": 4,
+          "mastered": false,
+          "examples": [
+           "la maison"
+          ],
+          "explanations": [
+           "maison is feminine"
+          ]
+         },
+         {
+          "pattern": "past tense",
+          "correct": 1,
+          "incorrect": 1,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "plural",
+          "correct": 5,
+          "incorrect": 5,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "gender",
+          "correct": 9,
+          "incorrect": 1,
+          "mastered": true,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "negation",
+          "correct": 6,
+          "incorrect": 1,
+          "mastered": true,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "word order",
+          "correct": 0,
+          "incorrect": 30,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "questions",
+          "correct": 5,
+          "incorrect": 0,
+          "mastered": true,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "subjunctive",
+          "correct": 0,
+          "incorrect": 0,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "pronouns",
+          "correct": 3,
+          "incorrect": 2,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "liaison",
+          "correct": 1,
+          "incorrect": 2,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "elision",
+          "correct": 8,
+          "incorrect": 2,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         }
+        ]
+       }
+      },
+      "options": {}
+     },
+     "expect": {
+      "weaknesses": [
+       {
+        "pattern": "word order",
+        "correct": 0,
+        "incorrect": 30,
+        "total": 30,
+        "ratePermille": 1000,
+        "explanations": [],
+        "examples": [],
+        "priority": 100000
+       },
+       {
+        "pattern": "article agreement",
+        "correct": 2,
+        "incorrect": 4,
+        "total": 6,
+        "ratePermille": 666,
+        "explanations": [
+         "maison is feminine"
+        ],
+        "examples": [
+         "la maison"
+        ],
+        "priority": 68752
+       },
+       {
+        "pattern": "plural",
+        "correct": 5,
+        "incorrect": 5,
+        "total": 10,
+        "ratePermille": 500,
+        "explanations": [],
+        "examples": [],
+        "priority": 66435
+       },
+       {
+        "pattern": "liaison",
+        "correct": 1,
+        "incorrect": 2,
+        "total": 3,
+        "ratePermille": 666,
+        "explanations": [],
+        "examples": [],
+        "priority": 58012
+       }
+      ],
+      "stats": [
+       {
+        "pattern": "article agreement",
+        "correct": 2,
+        "incorrect": 4,
+        "total": 6,
+        "ratePermille": 666,
+        "mastered": false
+       },
+       {
+        "pattern": "past tense",
+        "correct": 1,
+        "incorrect": 1,
+        "total": 2,
+        "ratePermille": 500,
+        "mastered": false
+       },
+       {
+        "pattern": "plural",
+        "correct": 5,
+        "incorrect": 5,
+        "total": 10,
+        "ratePermille": 500,
+        "mastered": false
+       },
+       {
+        "pattern": "gender",
+        "correct": 9,
+        "incorrect": 1,
+        "total": 10,
+        "ratePermille": 100,
+        "mastered": true
+       },
+       {
+        "pattern": "negation",
+        "correct": 6,
+        "incorrect": 1,
+        "total": 7,
+        "ratePermille": 142,
+        "mastered": true
+       },
+       {
+        "pattern": "word order",
+        "correct": 0,
+        "incorrect": 30,
+        "total": 30,
+        "ratePermille": 1000,
+        "mastered": false
+       },
+       {
+        "pattern": "questions",
+        "correct": 5,
+        "incorrect": 0,
+        "total": 5,
+        "ratePermille": 0,
+        "mastered": true
+       },
+       {
+        "pattern": "subjunctive",
+        "correct": 0,
+        "incorrect": 0,
+        "total": 0,
+        "ratePermille": 0,
+        "mastered": false
+       },
+       {
+        "pattern": "pronouns",
+        "correct": 3,
+        "incorrect": 2,
+        "total": 5,
+        "ratePermille": 400,
+        "mastered": false
+       },
+       {
+        "pattern": "liaison",
+        "correct": 1,
+        "incorrect": 2,
+        "total": 3,
+        "ratePermille": 666,
+        "mastered": false
+       },
+       {
+        "pattern": "elision",
+        "correct": 8,
+        "incorrect": 2,
+        "total": 10,
+        "ratePermille": 200,
+        "mastered": false
+       }
+      ],
+      "improved": []
+     }
+    },
+    {
+     "call": "language.bank.strongPatterns",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "grammar": [
+         {
+          "pattern": "article agreement",
+          "correct": 2,
+          "incorrect": 4,
+          "mastered": false,
+          "examples": [
+           "la maison"
+          ],
+          "explanations": [
+           "maison is feminine"
+          ]
+         },
+         {
+          "pattern": "past tense",
+          "correct": 1,
+          "incorrect": 1,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "plural",
+          "correct": 5,
+          "incorrect": 5,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "gender",
+          "correct": 9,
+          "incorrect": 1,
+          "mastered": true,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "negation",
+          "correct": 6,
+          "incorrect": 1,
+          "mastered": true,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "word order",
+          "correct": 0,
+          "incorrect": 30,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "questions",
+          "correct": 5,
+          "incorrect": 0,
+          "mastered": true,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "subjunctive",
+          "correct": 0,
+          "incorrect": 0,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "pronouns",
+          "correct": 3,
+          "incorrect": 2,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "liaison",
+          "correct": 1,
+          "incorrect": 2,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "elision",
+          "correct": 8,
+          "incorrect": 2,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         }
+        ]
+       }
+      },
+      "max": 5
+     },
+     "expect": {
+      "patterns": [
+       "questions",
+       "gender",
+       "negation"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank grammar: grammar: a stricter threshold, a cap of two, and improvement against a previous snapshot",
+   "steps": [
+    {
+     "call": "language.book.empty",
+     "args": {
+      "language": "fr"
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.bank.grammarTab",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "grammar": [
+         {
+          "pattern": "article agreement",
+          "correct": 2,
+          "incorrect": 4,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "plural",
+          "correct": 5,
+          "incorrect": 5,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "word order",
+          "correct": 0,
+          "incorrect": 30,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "gender",
+          "correct": 9,
+          "incorrect": 1,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "tab": [
+       {
+        "pattern": "article agreement",
+        "correct": 2,
+        "incorrect": 4,
+        "attempts": 6,
+        "accuracy": 33,
+        "mastered": false,
+        "weak": true
+       },
+       {
+        "pattern": "plural",
+        "correct": 5,
+        "incorrect": 5,
+        "attempts": 10,
+        "accuracy": 50,
+        "mastered": false,
+        "weak": true
+       },
+       {
+        "pattern": "word order",
+        "correct": 0,
+        "incorrect": 30,
+        "attempts": 30,
+        "accuracy": 0,
+        "mastered": false,
+        "weak": true
+       },
+       {
+        "pattern": "gender",
+        "correct": 9,
+        "incorrect": 1,
+        "attempts": 10,
+        "accuracy": 90,
+        "mastered": false,
+        "weak": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.analyzeWeaknesses",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "grammar": [
+         {
+          "pattern": "article agreement",
+          "correct": 2,
+          "incorrect": 4,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "plural",
+          "correct": 5,
+          "incorrect": 5,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "word order",
+          "correct": 0,
+          "incorrect": 30,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "gender",
+          "correct": 9,
+          "incorrect": 1,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         }
+        ]
+       }
+      },
+      "options": {
+       "minRatePermille": 600,
+       "minAttempts": 6,
+       "max": 2,
+       "previous": {
+        "plural": 650,
+        "word order": 1000,
+        "gender": 200,
+        "missing": 900
+       }
+      }
+     },
+     "expect": {
+      "weaknesses": [
+       {
+        "pattern": "word order",
+        "correct": 0,
+        "incorrect": 30,
+        "total": 30,
+        "ratePermille": 1000,
+        "explanations": [],
+        "examples": [],
+        "priority": 100000
+       },
+       {
+        "pattern": "article agreement",
+        "correct": 2,
+        "incorrect": 4,
+        "total": 6,
+        "ratePermille": 666,
+        "explanations": [],
+        "examples": [],
+        "priority": 68752
+       }
+      ],
+      "stats": [
+       {
+        "pattern": "article agreement",
+        "correct": 2,
+        "incorrect": 4,
+        "total": 6,
+        "ratePermille": 666,
+        "mastered": false
+       },
+       {
+        "pattern": "plural",
+        "correct": 5,
+        "incorrect": 5,
+        "total": 10,
+        "ratePermille": 500,
+        "mastered": false
+       },
+       {
+        "pattern": "word order",
+        "correct": 0,
+        "incorrect": 30,
+        "total": 30,
+        "ratePermille": 1000,
+        "mastered": false
+       },
+       {
+        "pattern": "gender",
+        "correct": 9,
+        "incorrect": 1,
+        "total": 10,
+        "ratePermille": 100,
+        "mastered": false
+       }
+      ],
+      "improved": [
+       "plural"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.strongPatterns",
+     "args": {
+      "book": {
+       "$ref": "b0.book",
+       "$set": {
+        "grammar": [
+         {
+          "pattern": "article agreement",
+          "correct": 2,
+          "incorrect": 4,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "plural",
+          "correct": 5,
+          "incorrect": 5,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "word order",
+          "correct": 0,
+          "incorrect": 30,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         },
+         {
+          "pattern": "gender",
+          "correct": 9,
+          "incorrect": 1,
+          "mastered": false,
+          "examples": [],
+          "explanations": []
+         }
+        ]
+       }
+      },
+      "max": 1
+     },
+     "expect": {
+      "patterns": [
+       "gender"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank tables: tables: the log2 tables weakness priority reads, in thousandths",
+   "steps": [
+    {
+     "call": "language.contract",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "weaknessVolumePermille": [
+        0,
+        0,
+        8000,
+        12679,
+        16000,
+        18575,
+        20679,
+        22458,
+        24000
+       ],
+       "weaknessConfidencePermille": [
+        0,
+        0,
+        6000,
+        9509,
+        12000,
+        13931,
+        15509,
+        16844,
+        18000,
+        19019,
+        19931,
+        20756,
+        21509,
+        22202,
+        22844,
+        23441,
+        24000,
+        24524
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank profile: profile: categories, skills, weak and strong, unexplored, totals",
+   "steps": [
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": [
+       {
+        "id": "q1",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAtMs": 1000,
+        "objectives": [
+         {
+          "completed": true
+         },
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "q2",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAtMs": 3000,
+        "objectives": [
+         {
+          "completed": true
+         },
+         {
+          "completed": false
+         },
+         {
+          "completed": false
+         }
+        ]
+       },
+       {
+        "id": "q3",
+        "questType": "grammar",
+        "status": "failed",
+        "completedAtMs": 2000,
+        "objectives": [
+         {
+          "completed": false
+         }
+        ]
+       },
+       {
+        "id": "q4",
+        "questType": "grammar",
+        "status": "abandoned",
+        "completedAtMs": 4000
+       },
+       {
+        "id": "q5",
+        "questType": "grammar",
+        "status": "completed",
+        "completedAtMs": null
+       },
+       {
+        "id": "q6",
+        "questType": "conversation",
+        "status": "active"
+       },
+       {
+        "id": "q7",
+        "questType": "",
+        "status": "completed"
+       },
+       {
+        "id": "q8",
+        "questType": "cultural",
+        "status": "completed",
+        "completedAtMs": 10
+       },
+       {
+        "id": "q9",
+        "questType": "cultural",
+        "status": "failed",
+        "completedAtMs": 20
+       },
+       {
+        "id": "n1",
+        "questType": "navigation",
+        "status": "completed",
+        "completedAtMs": 101
+       },
+       {
+        "id": "n2",
+        "questType": "navigation",
+        "status": "completed",
+        "completedAtMs": 102
+       },
+       {
+        "id": "n3",
+        "questType": "navigation",
+        "status": "completed",
+        "completedAtMs": 103
+       },
+       {
+        "id": "n4",
+        "questType": "navigation",
+        "status": "completed",
+        "completedAtMs": 104
+       },
+       {
+        "id": "n5",
+        "questType": "navigation",
+        "status": "failed",
+        "completedAtMs": 105
+       }
+      ],
+      "assessments": [
+       {
+        "cefrLevel": "A2",
+        "completedAtMs": 500,
+        "dimensionScores": {
+         "comprehension": 2,
+         "fluency": 4,
+         "vocabulary": 5,
+         "grammar": 1
+        }
+       },
+       {
+        "cefrLevel": "B1",
+        "completedAtMs": 900,
+        "dimensionScores": {
+         "comprehension": 3,
+         "fluency": 3,
+         "grammar": 2,
+         "pronunciation": 4
+        }
+       },
+       {
+        "cefrLevel": null,
+        "completedAtMs": 1500,
+        "dimensionScores": {}
+       }
+      ]
+     },
+     "expect": {
+      "cefrLevel": "B1",
+      "categories": [
+       {
+        "category": "vocabulary",
+        "attempted": 2,
+        "completed": 2,
+        "failed": 0,
+        "successPermille": 1000,
+        "objectivePermille": 666,
+        "lastAttemptedAtMs": 3000
+       },
+       {
+        "category": "grammar",
+        "attempted": 3,
+        "completed": 1,
+        "failed": 2,
+        "successPermille": 333,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 4000
+       },
+       {
+        "category": "conversation",
+        "attempted": 1,
+        "completed": 0,
+        "failed": 0,
+        "successPermille": 0,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 0
+       },
+       {
+        "category": "cultural",
+        "attempted": 2,
+        "completed": 1,
+        "failed": 1,
+        "successPermille": 500,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 20
+       },
+       {
+        "category": "navigation",
+        "attempted": 5,
+        "completed": 4,
+        "failed": 1,
+        "successPermille": 800,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 105
+       }
+      ],
+      "skills": {
+       "comprehension": 375,
+       "fluency": 625,
+       "vocabulary": 1000,
+       "grammar": 125,
+       "pronunciation": 750
+      },
+      "weakCategories": [
+       "grammar"
+      ],
+      "strongCategories": [
+       "vocabulary",
+       "navigation"
+      ],
+      "weakSkills": [
+       "comprehension",
+       "grammar"
+      ],
+      "strongSkills": [
+       "vocabulary",
+       "pronunciation"
+      ],
+      "unexplored": [
+       "translation_challenge",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "pronunciation",
+       "time_activity"
+      ],
+      "completed": 9,
+      "attempted": 13
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank profile: profile: nothing played",
+   "steps": [
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": [],
+      "assessments": []
+     },
+     "expect": {
+      "cefrLevel": null,
+      "categories": [],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [],
+      "strongCategories": [],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "vocabulary",
+       "grammar",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "pronunciation",
+       "time_activity"
+      ],
+      "completed": 0,
+      "attempted": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank history: history: an active, in-progress, available or unstatused quest is not in it",
+   "steps": [
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       {
+        "id": "a1",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAtMs": 1000,
+        "objectives": [
+         {
+          "id": "o1",
+          "type": "use_vocabulary",
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "a2",
+        "questType": "vocabulary",
+        "status": "active",
+        "objectives": [
+         {
+          "id": "o2",
+          "type": "use_vocabulary",
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "a3",
+        "questType": "conversation",
+        "status": "active"
+       },
+       {
+        "id": "a4",
+        "questType": "conversation",
+        "status": "in_progress"
+       },
+       {
+        "id": "a5",
+        "questType": "grammar",
+        "status": "available"
+       },
+       {
+        "id": "a6",
+        "questType": "grammar",
+        "status": "unavailable"
+       },
+       {
+        "id": "a7",
+        "questType": "grammar"
+       },
+       {
+        "id": "a8",
+        "questType": "grammar",
+        "status": "Completed"
+       }
+      ]
+     },
+     "expect": {
+      "history": [
+       {
+        "id": "a1",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAtMs": 1000,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       }
+      ]
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": {
+       "$ref": "b0.history"
+      },
+      "assessments": []
+     },
+     "expect": {
+      "cefrLevel": null,
+      "categories": [
+       {
+        "category": "vocabulary",
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "successPermille": 1000,
+        "objectivePermille": 1000,
+        "lastAttemptedAtMs": 1000
+       }
+      ],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [],
+      "strongCategories": [],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "grammar",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "pronunciation",
+       "time_activity"
+      ],
+      "completed": 1,
+      "attempted": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank history: history: a non-language quest is kept as its own category",
+   "steps": [
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       {
+        "id": "c1",
+        "questType": "combat",
+        "status": "completed",
+        "completedAtMs": 50,
+        "objectives": [
+         {
+          "completed": true
+         },
+         {
+          "completed": 1
+         }
+        ]
+       },
+       {
+        "id": "c2",
+        "questType": "combat",
+        "status": "completed",
+        "completedAtMs": 70,
+        "objectives": [
+         {
+          "completed": false
+         },
+         {
+          "completed": "yes"
+         },
+         {},
+         null
+        ]
+       },
+       {
+        "id": "v1",
+        "questType": "vocabulary",
+        "status": "failed",
+        "completedAtMs": 60,
+        "objectives": "not a list"
+       }
+      ]
+     },
+     "expect": {
+      "history": [
+       {
+        "id": "c1",
+        "questType": "combat",
+        "status": "completed",
+        "completedAtMs": 50,
+        "objectives": [
+         {
+          "completed": true
+         },
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "c2",
+        "questType": "combat",
+        "status": "completed",
+        "completedAtMs": 70,
+        "objectives": [
+         {
+          "completed": false
+         },
+         {
+          "completed": true
+         },
+         {
+          "completed": false
+         },
+         {
+          "completed": false
+         }
+        ]
+       },
+       {
+        "id": "v1",
+        "questType": "vocabulary",
+        "status": "failed",
+        "completedAtMs": 60,
+        "objectives": []
+       }
+      ]
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": {
+       "$ref": "b0.history"
+      },
+      "assessments": [
+       {
+        "cefrLevel": "A1",
+        "completedAtMs": 10,
+        "dimensionScores": {
+         "vocabulary": 5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "cefrLevel": "A1",
+      "categories": [
+       {
+        "category": "combat",
+        "attempted": 2,
+        "completed": 2,
+        "failed": 0,
+        "successPermille": 1000,
+        "objectivePermille": 625,
+        "lastAttemptedAtMs": 70
+       },
+       {
+        "category": "vocabulary",
+        "attempted": 1,
+        "completed": 0,
+        "failed": 1,
+        "successPermille": 0,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 60
+       }
+      ],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 1000,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [],
+      "strongCategories": [
+       "combat"
+      ],
+      "weakSkills": [],
+      "strongSkills": [
+       "vocabulary"
+      ],
+      "unexplored": [
+       "conversation",
+       "grammar",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "pronunciation",
+       "time_activity"
+      ],
+      "completed": 2,
+      "attempted": 3
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank history: history: a record with no questType counts in the totals and in no category",
+   "steps": [
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       {
+        "id": "t1",
+        "status": "completed",
+        "completedAtMs": 5
+       },
+       {
+        "id": "t2",
+        "questType": "",
+        "status": "failed",
+        "completedAtMs": 1.5
+       },
+       {
+        "id": "t3",
+        "questType": null,
+        "status": "abandoned",
+        "completedAtMs": "2026-01-01T00:00:00Z"
+       },
+       {
+        "id": 7,
+        "questType": 7,
+        "status": "completed"
+       },
+       {
+        "id": "t5",
+        "questType": "grammar",
+        "status": "completed",
+        "completedAtMs": 9
+       }
+      ]
+     },
+     "expect": {
+      "history": [
+       {
+        "id": "t1",
+        "questType": null,
+        "status": "completed",
+        "completedAtMs": 5,
+        "objectives": []
+       },
+       {
+        "id": "t2",
+        "questType": null,
+        "status": "failed",
+        "completedAtMs": null,
+        "objectives": []
+       },
+       {
+        "id": "t3",
+        "questType": null,
+        "status": "abandoned",
+        "completedAtMs": null,
+        "objectives": []
+       },
+       {
+        "id": "",
+        "questType": null,
+        "status": "completed",
+        "completedAtMs": null,
+        "objectives": []
+       },
+       {
+        "id": "t5",
+        "questType": "grammar",
+        "status": "completed",
+        "completedAtMs": 9,
+        "objectives": []
+       }
+      ]
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": {
+       "$ref": "b0.history"
+      },
+      "assessments": []
+     },
+     "expect": {
+      "cefrLevel": null,
+      "categories": [
+       {
+        "category": "grammar",
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "successPermille": 1000,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 9
+       }
+      ],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [],
+      "strongCategories": [],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "vocabulary",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "pronunciation",
+       "time_activity"
+      ],
+      "completed": 3,
+      "attempted": 5
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank history: history: repeated attempts are the records the host holds",
+   "steps": [
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       {
+        "id": "r1",
+        "questType": "pronunciation",
+        "status": "completed",
+        "attemptCount": 3,
+        "completedAtMs": 400
+       },
+       {
+        "id": "r2",
+        "questType": "navigation",
+        "status": "failed",
+        "attemptCount": 1,
+        "completedAtMs": 100
+       },
+       {
+        "id": "r2",
+        "questType": "navigation",
+        "status": "completed",
+        "attemptCount": 2,
+        "completedAtMs": 300
+       },
+       {
+        "id": "r3",
+        "questType": "navigation",
+        "status": "abandoned",
+        "completedAtMs": 200
+       }
+      ]
+     },
+     "expect": {
+      "history": [
+       {
+        "id": "r1",
+        "questType": "pronunciation",
+        "status": "completed",
+        "completedAtMs": 400,
+        "objectives": []
+       },
+       {
+        "id": "r2",
+        "questType": "navigation",
+        "status": "failed",
+        "completedAtMs": 100,
+        "objectives": []
+       },
+       {
+        "id": "r2",
+        "questType": "navigation",
+        "status": "completed",
+        "completedAtMs": 300,
+        "objectives": []
+       },
+       {
+        "id": "r3",
+        "questType": "navigation",
+        "status": "abandoned",
+        "completedAtMs": 200,
+        "objectives": []
+       }
+      ]
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": {
+       "$ref": "b0.history"
+      },
+      "assessments": []
+     },
+     "expect": {
+      "cefrLevel": null,
+      "categories": [
+       {
+        "category": "pronunciation",
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "successPermille": 1000,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 400
+       },
+       {
+        "category": "navigation",
+        "attempted": 3,
+        "completed": 1,
+        "failed": 2,
+        "successPermille": 333,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 300
+       }
+      ],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [
+       "navigation"
+      ],
+      "strongCategories": [],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "vocabulary",
+       "grammar",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "time_activity"
+      ],
+      "completed": 2,
+      "attempted": 4
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank history: history: abandoned and failed count the same (abandoned)",
+   "steps": [
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       {
+        "id": "g1",
+        "questType": "grammar",
+        "status": "completed",
+        "completedAtMs": 10,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "g2",
+        "questType": "grammar",
+        "status": "abandoned",
+        "completedAtMs": 20,
+        "objectives": [
+         {
+          "completed": false
+         },
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "g3",
+        "questType": "grammar",
+        "status": "abandoned",
+        "completedAtMs": 30
+       }
+      ]
+     },
+     "expect": {
+      "history": [
+       {
+        "id": "g1",
+        "questType": "grammar",
+        "status": "completed",
+        "completedAtMs": 10,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "g2",
+        "questType": "grammar",
+        "status": "abandoned",
+        "completedAtMs": 20,
+        "objectives": [
+         {
+          "completed": false
+         },
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "g3",
+        "questType": "grammar",
+        "status": "abandoned",
+        "completedAtMs": 30,
+        "objectives": []
+       }
+      ]
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": {
+       "$ref": "b0.history"
+      },
+      "assessments": []
+     },
+     "expect": {
+      "cefrLevel": null,
+      "categories": [
+       {
+        "category": "grammar",
+        "attempted": 3,
+        "completed": 1,
+        "failed": 2,
+        "successPermille": 333,
+        "objectivePermille": 750,
+        "lastAttemptedAtMs": 30
+       }
+      ],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [
+       "grammar"
+      ],
+      "strongCategories": [],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "vocabulary",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "pronunciation",
+       "time_activity"
+      ],
+      "completed": 1,
+      "attempted": 3
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank history: history: abandoned and failed count the same (failed)",
+   "steps": [
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       {
+        "id": "g1",
+        "questType": "grammar",
+        "status": "completed",
+        "completedAtMs": 10,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "g2",
+        "questType": "grammar",
+        "status": "failed",
+        "completedAtMs": 20,
+        "objectives": [
+         {
+          "completed": false
+         },
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "g3",
+        "questType": "grammar",
+        "status": "failed",
+        "completedAtMs": 30
+       }
+      ]
+     },
+     "expect": {
+      "history": [
+       {
+        "id": "g1",
+        "questType": "grammar",
+        "status": "completed",
+        "completedAtMs": 10,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "g2",
+        "questType": "grammar",
+        "status": "failed",
+        "completedAtMs": 20,
+        "objectives": [
+         {
+          "completed": false
+         },
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "g3",
+        "questType": "grammar",
+        "status": "failed",
+        "completedAtMs": 30,
+        "objectives": []
+       }
+      ]
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": {
+       "$ref": "b0.history"
+      },
+      "assessments": []
+     },
+     "expect": {
+      "cefrLevel": null,
+      "categories": [
+       {
+        "category": "grammar",
+        "attempted": 3,
+        "completed": 1,
+        "failed": 2,
+        "successPermille": 333,
+        "objectivePermille": 750,
+        "lastAttemptedAtMs": 30
+       }
+      ],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [
+       "grammar"
+      ],
+      "strongCategories": [],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "vocabulary",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "pronunciation",
+       "time_activity"
+      ],
+      "completed": 1,
+      "attempted": 3
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank history: history: completedAtMs is the record's own integer ms; completedAt is never read",
+   "steps": [
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       {
+        "id": "k1",
+        "questType": "vocabulary",
+        "status": "completed",
+        "objectives": [
+         {
+          "id": "o1",
+          "type": "use_vocabulary",
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "k2",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAt": "2026-11-16T10:00:00.000Z"
+       },
+       {
+        "id": "k3",
+        "questType": "vocabulary",
+        "status": "failed",
+        "completedAt": 1794823200000
+       },
+       {
+        "id": "k4",
+        "questType": "cultural",
+        "status": "completed",
+        "completedAt": "2026-11-16T10:00:00.000Z",
+        "completedAtMs": 1794823200000
+       },
+       {
+        "id": "k5",
+        "questType": "cultural",
+        "status": "completed",
+        "completedAt": 99,
+        "completedAtMs": "2026-11-16T10:00:00.000Z"
+       },
+       {
+        "id": "k6",
+        "questType": "grammar",
+        "status": "completed",
+        "completedAtMs": 0
+       },
+       {
+        "id": "k7",
+        "questType": "grammar",
+        "status": "failed",
+        "completedAtMs": -5
+       },
+       {
+        "id": "k8",
+        "questType": "grammar",
+        "status": "abandoned",
+        "completedAtMs": true
+       }
+      ]
+     },
+     "expect": {
+      "history": [
+       {
+        "id": "k1",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAtMs": null,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "k2",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAtMs": null,
+        "objectives": []
+       },
+       {
+        "id": "k3",
+        "questType": "vocabulary",
+        "status": "failed",
+        "completedAtMs": null,
+        "objectives": []
+       },
+       {
+        "id": "k4",
+        "questType": "cultural",
+        "status": "completed",
+        "completedAtMs": 1794823200000,
+        "objectives": []
+       },
+       {
+        "id": "k5",
+        "questType": "cultural",
+        "status": "completed",
+        "completedAtMs": null,
+        "objectives": []
+       },
+       {
+        "id": "k6",
+        "questType": "grammar",
+        "status": "completed",
+        "completedAtMs": 0,
+        "objectives": []
+       },
+       {
+        "id": "k7",
+        "questType": "grammar",
+        "status": "failed",
+        "completedAtMs": -5,
+        "objectives": []
+       },
+       {
+        "id": "k8",
+        "questType": "grammar",
+        "status": "abandoned",
+        "completedAtMs": null,
+        "objectives": []
+       }
+      ]
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": {
+       "$ref": "b0.history"
+      },
+      "assessments": []
+     },
+     "expect": {
+      "cefrLevel": null,
+      "categories": [
+       {
+        "category": "vocabulary",
+        "attempted": 3,
+        "completed": 2,
+        "failed": 1,
+        "successPermille": 666,
+        "objectivePermille": 1000,
+        "lastAttemptedAtMs": 0
+       },
+       {
+        "category": "cultural",
+        "attempted": 2,
+        "completed": 2,
+        "failed": 0,
+        "successPermille": 1000,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 1794823200000
+       },
+       {
+        "category": "grammar",
+        "attempted": 3,
+        "completed": 1,
+        "failed": 2,
+        "successPermille": 333,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 0
+       }
+      ],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [
+       "grammar"
+      ],
+      "strongCategories": [
+       "cultural"
+      ],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "translation_challenge",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "pronunciation",
+       "time_activity"
+      ],
+      "completed": 5,
+      "attempted": 8
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank history: history: a quest's difficulty is not read (failed quests beginner)",
+   "steps": [
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       {
+        "id": "d1",
+        "questType": "pronunciation",
+        "status": "completed",
+        "difficulty": "advanced",
+        "completedAtMs": 10,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "d2",
+        "questType": "pronunciation",
+        "status": "completed",
+        "difficulty": "intermediate",
+        "completedAtMs": 20,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "d3",
+        "questType": "pronunciation",
+        "status": "failed",
+        "difficulty": "beginner",
+        "completedAtMs": 30,
+        "objectives": [
+         {
+          "completed": false
+         }
+        ]
+       },
+       {
+        "id": "d4",
+        "questType": "listening_comprehension",
+        "status": "failed",
+        "difficulty": "beginner",
+        "completedAtMs": 40
+       },
+       {
+        "id": "d5",
+        "questType": "listening_comprehension",
+        "status": "failed",
+        "difficulty": "beginner",
+        "completedAtMs": 50
+       },
+       {
+        "id": "d6",
+        "questType": "listening_comprehension",
+        "status": "completed",
+        "difficulty": "advanced",
+        "completedAtMs": 60
+       }
+      ]
+     },
+     "expect": {
+      "history": [
+       {
+        "id": "d1",
+        "questType": "pronunciation",
+        "status": "completed",
+        "completedAtMs": 10,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "d2",
+        "questType": "pronunciation",
+        "status": "completed",
+        "completedAtMs": 20,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "d3",
+        "questType": "pronunciation",
+        "status": "failed",
+        "completedAtMs": 30,
+        "objectives": [
+         {
+          "completed": false
+         }
+        ]
+       },
+       {
+        "id": "d4",
+        "questType": "listening_comprehension",
+        "status": "failed",
+        "completedAtMs": 40,
+        "objectives": []
+       },
+       {
+        "id": "d5",
+        "questType": "listening_comprehension",
+        "status": "failed",
+        "completedAtMs": 50,
+        "objectives": []
+       },
+       {
+        "id": "d6",
+        "questType": "listening_comprehension",
+        "status": "completed",
+        "completedAtMs": 60,
+        "objectives": []
+       }
+      ]
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": {
+       "$ref": "b0.history"
+      },
+      "assessments": []
+     },
+     "expect": {
+      "cefrLevel": null,
+      "categories": [
+       {
+        "category": "pronunciation",
+        "attempted": 3,
+        "completed": 2,
+        "failed": 1,
+        "successPermille": 666,
+        "objectivePermille": 666,
+        "lastAttemptedAtMs": 30
+       },
+       {
+        "category": "listening_comprehension",
+        "attempted": 3,
+        "completed": 1,
+        "failed": 2,
+        "successPermille": 333,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 60
+       }
+      ],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [
+       "listening_comprehension"
+      ],
+      "strongCategories": [],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "vocabulary",
+       "grammar",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "navigation",
+       "time_activity"
+      ],
+      "completed": 3,
+      "attempted": 6
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank history: history: a quest's difficulty is not read (failed quests advanced)",
+   "steps": [
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       {
+        "id": "d1",
+        "questType": "pronunciation",
+        "status": "completed",
+        "difficulty": "beginner",
+        "completedAtMs": 10,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "d2",
+        "questType": "pronunciation",
+        "status": "completed",
+        "completedAtMs": 20,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "d3",
+        "questType": "pronunciation",
+        "status": "failed",
+        "difficulty": "advanced",
+        "completedAtMs": 30,
+        "objectives": [
+         {
+          "completed": false
+         }
+        ]
+       },
+       {
+        "id": "d4",
+        "questType": "listening_comprehension",
+        "status": "failed",
+        "difficulty": "advanced",
+        "completedAtMs": 40
+       },
+       {
+        "id": "d5",
+        "questType": "listening_comprehension",
+        "status": "failed",
+        "difficulty": "advanced",
+        "completedAtMs": 50
+       },
+       {
+        "id": "d6",
+        "questType": "listening_comprehension",
+        "status": "completed",
+        "difficulty": "beginner",
+        "completedAtMs": 60
+       }
+      ]
+     },
+     "expect": {
+      "history": [
+       {
+        "id": "d1",
+        "questType": "pronunciation",
+        "status": "completed",
+        "completedAtMs": 10,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "d2",
+        "questType": "pronunciation",
+        "status": "completed",
+        "completedAtMs": 20,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "d3",
+        "questType": "pronunciation",
+        "status": "failed",
+        "completedAtMs": 30,
+        "objectives": [
+         {
+          "completed": false
+         }
+        ]
+       },
+       {
+        "id": "d4",
+        "questType": "listening_comprehension",
+        "status": "failed",
+        "completedAtMs": 40,
+        "objectives": []
+       },
+       {
+        "id": "d5",
+        "questType": "listening_comprehension",
+        "status": "failed",
+        "completedAtMs": 50,
+        "objectives": []
+       },
+       {
+        "id": "d6",
+        "questType": "listening_comprehension",
+        "status": "completed",
+        "completedAtMs": 60,
+        "objectives": []
+       }
+      ]
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": {
+       "$ref": "b0.history"
+      },
+      "assessments": []
+     },
+     "expect": {
+      "cefrLevel": null,
+      "categories": [
+       {
+        "category": "pronunciation",
+        "attempted": 3,
+        "completed": 2,
+        "failed": 1,
+        "successPermille": 666,
+        "objectivePermille": 666,
+        "lastAttemptedAtMs": 30
+       },
+       {
+        "category": "listening_comprehension",
+        "attempted": 3,
+        "completed": 1,
+        "failed": 2,
+        "successPermille": 333,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 60
+       }
+      ],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [
+       "listening_comprehension"
+      ],
+      "strongCategories": [],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "vocabulary",
+       "grammar",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "navigation",
+       "time_activity"
+      ],
+      "completed": 3,
+      "attempted": 6
+     }
+    }
+   ]
+  },
+  {
+   "name": "language/bank history: history: records straight from core's quest lifecycle carry the completedAtMs their completing step stamped, so lastAttemptedAtMs is that time, not 0",
+   "steps": [
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       {
+        "id": "l1",
+        "questType": "vocabulary",
+        "difficulty": "advanced",
+        "status": "completed",
+        "objectives": [
+         {
+          "id": "o1",
+          "type": "use_vocabulary",
+          "requiredCount": 1,
+          "questId": "l1",
+          "description": "",
+          "completed": true,
+          "wordsUsed": [
+           "pain"
+          ],
+          "currentCount": 1
+         }
+        ],
+        "completedAtMs": 1794823200000
+       },
+       {
+        "id": "l2",
+        "questType": "vocabulary",
+        "difficulty": "beginner",
+        "status": "completed",
+        "objectives": [
+         {
+          "id": "o1",
+          "type": "talk_to_npc",
+          "npcId": "npc_ada",
+          "questId": "l2",
+          "description": "",
+          "completed": true,
+          "currentCount": 1
+         }
+        ],
+        "completedAtMs": 1794823260000
+       },
+       {
+        "id": "l3",
+        "questType": "grammar",
+        "status": "active",
+        "objectives": [
+         {
+          "id": "o1",
+          "type": "grammar",
+          "requiredCount": 2,
+          "questId": "l3",
+          "description": "",
+          "completed": false,
+          "currentCount": 1
+         }
+        ]
+       },
+       {
+        "id": "l4",
+        "questType": "pronunciation",
+        "status": "completed",
+        "objectives": [
+         {
+          "id": "o1",
+          "type": "pronunciation_check",
+          "requiredCount": 1,
+          "questId": "l4",
+          "description": "",
+          "completed": true,
+          "pronunciationScores": [
+           90
+          ],
+          "pronunciationBestScore": 90,
+          "attempts": 1,
+          "currentCount": 1,
+          "totalScore": 90
+         }
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "history": [
+       {
+        "id": "l1",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAtMs": 1794823200000,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "l2",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAtMs": 1794823260000,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "l4",
+        "questType": "pronunciation",
+        "status": "completed",
+        "completedAtMs": null,
+        "objectives": [
+         {
+          "completed": true
+         }
+        ]
+       }
+      ]
+     },
+     "bind": "b0"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": {
+       "$ref": "b0.history"
+      },
+      "assessments": []
+     },
+     "expect": {
+      "cefrLevel": null,
+      "categories": [
+       {
+        "category": "vocabulary",
+        "attempted": 2,
+        "completed": 2,
+        "failed": 0,
+        "successPermille": 1000,
+        "objectivePermille": 1000,
+        "lastAttemptedAtMs": 1794823260000
+       },
+       {
+        "category": "pronunciation",
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "successPermille": 1000,
+        "objectivePermille": 1000,
+        "lastAttemptedAtMs": 0
+       }
+      ],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [],
+      "strongCategories": [
+       "vocabulary"
+      ],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "grammar",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "time_activity"
+      ],
+      "completed": 3,
+      "attempted": 3
+     }
+    }
+   ]
+  }
+ ]
+}

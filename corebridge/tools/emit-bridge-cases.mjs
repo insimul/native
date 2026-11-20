@@ -668,8 +668,8 @@ function quests(root, coreCommit) {
 // last answered that state (the state has not changed since). Every value expected is
 // the corpus's own.
 
-/** The corpus files the language rows answer (slice 1), by their `file` key. */
-export const LANGUAGE_CASE_FILES = ['progress', 'save', 'prompts', 'hover', 'chat'];
+/** The corpus files the language rows answer (slice 1, then slice 2), by their `file` key. */
+export const LANGUAGE_CASE_FILES = ['progress', 'save', 'prompts', 'hover', 'chat', 'bank', 'adaptation', 'pronunciation'];
 
 class LanguageSteps {
 	constructor(where) {
@@ -1159,7 +1159,179 @@ function langChat(S, c) {
 	throw new Error(`emit-bridge-cases: ${S.where}: chat op ${c.op} has no transcription`);
 }
 
-const LANGUAGE_TRANSCRIBERS = { progress: langProgress, save: langSave, prompts: langPrompts, hover: langHover, chat: langChat };
+// Slice 2: the bank and the learning profile, the rest of adaptation, listen and repeat.
+// Where the runner echoes an input member into its answer (a mode's id, a check's level,
+// a word, a score), the emitter checks the echo against the input; core_vendor's
+// LANGUAGE_ANSWER_ECHOES names those members, and holds every other member of every
+// answer to being stated in some expectation.
+
+const echoes = (S, x, from, keys) => {
+	for (const k of keys) langCheck(JSON.stringify(x[k]) === JSON.stringify(from[k]), S.where, `${k} is not echoed from the input`);
+};
+
+function langBank(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	switch (c.op) {
+		case 'cards': {
+			const book = langBook(S, i.book);
+			S.call('language.bank.categories', { book: S.cur(book) }, { categories: e.categories });
+			S.call('language.bank.cards', { book: S.cur(book), query: i.query ?? {} }, { cards: e.cards });
+			return;
+		}
+		case 'reveal': {
+			const modes = ['inline', 'hover', 'click'];
+			langCheck(e.length === modes.length, S.where, 'one answer per display mode');
+			modes.forEach((mode, k) => {
+				langCheck(e[k].mode === mode, S.where, `answer ${k} is not mode ${mode}`);
+				for (const interaction of ['idle', 'gaze', 'select']) S.call('language.bank.revealsMeaning', { reveal: mode, interaction }, { reveals: e[k][interaction] });
+			});
+			return;
+		}
+		case 'grammar': {
+			const book = langBook(S, i.book);
+			S.call('language.bank.grammarTab', { book: S.cur(book) }, { tab: e.tab });
+			S.call('language.bank.analyzeWeaknesses', { book: S.cur(book), options: i.options ?? {} }, e.analysis);
+			S.call('language.bank.strongPatterns', typeof i.max === 'number' ? { book: S.cur(book), max: i.max } : { book: S.cur(book) }, { patterns: e.strong });
+			return;
+		}
+		case 'tables':
+			S.call('language.contract', {}, sub({ weaknessVolumePermille: e.volume, weaknessConfidencePermille: e.confidence }));
+			return;
+		case 'profile':
+			S.call('language.profile.build', { history: i.history ?? [], assessments: i.assessments ?? [] }, e);
+			return;
+		case 'history': {
+			const h = S.call('language.profile.history', { quests: i.quests ?? [] }, { history: e.history });
+			S.call('language.profile.build', { history: S.ref(h, 'history'), assessments: i.assessments ?? [] }, e.profile);
+			return;
+		}
+	}
+	throw new Error(`emit-bridge-cases: ${S.where}: bank op ${c.op} has no transcription`);
+}
+
+function langAdaptation(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	switch (c.op) {
+		case 'struggle':
+			langCheck(e.length === i.turns.length, S.where, 'one answer per turn');
+			i.turns.forEach((metrics, k) => {
+				S.call('language.difficulty.signals', { metrics }, { signals: e[k].signals });
+				S.call('language.difficulty.score', { metrics }, { score: e[k].score });
+			});
+			return;
+		case 'difficulty': {
+			let state = slotOf(S.call('language.difficulty.initial', {}), 'state');
+			langCheck(e.length === i.steps.length, S.where, 'one answer per step');
+			i.steps.forEach((st, k) => {
+				const x = e[k];
+				langCheck(x.do === st.do && st.do === 'turn', S.where, `step ${k} answers ${x.do}, not ${st.do}`);
+				const t = S.call('language.difficulty.recordTurn', { state: S.cur(state), metrics: st.metrics });
+				S.want(t, ['struggle'], x.struggle);
+				S.want(t, ['adjustment'], x.adjustment);
+				for (const key of ['level', 'high', 'low', 'turns', 'scaffolded', 'stretched']) S.want(t, ['state', key], x[key]);
+				state = slotOf(t, 'state');
+			});
+			return;
+		}
+		case 'mode': {
+			const bands = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+			langCheck(e.length === i.npcs.length, S.where, 'one answer per NPC');
+			i.npcs.forEach((id, k) => {
+				const x = e[k];
+				langCheck(x.id === id && x.roll === x.hash % 100, S.where, `NPC ${k}: its id or roll (hash mod 100) is not the runner's`);
+				langCheck(JSON.stringify(Object.keys(x.modes)) === JSON.stringify(bands), S.where, `NPC ${k}: modes are not the six bands`);
+				S.call('language.npc.hash', { id }, { hash: x.hash });
+				for (const level of bands) S.call('language.npc.mode', { level, npcId: id }, { mode: x.modes[level] });
+			});
+			return;
+		}
+		case 'npc': {
+			const args = { level: i.level, npcId: i.npcId, target: i.target };
+			if (typeof i.native === 'string') args.native = i.native;
+			args.scaffolding = i.scaffolding ?? 'none';
+			S.call('language.npc.adaptation', args, e);
+			return;
+		}
+		case 'hint':
+			langCheck(e.length === i.checks.length, S.where, 'one answer per check');
+			i.checks.forEach((ch, k) => {
+				echoes(S, e[k], ch, Object.keys(ch));
+				langCheck(JSON.stringify(Object.keys(e[k])) === JSON.stringify([...Object.keys(ch), 'show']), S.where, `check ${k}: the answer is not the check and its show`);
+				const args = { level: ch.level, index: ch.index };
+				if (ch.difficulty !== undefined) args.difficulty = ch.difficulty;
+				args.mastered = ch.mastered === true;
+				S.call('language.hints.showsVocabHint', args, { show: e[k].show });
+			});
+			return;
+		case 'quests':
+			S.call('language.quests.filterByCefr', { quests: i.quests ?? [], level: i.level }, { shown: e.shown });
+			return;
+		case 'advance':
+			langCheck(e.length === i.snapshots.length, S.where, 'one answer per snapshot');
+			i.snapshots.forEach((snapshot, k) => S.call('language.cefr.advancement', { snapshot }, e[k]));
+			return;
+	}
+	throw new Error(`emit-bridge-cases: ${S.where}: adaptation op ${c.op} has no transcription`);
+}
+
+function langPronunciation(S, c) {
+	const i = c.input;
+	const e = c.expected;
+	switch (c.op) {
+		case 'encode':
+			langCheck(e.length === i.words.length, S.where, 'one answer per word');
+			i.words.forEach((word, k) => {
+				langCheck(e[k].word === word, S.where, `word ${k} is not echoed`);
+				S.call('language.pronunciation.encode', { word }, { code: e[k].code });
+			});
+			return;
+		case 'similarity':
+			langCheck(e.length === i.pairs.length, S.where, 'one answer per pair');
+			i.pairs.forEach(([expected, spoken], k) => {
+				langCheck(e[k].expected === expected && e[k].spoken === spoken, S.where, `pair ${k} is not echoed`);
+				S.call('language.pronunciation.wordSimilarity', { expected, spoken }, withoutKeys(e[k], 'expected', 'spoken'));
+			});
+			return;
+		case 'score':
+			S.call('language.pronunciation.normalize', { text: i.spoken }, { normalized: e.normalized });
+			S.call('language.pronunciation.score', { expected: i.expected, spoken: i.spoken }, withoutKeys(e, 'normalized'));
+			return;
+		case 'repeat': {
+			const args = { phrase: i.phrase, spoken: i.spoken };
+			if (typeof i.questId === 'string') args.questId = i.questId;
+			S.call('language.pronunciation.listenAndRepeat', args, e);
+			return;
+		}
+		case 'xp':
+			langCheck(e.length === i.scores.length, S.where, 'one answer per score');
+			i.scores.forEach((score, k) => {
+				langCheck(e[k].score === score, S.where, `score ${k} is not echoed`);
+				S.call('language.pronunciation.xp', { score }, { xp: e[k].xp });
+			});
+			return;
+		case 'hints':
+			langCheck(e.length === i.revealed.length, S.where, 'one answer per revealed count');
+			i.revealed.forEach((revealed, k) => {
+				langCheck(e[k].revealed === revealed, S.where, `revealed ${k} is not echoed`);
+				S.call('language.pronunciation.hintPenalty', { score: i.score, penalties: i.penalties, revealed }, { score: e[k].score });
+			});
+			return;
+	}
+	throw new Error(`emit-bridge-cases: ${S.where}: pronunciation op ${c.op} has no transcription`);
+}
+
+const LANGUAGE_TRANSCRIBERS = {
+	progress: langProgress,
+	save: langSave,
+	prompts: langPrompts,
+	hover: langHover,
+	chat: langChat,
+	bank: langBank,
+	adaptation: langAdaptation,
+	pronunciation: langPronunciation,
+};
 
 /** One case file per language corpus file: `core-language-<file>.json`. */
 function language(root, coreCommit) {

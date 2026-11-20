@@ -87,8 +87,9 @@
 //   node corebridge/tools/vendor-core-bundle.mjs --check-language-transcription-negative
 //       The language transcription guard's negative control: perturbs the vendored
 //       cases/core-language-*.json in memory (a dropped case, a dropped call, a first
-//       call changed, an answer expected nowhere, a call that is no language row) and
-//       fails unless the guard names each (the core_vendor_language_negative ctest).
+//       call changed, an answer expected nowhere, a call that is no language row, an
+//       answer weakened to a subset, a mode at one band dropped) and fails unless the
+//       guard names each (the core_vendor_language_negative ctest).
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --check-extension-keys <case dir>
 //       Only the save.rules extensionKeys check (below, SAVE_RULES_CASES_DIR) over
@@ -281,14 +282,19 @@ const PROGRESSION_CORPUS_FILES = [
 // (src/language-learning/systems-corpus.ts) composes it; emit-bridge-cases.mjs also
 // transcribes each into cases/core-language-<file>.json. Slice 1 copies five of the
 // directory's thirteen: the book (progress), the save block (save), the prompt selector
-// (prompts), hover (hover) and the chat metrics (chat). The rest join with the slices
+// (prompts), hover (hover) and the chat metrics (chat); slice 2 three more: the bank and
+// the learning profile (bank), the difficulty monitor and the CEFR adaptation
+// (adaptation), and listen and repeat (pronunciation). The rest join with the slices
 // that bind them (chat-strip.json with PL.native-chat-cefr-rows). conformance/language/
 // is this set's alone, so a file an earlier pin left there is seen, hashed and removed.
 const LANGUAGE_CORPUS_FILES = [
+  'conformance/language/adaptation.json',
+  'conformance/language/bank.json',
   'conformance/language/chat.json',
   'conformance/language/hover.json',
   'conformance/language/progress.json',
   'conformance/language/prompts.json',
+  'conformance/language/pronunciation.json',
   'conformance/language/save.json',
 ];
 
@@ -447,6 +453,18 @@ const LANGUAGE_FIRST_CALL = {
   prompts: { run: 'language.contract' },
   hover: { tokens: 'language.hover.tokenize', run: 'language.hover.initial' },
   chat: { words: 'language.book.empty', percent: 'language.chat.targetPercent', hear: 'language.chat.start', usages: 'language.book.empty', run: 'language.book.empty' },
+  bank: {
+    cards: 'language.book.empty', reveal: 'language.bank.revealsMeaning', grammar: 'language.book.empty', tables: 'language.contract',
+    profile: 'language.profile.build', history: 'language.profile.history',
+  },
+  adaptation: {
+    struggle: 'language.difficulty.signals', difficulty: 'language.difficulty.initial', mode: 'language.npc.hash', npc: 'language.npc.adaptation',
+    hint: 'language.hints.showsVocabHint', quests: 'language.quests.filterByCefr', advance: 'language.cefr.advancement',
+  },
+  pronunciation: {
+    encode: 'language.pronunciation.encode', similarity: 'language.pronunciation.wordSimilarity', score: 'language.pronunciation.normalize',
+    repeat: 'language.pronunciation.listenAndRepeat', xp: 'language.pronunciation.xp', hints: 'language.pronunciation.hintPenalty',
+  },
 };
 /**
  * The calls core's runner makes for one case (systems-corpus.ts, through the rows), as a
@@ -562,6 +580,57 @@ function languageCallsOf(base, c) {
       add('language.chat.finish', count('end'));
     }
   }
+  if (base === 'bank') {
+    if (c.op === 'cards') {
+      add('language.book.empty');
+      add('language.bank.categories');
+      add('language.bank.cards');
+    }
+    // three display modes × three interactions (the runner's own lists)
+    if (c.op === 'reveal') add('language.bank.revealsMeaning', 9);
+    if (c.op === 'grammar') {
+      add('language.book.empty');
+      add('language.bank.grammarTab');
+      add('language.bank.analyzeWeaknesses');
+      add('language.bank.strongPatterns');
+    }
+    if (c.op === 'tables') add('language.contract');
+    if (c.op === 'profile') add('language.profile.build');
+    if (c.op === 'history') {
+      add('language.profile.history');
+      add('language.profile.build');
+    }
+  }
+  if (base === 'adaptation') {
+    if (c.op === 'struggle') {
+      add('language.difficulty.signals', i.turns.length);
+      add('language.difficulty.score', i.turns.length);
+    }
+    if (c.op === 'difficulty') {
+      add('language.difficulty.initial');
+      add('language.difficulty.recordTurn', count('turn'));
+    }
+    if (c.op === 'mode') {
+      // the hash once, then the mode at each of the six bands the runner lists
+      add('language.npc.hash', i.npcs.length);
+      add('language.npc.mode', 6 * i.npcs.length);
+    }
+    if (c.op === 'npc') add('language.npc.adaptation');
+    if (c.op === 'hint') add('language.hints.showsVocabHint', i.checks.length);
+    if (c.op === 'quests') add('language.quests.filterByCefr');
+    if (c.op === 'advance') add('language.cefr.advancement', i.snapshots.length);
+  }
+  if (base === 'pronunciation') {
+    if (c.op === 'encode') add('language.pronunciation.encode', i.words.length);
+    if (c.op === 'similarity') add('language.pronunciation.wordSimilarity', i.pairs.length);
+    if (c.op === 'score') {
+      add('language.pronunciation.normalize');
+      add('language.pronunciation.score');
+    }
+    if (c.op === 'repeat') add('language.pronunciation.listenAndRepeat');
+    if (c.op === 'xp') add('language.pronunciation.xp', i.scores.length);
+    if (c.op === 'hints') add('language.pronunciation.hintPenalty', i.revealed.length);
+  }
   return n;
 }
 
@@ -575,6 +644,18 @@ const LANGUAGE_RESHAPED_KEYS = {
   prompts: ['do', 'targets', 'nameable', 'tagged', 'picked'],
   hover: ['do', 'cached', 'words'],
   chat: ['do', 'bookWords', 'grammarChecked'],
+  adaptation: ['do'],
+};
+// Slice 2's files hold EVERY case to the stated-value check, not only a run's steps: each
+// member of an answer (each member of each element, for a list of objects) must be stated
+// in some expectation of the case, except the members the runner echoes from the input or
+// derives itself (the emitter checks each of those against the input), listed per op here.
+const LANGUAGE_ANSWER_ECHOES = {
+  bank: { cards: [], reveal: ['mode'], grammar: [], tables: [], profile: [], history: [] },
+  adaptation: {
+    struggle: [], difficulty: ['do'], mode: ['id', 'roll', 'modes'], npc: [], hint: ['level', 'index', 'difficulty', 'mastered'], quests: [], advance: [],
+  },
+  pronunciation: { encode: ['word'], similarity: ['expected', 'spoken'], score: [], repeat: [], xp: ['score'], hints: ['revealed'] },
 };
 
 /** Every value a transcribed case's expectations state, as JSON text (a `$subset`'s contents count; other operators do not). */
@@ -652,6 +733,27 @@ function languageTranscriptionProblems(load = (base) => {
         }
       });
     }
+    const echoes = LANGUAGE_ANSWER_ECHOES[base];
+    if (echoes) {
+      for (const c of corpus) {
+        const kase = byName.get(nameOf(c));
+        if (!kase) continue;
+        const stated = statedValues(kase);
+        const skip = echoes[c.op];
+        if (!skip) {
+          unstated.push(`${c.name} (op ${c.op} has no echo list here)`);
+          continue;
+        }
+        const members = Array.isArray(c.expected) && c.expected.every((x) => x && typeof x === 'object' && !Array.isArray(x))
+          ? c.expected.flatMap((x, k) => Object.entries(x).map(([key, v]) => [`[${k}].${key}`, key, v]))
+          : c.expected && typeof c.expected === 'object' && !Array.isArray(c.expected)
+            ? Object.entries(c.expected).map(([key, v]) => [key, key, v])
+            : [['$', null, c.expected]];
+        for (const [where, key, v] of members) {
+          if (!skip.includes(key) && !stated.has(JSON.stringify(v))) unstated.push(`${c.name} (${where})`);
+        }
+      }
+    }
     if (missing.length) problems.push(`core-language-${base}.json: ${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
     if (wrong.length) problems.push(`core-language-${base}.json: ${wrong.length} case(s) not transcribed as core's runner calls their op, first: ${wrong[0]}`);
     if (unstated.length) problems.push(`core-language-${base}.json: ${unstated.length} answer(s) of the corpus expected nowhere, first: ${unstated[0]}`);
@@ -690,6 +792,14 @@ function languageTranscriptionNegative() {
     }, 'answer(s) of the corpus expected nowhere'],
     ['a call not a language row', 'prompts', (d) => {
       d.cases[0].steps[1].call = 'props.interactables.press';
+    }, "not transcribed as core's runner calls their op"],
+    ['an answer weakened to a subset (a pronunciation score without its words and feedback)', 'pronunciation', (d) => {
+      const st = d.cases.flatMap((c) => c.steps).find((x) => x.call === 'language.pronunciation.score');
+      st.expect = { $subset: { score: st.expect.score } };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a mode at one band dropped (an NPC mode)', 'adaptation', (d) => {
+      const kase = d.cases.find((c) => c.steps.some((x) => x.call === 'language.npc.mode'));
+      kase.steps.splice(kase.steps.findIndex((x) => x.call === 'language.npc.mode'), 1);
     }, "not transcribed as core's runner calls their op"],
   ];
   let named = 0;

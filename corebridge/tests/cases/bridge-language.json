@@ -1,6 +1,6 @@
 {
  "area": "language",
- "description": "Hand-written (PL.native-language-rows slice 1): every language.* row, malformed books ([invalid-input] naming the keys core's own save reader names), refused inputs ([invalid-input] only for what core dereferences unread), and core's refusals as values in core's shape (empty_word, unknown_encounter, nothing_in_reach, no_prompt, no_quiz, no_target_language, empty_line, no_turns). Every expectation computed by core's own functions at the pin 45409ed (gen-bridge-language-cases.mts in the item's state record); core's corpora conformance/language/{progress,save,prompts,hover,chat}.json run as vendor/core/cases/core-language-*.json and in tests/language_corpus.cpp.",
+ "description": "Hand-written (PL.native-language-rows slices 1 and 2): every language.* row, malformed books ([invalid-input] naming the keys core's own save reader names), refused inputs ([invalid-input] only for what core dereferences unread), and core's refusals as values in core's shape (empty_word, unknown_encounter, nothing_in_reach, no_prompt, no_quiz, no_target_language, empty_line, no_turns). Every expectation computed by core's own functions at the pin 45409ed (gen-bridge-language-cases.mts in the item's state record); core's corpora conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation}.json run as vendor/core/cases/core-language-*.json and in tests/language_corpus.cpp.",
  "cases": [
   {
    "name": "language.contract states core's constants whole",
@@ -122,7 +122,322 @@
        "empty_line",
        "no_turns"
       ],
-      "chatPercentPerWordPerTurn": 50
+      "chatPercentPerWordPerTurn": 50,
+      "vocabularySorts": [
+       "mastery",
+       "alpha",
+       "recent",
+       "used",
+       "review"
+      ],
+      "masteryLabels": {
+       "new": "New",
+       "learning": "Learning",
+       "familiar": "Familiar",
+       "mastered": "Mastered"
+      },
+      "masteryTones": {
+       "new": "danger",
+       "learning": "warning",
+       "familiar": "success",
+       "mastered": "quest"
+      },
+      "dueLabel": "Review!",
+      "dueTone": "accent",
+      "cardInteractions": [
+       "idle",
+       "gaze",
+       "select"
+      ],
+      "weaknessMinAttempts": 3,
+      "weaknessMinRatePermille": 500,
+      "weaknessMax": 5,
+      "improvementPermille": 100,
+      "weaknessVolumePermille": [
+       0,
+       0,
+       8000,
+       12679,
+       16000,
+       18575,
+       20679,
+       22458,
+       24000
+      ],
+      "weaknessConfidencePermille": [
+       0,
+       0,
+       6000,
+       9509,
+       12000,
+       13931,
+       15509,
+       16844,
+       18000,
+       19019,
+       19931,
+       20756,
+       21509,
+       22202,
+       22844,
+       23441,
+       24000,
+       24524
+      ],
+      "questCategories": [
+       "conversation",
+       "vocabulary",
+       "grammar",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "pronunciation",
+       "time_activity"
+      ],
+      "skillDimensions": [
+       "comprehension",
+       "fluency",
+       "vocabulary",
+       "grammar",
+       "pronunciation"
+      ],
+      "skillToCategories": {
+       "comprehension": [
+        "listening_comprehension",
+        "follow_instructions",
+        "translation_challenge"
+       ],
+       "fluency": [
+        "conversation",
+        "navigation",
+        "time_activity"
+       ],
+       "vocabulary": [
+        "vocabulary",
+        "visual_vocabulary",
+        "scavenger_hunt"
+       ],
+       "grammar": [
+        "grammar",
+        "translation_challenge",
+        "conversation"
+       ],
+       "pronunciation": [
+        "pronunciation",
+        "conversation",
+        "listening_comprehension"
+       ]
+      },
+      "learningHistoryStatuses": [
+       "completed",
+       "failed",
+       "abandoned"
+      ],
+      "scaffoldingThreshold": 600,
+      "scaffoldingTurns": 2,
+      "stretchThreshold": 200,
+      "stretchTurns": 3,
+      "signalWeights": {
+       "grammar": 300,
+       "targetLanguage": 300,
+       "length": 200,
+       "quality": 200
+      },
+      "npcModePercent": {
+       "A1": {
+        "bilingual": 60,
+        "simplified": 40,
+        "natural": 0
+       },
+       "A2": {
+        "bilingual": 30,
+        "simplified": 70,
+        "natural": 0
+       },
+       "B1": {
+        "bilingual": 10,
+        "simplified": 0,
+        "natural": 90
+       },
+       "B2": {
+        "bilingual": 0,
+        "simplified": 0,
+        "natural": 100
+       },
+       "C1": {
+        "bilingual": 0,
+        "simplified": 0,
+        "natural": 100
+       },
+       "C2": {
+        "bilingual": 0,
+        "simplified": 0,
+        "natural": 100
+       }
+      },
+      "hintBehavior": {
+       "A1": {
+        "translationMode": "inline",
+        "showTranslateButton": true,
+        "translateButtonProminence": 2,
+        "newWordHintFrequency": 1,
+        "advancedVocabOnly": false
+       },
+       "A2": {
+        "translationMode": "inline",
+        "showTranslateButton": true,
+        "translateButtonProminence": 1,
+        "newWordHintFrequency": 3,
+        "advancedVocabOnly": false
+       },
+       "B1": {
+        "translationMode": "hover",
+        "showTranslateButton": false,
+        "translateButtonProminence": 0,
+        "newWordHintFrequency": 0,
+        "advancedVocabOnly": true
+       },
+       "B2": {
+        "translationMode": "click",
+        "showTranslateButton": false,
+        "translateButtonProminence": 0,
+        "newWordHintFrequency": 0,
+        "advancedVocabOnly": true
+       },
+       "C1": {
+        "translationMode": "click",
+        "showTranslateButton": false,
+        "translateButtonProminence": 0,
+        "newWordHintFrequency": 0,
+        "advancedVocabOnly": false
+       },
+       "C2": {
+        "translationMode": "click",
+        "showTranslateButton": false,
+        "translateButtonProminence": 0,
+        "newWordHintFrequency": 0,
+        "advancedVocabOnly": false
+       }
+      },
+      "cefrAdvancement": {
+       "A1→A2": {
+        "wordsLearned": 50,
+        "conversations": 3,
+        "textsRead": 0
+       },
+       "A2→B1": {
+        "wordsLearned": 150,
+        "conversations": 10,
+        "textsRead": 5
+       },
+       "B1→B2": {
+        "wordsLearned": 300,
+        "conversations": 25,
+        "textsRead": 15
+       },
+       "B2→C1": {
+        "wordsLearned": 500,
+        "conversations": 50,
+        "textsRead": 30
+       },
+       "C1→C2": {
+        "wordsLearned": 800,
+        "conversations": 100,
+        "textsRead": 50
+       }
+      },
+      "frequencyRanges": {
+       "A1": {
+        "min": 1,
+        "max": 200,
+        "label": "top 200 most common words",
+        "description": "Only the most basic, high-frequency everyday words (greetings, numbers, common nouns/verbs)"
+       },
+       "A2": {
+        "min": 1,
+        "max": 500,
+        "label": "top 500 most common words",
+        "description": "Common situational vocabulary (shopping, directions, food, travel, daily routines)"
+       },
+       "B1": {
+        "min": 1,
+        "max": 1500,
+        "label": "top 1500 most common words",
+        "description": "General vocabulary for most everyday topics (work, education, culture, opinions)"
+       },
+       "B2": {
+        "min": 1,
+        "max": null,
+        "label": "unrestricted vocabulary",
+        "description": "Full vocabulary including abstract concepts, idioms, and specialized terms"
+       },
+       "C1": {
+        "min": 1,
+        "max": null,
+        "label": "unrestricted vocabulary with sophisticated register",
+        "description": "Full vocabulary including academic, literary, and nuanced register-appropriate terms"
+       },
+       "C2": {
+        "min": 1,
+        "max": null,
+        "label": "native-level unrestricted vocabulary",
+        "description": "Complete native-speaker vocabulary including rare, archaic, dialectal, and highly specialized terms"
+       }
+      },
+      "textComplexity": {
+       "A1": {
+        "maxSentenceWords": 8,
+        "maxParagraphs": 2,
+        "vocabularyTier": "basic",
+        "questionType": "true_false"
+       },
+       "A2": {
+        "maxSentenceWords": 12,
+        "maxParagraphs": 3,
+        "vocabularyTier": "common",
+        "questionType": "simple_factual"
+       },
+       "B1": {
+        "maxSentenceWords": 20,
+        "maxParagraphs": 5,
+        "vocabularyTier": "varied",
+        "questionType": "inferential"
+       },
+       "B2": {
+        "maxSentenceWords": 30,
+        "maxParagraphs": 8,
+        "vocabularyTier": "advanced",
+        "questionType": "analytical"
+       },
+       "C1": {
+        "maxSentenceWords": 40,
+        "maxParagraphs": 10,
+        "vocabularyTier": "sophisticated",
+        "questionType": "analytical"
+       },
+       "C2": {
+        "maxSentenceWords": 50,
+        "maxParagraphs": 12,
+        "vocabularyTier": "native",
+        "questionType": "analytical"
+       }
+      },
+      "questPoolSizes": {
+       "A1": 30,
+       "A2": 25,
+       "B1": 15,
+       "B2": 10,
+       "C1": 8,
+       "C2": 5
+      },
+      "closeThreshold": 600,
+      "phoneticWeight": 400,
+      "passScore": 60,
+      "baseXp": 4
      }
     }
    ]
@@ -10265,6 +10580,6928 @@
       }
      },
      "expectError": "[invalid-input] insimulcore: language.difficulty.recordTurn: `metrics.totalWords` must be a finite number"
+    }
+   ]
+  },
+  {
+   "name": "the bank: categories, cards (every sort, a category, a cap, due words, a band's reveal, null members as core's defaults), the reveal rule, the grammar tab, weaknesses, strong patterns, the arithmetic rows",
+   "steps": [
+    {
+     "call": "language.bank.categories",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      }
+     },
+     "expect": {
+      "categories": [
+       "food",
+       "tools",
+       "general"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "7/7",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Église",
+        "meaning": "church",
+        "category": "general",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "clou",
+        "meaning": "nail",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": null
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "7/7",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Église",
+        "meaning": "church",
+        "category": "general",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "clou",
+        "meaning": "nail",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "sort": "alpha"
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "clou",
+        "meaning": "nail",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "7/7",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Église",
+        "meaning": "church",
+        "category": "general",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "sort": "recent"
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "clou",
+        "meaning": "nail",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "7/7",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Église",
+        "meaning": "church",
+        "category": "general",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "sort": "used"
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "7/7",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Église",
+        "meaning": "church",
+        "category": "general",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "clou",
+        "meaning": "nail",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "sort": "review",
+       "due": [
+        "clou",
+        "pain"
+       ]
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Review!",
+        "tone": "accent",
+        "usage": "7/7",
+        "due": true,
+        "reveal": "inline"
+       },
+       {
+        "word": "clou",
+        "meaning": "nail",
+        "category": "tools",
+        "mastery": "new",
+        "label": "Review!",
+        "tone": "accent",
+        "usage": "1/1",
+        "due": true,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Église",
+        "meaning": "church",
+        "category": "general",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "category": "food",
+       "limit": 1,
+       "cefr": "B2"
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "7/7",
+        "due": false,
+        "reveal": "click"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "category": "general",
+       "cefr": "B1"
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "Église",
+        "meaning": "church",
+        "category": "general",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "hover"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "limit": -1
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "7/7",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Église",
+        "meaning": "church",
+        "category": "general",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "clou",
+        "meaning": "nail",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "limit": 0
+      }
+     },
+     "expect": {
+      "cards": []
+     }
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "category": null,
+       "sort": null,
+       "due": null,
+       "cefr": null
+      }
+     },
+     "expect": {
+      "cards": [
+       {
+        "word": "pain",
+        "meaning": "bread",
+        "category": "food",
+        "mastery": "familiar",
+        "label": "Familiar",
+        "tone": "success",
+        "usage": "7/7",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "marteau",
+        "meaning": "hammer",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "Église",
+        "meaning": "church",
+        "category": "general",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "bière",
+        "meaning": "beer",
+        "category": "food",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "0/1",
+        "due": false,
+        "reveal": "inline"
+       },
+       {
+        "word": "clou",
+        "meaning": "nail",
+        "category": "tools",
+        "mastery": "new",
+        "label": "New",
+        "tone": "danger",
+        "usage": "1/1",
+        "due": false,
+        "reveal": "inline"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "inline",
+      "interaction": "idle"
+     },
+     "expect": {
+      "reveals": true
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "inline",
+      "interaction": "gaze"
+     },
+     "expect": {
+      "reveals": true
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "inline",
+      "interaction": "select"
+     },
+     "expect": {
+      "reveals": true
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "hover",
+      "interaction": "idle"
+     },
+     "expect": {
+      "reveals": false
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "hover",
+      "interaction": "gaze"
+     },
+     "expect": {
+      "reveals": true
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "hover",
+      "interaction": "select"
+     },
+     "expect": {
+      "reveals": true
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "click",
+      "interaction": "idle"
+     },
+     "expect": {
+      "reveals": false
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "click",
+      "interaction": "gaze"
+     },
+     "expect": {
+      "reveals": false
+     }
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "click",
+      "interaction": "select"
+     },
+     "expect": {
+      "reveals": true
+     }
+    },
+    {
+     "call": "language.bank.grammarTab",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      }
+     },
+     "expect": {
+      "tab": [
+       {
+        "pattern": "articles",
+        "correct": 6,
+        "incorrect": 1,
+        "attempts": 7,
+        "accuracy": 86,
+        "mastered": true,
+        "weak": false
+       },
+       {
+        "pattern": "gender",
+        "correct": 6,
+        "incorrect": 8,
+        "attempts": 14,
+        "accuracy": 43,
+        "mastered": false,
+        "weak": true
+       },
+       {
+        "pattern": "plural",
+        "correct": 6,
+        "incorrect": 2,
+        "attempts": 8,
+        "accuracy": 75,
+        "mastered": true,
+        "weak": false
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.bank.halfUpPercent",
+     "args": {
+      "n": 1,
+      "d": 8
+     },
+     "expect": {
+      "percent": 13
+     }
+    },
+    {
+     "call": "language.bank.halfUpPercent",
+     "args": {
+      "n": 5,
+      "d": 8
+     },
+     "expect": {
+      "percent": 63
+     }
+    },
+    {
+     "call": "language.bank.halfUpPercent",
+     "args": {
+      "n": 0,
+      "d": 3
+     },
+     "expect": {
+      "percent": 0
+     }
+    },
+    {
+     "call": "language.bank.halfUpPercent",
+     "args": {
+      "n": 2,
+      "d": 3
+     },
+     "expect": {
+      "percent": 67
+     }
+    },
+    {
+     "call": "language.bank.halfUpPercent",
+     "args": {
+      "n": 1,
+      "d": 2
+     },
+     "expect": {
+      "percent": 50
+     }
+    },
+    {
+     "call": "language.bank.rateOf",
+     "args": {
+      "row": {
+       "correct": 0,
+       "incorrect": 0
+      }
+     },
+     "expect": {
+      "ratePermille": 0
+     }
+    },
+    {
+     "call": "language.bank.rateOf",
+     "args": {
+      "row": {
+       "correct": 1,
+       "incorrect": 3
+      }
+     },
+     "expect": {
+      "ratePermille": 750
+     }
+    },
+    {
+     "call": "language.bank.rateOf",
+     "args": {
+      "row": {
+       "correct": 2,
+       "incorrect": 1
+      }
+     },
+     "expect": {
+      "ratePermille": 333
+     }
+    },
+    {
+     "call": "language.bank.weaknessPriority",
+     "args": {
+      "incorrect": 0,
+      "total": 0
+     },
+     "expect": {
+      "priority": 0
+     }
+    },
+    {
+     "call": "language.bank.weaknessPriority",
+     "args": {
+      "incorrect": 3,
+      "total": 4
+     },
+     "expect": {
+      "priority": 67431
+     }
+    },
+    {
+     "call": "language.bank.weaknessPriority",
+     "args": {
+      "incorrect": 8,
+      "total": 9
+     },
+     "expect": {
+      "priority": 89375
+     }
+    },
+    {
+     "call": "language.bank.weaknessPriority",
+     "args": {
+      "incorrect": 20,
+      "total": 30
+     },
+     "expect": {
+      "priority": 83333
+     }
+    },
+    {
+     "call": "language.bank.analyzeWeaknesses",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      }
+     },
+     "expect": {
+      "weaknesses": [
+       {
+        "pattern": "gender",
+        "correct": 6,
+        "incorrect": 8,
+        "total": 14,
+        "ratePermille": 571,
+        "explanations": [
+         "maison is feminine"
+        ],
+        "examples": [
+         "la maison"
+        ],
+        "priority": 77012
+       }
+      ],
+      "stats": [
+       {
+        "pattern": "articles",
+        "correct": 6,
+        "incorrect": 1,
+        "total": 7,
+        "ratePermille": 142,
+        "mastered": true
+       },
+       {
+        "pattern": "gender",
+        "correct": 6,
+        "incorrect": 8,
+        "total": 14,
+        "ratePermille": 571,
+        "mastered": false
+       },
+       {
+        "pattern": "plural",
+        "correct": 6,
+        "incorrect": 2,
+        "total": 8,
+        "ratePermille": 250,
+        "mastered": true
+       }
+      ],
+      "improved": []
+     }
+    },
+    {
+     "call": "language.bank.analyzeWeaknesses",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "options": null
+     },
+     "expect": {
+      "weaknesses": [
+       {
+        "pattern": "gender",
+        "correct": 6,
+        "incorrect": 8,
+        "total": 14,
+        "ratePermille": 571,
+        "explanations": [
+         "maison is feminine"
+        ],
+        "examples": [
+         "la maison"
+        ],
+        "priority": 77012
+       }
+      ],
+      "stats": [
+       {
+        "pattern": "articles",
+        "correct": 6,
+        "incorrect": 1,
+        "total": 7,
+        "ratePermille": 142,
+        "mastered": true
+       },
+       {
+        "pattern": "gender",
+        "correct": 6,
+        "incorrect": 8,
+        "total": 14,
+        "ratePermille": 571,
+        "mastered": false
+       },
+       {
+        "pattern": "plural",
+        "correct": 6,
+        "incorrect": 2,
+        "total": 8,
+        "ratePermille": 250,
+        "mastered": true
+       }
+      ],
+      "improved": []
+     }
+    },
+    {
+     "call": "language.bank.analyzeWeaknesses",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "options": {
+       "minRatePermille": 400,
+       "minAttempts": 2,
+       "max": 1,
+       "previous": {
+        "gender": 1000,
+        "plural": 900,
+        "articles": 50
+       }
+      }
+     },
+     "expect": {
+      "weaknesses": [
+       {
+        "pattern": "gender",
+        "correct": 6,
+        "incorrect": 8,
+        "total": 14,
+        "ratePermille": 571,
+        "explanations": [
+         "maison is feminine"
+        ],
+        "examples": [
+         "la maison"
+        ],
+        "priority": 77012
+       }
+      ],
+      "stats": [
+       {
+        "pattern": "articles",
+        "correct": 6,
+        "incorrect": 1,
+        "total": 7,
+        "ratePermille": 142,
+        "mastered": true
+       },
+       {
+        "pattern": "gender",
+        "correct": 6,
+        "incorrect": 8,
+        "total": 14,
+        "ratePermille": 571,
+        "mastered": false
+       },
+       {
+        "pattern": "plural",
+        "correct": 6,
+        "incorrect": 2,
+        "total": 8,
+        "ratePermille": 250,
+        "mastered": true
+       }
+      ],
+      "improved": [
+       "gender",
+       "plural"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.analyzeWeaknesses",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "options": {
+       "minRatePermille": null,
+       "minAttempts": null,
+       "max": null,
+       "previous": null
+      }
+     },
+     "expect": {
+      "weaknesses": [
+       {
+        "pattern": "gender",
+        "correct": 6,
+        "incorrect": 8,
+        "total": 14,
+        "ratePermille": 571,
+        "explanations": [
+         "maison is feminine"
+        ],
+        "examples": [
+         "la maison"
+        ],
+        "priority": 77012
+       }
+      ],
+      "stats": [
+       {
+        "pattern": "articles",
+        "correct": 6,
+        "incorrect": 1,
+        "total": 7,
+        "ratePermille": 142,
+        "mastered": true
+       },
+       {
+        "pattern": "gender",
+        "correct": 6,
+        "incorrect": 8,
+        "total": 14,
+        "ratePermille": 571,
+        "mastered": false
+       },
+       {
+        "pattern": "plural",
+        "correct": 6,
+        "incorrect": 2,
+        "total": 8,
+        "ratePermille": 250,
+        "mastered": true
+       }
+      ],
+      "improved": []
+     }
+    },
+    {
+     "call": "language.bank.strongPatterns",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      }
+     },
+     "expect": {
+      "patterns": [
+       "articles"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.strongPatterns",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "max": null
+     },
+     "expect": {
+      "patterns": [
+       "articles"
+      ]
+     }
+    },
+    {
+     "call": "language.bank.strongPatterns",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "max": 0
+     },
+     "expect": {
+      "patterns": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "the learning profile: the history keeps finished records only (ids, types, times and objectives as core reads them), the profile over it and the assessments",
+   "steps": [
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       {
+        "id": "q1",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAtMs": 5000,
+        "objectives": [
+         {
+          "completed": true
+         },
+         {
+          "completed": true
+         }
+        ],
+        "difficulty": "advanced"
+       },
+       {
+        "id": "q2",
+        "questType": "vocabulary",
+        "status": "failed",
+        "completedAtMs": 7000,
+        "objectives": [
+         {
+          "completed": true
+         },
+         {
+          "completed": false
+         },
+         {}
+        ]
+       },
+       {
+        "id": "q3",
+        "questType": "conversation",
+        "status": "abandoned",
+        "completedAt": "2026-01-01T00:00:00Z",
+        "objectives": "none"
+       },
+       {
+        "id": "q4",
+        "questType": "conversation",
+        "status": "active"
+       },
+       {
+        "id": 7,
+        "questType": "",
+        "status": "completed",
+        "completedAtMs": 1.5
+       },
+       {
+        "questType": "fishing",
+        "status": "completed",
+        "completedAtMs": -3,
+        "objectives": [
+         null,
+         {
+          "completed": 1
+         }
+        ]
+       },
+       {
+        "id": "q5",
+        "status": "available"
+       },
+       {
+        "id": "q6",
+        "questType": "conversation",
+        "status": "completed",
+        "completedAtMs": 9000,
+        "objectives": []
+       }
+      ]
+     },
+     "expect": {
+      "history": [
+       {
+        "id": "q1",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAtMs": 5000,
+        "objectives": [
+         {
+          "completed": true
+         },
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "q2",
+        "questType": "vocabulary",
+        "status": "failed",
+        "completedAtMs": 7000,
+        "objectives": [
+         {
+          "completed": true
+         },
+         {
+          "completed": false
+         },
+         {
+          "completed": false
+         }
+        ]
+       },
+       {
+        "id": "q3",
+        "questType": "conversation",
+        "status": "abandoned",
+        "completedAtMs": null,
+        "objectives": []
+       },
+       {
+        "id": "",
+        "questType": null,
+        "status": "completed",
+        "completedAtMs": null,
+        "objectives": []
+       },
+       {
+        "id": "",
+        "questType": "fishing",
+        "status": "completed",
+        "completedAtMs": -3,
+        "objectives": [
+         {
+          "completed": false
+         },
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "q6",
+        "questType": "conversation",
+        "status": "completed",
+        "completedAtMs": 9000,
+        "objectives": []
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": []
+     },
+     "expect": {
+      "history": []
+     }
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": [
+       {
+        "id": "q1",
+        "questType": "vocabulary",
+        "status": "completed",
+        "completedAtMs": 5000,
+        "objectives": [
+         {
+          "completed": true
+         },
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "q2",
+        "questType": "vocabulary",
+        "status": "failed",
+        "completedAtMs": 7000,
+        "objectives": [
+         {
+          "completed": true
+         },
+         {
+          "completed": false
+         },
+         {
+          "completed": false
+         }
+        ]
+       },
+       {
+        "id": "q3",
+        "questType": "conversation",
+        "status": "abandoned",
+        "completedAtMs": null,
+        "objectives": []
+       },
+       {
+        "id": "",
+        "questType": null,
+        "status": "completed",
+        "completedAtMs": null,
+        "objectives": []
+       },
+       {
+        "id": "",
+        "questType": "fishing",
+        "status": "completed",
+        "completedAtMs": -3,
+        "objectives": [
+         {
+          "completed": false
+         },
+         {
+          "completed": true
+         }
+        ]
+       },
+       {
+        "id": "q6",
+        "questType": "conversation",
+        "status": "completed",
+        "completedAtMs": 9000,
+        "objectives": []
+       }
+      ],
+      "assessments": [
+       {
+        "cefrLevel": "A2",
+        "dimensionScores": {
+         "comprehension": 4,
+         "fluency": 2,
+         "vocabulary": 5
+        },
+        "completedAtMs": 100
+       },
+       {
+        "cefrLevel": "B1",
+        "dimensionScores": {
+         "comprehension": 5,
+         "grammar": 1
+        },
+        "completedAtMs": 300
+       },
+       {
+        "cefrLevel": null,
+        "dimensionScores": {},
+        "completedAtMs": 900
+       },
+       {
+        "dimensionScores": {
+         "pronunciation": 3
+        }
+       }
+      ]
+     },
+     "expect": {
+      "cefrLevel": "B1",
+      "categories": [
+       {
+        "category": "vocabulary",
+        "attempted": 2,
+        "completed": 1,
+        "failed": 1,
+        "successPermille": 500,
+        "objectivePermille": 666,
+        "lastAttemptedAtMs": 7000
+       },
+       {
+        "category": "conversation",
+        "attempted": 2,
+        "completed": 1,
+        "failed": 1,
+        "successPermille": 500,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 9000
+       },
+       {
+        "category": "fishing",
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "successPermille": 1000,
+        "objectivePermille": 500,
+        "lastAttemptedAtMs": -3
+       }
+      ],
+      "skills": {
+       "comprehension": 875,
+       "fluency": 250,
+       "vocabulary": 1000,
+       "grammar": 0,
+       "pronunciation": 500
+      },
+      "weakCategories": [],
+      "strongCategories": [],
+      "weakSkills": [
+       "fluency",
+       "grammar"
+      ],
+      "strongSkills": [
+       "comprehension",
+       "vocabulary"
+      ],
+      "unexplored": [
+       "grammar",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "pronunciation",
+       "time_activity"
+      ],
+      "completed": 4,
+      "attempted": 6
+     }
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": [],
+      "assessments": []
+     },
+     "expect": {
+      "cefrLevel": null,
+      "categories": [],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [],
+      "strongCategories": [],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "vocabulary",
+       "grammar",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "pronunciation",
+       "time_activity"
+      ],
+      "completed": 0,
+      "attempted": 0
+     }
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": [
+       {
+        "questType": "grammar",
+        "status": "completed",
+        "completedAtMs": null,
+        "objectives": null
+       }
+      ],
+      "assessments": [
+       {
+        "cefrLevel": "C1",
+        "dimensionScores": null,
+        "completedAtMs": null
+       }
+      ]
+     },
+     "expect": {
+      "cefrLevel": "C1",
+      "categories": [
+       {
+        "category": "grammar",
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "successPermille": 1000,
+        "objectivePermille": 0,
+        "lastAttemptedAtMs": 0
+       }
+      ],
+      "skills": {
+       "comprehension": 500,
+       "fluency": 500,
+       "vocabulary": 500,
+       "grammar": 500,
+       "pronunciation": 500
+      },
+      "weakCategories": [],
+      "strongCategories": [],
+      "weakSkills": [],
+      "strongSkills": [],
+      "unexplored": [
+       "conversation",
+       "vocabulary",
+       "translation_challenge",
+       "cultural",
+       "visual_vocabulary",
+       "follow_instructions",
+       "scavenger_hunt",
+       "listening_comprehension",
+       "navigation",
+       "pronunciation",
+       "time_activity"
+      ],
+      "completed": 1,
+      "attempted": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "the bank and the profile refuse what core would dereference unread, or an enumeration outside core's types, as [invalid-input]",
+   "steps": [
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "sort": "length"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.cards: `query.sort` must be one of mastery, alpha, recent, used, review (got \"length\")"
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "limit": null
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.cards: `query.limit` must be a finite number"
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "due": [
+        "pain",
+        1
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.cards: `query.due[1]` must be a string"
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "cefr": "D1"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.cards: `query.cefr` must be one of A1, A2, B1, B2, C1, C2 (got \"D1\")"
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": {
+       "category": 3
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.cards: `query.category` must be a string"
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "query": "alpha"
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.cards: `query` must be a JSON object"
+    },
+    {
+     "call": "language.bank.cards",
+     "args": {
+      "book": {
+       "words": "pain"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.cards: `book` is not a book core's save reader reads: book.words"
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "popup",
+      "interaction": "gaze"
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.revealsMeaning: `reveal` must be one of inline, hover, click (got \"popup\")"
+    },
+    {
+     "call": "language.bank.revealsMeaning",
+     "args": {
+      "reveal": "hover",
+      "interaction": "hover"
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.revealsMeaning: `interaction` must be one of idle, gaze, select (got \"hover\")"
+    },
+    {
+     "call": "language.bank.halfUpPercent",
+     "args": {
+      "n": 1
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.halfUpPercent: `d` must be a finite number"
+    },
+    {
+     "call": "language.bank.rateOf",
+     "args": {
+      "row": {
+       "correct": "1",
+       "incorrect": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.rateOf: `row.correct` must be a finite number"
+    },
+    {
+     "call": "language.bank.weaknessPriority",
+     "args": {
+      "incorrect": 1,
+      "total": null
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.weaknessPriority: `total` must be a finite number"
+    },
+    {
+     "call": "language.bank.analyzeWeaknesses",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "options": {
+       "max": "2"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.analyzeWeaknesses: `options.max` must be a finite number"
+    },
+    {
+     "call": "language.bank.analyzeWeaknesses",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "options": {
+       "previous": {
+        "gender": "high"
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.analyzeWeaknesses: `options.previous.gender` must be a finite number"
+    },
+    {
+     "call": "language.bank.strongPatterns",
+     "args": {
+      "book": {
+       "language": "fr",
+       "clockMs": 3500,
+       "fluency": 0,
+       "cefr": null,
+       "conversations": 0,
+       "correctUsages": 9,
+       "words": [
+        {
+         "word": "pain",
+         "language": "fr",
+         "meaning": "bread",
+         "category": "food",
+         "context": null,
+         "encountered": 7,
+         "correct": 7,
+         "incorrect": 0,
+         "halves": 14,
+         "last": 3000,
+         "types": {
+          "active_use": 1,
+          "quiz_correct": 6
+         }
+        },
+        {
+         "word": "marteau",
+         "language": "fr",
+         "meaning": "hammer",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 0,
+         "halves": 1,
+         "last": 1000,
+         "types": {
+          "passive_hover": 1
+         }
+        },
+        {
+         "word": "Église",
+         "language": "fr",
+         "meaning": "church",
+         "category": null,
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 2000,
+         "types": {
+          "quiz_correct": 1
+         }
+        },
+        {
+         "word": "bière",
+         "language": "fr",
+         "meaning": "beer",
+         "category": "food",
+         "context": null,
+         "encountered": 1,
+         "correct": 0,
+         "incorrect": 1,
+         "halves": 0,
+         "last": 3000,
+         "types": {
+          "quiz_incorrect": 1
+         }
+        },
+        {
+         "word": "clou",
+         "language": "fr",
+         "meaning": "nail",
+         "category": "tools",
+         "context": null,
+         "encountered": 1,
+         "correct": 1,
+         "incorrect": 0,
+         "halves": 2,
+         "last": 3500,
+         "types": {
+          "active_use": 1
+         }
+        }
+       ],
+       "grammar": [
+        {
+         "pattern": "articles",
+         "correct": 6,
+         "incorrect": 1,
+         "mastered": true,
+         "examples": [
+          "je mange une pomme"
+         ],
+         "explanations": []
+        },
+        {
+         "pattern": "gender",
+         "correct": 6,
+         "incorrect": 8,
+         "mastered": false,
+         "examples": [
+          "la maison"
+         ],
+         "explanations": [
+          "maison is feminine"
+         ]
+        },
+        {
+         "pattern": "plural",
+         "correct": 6,
+         "incorrect": 2,
+         "mastered": true,
+         "examples": [
+          "les chats"
+         ],
+         "explanations": []
+        }
+       ]
+      },
+      "max": "3"
+     },
+     "expectError": "[invalid-input] insimulcore: language.bank.strongPatterns: `max` must be a finite number"
+    },
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": {}
+     },
+     "expectError": "[invalid-input] insimulcore: language.profile.history: `quests` must be an array"
+    },
+    {
+     "call": "language.profile.history",
+     "args": {
+      "quests": [
+       null
+      ]
+     },
+     "expectError": "[invalid-input] insimulcore: language.profile.history: `quests[0]` must be a JSON object"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": [
+       {
+        "questType": "grammar"
+       }
+      ],
+      "assessments": []
+     },
+     "expectError": "[invalid-input] insimulcore: language.profile.build: `history[0].status` must be a string"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": [
+       {
+        "questType": 7,
+        "status": "completed"
+       }
+      ],
+      "assessments": []
+     },
+     "expectError": "[invalid-input] insimulcore: language.profile.build: `history[0].questType` must be a string"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": [
+       {
+        "questType": "grammar",
+        "status": "completed",
+        "objectives": [
+         null
+        ]
+       }
+      ],
+      "assessments": []
+     },
+     "expectError": "[invalid-input] insimulcore: language.profile.build: `history[0].objectives[0]` must be a JSON object"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": [
+       {
+        "questType": "grammar",
+        "status": "completed",
+        "completedAtMs": "5"
+       }
+      ],
+      "assessments": []
+     },
+     "expectError": "[invalid-input] insimulcore: language.profile.build: `history[0].completedAtMs` must be a finite number"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": [],
+      "assessments": [
+       {
+        "dimensionScores": {
+         "grammar": "3"
+        }
+       }
+      ]
+     },
+     "expectError": "[invalid-input] insimulcore: language.profile.build: `assessments[0].dimensionScores.grammar` must be a finite number"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": [],
+      "assessments": [
+       {
+        "cefrLevel": 2
+       }
+      ]
+     },
+     "expectError": "[invalid-input] insimulcore: language.profile.build: `assessments[0].cefrLevel` must be a string"
+    },
+    {
+     "call": "language.profile.build",
+     "args": {
+      "history": []
+     },
+     "expectError": "[invalid-input] insimulcore: language.profile.build: `assessments` must be an array"
+    }
+   ]
+  },
+  {
+   "name": "adaptation: the struggle signals and score, NPC hashes and modes, the mode, scaffolding and frequency directives, an NPC's adaptation, hint behaviour and new-word hints, mastery, quests by band, band advancement",
+   "steps": [
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 3,
+       "targetWords": 2,
+       "totalWords": 5,
+       "quality": null
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 333,
+       "targetLanguage": 200,
+       "length": 500,
+       "quality": 0
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 1,
+       "grammarChecked": 3,
+       "targetWords": 2,
+       "totalWords": 5,
+       "quality": null
+      }
+     },
+     "expect": {
+      "score": 259
+     }
+    },
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 0,
+       "targetWords": 3,
+       "totalWords": 3,
+       "quality": 100
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 0,
+       "targetLanguage": 0,
+       "length": 833,
+       "quality": 0
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 0,
+       "targetWords": 3,
+       "totalWords": 3,
+       "quality": 100
+      }
+     },
+     "expect": {
+      "score": 166
+     }
+    },
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 2,
+       "grammarChecked": 2,
+       "targetWords": 0,
+       "totalWords": 1,
+       "quality": 0
+      }
+     },
+     "expect": {
+      "signals": {
+       "grammar": 1000,
+       "targetLanguage": 1000,
+       "length": 1000,
+       "quality": 1000
+      }
+     }
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 2,
+       "grammarChecked": 2,
+       "targetWords": 0,
+       "totalWords": 1,
+       "quality": 0
+      }
+     },
+     "expect": {
+      "score": 1000
+     }
+    },
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": "ada"
+     },
+     "expect": {
+      "hash": 96414
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1",
+      "npcId": "ada"
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A2",
+      "npcId": "ada"
+     },
+     "expect": {
+      "mode": "bilingual"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B1",
+      "npcId": "ada"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": "Zoë"
+     },
+     "expect": {
+      "hash": 90166
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1",
+      "npcId": "Zoë"
+     },
+     "expect": {
+      "mode": "simplified"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A2",
+      "npcId": "Zoë"
+     },
+     "expect": {
+      "mode": "simplified"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B1",
+      "npcId": "Zoë"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": "npc_42"
+     },
+     "expect": {
+      "hash": 1039284068
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1",
+      "npcId": "npc_42"
+     },
+     "expect": {
+      "mode": "simplified"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A2",
+      "npcId": "npc_42"
+     },
+     "expect": {
+      "mode": "simplified"
+     }
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "B1",
+      "npcId": "npc_42"
+     },
+     "expect": {
+      "mode": "natural"
+     }
+    },
+    {
+     "call": "language.npc.modeDirective",
+     "args": {
+      "mode": "bilingual",
+      "target": "French"
+     },
+     "expect": {
+      "directive": "LANGUAGE MODE — BILINGUAL:\nMix English and French in your responses. Say important words in both languages. For example: \"Le pain — the bread — c'est très bon!\" Gradually use more French as the conversation progresses. If the player writes in English, respond with a mix but lean toward French.\n"
+     }
+    },
+    {
+     "call": "language.npc.modeDirective",
+     "args": {
+      "mode": "simplified",
+      "target": "French"
+     },
+     "expect": {
+      "directive": "LANGUAGE MODE — SIMPLIFIED:\nUse only very simple French. Short sentences (5-7 words max). Use only high-frequency, concrete vocabulary. If the player seems confused, offer a translation in brackets like [bread]. Repeat key words naturally. Speak slowly and clearly.\n"
+     }
+    },
+    {
+     "call": "language.npc.modeDirective",
+     "args": {
+      "mode": "natural",
+      "target": "French"
+     },
+     "expect": {
+      "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in French at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n"
+     }
+    },
+    {
+     "call": "language.npc.modeDirective",
+     "args": {
+      "mode": "bilingual",
+      "target": "Spanish",
+      "native": "German",
+      "level": "A2"
+     },
+     "expect": {
+      "directive": "LANGUAGE MODE — BILINGUAL:\nMix German and Spanish in your responses. Say important words in both languages. For example: \"Le pain — the bread — c'est très bon!\" Gradually use more Spanish as the conversation progresses. If the player writes in German, respond with a mix but lean toward Spanish.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 500 most common words in Spanish\n- Common situational vocabulary (shopping, directions, food, travel, daily routines)\n- Include everyday situational vocabulary (shopping, travel, food, directions)\n- For any word outside the top 500, provide an inline translation: \"la boulangerie [bakery]\"\n- Use present, near future (aller + infinitive), and simple past (passé composé)\n"
+     }
+    },
+    {
+     "call": "language.npc.modeDirective",
+     "args": {
+      "mode": "natural",
+      "target": "Spanish",
+      "native": null,
+      "level": null
+     },
+     "expect": {
+      "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in Spanish at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n"
+     }
+    },
+    {
+     "call": "language.npc.scaffoldingDirective",
+     "args": {
+      "level": "none",
+      "target": "French"
+     },
+     "expect": {
+      "directive": ""
+     }
+    },
+    {
+     "call": "language.npc.scaffoldingDirective",
+     "args": {
+      "level": "scaffolded",
+      "target": "French"
+     },
+     "expect": {
+      "directive": "\nDYNAMIC SCAFFOLDING — ACTIVE:\nThe player is struggling. Adjust your speech NOW:\n- Reduce French usage by 20% compared to your normal mode\n- Use shorter sentences (max 5-7 words)\n- Add inline translations in brackets for key words, like: \"le pain [bread]\"\n- Repeat important words naturally\n- Ask simple yes/no or choice questions to keep the player engaged\n- If the player responds in English, acknowledge and gently guide back to French\nDo NOT mention that you are simplifying. Be natural and encouraging.\n"
+     }
+    },
+    {
+     "call": "language.npc.scaffoldingDirective",
+     "args": {
+      "level": "stretch",
+      "target": "French"
+     },
+     "expect": {
+      "directive": "\nSTRETCH CHALLENGE — ACTIVE:\nThe player is performing exceptionally well. Increase complexity:\n- Use more advanced vocabulary and natural idioms in French\n- Use longer, more complex sentence structures\n- Reduce translations and explanations\n- Ask open-ended questions that require detailed responses\n- Introduce cultural references or wordplay when appropriate\nDo NOT mention that you are increasing difficulty. Be natural.\n"
+     }
+    },
+    {
+     "call": "language.npc.scaffoldingDirective",
+     "args": {
+      "level": "scaffolded",
+      "target": "French",
+      "native": "Dutch"
+     },
+     "expect": {
+      "directive": "\nDYNAMIC SCAFFOLDING — ACTIVE:\nThe player is struggling. Adjust your speech NOW:\n- Reduce French usage by 20% compared to your normal mode\n- Use shorter sentences (max 5-7 words)\n- Add inline translations in brackets for key words, like: \"le pain [bread]\"\n- Repeat important words naturally\n- Ask simple yes/no or choice questions to keep the player engaged\n- If the player responds in Dutch, acknowledge and gently guide back to French\nDo NOT mention that you are simplifying. Be natural and encouraging.\n"
+     }
+    },
+    {
+     "call": "language.npc.frequencyDirective",
+     "args": {
+      "level": "A1",
+      "target": "Italian"
+     },
+     "expect": {
+      "directive": "VOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 200 most common words in Italian\n- Only the most basic, high-frequency everyday words (greetings, numbers, common nouns/verbs)\n- Stick to concrete nouns (bread, house, water), basic verbs (eat, go, see, do), simple adjectives (big, small, good, bad), and common function words\n- If you MUST use a less common word, immediately provide the English translation in brackets: \"le boulanger [baker]\"\n- Prefer simple present tense and imperative mood\n"
+     }
+    },
+    {
+     "call": "language.npc.frequencyDirective",
+     "args": {
+      "level": "A2",
+      "target": "Italian"
+     },
+     "expect": {
+      "directive": "VOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 500 most common words in Italian\n- Common situational vocabulary (shopping, directions, food, travel, daily routines)\n- Include everyday situational vocabulary (shopping, travel, food, directions)\n- For any word outside the top 500, provide an inline translation: \"la boulangerie [bakery]\"\n- Use present, near future (aller + infinitive), and simple past (passé composé)\n"
+     }
+    },
+    {
+     "call": "language.npc.frequencyDirective",
+     "args": {
+      "level": "B1",
+      "target": "Italian"
+     },
+     "expect": {
+      "directive": "VOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 1500 most common words in Italian\n- General vocabulary for most everyday topics (work, education, culture, opinions)\n- Use general vocabulary for everyday and some abstract topics\n- For specialized or uncommon words (outside top 1500), provide brief context or inline translation\n- All tenses are acceptable including subjunctive for common expressions\n"
+     }
+    },
+    {
+     "call": "language.npc.frequencyDirective",
+     "args": {
+      "level": "B2",
+      "target": "Italian"
+     },
+     "expect": {
+      "directive": "VOCABULARY RANGE: Use the full range of Italian vocabulary including abstract concepts, idioms, and domain-specific terms. No frequency restrictions.\n"
+     }
+    },
+    {
+     "call": "language.npc.frequencyDirective",
+     "args": {
+      "level": "C1",
+      "target": "Italian"
+     },
+     "expect": {
+      "directive": "VOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the unrestricted vocabulary with sophisticated register in Italian\n- Full vocabulary including academic, literary, and nuanced register-appropriate terms\n"
+     }
+    },
+    {
+     "call": "language.npc.frequencyDirective",
+     "args": {
+      "level": "C2",
+      "target": "Italian"
+     },
+     "expect": {
+      "directive": "VOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the native-level unrestricted vocabulary in Italian\n- Complete native-speaker vocabulary including rare, archaic, dialectal, and highly specialized terms\n"
+     }
+    },
+    {
+     "call": "language.npc.adaptation",
+     "args": {
+      "level": "A2",
+      "npcId": "bram",
+      "target": "French"
+     },
+     "expect": {
+      "mode": "simplified",
+      "directive": "LANGUAGE MODE — SIMPLIFIED:\nUse only very simple French. Short sentences (5-7 words max). Use only high-frequency, concrete vocabulary. If the player seems confused, offer a translation in brackets like [bread]. Repeat key words naturally. Speak slowly and clearly.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 500 most common words in French\n- Common situational vocabulary (shopping, directions, food, travel, daily routines)\n- Include everyday situational vocabulary (shopping, travel, food, directions)\n- For any word outside the top 500, provide an inline translation: \"la boulangerie [bakery]\"\n- Use present, near future (aller + infinitive), and simple past (passé composé)\n",
+      "scaffolding": "",
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      },
+      "frequency": {
+       "min": 1,
+       "max": 500,
+       "label": "top 500 most common words",
+       "description": "Common situational vocabulary (shopping, directions, food, travel, daily routines)"
+      },
+      "text": {
+       "maxSentenceWords": 12,
+       "maxParagraphs": 3,
+       "vocabularyTier": "common",
+       "questionType": "simple_factual"
+      },
+      "questPool": 25
+     }
+    },
+    {
+     "call": "language.npc.adaptation",
+     "args": {
+      "level": "B1",
+      "npcId": "cora",
+      "target": "French",
+      "native": null,
+      "scaffolding": null
+     },
+     "expect": {
+      "mode": "natural",
+      "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in French at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 1500 most common words in French\n- General vocabulary for most everyday topics (work, education, culture, opinions)\n- Use general vocabulary for everyday and some abstract topics\n- For specialized or uncommon words (outside top 1500), provide brief context or inline translation\n- All tenses are acceptable including subjunctive for common expressions\n",
+      "scaffolding": "",
+      "hints": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "frequency": {
+       "min": 1,
+       "max": 1500,
+       "label": "top 1500 most common words",
+       "description": "General vocabulary for most everyday topics (work, education, culture, opinions)"
+      },
+      "text": {
+       "maxSentenceWords": 20,
+       "maxParagraphs": 5,
+       "vocabularyTier": "varied",
+       "questionType": "inferential"
+      },
+      "questPool": 15
+     }
+    },
+    {
+     "call": "language.npc.adaptation",
+     "args": {
+      "level": "C1",
+      "npcId": "dov",
+      "target": "Greek",
+      "native": "Welsh",
+      "scaffolding": "stretch"
+     },
+     "expect": {
+      "mode": "natural",
+      "directive": "LANGUAGE MODE — NATURAL:\nSpeak entirely in Greek at a natural pace. Use full vocabulary, idioms, and natural sentence structures. Do not simplify unless the player explicitly asks for help.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the unrestricted vocabulary with sophisticated register in Greek\n- Full vocabulary including academic, literary, and nuanced register-appropriate terms\n",
+      "scaffolding": "\nSTRETCH CHALLENGE — ACTIVE:\nThe player is performing exceptionally well. Increase complexity:\n- Use more advanced vocabulary and natural idioms in Greek\n- Use longer, more complex sentence structures\n- Reduce translations and explanations\n- Ask open-ended questions that require detailed responses\n- Introduce cultural references or wordplay when appropriate\nDo NOT mention that you are increasing difficulty. Be natural.\n",
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "frequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary with sophisticated register",
+       "description": "Full vocabulary including academic, literary, and nuanced register-appropriate terms"
+      },
+      "text": {
+       "maxSentenceWords": 40,
+       "maxParagraphs": 10,
+       "vocabularyTier": "sophisticated",
+       "questionType": "analytical"
+      },
+      "questPool": 8
+     }
+    },
+    {
+     "call": "language.hints.behavior",
+     "args": {
+      "level": "A1"
+     },
+     "expect": {
+      "behavior": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      }
+     }
+    },
+    {
+     "call": "language.hints.behavior",
+     "args": {
+      "level": "A2"
+     },
+     "expect": {
+      "behavior": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      }
+     }
+    },
+    {
+     "call": "language.hints.behavior",
+     "args": {
+      "level": "B1"
+     },
+     "expect": {
+      "behavior": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      }
+     }
+    },
+    {
+     "call": "language.hints.behavior",
+     "args": {
+      "level": "B2"
+     },
+     "expect": {
+      "behavior": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      }
+     }
+    },
+    {
+     "call": "language.hints.behavior",
+     "args": {
+      "level": "C1"
+     },
+     "expect": {
+      "behavior": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      }
+     }
+    },
+    {
+     "call": "language.hints.behavior",
+     "args": {
+      "level": "C2"
+     },
+     "expect": {
+      "behavior": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      }
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "A1",
+      "index": 4
+     },
+     "expect": {
+      "show": true
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "A2",
+      "index": 6,
+      "difficulty": null,
+      "mastered": null
+     },
+     "expect": {
+      "show": true
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "A2",
+      "index": 6,
+      "mastered": true
+     },
+     "expect": {
+      "show": false
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "B2",
+      "index": 0,
+      "difficulty": "advanced"
+     },
+     "expect": {
+      "show": true
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "B2",
+      "index": 0,
+      "difficulty": "intermediate"
+     },
+     "expect": {
+      "show": false
+     }
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "C2",
+      "index": 1,
+      "difficulty": "advanced",
+      "mastered": false
+     },
+     "expect": {
+      "show": true
+     }
+    },
+    {
+     "call": "language.word.isMastered",
+     "args": {
+      "encountered": 0,
+      "correct": 0
+     },
+     "expect": {
+      "mastered": false
+     }
+    },
+    {
+     "call": "language.word.isMastered",
+     "args": {
+      "encountered": 3,
+      "correct": 2
+     },
+     "expect": {
+      "mastered": false
+     }
+    },
+    {
+     "call": "language.word.isMastered",
+     "args": {
+      "encountered": 5,
+      "correct": 5
+     },
+     "expect": {
+      "mastered": false
+     }
+    },
+    {
+     "call": "language.word.isMastered",
+     "args": {
+      "encountered": 10,
+      "correct": 9
+     },
+     "expect": {
+      "mastered": true
+     }
+    },
+    {
+     "call": "language.quests.filterByCefr",
+     "args": {
+      "quests": [
+       {
+        "id": "q_x9",
+        "cefrLevel": "X9"
+       },
+       {
+        "id": "q_c2",
+        "cefrLevel": "C2"
+       },
+       {
+        "id": "q_a2",
+        "cefrLevel": "A2"
+       },
+       {
+        "id": "q_none"
+       },
+       {
+        "id": "q_a1",
+        "cefrLevel": "A1"
+       }
+      ],
+      "level": "A1"
+     },
+     "expect": {
+      "shown": [
+       "q_none",
+       "q_a1",
+       "q_x9",
+       "q_a2"
+      ]
+     }
+    },
+    {
+     "call": "language.quests.filterByCefr",
+     "args": {
+      "quests": [
+       {
+        "id": "q_x9",
+        "cefrLevel": "X9"
+       },
+       {
+        "id": "q_c2",
+        "cefrLevel": "C2"
+       },
+       {
+        "id": "q_a2",
+        "cefrLevel": "A2"
+       },
+       {
+        "id": "q_none"
+       },
+       {
+        "id": "q_a1",
+        "cefrLevel": "A1"
+       }
+      ],
+      "level": "B2"
+     },
+     "expect": {
+      "shown": [
+       "q_none"
+      ]
+     }
+    },
+    {
+     "call": "language.cefr.advancement",
+     "args": {
+      "snapshot": {
+       "level": "A1",
+       "wordsLearned": 10,
+       "conversations": 0,
+       "textsRead": 9
+      }
+     },
+     "expect": {
+      "advance": false,
+      "next": "A2",
+      "progress": 400,
+      "words": 200,
+      "conversations": 0,
+      "texts": 1000
+     }
+    },
+    {
+     "call": "language.cefr.advancement",
+     "args": {
+      "snapshot": {
+       "level": "B1",
+       "wordsLearned": 300,
+       "conversations": 25,
+       "textsRead": 15
+      }
+     },
+     "expect": {
+      "advance": true,
+      "next": "B2",
+      "progress": 1000,
+      "words": 1000,
+      "conversations": 1000,
+      "texts": 1000
+     }
+    },
+    {
+     "call": "language.cefr.advancement",
+     "args": {
+      "snapshot": {
+       "level": "C2",
+       "wordsLearned": 0,
+       "conversations": 0,
+       "textsRead": 0
+      }
+     },
+     "expect": {
+      "advance": false,
+      "next": null,
+      "progress": 1000,
+      "words": 1000,
+      "conversations": 1000,
+      "texts": 1000
+     }
+    }
+   ]
+  },
+  {
+   "name": "adaptation refuses what core would dereference unread, or an enumeration outside core's types, as [invalid-input]",
+   "steps": [
+    {
+     "call": "language.difficulty.signals",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0,
+       "grammarChecked": 0,
+       "targetWords": 0,
+       "totalWords": 1,
+       "quality": "50"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.difficulty.signals: `metrics.quality` must be a finite number"
+    },
+    {
+     "call": "language.difficulty.score",
+     "args": {
+      "metrics": {
+       "grammarErrors": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.difficulty.score: `metrics.grammarChecked` must be a finite number"
+    },
+    {
+     "call": "language.npc.hash",
+     "args": {
+      "id": 7
+     },
+     "expectError": "[invalid-input] insimulcore: language.npc.hash: `id` must be a string"
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "D1",
+      "npcId": "ada"
+     },
+     "expectError": "[invalid-input] insimulcore: language.npc.mode: `level` must be one of A1, A2, B1, B2, C1, C2 (got \"D1\")"
+    },
+    {
+     "call": "language.npc.mode",
+     "args": {
+      "level": "A1"
+     },
+     "expectError": "[invalid-input] insimulcore: language.npc.mode: `npcId` must be a string"
+    },
+    {
+     "call": "language.npc.modeDirective",
+     "args": {
+      "mode": "casual",
+      "target": "French"
+     },
+     "expectError": "[invalid-input] insimulcore: language.npc.modeDirective: `mode` must be one of bilingual, simplified, natural (got \"casual\")"
+    },
+    {
+     "call": "language.npc.modeDirective",
+     "args": {
+      "mode": "natural",
+      "target": "French",
+      "level": "Z"
+     },
+     "expectError": "[invalid-input] insimulcore: language.npc.modeDirective: `level` must be one of A1, A2, B1, B2, C1, C2 (got \"Z\")"
+    },
+    {
+     "call": "language.npc.modeDirective",
+     "args": {
+      "mode": "natural",
+      "target": "French",
+      "native": 1
+     },
+     "expectError": "[invalid-input] insimulcore: language.npc.modeDirective: `native` must be a string"
+    },
+    {
+     "call": "language.npc.scaffoldingDirective",
+     "args": {
+      "level": "easy",
+      "target": "French"
+     },
+     "expectError": "[invalid-input] insimulcore: language.npc.scaffoldingDirective: `level` must be one of none, scaffolded, stretch (got \"easy\")"
+    },
+    {
+     "call": "language.npc.frequencyDirective",
+     "args": {
+      "level": "B2"
+     },
+     "expectError": "[invalid-input] insimulcore: language.npc.frequencyDirective: `target` must be a string"
+    },
+    {
+     "call": "language.npc.adaptation",
+     "args": {
+      "level": "A1",
+      "npcId": "ada",
+      "target": "French",
+      "scaffolding": "heavy"
+     },
+     "expectError": "[invalid-input] insimulcore: language.npc.adaptation: `scaffolding` must be one of none, scaffolded, stretch (got \"heavy\")"
+    },
+    {
+     "call": "language.hints.behavior",
+     "args": {},
+     "expectError": "[invalid-input] insimulcore: language.hints.behavior: `level` must be one of A1, A2, B1, B2, C1, C2 (got undefined)"
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "A1",
+      "index": 0,
+      "difficulty": "expert"
+     },
+     "expectError": "[invalid-input] insimulcore: language.hints.showsVocabHint: `difficulty` must be one of beginner, intermediate, advanced (got \"expert\")"
+    },
+    {
+     "call": "language.hints.showsVocabHint",
+     "args": {
+      "level": "A1",
+      "index": 0,
+      "mastered": "yes"
+     },
+     "expectError": "[invalid-input] insimulcore: language.hints.showsVocabHint: `mastered` must be a boolean"
+    },
+    {
+     "call": "language.word.isMastered",
+     "args": {
+      "encountered": 3
+     },
+     "expectError": "[invalid-input] insimulcore: language.word.isMastered: `correct` must be a finite number"
+    },
+    {
+     "call": "language.quests.filterByCefr",
+     "args": {
+      "quests": [
+       {
+        "cefrLevel": "A1"
+       }
+      ],
+      "level": "A1"
+     },
+     "expectError": "[invalid-input] insimulcore: language.quests.filterByCefr: `quests[0].id` must be a string"
+    },
+    {
+     "call": "language.quests.filterByCefr",
+     "args": {
+      "quests": [
+       {
+        "id": "q",
+        "cefrLevel": 1
+       }
+      ],
+      "level": "A1"
+     },
+     "expectError": "[invalid-input] insimulcore: language.quests.filterByCefr: `quests[0].cefrLevel` must be a string"
+    },
+    {
+     "call": "language.cefr.advancement",
+     "args": {
+      "snapshot": {
+       "level": "A0",
+       "wordsLearned": 0,
+       "conversations": 0,
+       "textsRead": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.cefr.advancement: `snapshot.level` must be one of A1, A2, B1, B2, C1, C2 (got \"A0\")"
+    },
+    {
+     "call": "language.cefr.advancement",
+     "args": {
+      "snapshot": {
+       "level": "A1",
+       "wordsLearned": 0,
+       "conversations": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: language.cefr.advancement: `snapshot.textsRead` must be a finite number"
+    }
+   ]
+  },
+  {
+   "name": "pronunciation: phonetic codes, the normalised phrase, word similarity, a phrase's score with close, missed and extra words, grades, word feedback, XP, hint penalties, listen and repeat with and without a quest",
+   "steps": [
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "Phare"
+     },
+     "expect": {
+      "code": "FR"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "ghetto"
+     },
+     "expect": {
+      "code": "ET"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "Ñu"
+     },
+     "expect": {
+      "code": "NY"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "WHISKY!"
+     },
+     "expect": {
+      "code": "WSKY"
+     }
+    },
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": "æsir"
+     },
+     "expect": {
+      "code": "ÆSR"
+     }
+    },
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {
+      "text": "  Où — est… la \"gare\"?  "
+     },
+     "expect": {
+      "normalized": "où est la gare"
+     }
+    },
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {
+      "text": ""
+     },
+     "expect": {
+      "normalized": ""
+     }
+    },
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {
+      "text": "A-B (c) [d]"
+     },
+     "expect": {
+      "normalized": "ab c d"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "phare",
+      "spoken": "far"
+     },
+     "expect": {
+      "similarity": 640,
+      "text": 400,
+      "phonetic": 1000,
+      "expectedCode": "FR",
+      "spokenCode": "FR"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "naïve",
+      "spoken": "naive"
+     },
+     "expect": {
+      "similarity": 800,
+      "text": 800,
+      "phonetic": 666,
+      "expectedCode": "NÏV",
+      "spokenCode": "NEV"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "",
+      "spoken": "x"
+     },
+     "expect": {
+      "similarity": 0,
+      "text": 0,
+      "phonetic": 0,
+      "expectedCode": "",
+      "spokenCode": "KS"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "Étoile",
+      "spoken": "étoile"
+     },
+     "expect": {
+      "similarity": 1000,
+      "text": 1000,
+      "phonetic": 1000,
+      "expectedCode": "ÉTWAL",
+      "spokenCode": "ÉTWAL"
+     }
+    },
+    {
+     "call": "language.pronunciation.score",
+     "args": {
+      "expected": "le petit chat noir",
+      "spoken": "le peti chien noir merci"
+     },
+     "expect": {
+      "score": 70,
+      "words": [
+       {
+        "expected": "le",
+        "spoken": "le",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "petit",
+        "spoken": "peti",
+        "match": "close",
+        "similarity": 800
+       },
+       {
+        "expected": "chat",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "noir",
+        "spoken": "noir",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "",
+        "spoken": "chien",
+        "match": "extra",
+        "similarity": 0
+       },
+       {
+        "expected": "",
+        "spoken": "merci",
+        "match": "extra",
+        "similarity": 0
+       }
+      ],
+      "feedback": "Good attempt! Close on: \"peti\" → try \"petit\""
+     }
+    },
+    {
+     "call": "language.pronunciation.score",
+     "args": {
+      "expected": "bonjour",
+      "spoken": "BONJOUR!"
+     },
+     "expect": {
+      "score": 100,
+      "words": [
+       {
+        "expected": "bonjour",
+        "spoken": "bonjour",
+        "match": "exact",
+        "similarity": 1000
+       }
+      ],
+      "feedback": "Excellent pronunciation!"
+     }
+    },
+    {
+     "call": "language.pronunciation.grade",
+     "args": {
+      "score": 100
+     },
+     "expect": {
+      "grade": "A"
+     }
+    },
+    {
+     "call": "language.pronunciation.grade",
+     "args": {
+      "score": 90
+     },
+     "expect": {
+      "grade": "A"
+     }
+    },
+    {
+     "call": "language.pronunciation.grade",
+     "args": {
+      "score": 89
+     },
+     "expect": {
+      "grade": "B"
+     }
+    },
+    {
+     "call": "language.pronunciation.grade",
+     "args": {
+      "score": 70
+     },
+     "expect": {
+      "grade": "B"
+     }
+    },
+    {
+     "call": "language.pronunciation.grade",
+     "args": {
+      "score": 69
+     },
+     "expect": {
+      "grade": "C"
+     }
+    },
+    {
+     "call": "language.pronunciation.grade",
+     "args": {
+      "score": 40
+     },
+     "expect": {
+      "grade": "C"
+     }
+    },
+    {
+     "call": "language.pronunciation.grade",
+     "args": {
+      "score": 39
+     },
+     "expect": {
+      "grade": "D"
+     }
+    },
+    {
+     "call": "language.pronunciation.grade",
+     "args": {
+      "score": 0
+     },
+     "expect": {
+      "grade": "D"
+     }
+    },
+    {
+     "call": "language.pronunciation.wordFeedback",
+     "args": {
+      "words": [
+       {
+        "expected": "le",
+        "spoken": "le",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "petit",
+        "spoken": "peti",
+        "match": "close",
+        "similarity": 800
+       },
+       {
+        "expected": "chat",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "noir",
+        "spoken": "noir",
+        "match": "exact",
+        "similarity": 1000
+       },
+       {
+        "expected": "",
+        "spoken": "chien",
+        "match": "extra",
+        "similarity": 0
+       },
+       {
+        "expected": "",
+        "spoken": "merci",
+        "match": "extra",
+        "similarity": 0
+       }
+      ]
+     },
+     "expect": {
+      "words": [
+       {
+        "word": "le",
+        "status": "good",
+        "similarity": 1000
+       },
+       {
+        "word": "petit",
+        "status": "acceptable",
+        "similarity": 800
+       },
+       {
+        "word": "chat",
+        "status": "missed",
+        "similarity": 0
+       },
+       {
+        "word": "noir",
+        "status": "good",
+        "similarity": 1000
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.pronunciation.wordFeedback",
+     "args": {
+      "words": [
+       {
+        "expected": "a",
+        "spoken": null,
+        "match": "missed",
+        "similarity": 0
+       },
+       {
+        "expected": "b",
+        "spoken": "b",
+        "match": "close",
+        "similarity": 899
+       },
+       {
+        "expected": "c",
+        "spoken": "c",
+        "match": "close",
+        "similarity": 600
+       },
+       {
+        "expected": "d",
+        "spoken": "x",
+        "match": "close",
+        "similarity": 599
+       }
+      ]
+     },
+     "expect": {
+      "words": [
+       {
+        "word": "a",
+        "status": "missed",
+        "similarity": 0
+       },
+       {
+        "word": "b",
+        "status": "acceptable",
+        "similarity": 899
+       },
+       {
+        "word": "c",
+        "status": "acceptable",
+        "similarity": 600
+       },
+       {
+        "word": "d",
+        "status": "needs_work",
+        "similarity": 599
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 61
+     },
+     "expect": {
+      "xp": 1
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 70
+     },
+     "expect": {
+      "xp": 2
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 80
+     },
+     "expect": {
+      "xp": 3
+     }
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {
+      "score": 99
+     },
+     "expect": {
+      "xp": 4
+     }
+    },
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 90,
+      "penalties": [
+       300,
+       900
+      ],
+      "revealed": 2
+     },
+     "expect": {
+      "score": 0
+     }
+    },
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 90,
+      "penalties": [
+       300
+      ],
+      "revealed": 5
+     },
+     "expect": {
+      "score": 63
+     }
+    },
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 77,
+      "penalties": [
+       100
+      ],
+      "revealed": 0
+     },
+     "expect": {
+      "score": 77
+     }
+    },
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 50,
+      "penalties": [],
+      "revealed": 1
+     },
+     "expect": {
+      "score": 50
+     }
+    },
+    {
+     "call": "language.pronunciation.listenAndRepeat",
+     "args": {
+      "phrase": {
+       "phraseId": "p9",
+       "targetPhrase": "Merci beaucoup",
+       "language": "fr",
+       "npcId": "ada",
+       "npcName": "Ada"
+      },
+      "spoken": "merci bocoup",
+      "questId": "q_thanks"
+     },
+     "expect": {
+      "score": 85,
+      "passed": true,
+      "xp": 4,
+      "grade": "B",
+      "feedback": "Good attempt! Close on: \"bocoup\" → try \"beaucoup\"",
+      "message": "Good pronunciation!",
+      "narrative": "You repeated \"Merci beaucoup\" — Good attempt! Close on: \"bocoup\" → try \"beaucoup\"",
+      "words": [
+       {
+        "word": "merci",
+        "status": "good",
+        "similarity": 1000
+       },
+       {
+        "word": "beaucoup",
+        "status": "acceptable",
+        "similarity": 695
+       }
+      ],
+      "events": [
+       {
+        "type": "pronunciation_attempt",
+        "phrase": "Merci beaucoup",
+        "score": 85,
+        "passed": true,
+        "questId": "q_thanks"
+       }
+      ]
+     }
+    },
+    {
+     "call": "language.pronunciation.listenAndRepeat",
+     "args": {
+      "phrase": {
+       "targetPhrase": "Merci beaucoup"
+      },
+      "spoken": "merci",
+      "questId": null
+     },
+     "expect": {
+      "score": 50,
+      "passed": false,
+      "xp": 1,
+      "grade": "C",
+      "feedback": "Keep practicing! Missed: \"beaucoup\"",
+      "message": "Keep practicing!",
+      "narrative": "You tried to repeat \"Merci beaucoup\" — Keep practicing! Missed: \"beaucoup\"",
+      "words": [
+       {
+        "word": "merci",
+        "status": "good",
+        "similarity": 1000
+       },
+       {
+        "word": "beaucoup",
+        "status": "missed",
+        "similarity": 0
+       }
+      ],
+      "events": [
+       {
+        "type": "pronunciation_attempt",
+        "phrase": "Merci beaucoup",
+        "score": 50,
+        "passed": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "pronunciation refuses what core would dereference unread as [invalid-input]",
+   "steps": [
+    {
+     "call": "language.pronunciation.encode",
+     "args": {
+      "word": null
+     },
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.encode: `word` must be a string"
+    },
+    {
+     "call": "language.pronunciation.normalize",
+     "args": {},
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.normalize: `text` must be a string"
+    },
+    {
+     "call": "language.pronunciation.wordSimilarity",
+     "args": {
+      "expected": "a",
+      "spoken": 1
+     },
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.wordSimilarity: `spoken` must be a string"
+    },
+    {
+     "call": "language.pronunciation.score",
+     "args": {
+      "spoken": "a"
+     },
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.score: `expected` must be a string"
+    },
+    {
+     "call": "language.pronunciation.grade",
+     "args": {
+      "score": "90"
+     },
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.grade: `score` must be a finite number"
+    },
+    {
+     "call": "language.pronunciation.wordFeedback",
+     "args": {
+      "words": [
+       {
+        "expected": "a",
+        "match": "near",
+        "similarity": 1
+       }
+      ]
+     },
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.wordFeedback: `words[0].match` must be one of exact, close, missed, extra (got \"near\")"
+    },
+    {
+     "call": "language.pronunciation.wordFeedback",
+     "args": {
+      "words": [
+       {
+        "expected": "a",
+        "match": "close"
+       }
+      ]
+     },
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.wordFeedback: `words[0].similarity` must be a finite number"
+    },
+    {
+     "call": "language.pronunciation.xp",
+     "args": {},
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.xp: `score` must be a finite number"
+    },
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 90,
+      "penalties": [
+       100,
+       "200"
+      ],
+      "revealed": 2
+     },
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.hintPenalty: `penalties[1]` must be a finite number"
+    },
+    {
+     "call": "language.pronunciation.hintPenalty",
+     "args": {
+      "score": 90,
+      "penalties": 100,
+      "revealed": 2
+     },
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.hintPenalty: `penalties` must be an array"
+    },
+    {
+     "call": "language.pronunciation.listenAndRepeat",
+     "args": {
+      "phrase": {
+       "phraseId": "p1"
+      },
+      "spoken": "a"
+     },
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.listenAndRepeat: `phrase.targetPhrase` must be a string"
+    },
+    {
+     "call": "language.pronunciation.listenAndRepeat",
+     "args": {
+      "phrase": {
+       "targetPhrase": "a"
+      },
+      "spoken": "a",
+      "questId": 5
+     },
+     "expectError": "[invalid-input] insimulcore: language.pronunciation.listenAndRepeat: `questId` must be a string"
     }
    ]
   }

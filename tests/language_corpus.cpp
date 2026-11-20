@@ -1,12 +1,14 @@
 // language_corpus.cpp — core's P9h language corpora, driven through
 // libinsimulcore's `language.*` rows.
 //
-// PL.native-language-rows, slice 1 (rulings U128, U118, U107(2), U101(1), U49(3),
-// U36). Core's language kernels (src/language-learning/: the book, the save block,
-// the prompt selector, hover and its word key, the chat metrics; and
-// src/prolog/player-language-state.ts) are rows of corebridge/js/entry.js. This gate
-// holds them to core's own corpora, conformance/language/{progress,save,prompts,
-// hover,chat}.json, COPIED byte for byte into corebridge/vendor/core/conformance/
+// PL.native-language-rows, slices 1 and 2 (rulings U128, U118, U107(2), U101(1),
+// U49(3), U36). Core's language kernels (src/language-learning/: the book, the save
+// block, the prompt selector, hover and its word key, the chat metrics; slice 2: the
+// vocabulary bank and the learning profile, the rest of adaptation.ts, listen and
+// repeat; and src/prolog/player-language-state.ts, src/language/phonetic-similarity.ts)
+// are rows of corebridge/js/entry.js. This gate holds them to core's own corpora,
+// conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,
+// pronunciation}.json, COPIED byte for byte into corebridge/vendor/core/conformance/
 // language/ at the pin and sha256-checked by the `core_vendor` ctest. Nothing here
 // re-writes a case or computes an answer: every answer comes out of the rows; this
 // file only composes them per op, as core's reference runner
@@ -45,6 +47,30 @@
 //                       monitor started again: language.difficulty.initial), line
 //                       (language.chat.line, then language.difficulty.recordTurn with its
 //                       metrics), hear, end (language.chat.finish)
+//   bank      cards     a book, language.bank.categories, language.bank.cards (query ?? {})
+//             reveal    language.bank.revealsMeaning for each of the runner's three display
+//                       modes and three interactions
+//             grammar   a book, language.bank.grammarTab, language.bank.analyzeWeaknesses
+//                       (options ?? {}), language.bank.strongPatterns (max when a number)
+//             tables    language.contract (weaknessVolumePermille, weaknessConfidencePermille)
+//             profile   language.profile.build (history ?? [], assessments ?? [])
+//             history   language.profile.history, then language.profile.build over it
+//   adaptation struggle language.difficulty.signals and language.difficulty.score per turn
+//             difficulty language.difficulty.initial, then per step: turn (recordTurn)
+//             mode      language.npc.hash (roll = hash mod 100, as the runner derives it), then
+//                       language.npc.mode at each of the runner's six bands
+//             npc       language.npc.adaptation (native when a string, scaffolding ?? 'none')
+//             hint      language.hints.showsVocabHint per check (mastered === true), the check
+//                       echoed with its show
+//             quests    language.quests.filterByCefr (quests ?? [])
+//             advance   language.cefr.advancement per snapshot
+//   pronunciation encode language.pronunciation.encode per word
+//             similarity language.pronunciation.wordSimilarity per pair
+//             score     language.pronunciation.normalize (the spoken line), then
+//                       language.pronunciation.score
+//             repeat    language.pronunciation.listenAndRepeat (questId when a string)
+//             xp        language.pronunciation.xp per score
+//             hints     language.pronunciation.hintPenalty per revealed count
 //
 // Comparison is the corpora's own rule: exact, object key sets included. Each file's
 // declared `ops` and `steps` must be exactly the ones this runner drives (core's
@@ -53,7 +79,8 @@
 // show on every start that core's refusals are VALUES (empty_word, unknown_encounter,
 // no_target_language, empty_line, no_turns, nothing_in_reach, no_prompt, no_quiz), that
 // a book core's own save reader cannot read is the `[invalid-input]` ERROR naming its
-// key, and that an unknown row is the method table's error. The run FAILS on a file
+// key (as are a vocabulary sort and a band outside core's types), and that an unknown
+// row is the method table's error. The run FAILS on a file
 // that is not a language corpus or holds no case, on an op of a file that no case
 // drives, on a row missing from the method table, on a session left open, and when its
 // comparator or its perturbation cannot fail (a self-test on every start).
@@ -88,7 +115,7 @@ using insimul::JsonValuePtr;
 namespace {
 
 // core's LANGUAGE_SYSTEMS_CORPUS_OPS and LANGUAGE_SYSTEMS_CORPUS_STEPS
-// (src/language-learning/systems-corpus.ts) for the files this slice binds.
+// (src/language-learning/systems-corpus.ts) for the files slices 1 and 2 bind.
 struct FileSpec {
 	const char *file;
 	std::vector<std::string> ops;
@@ -101,6 +128,10 @@ const std::vector<FileSpec> kFiles = {
     {"language/prompts", {"run"}, {{"run", {"register", "pick", "standing", "answer", "reach", "choose"}}}},
     {"language/hover", {"tokens", "run"}, {{"run", {"hints", "see", "mastery", "lookup", "resolve", "likely", "display"}}}},
     {"language/chat", {"words", "percent", "hear", "usages", "run"}, {{"run", {"start", "line", "hear", "end"}}}},
+    // slice 2
+    {"language/bank", {"cards", "reveal", "grammar", "tables", "profile", "history"}, {}},
+    {"language/adaptation", {"struggle", "difficulty", "mode", "npc", "hint", "quests", "advance"}, {{"difficulty", {"turn"}}}},
+    {"language/pronunciation", {"encode", "similarity", "score", "repeat", "xp", "hints"}, {}},
 };
 
 // Every row this runner calls.
@@ -121,7 +152,16 @@ const char *const kRows[] = {
     "language.hover.lookup",      "language.hover.resolve",       "language.hover.display",
     "language.chat.lineWords",    "language.chat.questUsages",    "language.chat.targetPercent",
     "language.chat.start",        "language.chat.hear",           "language.chat.line",
-    "language.chat.finish",       "language.difficulty.initial",  "language.difficulty.recordTurn"};
+    "language.chat.finish",       "language.difficulty.initial",  "language.difficulty.recordTurn",
+    // slice 2
+    "language.bank.categories",   "language.bank.cards",          "language.bank.revealsMeaning",
+    "language.bank.grammarTab",   "language.bank.analyzeWeaknesses", "language.bank.strongPatterns",
+    "language.profile.history",   "language.profile.build",       "language.difficulty.signals",
+    "language.difficulty.score",  "language.npc.hash",            "language.npc.mode",
+    "language.npc.adaptation",    "language.hints.showsVocabHint", "language.quests.filterByCefr",
+    "language.cefr.advancement",  "language.pronunciation.encode", "language.pronunciation.wordSimilarity",
+    "language.pronunciation.normalize", "language.pronunciation.score", "language.pronunciation.listenAndRepeat",
+    "language.pronunciation.xp",  "language.pronunciation.hintPenalty"};
 
 std::string read_file(const std::string &path, bool &ok) {
 	std::ifstream in(path, std::ios::binary);
@@ -1028,6 +1068,217 @@ JsonValuePtr chat(Run &r, const std::string &op, const JsonValue &input) {
 	return make_array(out);
 }
 
+// ── bank (slice 2) ────────────────────────────────────────────────────────────
+
+JsonValuePtr bank(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "cards") {
+		// { categories: bankCategories(book), cards: bankCards(book, input.query ?? {}) }
+		JsonValuePtr book = r.book_of(input.find("book"));
+		Obj o;
+		o.put("categories", member(c.call("language.bank.categories", Obj().put("book", book)), "categories", "language.bank.categories"));
+		Obj a;
+		a.put("book", book);
+		const JsonValue *q = input.find("query");
+		a.put("query", q && !q->is_null() ? deep_copy(*q) : Obj().v);
+		o.put("cards", member(c.call("language.bank.cards", a), "cards", "language.bank.cards"));
+		return o.v;
+	}
+	if (op == "reveal") {
+		// core's runner lists the three display modes and the three interactions itself.
+		std::vector<JsonValuePtr> out;
+		for (const char *mode : {"inline", "hover", "click"}) {
+			Obj o;
+			o.put("mode", mode);
+			for (const char *interaction : {"idle", "gaze", "select"}) {
+				auto v = c.call("language.bank.revealsMeaning", Obj().put("reveal", mode).put("interaction", interaction));
+				o.put(interaction, member(v, "reveals", "language.bank.revealsMeaning"));
+			}
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	if (op == "grammar") {
+		// { tab: grammarTab(book), analysis: analyzeWeaknesses(book, input.options ?? {}), strong: strongPatterns(book, max when a number) }
+		JsonValuePtr book = r.book_of(input.find("book"));
+		Obj o;
+		o.put("tab", member(c.call("language.bank.grammarTab", Obj().put("book", book)), "tab", "language.bank.grammarTab"));
+		Obj a;
+		a.put("book", book);
+		const JsonValue *opts = input.find("options");
+		a.put("options", opts && !opts->is_null() ? deep_copy(*opts) : Obj().v);
+		o.put("analysis", c.call("language.bank.analyzeWeaknesses", a));
+		Obj s;
+		s.put("book", book);
+		const JsonValue *max = input.find("max");
+		if (max && max->type == JsonType::Number) s.put("max", *max);
+		o.put("strong", member(c.call("language.bank.strongPatterns", s), "patterns", "language.bank.strongPatterns"));
+		return o.v;
+	}
+	if (op == "tables") {
+		auto k = c.call("language.contract", Obj());
+		return Obj()
+		    .put("volume", member(k, "weaknessVolumePermille", "language.contract"))
+		    .put("confidence", member(k, "weaknessConfidencePermille", "language.contract"))
+		    .v;
+	}
+	auto list_or_empty = [&](const char *key) {
+		const JsonValue *v = input.find(key);
+		return v && !v->is_null() ? deep_copy(*v) : make_array();
+	};
+	if (op == "profile") {
+		return c.call("language.profile.build", Obj().put("history", list_or_empty("history")).put("assessments", list_or_empty("assessments")));
+	}
+	if (op == "history") {
+		// learningHistory over the host's records, then the profile over that history.
+		auto history = member(c.call("language.profile.history", Obj().put("quests", list_or_empty("quests"))), "history", "language.profile.history");
+		auto profile = c.call("language.profile.build", Obj().put("history", history).put("assessments", list_or_empty("assessments")));
+		return Obj().put("history", history).put("profile", profile).v;
+	}
+	throw DriveError("op " + op + " is not one of core's language/bank ops");
+}
+
+// ── adaptation (slice 2) ──────────────────────────────────────────────────────
+
+JsonValuePtr adaptation(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "struggle") {
+		std::vector<JsonValuePtr> out;
+		for (const auto &m : items(need(input, "turns", "the input"), "turns")) {
+			auto sig = member(c.call("language.difficulty.signals", Obj().put("metrics", *m)), "signals", "language.difficulty.signals");
+			auto score = member(c.call("language.difficulty.score", Obj().put("metrics", *m)), "score", "language.difficulty.score");
+			out.push_back(Obj().put("signals", sig).put("score", score).v);
+		}
+		return make_array(out);
+	}
+	if (op == "difficulty") {
+		JsonValuePtr state = member(c.call("language.difficulty.initial", Obj()), "state", "language.difficulty.initial");
+		std::vector<JsonValuePtr> out;
+		for (const auto &sp : items(need(input, "steps", "the input"), "steps")) {
+			const std::string d = do_of(*sp);
+			r.step_known(op, d);
+			auto t = c.call("language.difficulty.recordTurn", Obj().put("state", state).put("metrics", need(*sp, "metrics", "a turn step")));
+			state = member(t, "state", "language.difficulty.recordTurn");
+			Obj o;
+			o.put("do", d).put("struggle", member(t, "struggle", "recordTurn"));
+			for (const char *k : {"level", "high", "low", "turns", "scaffolded", "stretched"}) o.put(k, need(*state, k, "the difficulty state"));
+			o.put("adjustment", member(t, "adjustment", "recordTurn"));
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	if (op == "mode") {
+		// { id, hash, roll: hash mod 100, modes: the mode at each band } — core's runner lists the six bands itself.
+		std::vector<JsonValuePtr> out;
+		for (const auto &id : items(need(input, "npcs", "the input"), "npcs")) {
+			auto hash = member(c.call("language.npc.hash", Obj().put("id", *id)), "hash", "language.npc.hash");
+			if (hash->type != JsonType::Number) throw DriveError("language.npc.hash answered no number");
+			Obj modes;
+			for (const char *band : {"A1", "A2", "B1", "B2", "C1", "C2"}) {
+				modes.put(band, member(c.call("language.npc.mode", Obj().put("level", band).put("npcId", *id)), "mode", "language.npc.mode"));
+			}
+			out.push_back(Obj().put("id", *id).put("hash", hash).put("roll", make_number(std::fmod(hash->number_value, 100.0))).put("modes", modes.v).v);
+		}
+		return make_array(out);
+	}
+	if (op == "npc") {
+		// npcAdaptation(level, npcId, target, native when a string, scaffolding ?? 'none')
+		Obj a;
+		a.put("level", need(input, "level", "the input")).put("npcId", need(input, "npcId", "the input")).put("target", need(input, "target", "the input"));
+		const JsonValue *native = input.find("native");
+		if (native && native->is_string()) a.put("native", *native);
+		const JsonValue *sc = input.find("scaffolding");
+		a.put("scaffolding", sc && !sc->is_null() ? deep_copy(*sc) : make_string("none"));
+		return c.call("language.npc.adaptation", a);
+	}
+	if (op == "hint") {
+		// { ...check, show: showsVocabHint(level, index, difficulty, mastered === true) }
+		std::vector<JsonValuePtr> out;
+		for (const auto &ch : items(need(input, "checks", "the input"), "checks")) {
+			Obj a;
+			a.put("level", need(*ch, "level", "a check")).put("index", need(*ch, "index", "a check"));
+			if (const JsonValue *d = ch->find("difficulty")) a.put("difficulty", *d);
+			const JsonValue *m = ch->find("mastered");
+			a.put("mastered", make_bool(m && m->type == JsonType::Bool && m->bool_value));
+			Obj o(*ch);
+			o.put("show", member(c.call("language.hints.showsVocabHint", a), "show", "language.hints.showsVocabHint"));
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	if (op == "quests") {
+		const JsonValue *q = input.find("quests");
+		auto shown = c.call("language.quests.filterByCefr", Obj().put("quests", q && !q->is_null() ? deep_copy(*q) : make_array()).put("level", need(input, "level", "the input")));
+		return Obj().put("shown", member(shown, "shown", "language.quests.filterByCefr")).v;
+	}
+	if (op == "advance") {
+		std::vector<JsonValuePtr> out;
+		for (const auto &snap : items(need(input, "snapshots", "the input"), "snapshots")) out.push_back(c.call("language.cefr.advancement", Obj().put("snapshot", *snap)));
+		return make_array(out);
+	}
+	throw DriveError("op " + op + " is not one of core's language/adaptation ops");
+}
+
+// ── pronunciation (slice 2) ───────────────────────────────────────────────────
+
+JsonValuePtr pronunciation(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "encode") {
+		std::vector<JsonValuePtr> out;
+		for (const auto &w : items(need(input, "words", "the input"), "words")) {
+			out.push_back(Obj().put("word", *w).put("code", member(c.call("language.pronunciation.encode", Obj().put("word", *w)), "code", "encode")).v);
+		}
+		return make_array(out);
+	}
+	if (op == "similarity") {
+		std::vector<JsonValuePtr> out;
+		for (const auto &p : items(need(input, "pairs", "the input"), "pairs")) {
+			const auto &pair = items(*p, "a pair");
+			if (pair.size() != 2) throw DriveError("a pair is not two strings");
+			Obj o;
+			o.put("expected", *pair[0]).put("spoken", *pair[1]);
+			auto s = c.call("language.pronunciation.wordSimilarity", Obj().put("expected", *pair[0]).put("spoken", *pair[1]));
+			for (const auto &kv : s->object_items) o.put(kv.first, *kv.second);
+			out.push_back(o.v);
+		}
+		return make_array(out);
+	}
+	if (op == "score") {
+		// { normalized: normalizePhrase(spoken), ...scorePhrase(expected, spoken) }
+		const JsonValue &spoken = need(input, "spoken", "the input");
+		Obj o;
+		o.put("normalized", member(c.call("language.pronunciation.normalize", Obj().put("text", spoken)), "normalized", "normalize"));
+		auto s = c.call("language.pronunciation.score", Obj().put("expected", need(input, "expected", "the input")).put("spoken", spoken));
+		for (const auto &kv : s->object_items) o.put(kv.first, *kv.second);
+		return o.v;
+	}
+	if (op == "repeat") {
+		// listenAndRepeat(phrase, spoken, questId when a string)
+		Obj a;
+		a.put("phrase", need(input, "phrase", "the input")).put("spoken", need(input, "spoken", "the input"));
+		const JsonValue *q = input.find("questId");
+		if (q && q->is_string()) a.put("questId", *q);
+		return c.call("language.pronunciation.listenAndRepeat", a);
+	}
+	if (op == "xp") {
+		std::vector<JsonValuePtr> out;
+		for (const auto &s : items(need(input, "scores", "the input"), "scores")) {
+			out.push_back(Obj().put("score", *s).put("xp", member(c.call("language.pronunciation.xp", Obj().put("score", *s)), "xp", "xp")).v);
+		}
+		return make_array(out);
+	}
+	if (op == "hints") {
+		std::vector<JsonValuePtr> out;
+		for (const auto &rv : items(need(input, "revealed", "the input"), "revealed")) {
+			Obj a;
+			a.put("score", need(input, "score", "the input")).put("penalties", need(input, "penalties", "the input")).put("revealed", *rv);
+			out.push_back(Obj().put("revealed", *rv).put("score", member(c.call("language.pronunciation.hintPenalty", a), "score", "hintPenalty")).v);
+		}
+		return make_array(out);
+	}
+	throw DriveError("op " + op + " is not one of core's language/pronunciation ops");
+}
+
 JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	for (const auto &spec : kFiles) {
 		if (r.file != spec.file) continue;
@@ -1040,6 +1291,9 @@ JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	if (r.file == "language/prompts") return prompts(r, op, input);
 	if (r.file == "language/hover") return hover(r, op, input);
 	if (r.file == "language/chat") return chat(r, op, input);
+	if (r.file == "language/bank") return bank(r, op, input);
+	if (r.file == "language/adaptation") return adaptation(r, op, input);
+	if (r.file == "language/pronunciation") return pronunciation(r, op, input);
 	throw DriveError("file " + r.file + " is not one this runner drives");
 }
 
@@ -1123,7 +1377,17 @@ void refusal_probes(Caller &c, std::map<std::string, int> &sink, Probes &p) {
 		p.check(!s && c.last_error.find("[invalid-input]") != std::string::npos && c.last_error.find("book.words") != std::string::npos,
 		        "an unreadable book was not [invalid-input] naming book.words");
 	}
-	// 9. An unknown row is the method table's error.
+	// 9. Slice 2: a vocabulary sort outside core's VOCABULARY_SORTS (core throws) and a band
+	// outside core's CEFRLevel are the [invalid-input] ERROR naming the member.
+	{
+		auto s = c.try_call("language.bank.cards", "{\"book\":" + book + ",\"query\":{\"sort\":\"length\"}}");
+		p.check(!s && c.last_error.find("[invalid-input]") != std::string::npos && c.last_error.find("query.sort") != std::string::npos,
+		        "an unknown vocabulary sort was not [invalid-input] naming query.sort");
+		auto m = c.try_call("language.npc.mode", "{\"level\":\"D1\",\"npcId\":\"ada\"}");
+		p.check(!m && c.last_error.find("[invalid-input]") != std::string::npos && c.last_error.find("`level`") != std::string::npos,
+		        "an unknown band was not [invalid-input] naming level");
+	}
+	// 10. An unknown row is the method table's error.
 	{
 		auto r = c.try_call("language.book.fly", "{}");
 		p.check(!r && c.last_error.find("unknown method") != std::string::npos, "an unknown row was answered");
@@ -1179,7 +1443,7 @@ int main(int argc, char **argv) {
 	if (probes.passed != probes.total) failed++;
 	std::printf("refusals: %d of %d probe(s) refused as core refuses (values: empty_word, unknown_encounter, no_target_language, "
 	            "empty_line, no_turns, nothing_in_reach, no_prompt, no_quiz; errors: [invalid-input] for an unreadable book, an "
-	            "unknown row; an unknown op or step fails its case)\n",
+	            "unknown vocabulary sort, an unknown band, an unknown row; an unknown op or step fails its case)\n",
 	            probes.passed, probes.total);
 
 	int total_cases = 0, total_driven = 0, refused = 0, accepted = 0;
