@@ -16329,6 +16329,41 @@
      }
     },
     {
+     "call": "language.npc.adaptation",
+     "args": {
+      "level": "A1",
+      "npcId": "ada",
+      "target": "French",
+      "native": "Welsh",
+      "scaffolding": "scaffolded"
+     },
+     "expect": {
+      "mode": "bilingual",
+      "directive": "LANGUAGE MODE — BILINGUAL:\nMix Welsh and French in your responses. Say important words in both languages. For example: \"Le pain — the bread — c'est très bon!\" Gradually use more French as the conversation progresses. If the player writes in Welsh, respond with a mix but lean toward French.\n\nVOCABULARY FREQUENCY CONSTRAINT:\n- Use ONLY the top 200 most common words in French\n- Only the most basic, high-frequency everyday words (greetings, numbers, common nouns/verbs)\n- Stick to concrete nouns (bread, house, water), basic verbs (eat, go, see, do), simple adjectives (big, small, good, bad), and common function words\n- If you MUST use a less common word, immediately provide the English translation in brackets: \"le boulanger [baker]\"\n- Prefer simple present tense and imperative mood\n",
+      "scaffolding": "\nDYNAMIC SCAFFOLDING — ACTIVE:\nThe player is struggling. Adjust your speech NOW:\n- Reduce French usage by 20% compared to your normal mode\n- Use shorter sentences (max 5-7 words)\n- Add inline translations in brackets for key words, like: \"le pain [bread]\"\n- Repeat important words naturally\n- Ask simple yes/no or choice questions to keep the player engaged\n- If the player responds in Welsh, acknowledge and gently guide back to French\nDo NOT mention that you are simplifying. Be natural and encouraging.\n",
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      },
+      "frequency": {
+       "min": 1,
+       "max": 200,
+       "label": "top 200 most common words",
+       "description": "Only the most basic, high-frequency everyday words (greetings, numbers, common nouns/verbs)"
+      },
+      "text": {
+       "maxSentenceWords": 8,
+       "maxParagraphs": 2,
+       "vocabularyTier": "basic",
+       "questionType": "true_false"
+      },
+      "questPool": 30
+     }
+    },
+    {
      "call": "language.hints.behavior",
      "args": {
       "level": "A1"
@@ -16523,6 +16558,36 @@
      },
      "expect": {
       "mastered": true
+     }
+    },
+    {
+     "call": "language.word.isMastered",
+     "args": {
+      "encountered": 12,
+      "correct": 3
+     },
+     "expect": {
+      "mastered": false
+     }
+    },
+    {
+     "call": "language.word.isMastered",
+     "args": {
+      "encountered": 3,
+      "correct": 12
+     },
+     "expect": {
+      "mastered": true
+     }
+    },
+    {
+     "call": "language.word.isMastered",
+     "args": {
+      "encountered": 0,
+      "correct": 9
+     },
+     "expect": {
+      "mastered": false
      }
     },
     {
