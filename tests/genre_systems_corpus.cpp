@@ -1124,6 +1124,27 @@ void refusal_probes(Caller &c, const JsonValuePtr &slices, std::map<std::string,
 		}
 	}
 	{
+		// A step that names no faction acts for the campaign's playerFaction, as core's runner reads it (every corpus
+		// campaign's is `player`, so only this probe tells the two apart).
+		std::string crown = campaign;
+		for (const char *from : {"\"playerFaction\":\"player\"", "\"factions\":[\"player\","}) {
+			const std::string f = from, t = f.find("factions") != std::string::npos ? "\"factions\":[\"crown\"," : "\"playerFaction\":\"crown\"";
+			crown.replace(crown.find(f), f.size(), t);
+		}
+		auto input = insimul::parse_json(("{\"campaign\":" + crown + ",\"steps\":[{\"step\":\"start\"},{\"step\":\"stockpile\"}]}").c_str()).root;
+		bool acts = false;
+		try {
+			Run r{c, sink, kFiles[7], slices};
+			JsonValuePtr out = drive(r, "run", *input);
+			const JsonValue *st = out->find("steps");
+			const JsonValue *pile = st && st->size() == 2 ? st->array_items[1]->find("stockpile") : nullptr;
+			const JsonValue *coin = pile ? pile->find("coin") : nullptr;
+			acts = coin && coin->type == JsonType::Number && coin->number_value == 5;
+		} catch (const std::exception &) {
+		}
+		probe(p, acts, "a strategy step with no faction does not act for the campaign's playerFaction");
+	}
+	{
 		auto rd = c.try_call("strategy.save.read", "{\"block\":{\"turn\":-1}}");
 		probe(p, rd && !rd->get_bool("ok", true) && rd->find("keys") && json_of(*rd->find("keys")) == "[\"turn\"]", "an unreadable strategy block is not the value { ok: false, keys: [turn] }");
 	}
@@ -1199,7 +1220,7 @@ int main(int argc, char **argv) {
 	std::printf("refusals: %d of %d probe(s) as core answers (an unknown op, an unknown step and a nameless step fail their case, "
 	            "for the puzzle, the platformer and the strategy game; values: unknown_riddle, unknown_lock, unknown_clue, "
 	            "unknown_level, locked, not_running, movement with the probed link, schema, unknown_faction, unknown_business, "
-	            "cannot_claim, cannot_assign, not_assigned, an unreadable block's keys (all three); errors: [invalid-input] for a "
+	            "cannot_claim, cannot_assign, not_assigned, an unreadable block's keys (all three), a strategy step acting for the campaign's playerFaction; errors: [invalid-input] for a "
 	            "world that is not an object (all three), a slice name that is no own key, a definition, a course, a link, a "
 	            "campaign, a board and a state row missing members; an unknown row)\n",
 	            probes.passed, probes.total);
