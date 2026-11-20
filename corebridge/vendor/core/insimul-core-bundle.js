@@ -3167,8 +3167,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
   var DETERMINISTIC_DECIMALS = 4;
   function roundDeterministic(value, decimals = DETERMINISTIC_DECIMALS) {
-    const scale = 10 ** decimals;
-    return Math.round(value * scale) / scale;
+    const scale2 = 10 ** decimals;
+    return Math.round(value * scale2) / scale2;
   }
   function compareIds(a, b) {
     return a === b ? 0 : a < b ? -1 : 1;
@@ -3259,8 +3259,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function realSecondsPerGameHour(msPerGameHour, timeScale) {
     return msPerGameHour / (timeScale * 1e3);
   }
-  function clampTimeScale(scale) {
-    return Math.max(CLOCK_DEFAULTS.timeScaleMin, Math.min(CLOCK_DEFAULTS.timeScaleMax, scale));
+  function clampTimeScale(scale2) {
+    return Math.max(CLOCK_DEFAULTS.timeScaleMin, Math.min(CLOCK_DEFAULTS.timeScaleMax, scale2));
   }
   function clampMsPerGameHour(ms) {
     return Math.max(CLOCK_DEFAULTS.msPerGameHourMin, ms);
@@ -7707,10 +7707,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (!tierLabels || tierLabels.length === 0) return PROFICIENCY_TIERS.map((t) => ({ ...t }));
     return PROFICIENCY_TIERS.slice(0, tierLabels.length).map((t, i) => ({ ...t, label: tierLabels[i] }));
   }
-  function proficiencyOf(scores, tiers = PROFICIENCY_TIERS, scale = PROFICIENCY_SCALE) {
+  function proficiencyOf(scores, tiers = PROFICIENCY_TIERS, scale2 = PROFICIENCY_SCALE) {
     const n = scores.length;
     const sum = scores.reduce((s, d) => s + d.score, 0);
-    const den = n * scale;
+    const den = n * scale2;
     const overall = n === 0 ? 0 : Math.floor((sum * 100 * 2 + den) / (den * 2));
     const sorted = [...tiers].sort((a, b) => b.minScore - a.minScore);
     const tier = sorted.find((t) => n === 0 ? t.minScore <= 0 : sum >= t.minScore * 10 * den) ?? tiers[0];
@@ -10542,11 +10542,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
 
   // @insimul/core/src/game-engine/logic/waypointFading.ts
-  function computeWaypointAlpha(distance) {
-    if (distance < 3) return 0;
-    if (distance < 8) return (distance - 3) / 5;
-    if (distance > 200) return 0.2;
-    if (distance > 150) return 0.2 + 0.8 * ((200 - distance) / 50);
+  function computeWaypointAlpha(distance2) {
+    if (distance2 < 3) return 0;
+    if (distance2 < 8) return (distance2 - 3) / 5;
+    if (distance2 > 200) return 0.2;
+    if (distance2 > 150) return 0.2 + 0.8 * ((200 - distance2) / 50);
     return 1;
   }
 
@@ -10942,8 +10942,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     resume() {
       this._paused = false;
     }
-    setTimeScale(scale) {
-      this._timeScale = clampTimeScale(scale);
+    setTimeScale(scale2) {
+      this._timeScale = clampTimeScale(scale2);
     }
     setMsPerGameHour(ms) {
       this._msPerGameHour = clampMsPerGameHour(ms);
@@ -11215,10 +11215,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     return n < 0 ? 0 : n > 100 ? 100 : n;
   }
   function dayOfYear(climate, day) {
-    const length = climate.yearLength;
-    if (length <= 0) return 0;
-    const d = Math.trunc(day) % length;
-    return d < 0 ? d + length : d;
+    const length2 = climate.yearLength;
+    if (length2 <= 0) return 0;
+    const d = Math.trunc(day) % length2;
+    return d < 0 ? d + length2 : d;
   }
   function seasonForDay(climate, day) {
     if (climate.yearLength <= 0) return null;
@@ -12341,7 +12341,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     let unreadable = 0;
     const hidden = [];
     const skip = new Set(input.exclude ?? []);
-    const length = Math.hypot(lens.x - pivot.x, lens.y - pivot.y, lens.z - pivot.z);
+    const length2 = Math.hypot(lens.x - pivot.x, lens.y - pivot.y, lens.z - pivot.z);
     input.solids.forEach((s) => {
       if (!isMovementSolid(s)) {
         unreadable += 1;
@@ -12349,7 +12349,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       }
       if (rule2 !== "hide" || skip.has(s.id) || !lensHides(s)) return;
       const t = segmentEntry(s, pivot, lens);
-      if (t !== null) hidden.push({ id: s.id, atM: t * length });
+      if (t !== null) hidden.push({ id: s.id, atM: t * length2 });
     });
     hidden.sort((a, b) => a.atM - b.atM || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     return { rule: rule2, pivot, lens, hidden, unreadable };
@@ -12431,8 +12431,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     let dir = { x: fwd.x * f + rgt.x * r, y: 0, z: fwd.z * f + rgt.z * r };
     if (p.movement.plane === "xy") dir = { ...dir, z: 0 };
     if (p.movement.plane === "xz") dir = { ...dir, y: 0 };
-    const scale = input.walkMps * (input.running === true ? PLAYER_GAIT.runOverWalk : 1);
-    const velocity = { x: dir.x * scale, y: dir.y * scale, z: dir.z * scale };
+    const scale2 = input.walkMps * (input.running === true ? PLAYER_GAIT.runOverWalk : 1);
+    const velocity = { x: dir.x * scale2, y: dir.y * scale2, z: dir.z * scale2 };
     return {
       frame: p.movement.frame,
       plane: p.movement.plane,
@@ -12702,8 +12702,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     let s = typeof surface === "string" ? surface : "";
     while (s.length > 0) {
       if (Object.prototype.hasOwnProperty.call(SURFACE_FOOTSTEPS, s)) return { surface: SURFACE_FOOTSTEPS[s], source: "table" };
-      const dot = s.lastIndexOf(".");
-      s = dot < 0 ? "" : s.slice(0, dot);
+      const dot2 = s.lastIndexOf(".");
+      s = dot2 < 0 ? "" : s.slice(0, dot2);
     }
     return { surface: DEFAULT_FOOTSTEP_SURFACE, source: "default" };
   }
@@ -17656,8 +17656,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     constructor(issues) {
       super();
       this.issues = [];
-      this.addIssue = (sub) => {
-        this.issues = [...this.issues, sub];
+      this.addIssue = (sub2) => {
+        this.issues = [...this.issues, sub2];
       };
       this.addIssues = (subs = []) => {
         this.issues = [...this.issues, ...subs];
@@ -17724,13 +17724,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     flatten(mapper = (issue) => issue.message) {
       const fieldErrors = {};
       const formErrors = [];
-      for (const sub of this.issues) {
-        if (sub.path.length > 0) {
-          const firstEl = sub.path[0];
+      for (const sub2 of this.issues) {
+        if (sub2.path.length > 0) {
+          const firstEl = sub2.path[0];
           fieldErrors[firstEl] = fieldErrors[firstEl] || [];
-          fieldErrors[firstEl].push(mapper(sub));
+          fieldErrors[firstEl].push(mapper(sub2));
         } else {
-          formErrors.push(mapper(sub));
+          formErrors.push(mapper(sub2));
         }
       }
       return { formErrors, fieldErrors };
@@ -31493,27 +31493,27 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     if (typeof override.path !== "string" || !/^[A-Za-z]+(\.[A-Za-z]+)?$/.test(override.path)) {
       throw new GenreResolutionError("invalid-override", `${where}: a path is 'field' or 'features.field'`);
     }
-    const [head, sub] = override.path.split(".");
+    const [head, sub2] = override.path.split(".");
     const target = config;
     if (head === "id") {
       throw new GenreResolutionError("invalid-override", `${where}: the genre id is not overridable (name another genre instead)`);
     }
-    if (sub !== void 0) {
+    if (sub2 !== void 0) {
       if (head !== "features") {
         throw new GenreResolutionError("invalid-override", `${where}: only 'features' has sub-fields`);
       }
       const features = config.features;
-      if (!hasOwn(features, sub) && !OPTIONAL_FEATURE_FLAGS.includes(sub)) {
-        throw new GenreResolutionError("invalid-override", `${where}: features has no '${sub}'`);
+      if (!hasOwn(features, sub2) && !OPTIONAL_FEATURE_FLAGS.includes(sub2)) {
+        throw new GenreResolutionError("invalid-override", `${where}: features has no '${sub2}'`);
       }
-      const refusal3 = genreFeatureRefusal(sub);
+      const refusal3 = genreFeatureRefusal(sub2);
       if (refusal3) {
         throw new GenreResolutionError("refused-feature", `${where}: ${refusal3.code}: ${refusal3.reason}`);
       }
       if (typeof override.value !== "boolean") {
         throw new GenreResolutionError("invalid-override", `${where}: a feature switch is a boolean`);
       }
-      features[sub] = override.value;
+      features[sub2] = override.value;
       return;
     }
     if (!hasOwn(target, head)) {
@@ -34886,8 +34886,8 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     };
   }
   function weekdayOf(clock, tuning) {
-    const length = Math.max(1, Math.trunc(tuning.weekLength));
-    return (Math.trunc(clock.day) % length + length) % length;
+    const length2 = Math.max(1, Math.trunc(tuning.weekLength));
+    return (Math.trunc(clock.day) % length2 + length2) % length2;
   }
   function hourInWindow(hour, startHour, endHour) {
     const h = Math.trunc(hour);
@@ -38568,9 +38568,9 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     if (d !== null && d.action === "exit") {
       const b = buildings.find((x) => x.id === buildingId);
       const entrance = stated2 ? (b?.interior?.doors ?? []).find((x) => x && x.kind === "entrance") : void 0;
-      const distance = entrance && finitePoint2(entrance.position) ? dist(entrance.position) : null;
-      exit = { action: "exit", kind: "door", id: d.building, prompt: `Exit ${d.label}`, distance };
-      if (distance !== null && onFloor(entrance?.position.y) && distance <= reach.exit) inReach.push(exit);
+      const distance2 = entrance && finitePoint2(entrance.position) ? dist(entrance.position) : null;
+      exit = { action: "exit", kind: "door", id: d.building, prompt: `Exit ${d.label}`, distance: distance2 };
+      if (distance2 !== null && onFloor(entrance?.position.y) && distance2 <= reach.exit) inReach.push(exit);
     }
     let best = null;
     for (const c of inReach) if (best === null || c.distance < best.distance) best = c;
@@ -38604,9 +38604,9 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
   function struggleSignals(m) {
     const grammar = m.grammarChecked > 0 ? Math.floor(m.grammarErrors * 1e3 / m.grammarChecked) : 0;
     const targetLanguage = m.totalWords > 0 ? clamp1000(Math.floor((m.totalWords - 2 * m.targetWords) * 1e3 / m.totalWords)) : 1e3;
-    const length = m.totalWords <= SHORT_RESPONSE ? 1e3 : m.totalWords >= GOOD_RESPONSE ? 0 : Math.floor((GOOD_RESPONSE - m.totalWords) * 1e3 / (GOOD_RESPONSE - SHORT_RESPONSE));
+    const length2 = m.totalWords <= SHORT_RESPONSE ? 1e3 : m.totalWords >= GOOD_RESPONSE ? 0 : Math.floor((GOOD_RESPONSE - m.totalWords) * 1e3 / (GOOD_RESPONSE - SHORT_RESPONSE));
     const quality = m.quality === void 0 || m.quality === null ? 0 : clamp1000((100 - m.quality) * 10);
-    return { grammar, targetLanguage, length, quality };
+    return { grammar, targetLanguage, length: length2, quality };
   }
   function struggleScore(m) {
     const s = struggleSignals(m);
@@ -39169,10 +39169,10 @@ Do NOT mention that you are increasing difficulty. Be natural.
     }
     return prev[y.length];
   }
-  function distanceScore(distance, length) {
-    if (length === 0) return distance === 0 ? 100 : 0;
-    if (distance >= length) return 0;
-    return halfUpPercent(length - distance, length);
+  function distanceScore(distance2, length2) {
+    if (length2 === 0) return distance2 === 0 ? 100 : 0;
+    if (distance2 >= length2) return 0;
+    return halfUpPercent(length2 - distance2, length2);
   }
   function registerTargets(state, targets) {
     const s = { targets: [...state.targets], progress: { ...state.progress } };
@@ -40678,8 +40678,8 @@ After asking each question, wait for the player's response before moving to the 
           if (!progress.playerPos || !progress.targetPos) return false;
           const dx = progress.playerPos.x - progress.targetPos.x;
           const dz = progress.playerPos.z - progress.targetPos.z;
-          const distance = Math.sqrt(dx * dx + dz * dz);
-          return distance < 5;
+          const distance2 = Math.sqrt(dx * dx + dz * dz);
+          return distance2 < 5;
         },
         visualIndicator: (scene, objective) => {
         }
@@ -40985,8 +40985,8 @@ Return JSON format:
           const dx = progress.playerPos.x - progress.targetPos.x;
           const dy = progress.playerPos.y - progress.targetPos.y;
           const dz = progress.playerPos.z - progress.targetPos.z;
-          const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          return distance < 5;
+          const distance2 = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          return distance2 < 5;
         },
         visualIndicator: (scene, objective) => {
         }
@@ -45369,7 +45369,7 @@ Return JSON format:
   function settlementAdjacency(world2) {
     const ss = (world2.geography?.settlements ?? []).filter((s) => s.position).map((s) => ({ atom: worldAtom(s.name), p: s.position, r: s.radius ?? 0 }));
     const pairs = /* @__PURE__ */ new Set();
-    const add = (a, b) => {
+    const add2 = (a, b) => {
       if (a === b) return;
       const [x, y] = canonical(a, b) < 0 ? [a, b] : [b, a];
       pairs.add(`${x}\0${y}`);
@@ -45379,10 +45379,10 @@ Return JSON format:
       for (const o of ss) {
         if (o.atom === s.atom) continue;
         const d = planeDistance(s.p, o.p);
-        if (d <= 3 * (s.r + o.r)) add(s.atom, o.atom);
+        if (d <= 3 * (s.r + o.r)) add2(s.atom, o.atom);
         if (!nearest || d < nearest.d || d === nearest.d && canonical(o.atom, nearest.atom) < 0) nearest = { atom: o.atom, d };
       }
-      if (nearest) add(s.atom, nearest.atom);
+      if (nearest) add2(s.atom, nearest.atom);
     }
     return [...pairs].sort(canonical).map((k) => k.split("\0"));
   }
@@ -46675,6 +46675,512 @@ Return JSON format:
     return out;
   }
 
+  // @insimul/core/src/pass-by/ground.ts
+  var sub = (a, b) => ({ x: a.x - b.x, z: a.z - b.z });
+  var add = (a, b) => ({ x: a.x + b.x, z: a.z + b.z });
+  var scale = (a, k) => ({ x: a.x * k, z: a.z * k });
+  var dot = (a, b) => a.x * b.x + a.z * b.z;
+  var length = (a) => Math.sqrt(a.x * a.x + a.z * a.z);
+  var distance = (a, b) => length(sub(a, b));
+  var perp = (a) => ({ x: -a.z, z: a.x });
+  function passByDistanceToSegment(p, a, b) {
+    const seg = sub(b, a);
+    const l2 = dot(seg, seg);
+    const t = l2 > 1e-8 ? Math.min(1, Math.max(0, dot(sub(p, a), seg) / l2)) : 0;
+    return distance(add(a, scale(seg, t)), p);
+  }
+
+  // @insimul/core/src/pass-by/pass-by.ts
+  var PASS_BY_GUARD_GAP_M = 0.2;
+  var PASS_BY_GUARD_HORIZON_S = 0.5;
+  var PASS_BY_GUARD_LOOKAHEAD_S = 1;
+  var PASS_BY_GUARD_BAND_MIN_M = 0.4;
+  var PASS_BY_GUARD_HEAD_ON_MPS = 0.4;
+  var PASS_BY_GUARD_EDGE_MPS = 0.6;
+  var PASS_BY_GUARD_STALL_MPS = 0.3;
+  var PASS_BY_GUARD_STALL_S = 1;
+  var PASS_BY_GUARD_COINCIDENT_M = 0.01;
+  var PASS_BY_GUARD_REST_SQ = 1e-10;
+  var PASS_BY_GUARD_STILL_MPS = 1e-6;
+  var PASS_BY_TRIGGER_MPS = 0.4;
+  var PASS_BY_AHEAD_MIN_M = 0.6;
+  var PASS_BY_AHEAD_MAX_M = 2;
+  var PASS_BY_GOAL_BEYOND_M = 0.6;
+  var PASS_BY_LANE_MARGIN_M = 0.25;
+  var PASS_BY_STEP_OUT_M = 0.3;
+  var PASS_BY_POINT_MARGIN_M = 0.1;
+  var PASS_BY_MEET_CLOSING_MPS = 0.2;
+  var PASS_BY_MEET_MAX_S = 4;
+  var PASS_BY_STEP_ASIDE_LIMIT_S = 4;
+  var PASS_BY_ARRIVE_M = 0.25;
+  var PASS_BY_ABREAST_M = 0.45;
+  var PASS_BY_PAST_LEGS_M = Object.freeze([1.3, 0.9, 0.6]);
+  var PASS_BY_PAST_MARGIN_M = 0.6;
+  var PASS_BY_PLAYER_WALKING_MPS = 0.2;
+  var PASS_BY_WAIT_S = 3;
+  var PASS_BY_WAIT_RECHECK_S = 0.25;
+  var PASS_BY_ROUND_MARGIN_M = 0.3;
+  var PASS_BY_ROUND_STEP_DEG = 35;
+  var PASS_BY_ROUND_POINTS = 3;
+  var PASS_BY_ROUND_OUT_M = 0.35;
+  var PASS_BY_ROUND_MAX_LEGS = 4;
+  var PASS_BY_ROUND_LEG_S = 2;
+  var PASS_BY_WATCH_S = 1.5;
+  var PASS_BY_VILLAGER_RADIUS_M = 0.34;
+  var PASS_BY_PLAYER_RADIUS_M = 0.42;
+  var PASS_BY_VILLAGER_WALK_MPS = 1.4;
+  var PASS_BY_ABREAST_MEASURED_S = Object.freeze({ min: 0.4, max: 1.7 });
+  var PASS_BY_SIDE_FRAMES = Object.freeze({
+    unreal: "left-handed, z up; core (x, z) = Unreal (X, Y); +1 = Unreal's Left vector (\u2212Dir.Y, Dir.X) = the walker's RIGHT",
+    godot: "right-handed, y up; core (x, z) = Godot (x, z); +1 = the walker's RIGHT",
+    unity: "left-handed, y up; core (x, z) = Unity (x, z); +1 = the walker's LEFT",
+    babylon: "left-handed, y up; core (x, z) = Babylon (x, z); +1 = the walker's LEFT"
+  });
+  var radiusOr = (r, fallback) => typeof r === "number" && Number.isFinite(r) && r > 0 ? r : fallback;
+  function passByGuardFloor(villagerRadius = PASS_BY_VILLAGER_RADIUS_M, playerRadius = PASS_BY_PLAYER_RADIUS_M) {
+    return radiusOr(villagerRadius, PASS_BY_VILLAGER_RADIUS_M) + radiusOr(playerRadius, PASS_BY_PLAYER_RADIUS_M) + PASS_BY_GUARD_GAP_M;
+  }
+  function keepClearOfPlayer(input) {
+    const vel = input.velocity;
+    const side0 = input.side === 1 || input.side === -1 ? input.side : 0;
+    const untouched = { acted: false, velocity: { x: vel.x, z: vel.z }, side: side0 };
+    const floor = passByGuardFloor(input.villagerRadius, input.playerRadius);
+    const maxSpeed = typeof input.maxSpeed === "number" && input.maxSpeed > 0 ? input.maxSpeed : PASS_BY_VILLAGER_WALK_MPS;
+    const d = sub(input.at, input.player);
+    const dist = length(d);
+    const rel = sub(vel, input.playerVelocity);
+    const relSq = dot(rel, rel);
+    if (dist >= floor + Math.max(PASS_BY_GUARD_BAND_MIN_M, Math.sqrt(relSq) * PASS_BY_GUARD_LOOKAHEAD_S)) return untouched;
+    const tClosest = relSq > PASS_BY_GUARD_REST_SQ ? Math.min(PASS_BY_GUARD_LOOKAHEAD_S, Math.max(0, -dot(d, rel) / relSq)) : 0;
+    if (length(add(d, scale(rel, tClosest))) >= floor) return untouched;
+    const still = Math.abs(vel.x) <= PASS_BY_GUARD_STILL_MPS && Math.abs(vel.z) <= PASS_BY_GUARD_STILL_MPS;
+    const u = dist > PASS_BY_GUARD_COINCIDENT_M ? scale(d, 1 / dist) : still ? { x: 1, z: 0 } : scale(vel, -1 / length(vel));
+    const mine = dot(vel, u);
+    const theirs = dot(input.playerVelocity, u);
+    const minOpening = dist >= floor ? -(dist - floor) / PASS_BY_GUARD_HORIZON_S : (floor - dist) / PASS_BY_GUARD_HORIZON_S;
+    if (mine - theirs >= minOpening) return untouched;
+    const radial = Math.min(minOpening + theirs, maxSpeed);
+    let along = sub(vel, scale(u, mine));
+    let side = side0;
+    if (mine < 0 && length(along) < PASS_BY_GUARD_HEAD_ON_MPS) {
+      const round3 = perp(u);
+      if (side === 0) side = dot(vel, round3) >= 0 ? 1 : -1;
+      along = scale(round3, PASS_BY_GUARD_EDGE_MPS * side);
+    }
+    const room = Math.sqrt(Math.max(0, maxSpeed * maxSpeed - radial * radial));
+    const alongLen = length(along);
+    if (alongLen > room) along = alongLen > 1e-8 ? scale(along, room / alongLen) : { x: 0, z: 0 };
+    return { acted: true, velocity: add(scale(u, radial), along), side };
+  }
+  function planStepAside(input) {
+    const rV = radiusOr(input.villager.radius, PASS_BY_VILLAGER_RADIUS_M);
+    const rP = radiusOr(input.player.radius, PASS_BY_PLAYER_RADIUS_M);
+    const guardFloorM = passByGuardFloor(rV, rP);
+    const here = input.villager.at;
+    const path = input.villager.path ?? [];
+    const speed = length(input.villager.velocity);
+    if (!(speed > PASS_BY_TRIGGER_MPS) || path.length === 0) return { stepAside: false, reason: "not-walking", guardFloorM };
+    const dir = scale(input.villager.velocity, 1 / speed);
+    const now = input.player.at;
+    const pv = input.player.velocity ?? { x: 0, z: 0 };
+    const closing = Math.max(0, -dot(pv, dir));
+    const aheadNow = dot(sub(now, here), dir);
+    const meetInS = closing > PASS_BY_MEET_CLOSING_MPS && aheadNow > 0 ? Math.min(aheadNow / (speed + closing), PASS_BY_MEET_MAX_S) : 0;
+    const meetAt = add(now, scale(pv, meetInS));
+    const left = perp(dir);
+    const rel = sub(meetAt, here);
+    const aheadM = dot(rel, dir);
+    const lat = dot(rel, left);
+    const offLineM = Math.abs(lat);
+    const laneHalfWidthM = rV + rP + PASS_BY_LANE_MARGIN_M;
+    const preferredSide = lat > 0 ? -1 : 1;
+    const seen = { preferredSide, meetAt, meetInS, aheadM, offLineM };
+    const goalDist = distance(here, path[path.length - 1]);
+    if (aheadM < PASS_BY_AHEAD_MIN_M) return { stepAside: false, reason: "not-ahead", guardFloorM, ...seen };
+    if (aheadM > PASS_BY_AHEAD_MAX_M) return { stepAside: false, reason: "too-far", guardFloorM, ...seen };
+    if (offLineM >= laneHalfWidthM) return { stepAside: false, reason: "off-line", guardFloorM, ...seen };
+    if (goalDist < aheadM + PASS_BY_GOAL_BEYOND_M) return { stepAside: false, reason: "goal-before-player", guardFloorM, ...seen };
+    const stepOutM = laneHalfWidthM + PASS_BY_STEP_OUT_M;
+    const pointMin = rV + rP + PASS_BY_POINT_MARGIN_M;
+    for (const side of [preferredSide, -preferredSide]) {
+      const roomy = side === 1 ? input.room?.plus !== false : input.room?.minus !== false;
+      if (!roomy) continue;
+      const to = add(meetAt, scale(left, side * stepOutM));
+      if (distance(to, meetAt) < pointMin || distance(to, now) < pointMin) continue;
+      return {
+        stepAside: true,
+        side,
+        preferredSide,
+        to,
+        meetAt,
+        meetInS,
+        aheadM,
+        offLineM,
+        laneHalfWidthM,
+        stepOutM,
+        offsetFromLineM: Math.abs(dot(sub(to, here), left)),
+        limitS: PASS_BY_STEP_ASIDE_LIMIT_S,
+        abreastM: PASS_BY_ABREAST_M,
+        pastLegsM: [...PASS_BY_PAST_LEGS_M],
+        guardFloorM
+      };
+    }
+    return { stepAside: false, reason: "no-room", guardFloorM, ...seen };
+  }
+  function planRoundPlayer(here, next, player, villagerRadius = PASS_BY_VILLAGER_RADIUS_M, playerRadius = PASS_BY_PLAYER_RADIUS_M) {
+    const clear = radiusOr(villagerRadius, PASS_BY_VILLAGER_RADIUS_M) + radiusOr(playerRadius, PASS_BY_PLAYER_RADIUS_M) + PASS_BY_ROUND_MARGIN_M;
+    if (passByDistanceToSegment(player, here, next) >= clear) return null;
+    const out = sub(here, player);
+    const outLen = length(out);
+    if (!(outLen > 1e-8)) return null;
+    const u = scale(out, 1 / outLen);
+    const v = sub(next, player);
+    const sign = u.x * v.z - u.z * v.x >= 0 ? 1 : -1;
+    const way = [];
+    for (let k = 0; k < PASS_BY_ROUND_POINTS; k++) {
+      const a = sign * PASS_BY_ROUND_STEP_DEG * (k + 1) * Math.PI / 180;
+      const r = { x: u.x * Math.cos(a) - u.z * Math.sin(a), z: u.x * Math.sin(a) + u.z * Math.cos(a) };
+      way.push(add(player, scale(r, clear + PASS_BY_ROUND_OUT_M)));
+    }
+    return way;
+  }
+
+  // @insimul/core/src/pass-by/pass-by-replay.ts
+  var EPS_ARRIVE = 1e-9;
+  function passByRoomTo(from, to, radius, boxes) {
+    for (const b of boxes) {
+      if (segmentHitsBox(from, to, { minX: b.minX - radius, minZ: b.minZ - radius, maxX: b.maxX + radius, maxZ: b.maxZ + radius })) return false;
+    }
+    return true;
+  }
+  function passByInsideBox(p, radius, boxes) {
+    return boxes.some((b) => p.x > b.minX - radius && p.x < b.maxX + radius && p.z > b.minZ - radius && p.z < b.maxZ + radius);
+  }
+  function segmentHitsBox(a, b, box) {
+    let t0 = 0;
+    let t1 = 1;
+    const d = sub(b, a);
+    for (const [p, dp, lo, hi] of [
+      [a.x, d.x, box.minX, box.maxX],
+      [a.z, d.z, box.minZ, box.maxZ]
+    ]) {
+      if (Math.abs(dp) < 1e-12) {
+        if (!(p > lo && p < hi)) return false;
+        continue;
+      }
+      let ta = (lo - p) / dp;
+      let tb = (hi - p) / dp;
+      if (ta > tb) [ta, tb] = [tb, ta];
+      t0 = Math.max(t0, ta);
+      t1 = Math.min(t1, tb);
+      if (!(t0 < t1)) return false;
+    }
+    return true;
+  }
+  function replayPassBy(scene) {
+    const dt = typeof scene.dt === "number" && scene.dt > 0 ? scene.dt : 1 / 64;
+    const frames = Math.round(scene.seconds / dt);
+    const boxes = scene.obstacles ?? [];
+    const controls = scene.controls ?? {};
+    const rP = scene.player.radius ?? PASS_BY_PLAYER_RADIUS_M;
+    const legs = scene.player.legs ?? [];
+    let player = { ...scene.player.at };
+    const playerVelAt = (t) => {
+      let start = 0;
+      for (const leg of legs) {
+        if (t < start + leg.seconds - EPS_ARRIVE) return leg.velocity;
+        start += leg.seconds;
+      }
+      return { x: 0, z: 0 };
+    };
+    const vs = scene.villagers.map((v) => {
+      const radius = v.radius ?? PASS_BY_VILLAGER_RADIUS_M;
+      return {
+        id: v.id,
+        here: { ...v.at },
+        vel: { x: 0, z: 0 },
+        path: v.path.map((p) => ({ ...p })),
+        idx: 0,
+        speed: v.speed ?? PASS_BY_VILLAGER_WALK_MPS,
+        radius,
+        mode: "walk",
+        point: { ...v.at },
+        dir: { x: 1, z: 0 },
+        asideLeft: 0,
+        watchLeft: 0,
+        pastLeg: false,
+        hold: false,
+        holdCheck: 0,
+        rounds: 0,
+        elapsed: 0,
+        passClosest: Infinity,
+        guardActive: false,
+        guardSide: 0,
+        stall: 0,
+        lastNoRoom: false,
+        arrived: false,
+        result: {
+          id: v.id,
+          events: [],
+          steppedAside: false,
+          side: 0,
+          abreastAfterS: null,
+          closestM: Infinity,
+          minGapM: Infinity,
+          guardFrames: 0,
+          reachedGoal: false,
+          end: { ...v.at },
+          track: [{ ...v.at }]
+        }
+      };
+    });
+    for (let f = 0; f < frames; f++) {
+      const t = f * dt;
+      const pv = playerVelAt(t);
+      for (const v of vs) {
+        passByStep(v, t, dt, player, pv, rP, boxes, controls);
+        let desired = { x: 0, z: 0 };
+        if (v.mode === "aside") {
+          const to = sub(v.point, v.here);
+          const d = length(to);
+          if (d > PASS_BY_ARRIVE_M) desired = scale(to, v.speed / d);
+        } else if (!v.arrived) {
+          let target = v.path[v.idx];
+          while (target && distance(v.here, target) <= v.speed * dt + EPS_ARRIVE && v.idx < v.path.length - 1) {
+            v.idx += 1;
+            target = v.path[v.idx];
+          }
+          const to = sub(target, v.here);
+          const d = length(to);
+          if (d <= v.speed * dt + EPS_ARRIVE) {
+            v.arrived = true;
+            v.result.reachedGoal = true;
+            v.result.events.push({ t, what: "arrived" });
+            desired = scale(to, 1 / dt);
+          } else {
+            desired = scale(to, v.speed / d);
+          }
+        }
+        let vel = desired;
+        if (!controls.noGuard) {
+          if (!v.guardActive) {
+            v.guardSide = 0;
+            v.stall = 0;
+          }
+          const g = keepClearOfPlayer({
+            at: v.here,
+            velocity: desired,
+            player,
+            playerVelocity: pv,
+            villagerRadius: v.radius,
+            playerRadius: rP,
+            maxSpeed: v.speed,
+            side: v.guardSide
+          });
+          v.guardSide = g.side;
+          if (g.acted) {
+            vel = g.velocity;
+            v.result.guardFrames += 1;
+          }
+          v.guardActive = g.acted;
+        }
+        const moved2 = slideMove(v.here, vel, dt, v.radius, boxes, controls.noGuard ? null : { at: player, floor: passByGuardFloor(v.radius, rP) });
+        v.here = moved2.at;
+        v.vel = moved2.velocity;
+        if (!controls.noGuard && v.guardActive) {
+          v.stall = length(v.vel) < PASS_BY_GUARD_STALL_MPS ? v.stall + dt : 0;
+          if (v.stall > PASS_BY_GUARD_STALL_S && v.guardSide !== 0) {
+            v.guardSide = -v.guardSide;
+            v.stall = 0;
+            v.result.events.push({ t, what: "guard-flip", side: v.guardSide });
+          }
+        }
+      }
+      const stepTo = add(player, scale(pv, dt));
+      const blocked = vs.some((v) => distance(stepTo, v.here) < v.radius + rP && distance(stepTo, v.here) < distance(player, v.here));
+      if (!blocked) player = stepTo;
+      for (const v of vs) {
+        const d = distance(v.here, player);
+        if (d < v.result.closestM) {
+          v.result.closestM = d;
+          v.result.minGapM = d - v.radius - rP;
+        }
+        if (v.mode !== "walk") v.passClosest = Math.min(v.passClosest, d);
+        if ((f + 1) % 16 === 0 || f + 1 === frames) v.result.track.push({ ...v.here });
+      }
+    }
+    return {
+      frames,
+      guardFloorM: passByGuardFloor(PASS_BY_VILLAGER_RADIUS_M, rP),
+      villagers: vs.map((v) => ({ ...v.result, end: { ...v.here } })),
+      player: { end: player }
+    };
+  }
+  function passByStep(v, t, dt, player, pv, rP, boxes, controls) {
+    const ev = v.result.events;
+    if (v.mode === "walk") {
+      if (v.arrived || controls.noStepAside) return;
+      if (!(length(v.vel) > PASS_BY_TRIGGER_MPS)) return;
+      const plan2 = planStepAside({
+        villager: { at: v.here, velocity: v.vel, path: v.path.slice(v.idx), radius: v.radius },
+        player: { at: player, velocity: pv, radius: rP },
+        room: sideRoom(v, player, pv, rP, boxes)
+      });
+      if (!plan2.stepAside) {
+        const noRoom = plan2.reason === "no-room";
+        if (noRoom && !v.lastNoRoom) ev.push({ t, what: "no-room" });
+        v.lastNoRoom = noRoom;
+        return;
+      }
+      v.lastNoRoom = false;
+      v.mode = "aside";
+      v.point = plan2.to;
+      v.dir = scale(v.vel, 1 / length(v.vel));
+      v.asideLeft = plan2.limitS;
+      v.pastLeg = false;
+      v.hold = false;
+      v.rounds = 0;
+      v.elapsed = 0;
+      v.passClosest = distance(v.here, player);
+      if (!v.result.steppedAside) {
+        v.result.steppedAside = true;
+        v.result.side = plan2.side;
+      }
+      ev.push({ t, what: "step-aside", side: plan2.side, to: plan2.to, meetInS: plan2.meetInS });
+      return;
+    }
+    v.elapsed += dt;
+    if (v.mode === "watch") {
+      v.watchLeft -= dt;
+      if (v.watchLeft <= 0) {
+        v.watchLeft = 0;
+        v.mode = "walk";
+        ev.push({ t, what: "passed", closestM: v.passClosest, gapM: v.passClosest - v.radius - rP });
+      }
+      return;
+    }
+    v.asideLeft -= dt;
+    const past = dot(sub(player, v.here), v.dir) < -(v.radius + rP + PASS_BY_PAST_MARGIN_M);
+    const abreast = distance(v.here, v.point) < PASS_BY_ABREAST_M;
+    const playerWalking = length(pv) > PASS_BY_PLAYER_WALKING_MPS;
+    if (v.hold) {
+      v.holdCheck -= dt;
+      if (v.asideLeft <= 0 || (past || !playerWalking) && v.holdCheck <= 0) {
+        v.holdCheck = PASS_BY_WAIT_RECHECK_S;
+        endStepAside(
+          v,
+          t,
+          player,
+          rP,
+          boxes,
+          controls,
+          v.asideLeft <= 0 ? "the wait timed out" : past ? "waited until the player was by" : "the player stopped",
+          v.asideLeft > 0
+        );
+      }
+      return;
+    }
+    let noPastLeg = false;
+    if (abreast && !v.pastLeg && !past && v.asideLeft > 0) {
+      markAbreast(v, t, player);
+      v.pastLeg = true;
+      for (const leg of PASS_BY_PAST_LEGS_M) {
+        const ahead = add(v.point, scale(v.dir, leg));
+        if (passByRoomTo(v.here, ahead, v.radius, boxes)) {
+          v.point = ahead;
+          ev.push({ t, what: "past-leg", legM: leg });
+          return;
+        }
+      }
+      if (!controls.straightBack && playerWalking) {
+        ev.push({ t, what: "wait", why: "no room to walk on past a walking player" });
+        v.hold = true;
+        v.holdCheck = 0;
+        v.asideLeft = Math.max(v.asideLeft, PASS_BY_WAIT_S);
+        return;
+      }
+      noPastLeg = true;
+    }
+    if (v.asideLeft <= 0 || past || abreast) {
+      if (!v.pastLeg) markAbreast(v, t, player);
+      endStepAside(
+        v,
+        t,
+        player,
+        rP,
+        boxes,
+        controls,
+        v.asideLeft <= 0 ? "the step aside timed out" : past ? "already past the player" : noPastLeg ? "no room to walk on past a standing player" : v.rounds > 0 ? "round the player" : "the past leg reached",
+        v.asideLeft > 0
+      );
+    }
+  }
+  function markAbreast(v, t, player) {
+    if (v.result.abreastAfterS === null) v.result.abreastAfterS = v.elapsed;
+    v.result.events.push({ t, what: "abreast", afterS: v.elapsed, distanceM: distance(v.here, player) });
+  }
+  function endStepAside(v, t, player, rP, boxes, controls, why, mayWait) {
+    const ev = v.result.events;
+    if (!controls.straightBack && v.rounds < PASS_BY_ROUND_MAX_LEGS) {
+      const next = v.path[v.idx];
+      const way = planRoundPlayer(v.here, next, player, v.radius, rP);
+      if (way) {
+        const clear = v.radius + rP + PASS_BY_ROUND_MARGIN_M;
+        for (let pass = 0; pass < 2; pass++) {
+          for (let k = 0; k < way.length; k++) {
+            const p = way[k];
+            if (!passByRoomTo(v.here, p, v.radius, boxes) || passByDistanceToSegment(player, v.here, p) < clear || distance(p, player) < clear || pass === 0 && passByDistanceToSegment(player, p, next) < clear) continue;
+            v.rounds += 1;
+            v.hold = false;
+            v.pastLeg = true;
+            v.point = p;
+            v.asideLeft = Math.max(v.asideLeft, PASS_BY_ROUND_LEG_S);
+            ev.push({ t, what: "round", leg: v.rounds, to: p });
+            return;
+          }
+        }
+        if (mayWait && v.asideLeft > 0) {
+          if (!v.hold) {
+            ev.push({ t, what: "wait", why });
+            v.asideLeft = Math.max(v.asideLeft, PASS_BY_WAIT_S);
+          }
+          v.hold = true;
+          return;
+        }
+      }
+    }
+    ev.push({ t, what: "walk-on", why });
+    v.hold = false;
+    v.asideLeft = 0;
+    v.mode = "watch";
+    v.watchLeft = PASS_BY_WATCH_S;
+  }
+  function slideMove(at, vel, dt, radius, boxes, guard) {
+    const parts = [vel, { x: vel.x, z: 0 }, { x: 0, z: vel.z }];
+    for (let i = 0; i < parts.length; i++) {
+      const v = parts[i];
+      if (v.x === 0 && v.z === 0) continue;
+      const next = add(at, scale(v, dt));
+      if (passByInsideBox(next, radius, boxes)) continue;
+      if (i > 0 && guard) {
+        const d = distance(next, guard.at);
+        if (d < guard.floor && d < distance(at, guard.at)) continue;
+      }
+      return { at: next, velocity: v };
+    }
+    return { at, velocity: { x: 0, z: 0 } };
+  }
+  function sideRoom(v, player, pv, rP, boxes) {
+    if (boxes.length === 0) return { plus: true, minus: true };
+    const probe = (room) => planStepAside({ villager: { at: v.here, velocity: v.vel, path: v.path.slice(v.idx), radius: v.radius }, player: { at: player, velocity: pv, radius: rP }, room });
+    const plus = probe({ plus: true, minus: false });
+    const minus = probe({ plus: false, minus: true });
+    return {
+      plus: plus.stepAside ? passByRoomTo(v.here, plus.to, v.radius, boxes) : true,
+      minus: minus.stepAside ? passByRoomTo(v.here, minus.to, v.radius, boxes) : true
+    };
+  }
+
   // @insimul/core/src/system-packs/composer.ts
   var WORLD_DEFAULT_VARIANT = "world-default";
   function preset(p) {
@@ -47421,9 +47927,9 @@ Return JSON format:
     const out = yaw * sign;
     return out === 0 ? 0 : out;
   }
-  function convertScale(scale, from, to) {
-    if (from.up === to.up) return { ...scale };
-    const permuted = from.up === "z" ? { x: scale.y, y: scale.z, z: scale.x } : { x: scale.z, y: scale.x, z: scale.y };
+  function convertScale(scale2, from, to) {
+    if (from.up === to.up) return { ...scale2 };
+    const permuted = from.up === "z" ? { x: scale2.y, y: scale2.z, z: scale2.x } : { x: scale2.z, y: scale2.x, z: scale2.y };
     return { x: Math.abs(permuted.x), y: Math.abs(permuted.y), z: Math.abs(permuted.z) };
   }
   function convertGeometry(geometry, to) {
@@ -48348,7 +48854,7 @@ Return JSON format:
       fitOut = { ...fit, outcome: "misfit", issues };
     }
     const fixupScale = { x: g.scale.x * factor, y: g.scale.y * factor, z: g.scale.z * factor };
-    const scale = { x: input.nodeScale.x * fixupScale.x, y: input.nodeScale.y * fixupScale.y, z: input.nodeScale.z * fixupScale.z };
+    const scale2 = { x: input.nodeScale.x * fixupScale.x, y: input.nodeScale.y * fixupScale.y, z: input.nodeScale.z * fixupScale.z };
     const heading = normalizeYaw(fitOut.rotationY + g.yaw);
     const fixupHeading = normalizeYaw(heading - input.nodeHeading);
     const target = input.lotCentre !== null ? [input.lotCentre[0], input.lotCentre[1]] : [input.node.x, input.node.z];
@@ -48363,12 +48869,12 @@ Return JSON format:
     } else {
       notes.push("no-bounds");
     }
-    const shift = turn((g.offset.z - centreF) * scale.z, (g.offset.x - centreR) * scale.x, heading);
+    const shift = turn((g.offset.z - centreF) * scale2.z, (g.offset.x - centreR) * scale2.x, heading);
     const reach = [];
     if (b !== null) {
       const fs = [b.min.z, b.max.z, b.max.z, b.min.z];
       const rs = [b.min.x, b.min.x, b.max.x, b.max.x];
-      for (let i = 0; i < 4; i += 1) reach.push(turn(fs[i] * scale.z, rs[i] * scale.x, heading));
+      for (let i = 0; i < 4; i += 1) reach.push(turn(fs[i] * scale2.z, rs[i] * scale2.x, heading));
     }
     let facade = null;
     const fl = input.frontLine ?? null;
@@ -48392,7 +48898,7 @@ Return JSON format:
     const bottom = b !== null ? b.min.y : 0;
     const floorKnown = hasDoor && door2.hasPosition;
     const floorLocal = floorKnown ? Math.max(door2.position.y, bottom) : bottom;
-    let y = input.node.y - bottom * scale.y;
+    let y = input.node.y - bottom * scale2.y;
     const seat = emptySeat();
     if (input.ground !== null) {
       let gMin = Infinity;
@@ -48413,19 +48919,19 @@ Return JSON format:
         seat.sampled = true;
         seat.groundMin = gMin;
         seat.groundMax = gMax;
-        const bottomOnLow = gMin - bottom * scale.y;
-        const floorOnHigh = gMax - floorLocal * scale.y;
-        seat.foundation = (floorLocal - bottom) * scale.y;
+        const bottomOnLow = gMin - bottom * scale2.y;
+        const floorOnHigh = gMax - floorLocal * scale2.y;
+        seat.foundation = (floorLocal - bottom) * scale2.y;
         const sink = floorKnown ? Math.max(0, Math.min(1, policy2.seatSink)) * seat.foundation : 0;
         y = floorKnown ? Math.max(bottomOnLow - sink, floorOnHigh) : bottomOnLow;
-        const float = y + bottom * scale.y - gMin;
+        const float = y + bottom * scale2.y - gMin;
         seat.float = float > SEAT_TOLERANCE_M ? float : 0;
         seat.sink = float < -SEAT_TOLERANCE_M ? -float : 0;
         if (policy2.seatSink > 0 && !floorKnown) notes.push("seat-sink-needs-floor");
         if (!floorKnown && gMax - gMin > SEAT_TOLERANCE_M) notes.push("no-floor");
       }
     }
-    y += g.offset.y * scale.y;
+    y += g.offset.y * scale2.y;
     location.y = y;
     const offsetFromNode = { x: location.x - input.node.x, y: location.y - input.node.y, z: location.z - input.node.z };
     let doorWorld = { x: 0, y: 0, z: 0 };
@@ -48443,8 +48949,8 @@ Return JSON format:
       } else {
         local = door2.hasPosition ? { ...door2.position } : { x: 0, y: 0, z: 0 };
       }
-      const w = turn(local.z * scale.z, local.x * scale.x, heading);
-      doorWorld = { x: location.x + w[0], y: location.y + local.y * scale.y, z: location.z + w[1] };
+      const w = turn(local.z * scale2.z, local.x * scale2.x, heading);
+      doorWorld = { x: location.x + w[0], y: location.y + local.y * scale2.y, z: location.z + w[1] };
       doorHeading = normalizeYaw(heading + door2.yaw);
     } else {
       notes.push("no-door");
@@ -48469,7 +48975,7 @@ Return JSON format:
       doorHeight,
       castHeight: input.castHeight,
       policy: policy2,
-      scale,
+      scale: scale2,
       fixupScale,
       heading,
       fixupHeading,
@@ -50441,10 +50947,10 @@ Return JSON format:
     const anchors = anchorsOf(input, rules);
     const before = auditPropGroups(input, rules);
     const why = /* @__PURE__ */ new Map();
-    const add = (id4, w) => why.set(id4, [...why.get(id4) ?? [], w].filter((x, k, a) => a.indexOf(x) === k));
-    for (const id4 of before.untied) add(id4, "untied");
-    for (const b of before.blocks) for (const id4 of b) add(id4, "block");
-    for (const r of before.rows) for (const id4 of r) add(id4, "row");
+    const add2 = (id4, w) => why.set(id4, [...why.get(id4) ?? [], w].filter((x, k, a) => a.indexOf(x) === k));
+    for (const id4 of before.untied) add2(id4, "untied");
+    for (const b of before.blocks) for (const id4 of b) add2(id4, "block");
+    for (const r of before.rows) for (const id4 of r) add2(id4, "row");
     const out = input.props.map((p) => ({
       entityId: p.entityId,
       purpose: propPurpose(p.archetype, rules),
@@ -51242,13 +51748,13 @@ Return JSON format:
         const q = ring[(k % n + n) % n];
         pts.push(q);
         if (clears(q, t)) {
-          let length = 0;
+          let length2 = 0;
           let at = p;
           for (const x of [...pts, t]) {
-            length += Math.hypot(x[0] - at[0], x[1] - at[1]);
+            length2 += Math.hypot(x[0] - at[0], x[1] - at[1]);
             at = x;
           }
-          return { pts, length };
+          return { pts, length: length2 };
         }
       }
       return null;
@@ -51278,15 +51784,15 @@ Return JSON format:
     return out;
   }
   function runProfile(points3) {
-    let length = 0;
+    let length2 = 0;
     let maxGrade = 0;
     for (let i = 0; i + 1 < points3.length; i += 1) {
       const d = Math.hypot(points3[i + 1][0] - points3[i][0], points3[i + 1][2] - points3[i][2]);
       const dy = points3[i + 1][1] - points3[i][1];
-      length += Math.hypot(d, dy);
+      length2 += Math.hypot(d, dy);
       if (d > COMPOSITION_SLACK) maxGrade = Math.max(maxGrade, Math.abs(dy) / d);
     }
-    return { length, maxGrade };
+    return { length: length2, maxGrade };
   }
   function streetReach(strip, p) {
     const q = strip.points;
@@ -51767,10 +52273,10 @@ Return JSON format:
   function clamp014(v) {
     return v < 0 ? 0 : v > 1 ? 1 : v;
   }
-  function transitionCoverage(distance, feather) {
-    if (distance <= 0) return 1;
-    if (!(feather > 0) || distance >= feather) return 0;
-    const t = clamp014(distance / feather);
+  function transitionCoverage(distance2, feather) {
+    if (distance2 <= 0) return 1;
+    if (!(feather > 0) || distance2 >= feather) return 0;
+    const t = clamp014(distance2 / feather);
     return 1 - t * t * (3 - 2 * t);
   }
   function edgeBreakup(x, z, rules = DEFAULT_COMPOSITION_RULES) {
@@ -54028,6 +54534,90 @@ Return JSON format:
   function genreBuildWorldArg(method, args) {
     return optionalArg(args.world, (v) => declared(method, v, "world", GENRE_BUILD_WORLD));
   }
+  var PASS_BY_GROUND = [["x", tNum, REQ], ["z", tNum, REQ]];
+  var tGround = tObj(PASS_BY_GROUND);
+  var PASS_BY_GUARD_INPUT = [
+    ["at", tGround, REQ],
+    ["velocity", tGround, REQ],
+    ["player", tGround, REQ],
+    ["playerVelocity", tGround, REQ],
+    ["villagerRadius", tNum, OPT],
+    ["playerRadius", tNum, OPT],
+    ["maxSpeed", tNum, OPT],
+    ["side", tNum, OPT]
+  ];
+  var PASS_BY_STEP_ASIDE_INPUT = [
+    ["villager", tObj([["at", tGround, REQ], ["velocity", tGround, REQ], ["path", tList(tGround), REQ], ["radius", tNum, OPT]]), REQ],
+    ["player", tObj([["at", tGround, REQ], ["velocity", tGround, OPT], ["radius", tNum, OPT]]), REQ],
+    ["room", tObj([["plus", tBool, OPT], ["minus", tBool, OPT]]), OPT]
+  ];
+  var tReplayPath = (m, v, n) => {
+    tList(tGround)(m, v, n);
+    if (v.length === 0) throw refuse2(m, `\`${n}\` is empty: core's replay walks to its first point`);
+  };
+  var PASS_BY_SCENE = [
+    ["dt", tNum, OPT],
+    ["seconds", tNum, REQ],
+    ["obstacles", tList(tObj([["minX", tNum, REQ], ["minZ", tNum, REQ], ["maxX", tNum, REQ], ["maxZ", tNum, REQ]])), OPT],
+    ["player", tObj([
+      ["at", tGround, REQ],
+      ["radius", tNum, OPT],
+      ["legs", tList(tObj([["velocity", tGround, REQ], ["seconds", tNum, REQ]])), OPT]
+    ]), REQ],
+    ["villagers", tList(tObj([["id", tStr, REQ], ["at", tGround, REQ], ["path", tReplayPath, REQ], ["speed", tNum, OPT], ["radius", tNum, OPT]])), REQ],
+    ["controls", tObj([["noStepAside", tBool, OPT], ["noGuard", tBool, OPT], ["straightBack", tBool, OPT]]), OPT]
+  ];
+  function passByRadiusArg(method, args, key) {
+    return optionalArg(args[key], (v) => needNumber(method, v, key));
+  }
+  var PASS_BY_CONSTANTS = [
+    ["gapM", "PASS_BY_GUARD_GAP_M", PASS_BY_GUARD_GAP_M],
+    ["horizonS", "PASS_BY_GUARD_HORIZON_S", PASS_BY_GUARD_HORIZON_S],
+    ["lookaheadS", "PASS_BY_GUARD_LOOKAHEAD_S", PASS_BY_GUARD_LOOKAHEAD_S],
+    ["bandMinM", "PASS_BY_GUARD_BAND_MIN_M", PASS_BY_GUARD_BAND_MIN_M],
+    ["headOnMps", "PASS_BY_GUARD_HEAD_ON_MPS", PASS_BY_GUARD_HEAD_ON_MPS],
+    ["edgeMps", "PASS_BY_GUARD_EDGE_MPS", PASS_BY_GUARD_EDGE_MPS],
+    ["stallMps", "PASS_BY_GUARD_STALL_MPS", PASS_BY_GUARD_STALL_MPS],
+    ["stallS", "PASS_BY_GUARD_STALL_S", PASS_BY_GUARD_STALL_S],
+    ["coincidentM", "PASS_BY_GUARD_COINCIDENT_M", PASS_BY_GUARD_COINCIDENT_M],
+    ["restSq", "PASS_BY_GUARD_REST_SQ", PASS_BY_GUARD_REST_SQ],
+    ["stillMps", "PASS_BY_GUARD_STILL_MPS", PASS_BY_GUARD_STILL_MPS],
+    ["triggerMps", "PASS_BY_TRIGGER_MPS", PASS_BY_TRIGGER_MPS],
+    ["aheadMinM", "PASS_BY_AHEAD_MIN_M", PASS_BY_AHEAD_MIN_M],
+    ["aheadMaxM", "PASS_BY_AHEAD_MAX_M", PASS_BY_AHEAD_MAX_M],
+    ["goalBeyondM", "PASS_BY_GOAL_BEYOND_M", PASS_BY_GOAL_BEYOND_M],
+    ["laneMarginM", "PASS_BY_LANE_MARGIN_M", PASS_BY_LANE_MARGIN_M],
+    ["stepOutM", "PASS_BY_STEP_OUT_M", PASS_BY_STEP_OUT_M],
+    ["pointMarginM", "PASS_BY_POINT_MARGIN_M", PASS_BY_POINT_MARGIN_M],
+    ["meetClosingMps", "PASS_BY_MEET_CLOSING_MPS", PASS_BY_MEET_CLOSING_MPS],
+    ["meetMaxS", "PASS_BY_MEET_MAX_S", PASS_BY_MEET_MAX_S],
+    ["stepAsideLimitS", "PASS_BY_STEP_ASIDE_LIMIT_S", PASS_BY_STEP_ASIDE_LIMIT_S],
+    ["arriveM", "PASS_BY_ARRIVE_M", PASS_BY_ARRIVE_M],
+    ["abreastM", "PASS_BY_ABREAST_M", PASS_BY_ABREAST_M],
+    ["pastLegsM", "PASS_BY_PAST_LEGS_M", PASS_BY_PAST_LEGS_M],
+    ["pastMarginM", "PASS_BY_PAST_MARGIN_M", PASS_BY_PAST_MARGIN_M],
+    ["playerWalkingMps", "PASS_BY_PLAYER_WALKING_MPS", PASS_BY_PLAYER_WALKING_MPS],
+    ["waitS", "PASS_BY_WAIT_S", PASS_BY_WAIT_S],
+    ["waitRecheckS", "PASS_BY_WAIT_RECHECK_S", PASS_BY_WAIT_RECHECK_S],
+    ["roundMarginM", "PASS_BY_ROUND_MARGIN_M", PASS_BY_ROUND_MARGIN_M],
+    ["roundStepDeg", "PASS_BY_ROUND_STEP_DEG", PASS_BY_ROUND_STEP_DEG],
+    ["roundPoints", "PASS_BY_ROUND_POINTS", PASS_BY_ROUND_POINTS],
+    ["roundOutM", "PASS_BY_ROUND_OUT_M", PASS_BY_ROUND_OUT_M],
+    ["roundMaxLegs", "PASS_BY_ROUND_MAX_LEGS", PASS_BY_ROUND_MAX_LEGS],
+    ["roundLegS", "PASS_BY_ROUND_LEG_S", PASS_BY_ROUND_LEG_S],
+    ["watchS", "PASS_BY_WATCH_S", PASS_BY_WATCH_S],
+    ["villagerRadiusM", "PASS_BY_VILLAGER_RADIUS_M", PASS_BY_VILLAGER_RADIUS_M],
+    ["playerRadiusM", "PASS_BY_PLAYER_RADIUS_M", PASS_BY_PLAYER_RADIUS_M],
+    ["villagerWalkMps", "PASS_BY_VILLAGER_WALK_MPS", PASS_BY_VILLAGER_WALK_MPS]
+  ];
+  function passByContract() {
+    return plain({
+      constants: Object.fromEntries(PASS_BY_CONSTANTS.map(([key, , value]) => [key, value])),
+      names: Object.fromEntries(PASS_BY_CONSTANTS.map(([key, name]) => [key, name])),
+      measuredAbreastS: PASS_BY_ABREAST_MEASURED_S,
+      sideFrames: PASS_BY_SIDE_FRAMES
+    });
+  }
   var QUEST_STATUSES = ["available", "active", "completed"];
   var QUEST_FILTERS = ["all", "active", "completed", "available"];
   function questEntry(method, entry) {
@@ -55233,8 +55823,8 @@ Return JSON format:
     /** `language.identification.distanceScore { distance, length }` → `{ score }`: core's `distanceScore`, the half-up percent an edit distance leaves of an answer `length` code points long. */
     "language.identification.distanceScore": (args) => {
       const m = "language.identification.distanceScore";
-      const [distance, length] = coded("invalid-input", () => [needNumber(m, args.distance, "distance"), needNumber(m, args.length, "length")]);
-      return { score: distanceScore(distance, length) };
+      const [distance2, length2] = coded("invalid-input", () => [needNumber(m, args.distance, "distance"), needNumber(m, args.length, "length")]);
+      return { score: distanceScore(distance2, length2) };
     },
     /** `language.identification.removeQuest { state, questId }` → `{ state }`: core's `removeQuestTargets`, a quest's targets and their progress dropped. */
     "language.identification.removeQuest": (args) => {
@@ -56475,6 +57065,87 @@ Return JSON format:
         declared(m, args.plan, "plan", GENRE_BUILD_PLAN);
       });
       return { world: plain(writeGenreBuildPlan(args.world, args.plan)) };
+    },
+    // ── villager pass-by (P4; PL.native-pass-by-rows, U128, U118) ───────────────
+    // One row per function of core's `pass-by/pass-by` and `pass-by/pass-by-replay`, each
+    // answering in the shape core's corpus runner (`pass-by/pass-by-corpus.ts`, ops floor,
+    // guard, plan, round, replay) records: the args are a case's `input` and the answer its
+    // `expected`. Data in, decision out: metres and seconds on core's ground plane `{x, z}`;
+    // the engine maps its own frame in (`passBy.contract`'s `sideFrames`) and its navmesh
+    // answers `room`. A refused step aside is core's VALUE (`{ stepAside: false, reason }`),
+    // never a row error. Stateless: the body guard's side and its stall clock are the
+    // caller's (core's replay keeps them per encounter, and so does an engine).
+    /** `passBy.contract` → `{ constants, names, measuredAbreastS, sideFrames }` — core's PASS_BY_* constants keyed as its corpus contract keys them, the name each is exported under, PASS_BY_ABREAST_MEASURED_S and PASS_BY_SIDE_FRAMES. */
+    "passBy.contract": () => passByContract(),
+    /**
+     * `passBy.guardFloor { villagerRadius?, playerRadius? }` → `{ floorM }` — core's
+     * `passByGuardFloor`: the body-guard radius, centre to centre, no villager enters (a
+     * radius absent, null or not a positive number is core's default body).
+     */
+    "passBy.guardFloor": (args) => {
+      const m = "passBy.guardFloor";
+      const radii = coded("invalid-input", () => [passByRadiusArg(m, args, "villagerRadius"), passByRadiusArg(m, args, "playerRadius")]);
+      return { floorM: passByGuardFloor(radii[0], radii[1]) };
+    },
+    /**
+     * `passBy.keepClear { at, velocity, player, playerVelocity, villagerRadius?, playerRadius?,
+     * maxSpeed?, side? }` → `{ acted, velocity, side }` — core's `keepClearOfPlayer`, the body
+     * guard: a velocity in, a velocity out, and the side round the body written back (the
+     * caller passes it back for the rest of the encounter, and flips it after a stall).
+     */
+    "passBy.keepClear": (args) => {
+      coded("invalid-input", () => declared("passBy.keepClear", args, "args", PASS_BY_GUARD_INPUT));
+      return plain(keepClearOfPlayer(args));
+    },
+    /**
+     * `passBy.planStepAside { villager: { at, velocity, path, radius? }, player: { at,
+     * velocity?, radius? }, room?: { plus?, minus? } }` → core's `planStepAside` decision:
+     * `{ stepAside: true, side, preferredSide, to, meetAt, meetInS, aheadM, offLineM,
+     * laneHalfWidthM, stepOutM, offsetFromLineM, limitS, abreastM, pastLegsM, guardFloorM }`,
+     * or the refusal as a value `{ stepAside: false, reason, guardFloorM, … }` (`not-walking`,
+     * `not-ahead`, `too-far`, `off-line`, `goal-before-player`, `no-room`). `room`'s sides are
+     * what the engine's navmesh says (absent: room).
+     */
+    "passBy.planStepAside": (args) => {
+      coded("invalid-input", () => declared("passBy.planStepAside", args, "args", PASS_BY_STEP_ASIDE_INPUT));
+      return plain(planStepAside(args));
+    },
+    /**
+     * `passBy.planRound { here, next, player, villagerRadius?, playerRadius? }` → `{ way }` —
+     * core's `planRoundPlayer`: the three points round the player when the leg `here` → `next`
+     * cuts across them, else null (the leg is clear, or `here` is on the player's centre).
+     */
+    "passBy.planRound": (args) => {
+      const m = "passBy.planRound";
+      const radii = coded("invalid-input", () => {
+        for (const k of ["here", "next", "player"]) {
+          if (!hasOwn3(args, k)) throw refuse2(m, `\`args.${k}\` is missing`);
+          tGround(m, args[k], `args.${k}`);
+        }
+        return [passByRadiusArg(m, args, "villagerRadius"), passByRadiusArg(m, args, "playerRadius")];
+      });
+      return { way: plain(planRoundPlayer(args.here, args.next, args.player, radii[0], radii[1])) };
+    },
+    /**
+     * `passBy.distanceToSegment { p, a, b }` → `{ distanceM }` — core's
+     * `passByDistanceToSegment` (re-exported by `pass-by/pass-by`): the distance from `p` to
+     * the segment `a`–`b`, the measure the turn back and the round points are judged by.
+     */
+    "passBy.distanceToSegment": (args) => {
+      const m = "passBy.distanceToSegment";
+      coded("invalid-input", () => declared(m, args, "args", [["p", tGround, REQ], ["a", tGround, REQ], ["b", tGround, REQ]]));
+      return { distanceM: passByDistanceToSegment(args.p, args.a, args.b) };
+    },
+    /**
+     * `passBy.replay { scene }` → core's `replayPassBy` answer `{ frames, guardFloorM,
+     * villagers: [{ id, events, steppedAside, side, abreastAfterS, closestM, minGapM,
+     * guardFrames, reachedGoal, end, track }], player: { end } }`: the scene stepped frame by
+     * frame through the same rule (core's stand-in for a navmesh is axis-aligned walls), so an
+     * engine compares its own encounter with core's. Deterministic.
+     */
+    "passBy.replay": (args) => {
+      coded("invalid-input", () => declared("passBy.replay", args, "args", [["scene", tObj(PASS_BY_SCENE), REQ]]));
+      return plain(replayPassBy(args.scene));
     },
     // ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
     /** `ui.notifications.create {}` → `{ session, view }` — core's `Notifications` toast queue. */

@@ -1019,6 +1019,61 @@ import {
 } from '@insimul/core/genre-systems/build-plan';
 import { collectPlaceableEntities, deriveGenrePieceArchetype, stampWorldArchetypes } from '@insimul/core/editor/binding/archetypes';
 
+// ── villager pass-by (P4; PL.native-pass-by-rows, U128, U118; core's PL.pass-by-core) ──
+// When a villager walking its path steps aside for the player, which side, how far and
+// for how long, the turn back round them, and the body guard no villager crosses
+// (`pass-by/pass-by`), and the whole encounter stepped frame by frame over a scene given
+// as data (`pass-by/pass-by-replay`). Never `pass-by/pass-by-corpus`, core's corpus
+// runner: its comparator import is the save-file code UNBUNDLED_CORE_MODULES refuses.
+import {
+	PASS_BY_ABREAST_M,
+	PASS_BY_ABREAST_MEASURED_S,
+	PASS_BY_AHEAD_MAX_M,
+	PASS_BY_AHEAD_MIN_M,
+	PASS_BY_ARRIVE_M,
+	PASS_BY_GOAL_BEYOND_M,
+	PASS_BY_GUARD_BAND_MIN_M,
+	PASS_BY_GUARD_COINCIDENT_M,
+	PASS_BY_GUARD_EDGE_MPS,
+	PASS_BY_GUARD_GAP_M,
+	PASS_BY_GUARD_HEAD_ON_MPS,
+	PASS_BY_GUARD_HORIZON_S,
+	PASS_BY_GUARD_LOOKAHEAD_S,
+	PASS_BY_GUARD_REST_SQ,
+	PASS_BY_GUARD_STALL_MPS,
+	PASS_BY_GUARD_STALL_S,
+	PASS_BY_GUARD_STILL_MPS,
+	PASS_BY_LANE_MARGIN_M,
+	PASS_BY_MEET_CLOSING_MPS,
+	PASS_BY_MEET_MAX_S,
+	PASS_BY_PAST_LEGS_M,
+	PASS_BY_PAST_MARGIN_M,
+	PASS_BY_PLAYER_RADIUS_M,
+	PASS_BY_PLAYER_WALKING_MPS,
+	PASS_BY_POINT_MARGIN_M,
+	PASS_BY_ROUND_LEG_S,
+	PASS_BY_ROUND_MARGIN_M,
+	PASS_BY_ROUND_MAX_LEGS,
+	PASS_BY_ROUND_OUT_M,
+	PASS_BY_ROUND_POINTS,
+	PASS_BY_ROUND_STEP_DEG,
+	PASS_BY_SIDE_FRAMES,
+	PASS_BY_STEP_ASIDE_LIMIT_S,
+	PASS_BY_STEP_OUT_M,
+	PASS_BY_TRIGGER_MPS,
+	PASS_BY_VILLAGER_RADIUS_M,
+	PASS_BY_VILLAGER_WALK_MPS,
+	PASS_BY_WAIT_RECHECK_S,
+	PASS_BY_WAIT_S,
+	PASS_BY_WATCH_S,
+	keepClearOfPlayer,
+	passByDistanceToSegment,
+	passByGuardFloor,
+	planRoundPlayer,
+	planStepAside,
+} from '@insimul/core/pass-by/pass-by';
+import { replayPassBy } from '@insimul/core/pass-by/pass-by-replay';
+
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
 // settings and activation, over the pack catalog the caller sends.
@@ -3703,6 +3758,123 @@ const GENRE_BUILD_WORLD = GENRE_WORLD_SOURCE.map(([k, check, how]) => {
 /** A build row's `world`: core's `GenreBuildWorld | null | undefined` (absent or null: none). */
 function genreBuildWorldArg(method, args) {
 	return optionalArg(args.world, (v) => declared(method, v, 'world', GENRE_BUILD_WORLD));
+}
+
+// ── villager pass-by (PL.native-pass-by-rows) ─────────────────────────────────
+// Every argument is held to the type core declares for it (`pass-by/pass-by.ts`,
+// `pass-by/pass-by-replay.ts`), by the genre rows' `declared()`: a declared member
+// present and of its type, an optional one absent (a null is refused: core declares no
+// pass-by member `| null`), members core does not declare passed through. Core reads
+// every NUMBER itself (a radius that is not a positive number is the default; a side
+// that is not +1 or −1 is none), and its corpus pins those readings, so a number is only
+// held to be one. Two readings beyond the types: the floor and round rows read a null
+// radius as absent, as core's runner does (`?? undefined`), and a replay's villager with
+// an empty `path` is `[invalid-input]`, because core's replay reads `path[0]` as a point
+// on its first walking frame (a TypeError otherwise).
+
+/** core's `Ground` (`pass-by/ground.ts`): a point or a velocity on the ground plane. */
+const PASS_BY_GROUND = [['x', tNum, REQ], ['z', tNum, REQ]];
+const tGround = tObj(PASS_BY_GROUND);
+
+/** core's `PassByGuardInput`, member for member. */
+const PASS_BY_GUARD_INPUT = [
+	['at', tGround, REQ],
+	['velocity', tGround, REQ],
+	['player', tGround, REQ],
+	['playerVelocity', tGround, REQ],
+	['villagerRadius', tNum, OPT],
+	['playerRadius', tNum, OPT],
+	['maxSpeed', tNum, OPT],
+	['side', tNum, OPT],
+];
+
+/** core's `StepAsideInput` (with `PassByRoom`), member for member. */
+const PASS_BY_STEP_ASIDE_INPUT = [
+	['villager', tObj([['at', tGround, REQ], ['velocity', tGround, REQ], ['path', tList(tGround), REQ], ['radius', tNum, OPT]]), REQ],
+	['player', tObj([['at', tGround, REQ], ['velocity', tGround, OPT], ['radius', tNum, OPT]]), REQ],
+	['room', tObj([['plus', tBool, OPT], ['minus', tBool, OPT]]), OPT],
+];
+
+/** A replay villager's path: core's `Ground[]`, and not empty (core's replay walks to `path[0]` unread). */
+const tReplayPath = (m, v, n) => {
+	tList(tGround)(m, v, n);
+	if (v.length === 0) throw refuse(m, `\`${n}\` is empty: core's replay walks to its first point`);
+};
+
+/** core's `PassByScene` (with `PassByBox`), member for member. */
+const PASS_BY_SCENE = [
+	['dt', tNum, OPT],
+	['seconds', tNum, REQ],
+	['obstacles', tList(tObj([['minX', tNum, REQ], ['minZ', tNum, REQ], ['maxX', tNum, REQ], ['maxZ', tNum, REQ]])), OPT],
+	['player', tObj([
+		['at', tGround, REQ],
+		['radius', tNum, OPT],
+		['legs', tList(tObj([['velocity', tGround, REQ], ['seconds', tNum, REQ]])), OPT],
+	]), REQ],
+	['villagers', tList(tObj([['id', tStr, REQ], ['at', tGround, REQ], ['path', tReplayPath, REQ], ['speed', tNum, OPT], ['radius', tNum, OPT]])), REQ],
+	['controls', tObj([['noStepAside', tBool, OPT], ['noGuard', tBool, OPT], ['straightBack', tBool, OPT]]), OPT],
+];
+
+/** A radius of the floor and round rows: absent or null is core's default (core's runner reads `?? undefined`); else a number. */
+function passByRadiusArg(method, args, key) {
+	return optionalArg(args[key], (v) => needNumber(method, v, key));
+}
+
+/**
+ * core's PASS_BY_* constants, keyed as core's corpus contract keys them
+ * (`conformance/villagers/pass-by.json` `contract.constants`, built by core's
+ * `scripts/emit-pass-by-corpus.ts`), each with the name core exports it under. The
+ * values are core's own exports; nothing here restates a number.
+ */
+const PASS_BY_CONSTANTS = [
+	['gapM', 'PASS_BY_GUARD_GAP_M', PASS_BY_GUARD_GAP_M],
+	['horizonS', 'PASS_BY_GUARD_HORIZON_S', PASS_BY_GUARD_HORIZON_S],
+	['lookaheadS', 'PASS_BY_GUARD_LOOKAHEAD_S', PASS_BY_GUARD_LOOKAHEAD_S],
+	['bandMinM', 'PASS_BY_GUARD_BAND_MIN_M', PASS_BY_GUARD_BAND_MIN_M],
+	['headOnMps', 'PASS_BY_GUARD_HEAD_ON_MPS', PASS_BY_GUARD_HEAD_ON_MPS],
+	['edgeMps', 'PASS_BY_GUARD_EDGE_MPS', PASS_BY_GUARD_EDGE_MPS],
+	['stallMps', 'PASS_BY_GUARD_STALL_MPS', PASS_BY_GUARD_STALL_MPS],
+	['stallS', 'PASS_BY_GUARD_STALL_S', PASS_BY_GUARD_STALL_S],
+	['coincidentM', 'PASS_BY_GUARD_COINCIDENT_M', PASS_BY_GUARD_COINCIDENT_M],
+	['restSq', 'PASS_BY_GUARD_REST_SQ', PASS_BY_GUARD_REST_SQ],
+	['stillMps', 'PASS_BY_GUARD_STILL_MPS', PASS_BY_GUARD_STILL_MPS],
+	['triggerMps', 'PASS_BY_TRIGGER_MPS', PASS_BY_TRIGGER_MPS],
+	['aheadMinM', 'PASS_BY_AHEAD_MIN_M', PASS_BY_AHEAD_MIN_M],
+	['aheadMaxM', 'PASS_BY_AHEAD_MAX_M', PASS_BY_AHEAD_MAX_M],
+	['goalBeyondM', 'PASS_BY_GOAL_BEYOND_M', PASS_BY_GOAL_BEYOND_M],
+	['laneMarginM', 'PASS_BY_LANE_MARGIN_M', PASS_BY_LANE_MARGIN_M],
+	['stepOutM', 'PASS_BY_STEP_OUT_M', PASS_BY_STEP_OUT_M],
+	['pointMarginM', 'PASS_BY_POINT_MARGIN_M', PASS_BY_POINT_MARGIN_M],
+	['meetClosingMps', 'PASS_BY_MEET_CLOSING_MPS', PASS_BY_MEET_CLOSING_MPS],
+	['meetMaxS', 'PASS_BY_MEET_MAX_S', PASS_BY_MEET_MAX_S],
+	['stepAsideLimitS', 'PASS_BY_STEP_ASIDE_LIMIT_S', PASS_BY_STEP_ASIDE_LIMIT_S],
+	['arriveM', 'PASS_BY_ARRIVE_M', PASS_BY_ARRIVE_M],
+	['abreastM', 'PASS_BY_ABREAST_M', PASS_BY_ABREAST_M],
+	['pastLegsM', 'PASS_BY_PAST_LEGS_M', PASS_BY_PAST_LEGS_M],
+	['pastMarginM', 'PASS_BY_PAST_MARGIN_M', PASS_BY_PAST_MARGIN_M],
+	['playerWalkingMps', 'PASS_BY_PLAYER_WALKING_MPS', PASS_BY_PLAYER_WALKING_MPS],
+	['waitS', 'PASS_BY_WAIT_S', PASS_BY_WAIT_S],
+	['waitRecheckS', 'PASS_BY_WAIT_RECHECK_S', PASS_BY_WAIT_RECHECK_S],
+	['roundMarginM', 'PASS_BY_ROUND_MARGIN_M', PASS_BY_ROUND_MARGIN_M],
+	['roundStepDeg', 'PASS_BY_ROUND_STEP_DEG', PASS_BY_ROUND_STEP_DEG],
+	['roundPoints', 'PASS_BY_ROUND_POINTS', PASS_BY_ROUND_POINTS],
+	['roundOutM', 'PASS_BY_ROUND_OUT_M', PASS_BY_ROUND_OUT_M],
+	['roundMaxLegs', 'PASS_BY_ROUND_MAX_LEGS', PASS_BY_ROUND_MAX_LEGS],
+	['roundLegS', 'PASS_BY_ROUND_LEG_S', PASS_BY_ROUND_LEG_S],
+	['watchS', 'PASS_BY_WATCH_S', PASS_BY_WATCH_S],
+	['villagerRadiusM', 'PASS_BY_VILLAGER_RADIUS_M', PASS_BY_VILLAGER_RADIUS_M],
+	['playerRadiusM', 'PASS_BY_PLAYER_RADIUS_M', PASS_BY_PLAYER_RADIUS_M],
+	['villagerWalkMps', 'PASS_BY_VILLAGER_WALK_MPS', PASS_BY_VILLAGER_WALK_MPS],
+];
+
+/** `passBy.contract`'s answer: the constants, their export names, the measured abreast window and the side frames. */
+function passByContract() {
+	return plain({
+		constants: Object.fromEntries(PASS_BY_CONSTANTS.map(([key, , value]) => [key, value])),
+		names: Object.fromEntries(PASS_BY_CONSTANTS.map(([key, name]) => [key, name])),
+		measuredAbreastS: PASS_BY_ABREAST_MEASURED_S,
+		sideFrames: PASS_BY_SIDE_FRAMES,
+	});
 }
 
 // ── quests ────────────────────────────────────────────────────────────────────
@@ -6488,6 +6660,95 @@ const METHODS = {
 			declared(m, args.plan, 'plan', GENRE_BUILD_PLAN);
 		});
 		return { world: plain(writeGenreBuildPlan(args.world, args.plan)) };
+	},
+
+	// ── villager pass-by (P4; PL.native-pass-by-rows, U128, U118) ───────────────
+	// One row per function of core's `pass-by/pass-by` and `pass-by/pass-by-replay`, each
+	// answering in the shape core's corpus runner (`pass-by/pass-by-corpus.ts`, ops floor,
+	// guard, plan, round, replay) records: the args are a case's `input` and the answer its
+	// `expected`. Data in, decision out: metres and seconds on core's ground plane `{x, z}`;
+	// the engine maps its own frame in (`passBy.contract`'s `sideFrames`) and its navmesh
+	// answers `room`. A refused step aside is core's VALUE (`{ stepAside: false, reason }`),
+	// never a row error. Stateless: the body guard's side and its stall clock are the
+	// caller's (core's replay keeps them per encounter, and so does an engine).
+
+	/** `passBy.contract` → `{ constants, names, measuredAbreastS, sideFrames }` — core's PASS_BY_* constants keyed as its corpus contract keys them, the name each is exported under, PASS_BY_ABREAST_MEASURED_S and PASS_BY_SIDE_FRAMES. */
+	'passBy.contract': () => passByContract(),
+
+	/**
+	 * `passBy.guardFloor { villagerRadius?, playerRadius? }` → `{ floorM }` — core's
+	 * `passByGuardFloor`: the body-guard radius, centre to centre, no villager enters (a
+	 * radius absent, null or not a positive number is core's default body).
+	 */
+	'passBy.guardFloor': (args) => {
+		const m = 'passBy.guardFloor';
+		const radii = coded('invalid-input', () => [passByRadiusArg(m, args, 'villagerRadius'), passByRadiusArg(m, args, 'playerRadius')]);
+		return { floorM: passByGuardFloor(radii[0], radii[1]) };
+	},
+
+	/**
+	 * `passBy.keepClear { at, velocity, player, playerVelocity, villagerRadius?, playerRadius?,
+	 * maxSpeed?, side? }` → `{ acted, velocity, side }` — core's `keepClearOfPlayer`, the body
+	 * guard: a velocity in, a velocity out, and the side round the body written back (the
+	 * caller passes it back for the rest of the encounter, and flips it after a stall).
+	 */
+	'passBy.keepClear': (args) => {
+		coded('invalid-input', () => declared('passBy.keepClear', args, 'args', PASS_BY_GUARD_INPUT));
+		return plain(keepClearOfPlayer(args));
+	},
+
+	/**
+	 * `passBy.planStepAside { villager: { at, velocity, path, radius? }, player: { at,
+	 * velocity?, radius? }, room?: { plus?, minus? } }` → core's `planStepAside` decision:
+	 * `{ stepAside: true, side, preferredSide, to, meetAt, meetInS, aheadM, offLineM,
+	 * laneHalfWidthM, stepOutM, offsetFromLineM, limitS, abreastM, pastLegsM, guardFloorM }`,
+	 * or the refusal as a value `{ stepAside: false, reason, guardFloorM, … }` (`not-walking`,
+	 * `not-ahead`, `too-far`, `off-line`, `goal-before-player`, `no-room`). `room`'s sides are
+	 * what the engine's navmesh says (absent: room).
+	 */
+	'passBy.planStepAside': (args) => {
+		coded('invalid-input', () => declared('passBy.planStepAside', args, 'args', PASS_BY_STEP_ASIDE_INPUT));
+		return plain(planStepAside(args));
+	},
+
+	/**
+	 * `passBy.planRound { here, next, player, villagerRadius?, playerRadius? }` → `{ way }` —
+	 * core's `planRoundPlayer`: the three points round the player when the leg `here` → `next`
+	 * cuts across them, else null (the leg is clear, or `here` is on the player's centre).
+	 */
+	'passBy.planRound': (args) => {
+		const m = 'passBy.planRound';
+		const radii = coded('invalid-input', () => {
+			for (const k of ['here', 'next', 'player']) {
+				if (!hasOwn(args, k)) throw refuse(m, `\`args.${k}\` is missing`);
+				tGround(m, args[k], `args.${k}`);
+			}
+			return [passByRadiusArg(m, args, 'villagerRadius'), passByRadiusArg(m, args, 'playerRadius')];
+		});
+		return { way: plain(planRoundPlayer(args.here, args.next, args.player, radii[0], radii[1])) };
+	},
+
+	/**
+	 * `passBy.distanceToSegment { p, a, b }` → `{ distanceM }` — core's
+	 * `passByDistanceToSegment` (re-exported by `pass-by/pass-by`): the distance from `p` to
+	 * the segment `a`–`b`, the measure the turn back and the round points are judged by.
+	 */
+	'passBy.distanceToSegment': (args) => {
+		const m = 'passBy.distanceToSegment';
+		coded('invalid-input', () => declared(m, args, 'args', [['p', tGround, REQ], ['a', tGround, REQ], ['b', tGround, REQ]]));
+		return { distanceM: passByDistanceToSegment(args.p, args.a, args.b) };
+	},
+
+	/**
+	 * `passBy.replay { scene }` → core's `replayPassBy` answer `{ frames, guardFloorM,
+	 * villagers: [{ id, events, steppedAside, side, abreastAfterS, closestM, minGapM,
+	 * guardFrames, reachedGoal, end, track }], player: { end } }`: the scene stepped frame by
+	 * frame through the same rule (core's stand-in for a navmesh is axis-aligned walls), so an
+	 * engine compares its own encounter with core's. Deterministic.
+	 */
+	'passBy.replay': (args) => {
+		coded('invalid-input', () => declared('passBy.replay', args, 'args', [['scene', tObj(PASS_BY_SCENE), REQ]]));
+		return plain(replayPassBy(args.scene));
 	},
 
 	// ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────

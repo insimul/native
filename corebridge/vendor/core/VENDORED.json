@@ -136,6 +136,9 @@
     "src/npc-life/navigation.ts",
     "src/npc-life/npc-life-save.ts",
     "src/npc-life/staging.ts",
+    "src/pass-by/ground.ts",
+    "src/pass-by/pass-by-replay.ts",
+    "src/pass-by/pass-by.ts",
     "src/perception/detection-facts.ts",
     "src/perception/detection-save.ts",
     "src/perception/detection.ts",
@@ -366,11 +369,14 @@
     "conformance/strategy/run.json",
     "conformance/strategy/save.json"
   ],
-  "bundleBytes": 2686625,
-  "bundleSha256": "009b962c35e8f47ec66ba74b342c8f6bdfc502b483e55db2394083539591306a",
+  "passByCorpus": [
+    "conformance/villagers/pass-by.json"
+  ],
+  "bundleBytes": 2717147,
+  "bundleSha256": "75d53525b84481e1513ed3540090b5c79be9f66189b48f9991fecf67fc08439f",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "009b962c35e8f47ec66ba74b342c8f6bdfc502b483e55db2394083539591306a",
-    "vendor/core/insimul_core_bundle.c": "06c10bd5da884e8396f5aba85fb667bc430a0153a750edb76772365f372d10d5",
+    "vendor/core/insimul-core-bundle.js": "75d53525b84481e1513ed3540090b5c79be9f66189b48f9991fecf67fc08439f",
+    "vendor/core/insimul_core_bundle.c": "13835a777abdc4704f0010258e3e12ee8078a0e23399f819ca0627020c0b91a6",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genre-genre-pieces-build-plan.json": "60388e9cb5652085356059a515382be7ba5d98dd172677c025136c4f640d06ca",
     "vendor/core/cases/core-genre-genre-pieces-kinds.json": "07082aa01cf17b5ecf6154cbb738842e344c40fd5a6f256d3ca81d078f281c83",
@@ -407,6 +413,7 @@
     "vendor/core/cases/core-ui-quest-journal.json": "bebadcd69186e755f5cb9cbb721f18ec9ceff01195194dcc930aa530d741af77",
     "vendor/core/cases/core-ui-save-slots.json": "ab6f21cfe152f53bf95d10af54f19366e282cc0945985410e01536dc3429afdb",
     "vendor/core/cases/core-ui-trade.json": "9d30f47de61e01cf3d69151e5bf4b592e7f1cb6c806c0b8ca2f47966f2536038",
+    "vendor/core/cases/core-villagers-pass-by.json": "7ea0e890fcaa05b4c74a81f1c09f33c22c0b2f5308973ecd8eae35a61e32c7da",
     "vendor/core/cases/core-weather-progression.json": "568377e59858f0c33fd88ff5848c4ff883eb261523cf9b5cd9fd376feb2480aa",
     "vendor/core/conformance/layout/backdrop.json": "3edb3158bef934e3345e706fe5df72a3605b59d4c42e60de352ed0de72426e16",
     "vendor/core/conformance/layout/building-fit.json": "cd7046366b98b3e91d333af6ba0ea4de53572786396c6d71839e36fa6136a946",
@@ -514,13 +521,14 @@
     "vendor/core/conformance/strategy/campaign.json": "783df7cc2ce233046614f7fdd33ff2b290aa15040e83af8d559e55af4419a4e6",
     "vendor/core/conformance/strategy/run.json": "fa4765abfbe38e68a0750f20d40e959a1c0d9c82c6fba18d9f453b11e353ef87",
     "vendor/core/conformance/strategy/save.json": "f093109d3f5173c2b9fd0666056bb03a8f1105ef987f0570be382da5d5a68065",
-    "js/entry.js": "e0e3f7aee0fcdc851a7386657c2afcec238a146e94e18937b4d29f824fcb0b2e",
+    "vendor/core/conformance/villagers/pass-by.json": "194463874417691c766a6d3a85d91ce3a347396b4793013518906c32219454af",
+    "js/entry.js": "31d9d6e4a6406813dc98b17d0c039bd5b526e5248fc9718c81a6306cdafc8e99",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
-    "tools/emit-bridge-cases.mjs": "09461b116823535690b00d2c8b0d9782c4e6883fa1e3390a8ffecf523d2b8a75",
-    "core-pin.json": "c30a7c23b3fdd68c5a1fe0c7c39e3c3bab8fecdd6e62c4ffb429e8b7b529a673"
+    "tools/emit-bridge-cases.mjs": "44237b255a346d16c8d1f1eb9460b30166798d0c1e626dd16956b5218bdd877a",
+    "core-pin.json": "232fae6c34a5505136e1563d62d90380aedbb3a7203e684ddfd74a012adeaccb"
   }
 }

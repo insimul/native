@@ -285,6 +285,13 @@
        "modules.activate",
        "modules.table",
        "packs.compose",
+       "passBy.contract",
+       "passBy.distanceToSegment",
+       "passBy.guardFloor",
+       "passBy.keepClear",
+       "passBy.planRound",
+       "passBy.planStepAside",
+       "passBy.replay",
        "platformer.contract",
        "platformer.courseGraph",
        "platformer.director.create",
@@ -637,7 +644,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 603}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 610}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -683,7 +690,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 603}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 610}}}}
    ]
   },
   {

@@ -930,6 +930,24 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/pass-by/pass-by",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the passBy.contract, .guardFloor, .keepClear, .planStepAside, .planRound and .distanceToSegment rows (passByGuardFloor, keepClearOfPlayer, planStepAside, planRoundPlayer, passByDistanceToSegment and the PASS_BY_* constants) (core's villager pass-by rule; PL.native-pass-by-rows, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-pass-by-rows (Features Gauntlet PL.native-pass-by-rows)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/pass-by/pass-by-replay",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the passBy.replay row (replayPassBy, the encounter stepped frame by frame over a scene given as data) (core's villager pass-by rule; PL.native-pass-by-rows, rulings U128, U118 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-pass-by-rows (Features Gauntlet PL.native-pass-by-rows)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/editor/binding/archetypes",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the genrePieces.deriveArchetype, .collect and .stamp rows (the binding walk's genre piece leg: deriveGenrePieceArchetype, and collectPlaceableEntities and stampWorldArchetypes over a world holding only entities.genrePieces; PL.native-genre-rows slice 4, rulings U128, U115, U103 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

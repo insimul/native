@@ -361,6 +361,14 @@ const GENRE_SYSTEMS_CORPUS_FILES = [
   'conformance/strategy/save.json',
 ];
 
+// core's villager pass-by corpus (PL.native-pass-by-rows, U128, U118; core's PL.pass-by-core
+// and PL.core-p9-corpus-gaps), copied verbatim the same way and driven through the passBy.*
+// rows by tests/villagers_pass_by_corpus.cpp, each op called as core's reference runner
+// (src/pass-by/pass-by-corpus.ts, runPassByOp) calls core; emit-bridge-cases.mjs also
+// transcribes it into cases/core-villagers-pass-by.json. `conformance/villagers/` is this
+// set's alone, so a file an earlier pin left there is seen, hashed and removed.
+const PASS_BY_CORPUS_FILES = ['conformance/villagers/pass-by.json'];
+
 // Core modules the bundle must NOT carry (PL.native-interact-target, U94(2)/(3)): core's
 // village-state comparator. No row needs it; it came in only through a corpus RUNNER
 // module's comparator import (the P8 rows once imported `quests/tutorial-corpus` and
@@ -499,6 +507,100 @@ function villageTranscriptionProblems() {
   if (wrongCalls.length) problems.push(`${wrongCalls.length} case(s) not transcribed as core's runner calls their op, first: ${wrongCalls[0]}`);
   if (names.size !== want) problems.push(`it carries ${names.size} case(s), not the corpus's ${corpus.length} and the contract case`);
   return { problems, count: corpus.length };
+}
+
+// The pass-by transcription (PL.native-pass-by-rows): cases/core-villagers-pass-by.json must
+// carry one case per case of the vendored conformance/villagers/pass-by.json, by name
+// (`pass-by <op>: <name>`), each ONE call of the row core's runner's op calls
+// (src/pass-by/pass-by-corpus.ts, runPassByOp: floor -> passByGuardFloor, guard ->
+// keepClearOfPlayer, plan -> planStepAside, round -> planRoundPlayer, replay -> replayPassBy)
+// with the case's whole input as its args and the case's whole answer as its expectation
+// (no matcher operator anywhere), and the contract case holding passBy.contract's constants,
+// side frames and measured window to the corpus's contract. A self-consistent re-vendor with an
+// emitter that dropped, renamed or weakened a case would otherwise pass `--check --core`.
+const PASS_BY_CASES = 'core-villagers-pass-by.json';
+const PASS_BY_ROW = {
+  floor: 'passBy.guardFloor',
+  guard: 'passBy.keepClear',
+  plan: 'passBy.planStepAside',
+  round: 'passBy.planRound',
+  replay: 'passBy.replay',
+};
+const PASS_BY_CONTRACT_CASE = 'pass-by: the contract the passBy.contract row states';
+function passByTranscriptionProblems(doc = JSON.parse(fs.readFileSync(path.join(CASES_DIR, PASS_BY_CASES), 'utf8'))) {
+  const file = JSON.parse(fs.readFileSync(path.join(OUT_DIR, 'conformance/villagers/pass-by.json'), 'utf8'));
+  const byName = new Map(doc.cases.map((c) => [c.name, c]));
+  const missing = [];
+  const wrong = [];
+  for (const c of file.cases) {
+    const t = byName.get(`pass-by ${c.op}: ${c.name}`);
+    if (!t) {
+      missing.push(c.name);
+      continue;
+    }
+    const steps = t.steps ?? [];
+    const ok =
+      steps.length === 1 &&
+      t.legs === undefined &&
+      steps[0].call === PASS_BY_ROW[c.op] &&
+      canonJson(steps[0].args) === canonJson(c.input) &&
+      canonJson(steps[0].expect) === canonJson(c.expected) &&
+      Object.keys(steps[0]).sort().join(',') === 'args,call,expect';
+    if (!ok) wrong.push(c.name);
+  }
+  const problems = [];
+  if (missing.length) problems.push(`${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
+  if (wrong.length) problems.push(`${wrong.length} case(s) not transcribed as core's runner calls and answers their op, first: ${wrong[0]}`);
+  const contract = byName.get(PASS_BY_CONTRACT_CASE)?.steps ?? [];
+  const want = {
+    constants: Object.fromEntries(Object.entries(file.contract.constants).map(([k, v]) => [k, v.value])),
+    names: { $type: 'object' },
+    measuredAbreastS: file.contract.measuredAbreastS,
+    sideFrames: file.contract.sideFrames,
+  };
+  if (contract.length !== 1 || contract[0].call !== 'passBy.contract' || canonJson(contract[0].expect) !== canonJson(want)) {
+    problems.push("the contract case does not hold passBy.contract to the corpus's constants, side frames and measured window");
+  }
+  if (byName.size !== file.cases.length + 1 || doc.cases.length !== byName.size) {
+    problems.push(`it carries ${doc.cases.length} case(s), not the corpus's ${file.cases.length} and the contract case`);
+  }
+  return { problems, count: file.cases.length };
+}
+
+/** The pass-by guard's negative control: each perturbation of the transcription must be named. */
+function passByTranscriptionNegative() {
+  const read = () => JSON.parse(fs.readFileSync(path.join(CASES_DIR, PASS_BY_CASES), 'utf8'));
+  const first = (d, op) => d.cases.find((c) => c.name.startsWith(`pass-by ${op}: `));
+  const perturbations = [
+    ['a dropped case', (d) => d.cases.splice(5, 1), 'corpus case(s) not transcribed'],
+    ['a case no corpus case names', (d) => d.cases.push({ ...first(d, 'floor'), name: 'pass-by floor: invented' }), 'case(s), not the corpus'],
+    ['a call changed (a plan answered by the guard row)', (d) => { first(d, 'plan').steps[0].call = 'passBy.keepClear'; }, "not transcribed as core's runner"],
+    ["an argument dropped (a guard's side)", (d) => {
+      delete d.cases.find((c) => c.steps[0].call === 'passBy.keepClear' && 'side' in c.steps[0].args).steps[0].args.side;
+    }, "not transcribed as core's runner"],
+    ['an answer weakened to a subset (a replay without its tracks)', (d) => {
+      const st = first(d, 'replay').steps[0];
+      st.expect = { $subset: { frames: st.expect.frames, villagers: st.expect.villagers } };
+    }, "not transcribed as core's runner"],
+    ['an answer number changed (a round point)', (d) => { first(d, 'round').steps[0].expect.way[0].x += 1e-3; }, "not transcribed as core's runner"],
+    ['a refusal reason changed', (d) => {
+      d.cases.find((c) => c.steps[0].expect.stepAside === false).steps[0].expect.reason = 'no-room-at-all';
+    }, "not transcribed as core's runner"],
+    ['a case put on one leg only', (d) => { Object.assign(first(d, 'guard'), { legs: ['c'], why: 'perturbed' }); }, "not transcribed as core's runner"],
+    ['a contract constant dropped', (d) => { delete d.cases.find((c) => c.name === PASS_BY_CONTRACT_CASE).steps[0].expect.constants.waitS; }, 'the contract case'],
+    ['the side frames weakened', (d) => { d.cases.find((c) => c.name === PASS_BY_CONTRACT_CASE).steps[0].expect.sideFrames = { $type: 'object' }; }, 'the contract case'],
+  ];
+  let named = 0;
+  for (const [what, perturb, want] of perturbations) {
+    const doc = read();
+    perturb(doc);
+    const { problems } = passByTranscriptionProblems(doc);
+    const hit = problems.find((p) => p.includes(want));
+    console.log(`  ${hit ? 'named' : 'MISSED'}: ${what} -> ${(hit ?? problems.join('; ')) || 'no problem'}`);
+    if (hit) named++;
+  }
+  console.log(`vendor-core-bundle: pass-by transcription negative — ${named} of ${perturbations.length} perturbed transcription(s) named`);
+  if (named !== perturbations.length) fail('the pass-by transcription guard missed a perturbation');
 }
 
 // The language transcriptions (PL.native-language-rows): each vendored
@@ -1909,6 +2011,16 @@ function genreFilesAtPin(src) {
   return filesAtPin(src, GENRE_SYSTEMS_CORPUS_FILES, 'the genre.*, puzzle.*, platformer.*, strategy.* and genrePieces.* rows');
 }
 
+/** The vendored pass-by corpus on disk: the camera set's rule (no other set copies into `conformance/villagers/`). */
+function passByFilesOnDisk() {
+  return ownDirFilesOnDisk(PASS_BY_CORPUS_FILES);
+}
+
+/** core's villager pass-by corpus at the pin, as { 'vendor/core/<path>': Buffer }. */
+function passByFilesAtPin(src) {
+  return filesAtPin(src, PASS_BY_CORPUS_FILES, 'the passBy.* rows');
+}
+
 /** The vendored headless build corpus on disk: the camera set's rule (no other set copies into `conformance/build/`). */
 function buildFilesOnDisk() {
   return ownDirFilesOnDisk(BUILD_CORPUS_FILES);
@@ -2346,6 +2458,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The villager pass-by corpus: the same exact-set replacement (only the listed file).
+    const passBy = passByFilesAtPin(src);
+    for (const rel of passByFilesOnDisk()) if (!(rel in passBy)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(passBy)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     const js = fs.readFileSync(BUNDLE_JS, 'utf8');
     const manifest = {
       description:
@@ -2374,6 +2494,7 @@ async function write(coreDir) {
       progressionCorpus: PROGRESSION_CORPUS_FILES,
       languageCorpus: LANGUAGE_CORPUS_FILES,
       genreSystemsCorpus: GENRE_SYSTEMS_CORPUS_FILES,
+      passByCorpus: PASS_BY_CORPUS_FILES,
       bundleBytes: Buffer.byteLength(js, 'utf8'),
       bundleSha256: sha256(js),
     };
@@ -2398,6 +2519,7 @@ async function write(coreDir) {
       ...progressionFilesOnDisk(),
       ...languageFilesOnDisk(),
       ...genreFilesOnDisk(),
+      ...passByFilesOnDisk(),
       ...ADAPTER_MODULES,
       ...TOOL_INPUTS,
     ]);
@@ -2420,6 +2542,7 @@ async function write(coreDir) {
     console.log(`  progression and skill corpus files (${Object.keys(progression).length}), copied unchanged`);
     console.log(`  language corpus files (${Object.keys(language).length}), copied unchanged`);
     console.log(`  genre systems corpus files and world slice (${Object.keys(genre).length}), copied unchanged`);
+    console.log(`  villager pass-by corpus files (${Object.keys(passBy).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -2512,6 +2635,10 @@ async function check(coreDir) {
   for (const rel of GENRE_SYSTEMS_CORPUS_FILES) {
     if (!genreFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the genre systems corpus gate would run nothing`);
   }
+  const passByFiles = passByFilesOnDisk();
+  for (const rel of PASS_BY_CORPUS_FILES) {
+    if (!passByFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the villager pass-by corpus gate would run nothing`);
+  }
   // conformance/ui/ is shared by the P9a, P6 and P8 sets: a file belongs to exactly one.
   const claimedTwice = propsFiles.filter((rel) => p9aFiles.includes(rel));
   if (claimedTwice.length) fail(`${claimedTwice.join(', ')} is listed as both a P9a and a P6 corpus file`);
@@ -2534,6 +2661,7 @@ async function check(coreDir) {
     ...progressionFiles,
     ...languageFiles,
     ...genreFiles,
+    ...passByFiles,
     ...ADAPTER_MODULES,
     ...TOOL_INPUTS,
   ];
@@ -2582,6 +2710,7 @@ async function check(coreDir) {
       `${cameraFiles.length} camera movement, ${audioFiles.length} audio ground, ${survivalFiles.length} survival, ` +
       `${traversalFiles.length} traversal, ${buildFiles.length} headless build, ${progressionFiles.length} progression/skill and ` +
       `${languageFiles.length} language corpus file(s), ${genreFiles.length} genre systems corpus file(s) (the world slice among them), ` +
+      `${passByFiles.length} villager pass-by corpus file(s), ` +
       `core ${manifest.coreCommit}, ` +
       `esbuild ${manifest.esbuild})`,
   );
@@ -2610,6 +2739,14 @@ async function check(coreDir) {
       'the vendored conformance/language/ files, by name, by the calls core\'s runner makes, row for row, and with every answer stated',
   );
 
+  const passByGuard = passByTranscriptionProblems();
+  if (passByGuard.problems.length) {
+    fail(`cases/${PASS_BY_CASES} does not transcribe vendor/core/conformance/villagers/pass-by.json: ${passByGuard.problems.join('; ')}`);
+  }
+  console.log(
+    `vendor-core-bundle: villager pass-by — cases/${PASS_BY_CASES} transcribes all ${passByGuard.count} case(s) of ` +
+      "conformance/villagers/pass-by.json, by name, each one call of its op's row with the case's whole input and answer, and its contract",
+  );
   const genreGuard = genreTranscriptionProblems();
   if (genreGuard.problems.length) fail(`the genre transcription does not hold the vendored genre systems corpora: ${genreGuard.problems.join('; ')}`);
   console.log(
@@ -2788,6 +2925,16 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
+      const passByAtPin = passByFilesAtPin(src);
+      const wantPassBy = Object.keys(passByAtPin).sort();
+      if (JSON.stringify(wantPassBy) !== JSON.stringify(passByFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s villager pass-by corpus is ${wantPassBy.join(', ')} but vendor/core/ holds ${passByFiles.join(', ')}`);
+      }
+      for (const rel of wantPassBy) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(passByAtPin[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       const keysAtPin = await checkExtensionKeys(js, SAVE_RULES_CASES_DIR, src.root);
       console.log(
         `vendor-core-bundle: core ${pin.coreCommit}'s src/save-extensions.ts registers the same ${keysAtPin.count} ` +
@@ -2801,8 +2948,8 @@ async function check(coreDir) {
           `corpus file(s), all ${wantCamera.length} camera movement corpus file(s), all ${wantAudio.length} audio ground ` +
           `corpus file(s), all ${wantSurvival.length} survival corpus file(s), all ${wantTraversal.length} traversal ` +
           `corpus file(s), all ${wantBuild.length} headless build corpus file(s), all ${wantProgression.length} progression/skill ` +
-          `corpus file(s), all ${wantLanguage.length} language corpus file(s) and all ${wantGenre.length} genre systems corpus ` +
-          'file(s) (the world slice among them) byte for byte',
+          `corpus file(s), all ${wantLanguage.length} language corpus file(s), all ${wantGenre.length} genre systems corpus ` +
+          `file(s) (the world slice among them) and all ${wantPassBy.length} villager pass-by corpus file(s) byte for byte`,
       );
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -2815,6 +2962,8 @@ async function check(coreDir) {
 
 if (args.includes('--check-language-transcription-negative')) {
   languageTranscriptionNegative();
+} else if (args.includes('--check-pass-by-transcription-negative')) {
+  passByTranscriptionNegative();
 } else if (args.includes('--check-genre-transcription-negative')) {
   genreTranscriptionNegative();
 } else if (argValue('--check-extension-keys')) {

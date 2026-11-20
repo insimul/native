@@ -1,0 +1,3551 @@
+{
+ "area": "villagers-pass-by",
+ "description": "Hand cases for the passBy.* rows (PL.native-pass-by-rows): what core's corpus conformance/villagers/pass-by.json leaves unpinned — the contract whole (each constant's export name), the floor and round rows' null radii (core's runner reads `?? undefined`), passBy.distanceToSegment, a guard point carrying an undeclared y and a side that is not ±1, a step aside with room on one side and with a several-point path, a replay with a coarser frame, a slower and wider villager, a wider player, straightBack and no time, and the [invalid-input] boundary of every declared member of every argument (plus a replay villager with an empty path, which core would walk unread). Every expectation is computed by core's own functions at the pin (gen-bridge-pass-by-cases.mts, kept with the builder's record).",
+ "cases": [
+  {
+   "name": "passBy.contract: every constant keyed as core's corpus contract keys it, the name core exports it under, the measured abreast window and the side frames",
+   "steps": [
+    {
+     "call": "passBy.contract",
+     "args": {},
+     "expect": {
+      "constants": {
+       "gapM": 0.2,
+       "horizonS": 0.5,
+       "lookaheadS": 1,
+       "bandMinM": 0.4,
+       "headOnMps": 0.4,
+       "edgeMps": 0.6,
+       "stallMps": 0.3,
+       "stallS": 1,
+       "coincidentM": 0.01,
+       "restSq": 1e-10,
+       "stillMps": 0.000001,
+       "triggerMps": 0.4,
+       "aheadMinM": 0.6,
+       "aheadMaxM": 2,
+       "goalBeyondM": 0.6,
+       "laneMarginM": 0.25,
+       "stepOutM": 0.3,
+       "pointMarginM": 0.1,
+       "meetClosingMps": 0.2,
+       "meetMaxS": 4,
+       "stepAsideLimitS": 4,
+       "arriveM": 0.25,
+       "abreastM": 0.45,
+       "pastLegsM": [
+        1.3,
+        0.9,
+        0.6
+       ],
+       "pastMarginM": 0.6,
+       "playerWalkingMps": 0.2,
+       "waitS": 3,
+       "waitRecheckS": 0.25,
+       "roundMarginM": 0.3,
+       "roundStepDeg": 35,
+       "roundPoints": 3,
+       "roundOutM": 0.35,
+       "roundMaxLegs": 4,
+       "roundLegS": 2,
+       "watchS": 1.5,
+       "villagerRadiusM": 0.34,
+       "playerRadiusM": 0.42,
+       "villagerWalkMps": 1.4
+      },
+      "names": {
+       "gapM": "PASS_BY_GUARD_GAP_M",
+       "horizonS": "PASS_BY_GUARD_HORIZON_S",
+       "lookaheadS": "PASS_BY_GUARD_LOOKAHEAD_S",
+       "bandMinM": "PASS_BY_GUARD_BAND_MIN_M",
+       "headOnMps": "PASS_BY_GUARD_HEAD_ON_MPS",
+       "edgeMps": "PASS_BY_GUARD_EDGE_MPS",
+       "stallMps": "PASS_BY_GUARD_STALL_MPS",
+       "stallS": "PASS_BY_GUARD_STALL_S",
+       "coincidentM": "PASS_BY_GUARD_COINCIDENT_M",
+       "restSq": "PASS_BY_GUARD_REST_SQ",
+       "stillMps": "PASS_BY_GUARD_STILL_MPS",
+       "triggerMps": "PASS_BY_TRIGGER_MPS",
+       "aheadMinM": "PASS_BY_AHEAD_MIN_M",
+       "aheadMaxM": "PASS_BY_AHEAD_MAX_M",
+       "goalBeyondM": "PASS_BY_GOAL_BEYOND_M",
+       "laneMarginM": "PASS_BY_LANE_MARGIN_M",
+       "stepOutM": "PASS_BY_STEP_OUT_M",
+       "pointMarginM": "PASS_BY_POINT_MARGIN_M",
+       "meetClosingMps": "PASS_BY_MEET_CLOSING_MPS",
+       "meetMaxS": "PASS_BY_MEET_MAX_S",
+       "stepAsideLimitS": "PASS_BY_STEP_ASIDE_LIMIT_S",
+       "arriveM": "PASS_BY_ARRIVE_M",
+       "abreastM": "PASS_BY_ABREAST_M",
+       "pastLegsM": "PASS_BY_PAST_LEGS_M",
+       "pastMarginM": "PASS_BY_PAST_MARGIN_M",
+       "playerWalkingMps": "PASS_BY_PLAYER_WALKING_MPS",
+       "waitS": "PASS_BY_WAIT_S",
+       "waitRecheckS": "PASS_BY_WAIT_RECHECK_S",
+       "roundMarginM": "PASS_BY_ROUND_MARGIN_M",
+       "roundStepDeg": "PASS_BY_ROUND_STEP_DEG",
+       "roundPoints": "PASS_BY_ROUND_POINTS",
+       "roundOutM": "PASS_BY_ROUND_OUT_M",
+       "roundMaxLegs": "PASS_BY_ROUND_MAX_LEGS",
+       "roundLegS": "PASS_BY_ROUND_LEG_S",
+       "watchS": "PASS_BY_WATCH_S",
+       "villagerRadiusM": "PASS_BY_VILLAGER_RADIUS_M",
+       "playerRadiusM": "PASS_BY_PLAYER_RADIUS_M",
+       "villagerWalkMps": "PASS_BY_VILLAGER_WALK_MPS"
+      },
+      "measuredAbreastS": {
+       "min": 0.4,
+       "max": 1.7
+      },
+      "sideFrames": {
+       "unreal": "left-handed, z up; core (x, z) = Unreal (X, Y); +1 = Unreal's Left vector (−Dir.Y, Dir.X) = the walker's RIGHT",
+       "godot": "right-handed, y up; core (x, z) = Godot (x, z); +1 = the walker's RIGHT",
+       "unity": "left-handed, y up; core (x, z) = Unity (x, z); +1 = the walker's LEFT",
+       "babylon": "left-handed, y up; core (x, z) = Babylon (x, z); +1 = the walker's LEFT"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "passBy.guardFloor: no radii, null radii and one radius given; a radius that is not a number is [invalid-input]",
+   "steps": [
+    {
+     "call": "passBy.guardFloor",
+     "args": {},
+     "expect": {
+      "floorM": 0.96
+     }
+    },
+    {
+     "call": "passBy.guardFloor",
+     "args": {
+      "villagerRadius": null,
+      "playerRadius": null
+     },
+     "expect": {
+      "floorM": 0.96
+     }
+    },
+    {
+     "call": "passBy.guardFloor",
+     "args": {
+      "playerRadius": 0.5
+     },
+     "expect": {
+      "floorM": 1.04
+     }
+    },
+    {
+     "call": "passBy.guardFloor",
+     "args": {
+      "villagerRadius": 0.25
+     },
+     "expect": {
+      "floorM": 0.8699999999999999
+     }
+    },
+    {
+     "call": "passBy.guardFloor",
+     "args": {
+      "villagerRadius": "0.3"
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.guardFloor: `villagerRadius` must be a finite number"
+    },
+    {
+     "call": "passBy.guardFloor",
+     "args": {
+      "playerRadius": true
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.guardFloor: `playerRadius` must be a finite number"
+    }
+   ]
+  },
+  {
+   "name": "passBy.keepClear: a point carrying an undeclared y, a side that is not ±1 read as none, every declared member's boundary",
+   "steps": [
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "y": 3,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expect": {
+      "acted": true,
+      "velocity": {
+       "x": -0.6,
+       "z": -0.48
+      },
+      "side": 1
+     }
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      },
+      "side": 2
+     },
+     "expect": {
+      "acted": true,
+      "velocity": {
+       "x": -0.6,
+       "z": -0.48
+      },
+      "side": 1
+     }
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      },
+      "side": 1,
+      "maxSpeed": 2
+     },
+     "expect": {
+      "acted": true,
+      "velocity": {
+       "x": -0.6,
+       "z": -0.48
+      },
+      "side": 1
+     }
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      },
+      "maxSpeed": 0,
+      "villagerRadius": -1,
+      "playerRadius": 0
+     },
+     "expect": {
+      "acted": true,
+      "velocity": {
+       "x": -0.6,
+       "z": -0.48
+      },
+      "side": 1
+     }
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.at` is missing"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.at.z` is missing"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": "0",
+       "z": 0
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.at.x` must be a finite number"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.velocity` is missing"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.velocity.z` is missing"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": "0",
+       "z": 0
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.velocity.x` must be a finite number"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.player` is missing"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.player.z` is missing"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": "0",
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.player.x` must be a finite number"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.playerVelocity` is missing"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.playerVelocity.z` is missing"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": "0",
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.playerVelocity.x` must be a finite number"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      },
+      "villagerRadius": null
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.villagerRadius` must not be null"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      },
+      "villagerRadius": "1"
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.villagerRadius` must be a finite number"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      },
+      "playerRadius": null
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.playerRadius` must not be null"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      },
+      "playerRadius": "1"
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.playerRadius` must be a finite number"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      },
+      "maxSpeed": null
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.maxSpeed` must not be null"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      },
+      "maxSpeed": "1"
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.maxSpeed` must be a finite number"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      },
+      "side": null
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.side` must not be null"
+    },
+    {
+     "call": "passBy.keepClear",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 1.2
+      },
+      "velocity": {
+       "x": 0,
+       "z": -1.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerVelocity": {
+       "x": 0,
+       "z": 0
+      },
+      "side": "1"
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.keepClear: `args.side` must be a finite number"
+    }
+   ]
+  },
+  {
+   "name": "passBy.keepClear: arguments that are not an object are [invalid-input]",
+   "steps": [
+    {
+     "call": "passBy.keepClear",
+     "argsText": "[]",
+     "expectError": "must be a JSON object"
+    }
+   ]
+  },
+  {
+   "name": "passBy.planStepAside: room on one side only, a villager and player radius, a path of several points (the last its goal), every declared member's boundary",
+   "steps": [
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      },
+      "room": {
+       "minus": false
+      }
+     },
+     "expect": {
+      "stepAside": true,
+      "side": 1,
+      "preferredSide": -1,
+      "to": {
+       "x": 1.5,
+       "z": 1.51
+      },
+      "meetAt": {
+       "x": 1.5,
+       "z": 0.2
+      },
+      "meetInS": 0,
+      "aheadM": 1.5,
+      "offLineM": 0.2,
+      "laneHalfWidthM": 1.01,
+      "stepOutM": 1.31,
+      "offsetFromLineM": 1.51,
+      "limitS": 4,
+      "abreastM": 0.45,
+      "pastLegsM": [
+       1.3,
+       0.9,
+       0.6
+      ],
+      "guardFloorM": 0.96
+     }
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      },
+      "room": {
+       "plus": false
+      }
+     },
+     "expect": {
+      "stepAside": true,
+      "side": -1,
+      "preferredSide": -1,
+      "to": {
+       "x": 1.5,
+       "z": -1.11
+      },
+      "meetAt": {
+       "x": 1.5,
+       "z": 0.2
+      },
+      "meetInS": 0,
+      "aheadM": 1.5,
+      "offLineM": 0.2,
+      "laneHalfWidthM": 1.01,
+      "stepOutM": 1.31,
+      "offsetFromLineM": 1.11,
+      "limitS": 4,
+      "abreastM": 0.45,
+      "pastLegsM": [
+       1.3,
+       0.9,
+       0.6
+      ],
+      "guardFloorM": 0.96
+     }
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ],
+       "radius": 0.3
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       },
+       "radius": 0.5
+      }
+     },
+     "expect": {
+      "stepAside": true,
+      "side": -1,
+      "preferredSide": -1,
+      "to": {
+       "x": 1.5,
+       "z": -1.1500000000000001
+      },
+      "meetAt": {
+       "x": 1.5,
+       "z": 0.2
+      },
+      "meetInS": 0,
+      "aheadM": 1.5,
+      "offLineM": 0.2,
+      "laneHalfWidthM": 1.05,
+      "stepOutM": 1.35,
+      "offsetFromLineM": 1.1500000000000001,
+      "limitS": 4,
+      "abreastM": 0.45,
+      "pastLegsM": [
+       1.3,
+       0.9,
+       0.6
+      ],
+      "guardFloorM": 1
+     }
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 1,
+         "z": 0
+        },
+        {
+         "x": 1.8,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0
+       }
+      }
+     },
+     "expect": {
+      "stepAside": false,
+      "reason": "goal-before-player",
+      "guardFloorM": 0.96,
+      "preferredSide": 1,
+      "meetAt": {
+       "x": 1.5,
+       "z": 0
+      },
+      "meetInS": 0,
+      "aheadM": 1.5,
+      "offLineM": 0
+     }
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 1,
+         "z": 0
+        },
+        {
+         "x": 5,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0
+       }
+      }
+     },
+     "expect": {
+      "stepAside": true,
+      "side": 1,
+      "preferredSide": 1,
+      "to": {
+       "x": 1.5,
+       "z": 1.31
+      },
+      "meetAt": {
+       "x": 1.5,
+       "z": 0
+      },
+      "meetInS": 0,
+      "aheadM": 1.5,
+      "offLineM": 0,
+      "laneHalfWidthM": 1.01,
+      "stepOutM": 1.31,
+      "offsetFromLineM": 1.31,
+      "limitS": 4,
+      "abreastM": 0.45,
+      "pastLegsM": [
+       1.3,
+       0.9,
+       0.6
+      ],
+      "guardFloorM": 0.96
+     }
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.villager` is missing"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.player` is missing"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.villager.at` is missing"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.villager.velocity` is missing"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       }
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.villager.path` is missing"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        },
+        {
+         "x": 3
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.villager.path[1].z` is missing"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": null
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.villager.path` must not be null"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ],
+       "radius": null
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.villager.radius` must not be null"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "velocity": {
+        "x": 0,
+        "z": 0
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.player.at` is missing"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       },
+       "velocity": null
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.player.velocity` must not be null"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       },
+       "radius": "0.4"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.player.radius` must be a finite number"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      },
+      "room": null
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.room` must not be null"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      },
+      "room": {
+       "plus": "no"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.room.plus` must be a boolean"
+    },
+    {
+     "call": "passBy.planStepAside",
+     "args": {
+      "villager": {
+       "at": {
+        "x": 0,
+        "z": 0
+       },
+       "velocity": {
+        "x": 1.4,
+        "z": 0
+       },
+       "path": [
+        {
+         "x": 20,
+         "z": 0
+        }
+       ]
+      },
+      "player": {
+       "at": {
+        "x": 1.5,
+        "z": 0.2
+       }
+      },
+      "room": {
+       "minus": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planStepAside: `args.room.minus` must be a boolean"
+    }
+   ]
+  },
+  {
+   "name": "passBy.planRound: null radii are the default, one radius given, every declared member's boundary",
+   "steps": [
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "here": {
+       "x": 0.4,
+       "z": 1.15
+      },
+      "next": {
+       "x": -1.5,
+       "z": -2
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "villagerRadius": null,
+      "playerRadius": null
+     },
+     "expect": {
+      "way": [
+       {
+        "x": -0.38441219905601853,
+        "z": 1.3565866213467226
+       },
+       {
+        "x": -1.0929981585799233,
+        "z": 0.8907609249068442
+       },
+       {
+        "x": -1.4062511529536774,
+        "z": 0.10275064387366628
+       }
+      ]
+     }
+    },
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "here": {
+       "x": 0.4,
+       "z": 1.15
+      },
+      "next": {
+       "x": -1.5,
+       "z": -2
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "playerRadius": 0.6
+     },
+     "expect": {
+      "way": [
+       {
+        "x": -0.4334860968078506,
+        "z": 1.5297678921569422
+       },
+       {
+        "x": -1.2325298383986367,
+        "z": 1.0044750855332496
+       },
+       {
+        "x": -1.5857725767349977,
+        "z": 0.11586774734690025
+       }
+      ]
+     }
+    },
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "next": {
+       "x": -1.5,
+       "z": -2
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planRound: `args.here` is missing"
+    },
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "here": null,
+      "next": {
+       "x": -1.5,
+       "z": -2
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planRound: `args.here` must be a JSON object"
+    },
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "here": {
+       "x": 0.4
+      },
+      "next": {
+       "x": -1.5,
+       "z": -2
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planRound: `args.here.z` is missing"
+    },
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "here": {
+       "x": 0.4,
+       "z": 1.15
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planRound: `args.next` is missing"
+    },
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "here": {
+       "x": 0.4,
+       "z": 1.15
+      },
+      "next": null,
+      "player": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planRound: `args.next` must be a JSON object"
+    },
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "here": {
+       "x": 0.4,
+       "z": 1.15
+      },
+      "next": {
+       "x": 0.4
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planRound: `args.next.z` is missing"
+    },
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "here": {
+       "x": 0.4,
+       "z": 1.15
+      },
+      "next": {
+       "x": -1.5,
+       "z": -2
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planRound: `args.player` is missing"
+    },
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "here": {
+       "x": 0.4,
+       "z": 1.15
+      },
+      "next": {
+       "x": -1.5,
+       "z": -2
+      },
+      "player": null
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planRound: `args.player` must be a JSON object"
+    },
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "here": {
+       "x": 0.4,
+       "z": 1.15
+      },
+      "next": {
+       "x": -1.5,
+       "z": -2
+      },
+      "player": {
+       "x": 0.4
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planRound: `args.player.z` is missing"
+    },
+    {
+     "call": "passBy.planRound",
+     "args": {
+      "here": {
+       "x": 0.4,
+       "z": 1.15
+      },
+      "next": {
+       "x": -1.5,
+       "z": -2
+      },
+      "player": {
+       "x": 0,
+       "z": 0
+      },
+      "villagerRadius": "big"
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.planRound: `villagerRadius` must be a finite number"
+    }
+   ]
+  },
+  {
+   "name": "passBy.distanceToSegment: beside the segment, beyond its end, a segment of no length, and its boundary",
+   "steps": [
+    {
+     "call": "passBy.distanceToSegment",
+     "args": {
+      "p": {
+       "x": 1,
+       "z": 1
+      },
+      "a": {
+       "x": 0,
+       "z": 0
+      },
+      "b": {
+       "x": 2,
+       "z": 0
+      }
+     },
+     "expect": {
+      "distanceM": 1
+     }
+    },
+    {
+     "call": "passBy.distanceToSegment",
+     "args": {
+      "p": {
+       "x": 4,
+       "z": 1
+      },
+      "a": {
+       "x": 0,
+       "z": 0
+      },
+      "b": {
+       "x": 2,
+       "z": 0
+      }
+     },
+     "expect": {
+      "distanceM": 2.23606797749979
+     }
+    },
+    {
+     "call": "passBy.distanceToSegment",
+     "args": {
+      "p": {
+       "x": 3,
+       "z": 4
+      },
+      "a": {
+       "x": 0,
+       "z": 0
+      },
+      "b": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expect": {
+      "distanceM": 5
+     }
+    },
+    {
+     "call": "passBy.distanceToSegment",
+     "args": {
+      "a": {
+       "x": 0,
+       "z": 0
+      },
+      "b": {
+       "x": 2,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.distanceToSegment: `args.p` is missing"
+    },
+    {
+     "call": "passBy.distanceToSegment",
+     "args": {
+      "p": {
+       "x": 1,
+       "z": 1
+      },
+      "a": {
+       "z": 0
+      },
+      "b": {
+       "x": 2,
+       "z": 0
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.distanceToSegment: `args.a.x` is missing"
+    }
+   ]
+  },
+  {
+   "name": "passBy.replay: a coarser frame (dt), a slower and wider villager, a wider player, and straightBack (-InsimulPassByStraightBack) beside the round it replaces",
+   "steps": [
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ],
+       "dt": 0.03125
+      }
+     },
+     "expect": {
+      "frames": 288,
+      "guardFloorM": 0.96,
+      "villagers": [
+       {
+        "id": "villager",
+        "events": [
+         {
+          "t": 2.15625,
+          "what": "step-aside",
+          "side": -1,
+          "to": {
+           "x": 5,
+           "z": -1.21
+          },
+          "meetInS": 0
+         },
+         {
+          "t": 3.5,
+          "what": "abreast",
+          "afterS": 1.34375,
+          "distanceM": 1.14399212192838
+         },
+         {
+          "t": 3.5,
+          "what": "past-leg",
+          "legM": 1.3
+         },
+         {
+          "t": 4.40625,
+          "what": "walk-on",
+          "why": "the past leg reached"
+         },
+         {
+          "t": 5.90625,
+          "what": "passed",
+          "closestM": 1.118169536447281,
+          "gapM": 0.35816953644728095
+         },
+         {
+          "t": 7.4375,
+          "what": "arrived"
+         }
+        ],
+        "steppedAside": true,
+        "side": -1,
+        "abreastAfterS": 1.34375,
+        "closestM": 1.118169536447281,
+        "minGapM": 0.35816953644728095,
+        "guardFrames": 0,
+        "reachedGoal": true,
+        "end": {
+         "x": 10,
+         "z": 0
+        },
+        "track": [
+         {
+          "x": 0,
+          "z": 0
+         },
+         {
+          "x": 0.6999999999999998,
+          "z": 0
+         },
+         {
+          "x": 1.3999999999999992,
+          "z": 0
+         },
+         {
+          "x": 2.099999999999999,
+          "z": 0
+         },
+         {
+          "x": 2.800000000000002,
+          "z": 0
+         },
+         {
+          "x": 3.4294623248298053,
+          "z": -0.2508325113156151
+         },
+         {
+          "x": 4.026862070036791,
+          "z": -0.6156798005019639
+         },
+         {
+          "x": 4.624261815243776,
+          "z": -0.9805270896883127
+         },
+         {
+          "x": 5.317789458015318,
+          "z": -1.0754976572961292
+         },
+         {
+          "x": 6.007674316980928,
+          "z": -1.117288825713976
+         },
+         {
+          "x": 6.681773779454165,
+          "z": -0.9286359309752888
+         },
+         {
+          "x": 7.3558732419274016,
+          "z": -0.7399830362366028
+         },
+         {
+          "x": 8.029972704400638,
+          "z": -0.5513301414979173
+         },
+         {
+          "x": 8.704072166873875,
+          "z": -0.36267724675923263
+         },
+         {
+          "x": 9.378171629347111,
+          "z": -0.17402435202054864
+         },
+         {
+          "x": 10,
+          "z": 0
+         },
+         {
+          "x": 10,
+          "z": 0
+         },
+         {
+          "x": 10,
+          "z": 0
+         },
+         {
+          "x": 10,
+          "z": 0
+         }
+        ]
+       }
+      ],
+      "player": {
+       "end": {
+        "x": 5,
+        "z": 0.1
+       }
+      }
+     }
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ],
+         "speed": 1,
+         "radius": 0.3
+        }
+       ]
+      }
+     },
+     "expect": {
+      "frames": 576,
+      "guardFloorM": 0.96,
+      "villagers": [
+       {
+        "id": "villager",
+        "events": [
+         {
+          "t": 3,
+          "what": "step-aside",
+          "side": -1,
+          "to": {
+           "x": 5,
+           "z": -1.17
+          },
+          "meetInS": 0
+         },
+         {
+          "t": 4.875,
+          "what": "abreast",
+          "afterS": 1.875,
+          "distanceM": 1.1141535554073967
+         },
+         {
+          "t": 4.875,
+          "what": "past-leg",
+          "legM": 1.3
+         },
+         {
+          "t": 6.125,
+          "what": "walk-on",
+          "why": "the past leg reached"
+         },
+         {
+          "t": 7.625,
+          "what": "passed",
+          "closestM": 1.0878994664333692,
+          "gapM": 0.3678994664333692
+         }
+        ],
+        "steppedAside": true,
+        "side": -1,
+        "abreastAfterS": 1.875,
+        "closestM": 1.0878994664333692,
+        "minGapM": 0.3678994664333692,
+        "guardFrames": 0,
+        "reachedGoal": false,
+        "end": {
+         "x": 8.634359328794554,
+         "z": -0.3663491577028332
+        },
+        "track": [
+         {
+          "x": 0,
+          "z": 0
+         },
+         {
+          "x": 0.25,
+          "z": 0
+         },
+         {
+          "x": 0.5,
+          "z": 0
+         },
+         {
+          "x": 0.75,
+          "z": 0
+         },
+         {
+          "x": 1,
+          "z": 0
+         },
+         {
+          "x": 1.25,
+          "z": 0
+         },
+         {
+          "x": 1.5,
+          "z": 0
+         },
+         {
+          "x": 1.75,
+          "z": 0
+         },
+         {
+          "x": 2,
+          "z": 0
+         },
+         {
+          "x": 2.25,
+          "z": 0
+         },
+         {
+          "x": 2.5,
+          "z": 0
+         },
+         {
+          "x": 2.75,
+          "z": 0
+         },
+         {
+          "x": 3,
+          "z": 0
+         },
+         {
+          "x": 3.2157880283276867,
+          "z": -0.1262359965716968
+         },
+         {
+          "x": 3.4315760566553735,
+          "z": -0.2524719931433934
+         },
+         {
+          "x": 3.64736408498306,
+          "z": -0.37870798971509
+         },
+         {
+          "x": 3.863152113310747,
+          "z": -0.5049439862867866
+         },
+         {
+          "x": 4.078940141638435,
+          "z": -0.6311799828584841
+         },
+         {
+          "x": 4.294728169966123,
+          "z": -0.7574159794301816
+         },
+         {
+          "x": 4.510516198293811,
+          "z": -0.8836519760018791
+         },
+         {
+          "x": 4.742323158809605,
+          "z": -0.9632193428585583
+         },
+         {
+          "x": 4.990149051513506,
+          "z": -0.9961180800002192
+         },
+         {
+          "x": 5.237974944217407,
+          "z": -1.02901681714188
+         },
+         {
+          "x": 5.485800836921308,
+          "z": -1.061915554283541
+         },
+         {
+          "x": 5.733626729625208,
+          "z": -1.094814291425203
+         },
+         {
+          "x": 5.978270965230089,
+          "z": -1.0788760729398088
+         },
+         {
+          "x": 6.219733543735949,
+          "z": -1.0141008988273572
+         },
+         {
+          "x": 6.46119612224181,
+          "z": -0.9493257247149042
+         },
+         {
+          "x": 6.70265870074767,
+          "z": -0.8845505506024508
+         },
+         {
+          "x": 6.9441212792535305,
+          "z": -0.8197753764899974
+         },
+         {
+          "x": 7.185583857759391,
+          "z": -0.7550002023775441
+         },
+         {
+          "x": 7.427046436265251,
+          "z": -0.6902250282650919
+         },
+         {
+          "x": 7.668509014771112,
+          "z": -0.6254498541526403
+         },
+         {
+          "x": 7.909971593276972,
+          "z": -0.5606746800401887
+         },
+         {
+          "x": 8.151434171782833,
+          "z": -0.495899505927737
+         },
+         {
+          "x": 8.392896750288694,
+          "z": -0.4311243318152848
+         },
+         {
+          "x": 8.634359328794554,
+          "z": -0.3663491577028332
+         }
+        ]
+       }
+      ],
+      "player": {
+       "end": {
+        "x": 5,
+        "z": 0.1
+       }
+      }
+     }
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        },
+        "radius": 0.5
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "frames": 576,
+      "guardFloorM": 1.04,
+      "villagers": [
+       {
+        "id": "villager",
+        "events": [
+         {
+          "t": 2.15625,
+          "what": "step-aside",
+          "side": -1,
+          "to": {
+           "x": 5,
+           "z": -1.29
+          },
+          "meetInS": 0
+         },
+         {
+          "t": 3.53125,
+          "what": "abreast",
+          "afterS": 1.375,
+          "distanceM": 1.2078011530055817
+         },
+         {
+          "t": 3.53125,
+          "what": "past-leg",
+          "legM": 1.3
+         },
+         {
+          "t": 4.421875,
+          "what": "walk-on",
+          "why": "the past leg reached"
+         },
+         {
+          "t": 5.921875,
+          "what": "passed",
+          "closestM": 1.1648825167655794,
+          "gapM": 0.32488251676557933
+         },
+         {
+          "t": 7.5,
+          "what": "arrived"
+         }
+        ],
+        "steppedAside": true,
+        "side": -1,
+        "abreastAfterS": 1.375,
+        "closestM": 1.1648825167655794,
+        "minGapM": 0.32488251676557933,
+        "guardFrames": 0,
+        "reachedGoal": true,
+        "end": {
+         "x": 10,
+         "z": 0
+        },
+        "track": [
+         {
+          "x": 0,
+          "z": 0
+         },
+         {
+          "x": 0.3499999999999999,
+          "z": 0
+         },
+         {
+          "x": 0.6999999999999996,
+          "z": 0
+         },
+         {
+          "x": 1.0499999999999996,
+          "z": 0
+         },
+         {
+          "x": 1.400000000000001,
+          "z": 0
+         },
+         {
+          "x": 1.7500000000000024,
+          "z": 0
+         },
+         {
+          "x": 2.1000000000000036,
+          "z": 0
+         },
+         {
+          "x": 2.450000000000005,
+          "z": 0
+         },
+         {
+          "x": 2.8000000000000065,
+          "z": 0
+         },
+         {
+          "x": 3.1287402003581692,
+          "z": -0.07161507051711341
+         },
+         {
+          "x": 3.4220474013132685,
+          "z": -0.26258859189608236
+         },
+         {
+          "x": 3.7153546022683703,
+          "z": -0.4535621132750513
+         },
+         {
+          "x": 4.008661803223472,
+          "z": -0.6445356346540195
+         },
+         {
+          "x": 4.30196900417857,
+          "z": -0.8355091560329876
+         },
+         {
+          "x": 4.595276205133668,
+          "z": -1.0264826774119555
+         },
+         {
+          "x": 4.935077162263466,
+          "z": -1.0939053036220603
+         },
+         {
+          "x": 5.281520084561079,
+          "z": -1.1436778019508989
+         },
+         {
+          "x": 5.627963006858691,
+          "z": -1.1934503002797374
+         },
+         {
+          "x": 5.970991541231465,
+          "z": -1.1965309334089222
+         },
+         {
+          "x": 6.306508422169594,
+          "z": -1.096889463098866
+         },
+         {
+          "x": 6.642025303107724,
+          "z": -0.9972479927888097
+         },
+         {
+          "x": 6.977542184045854,
+          "z": -0.8976065224787538
+         },
+         {
+          "x": 7.3130590649839835,
+          "z": -0.797965052168698
+         },
+         {
+          "x": 7.648575945922113,
+          "z": -0.6983235818586421
+         },
+         {
+          "x": 7.984092826860243,
+          "z": -0.5986821115485862
+         },
+         {
+          "x": 8.319609707798358,
+          "z": -0.4990406412385303
+         },
+         {
+          "x": 8.655126588736474,
+          "z": -0.39939917092847527
+         },
+         {
+          "x": 8.99064346967459,
+          "z": -0.29975770061842105
+         },
+         {
+          "x": 9.326160350612705,
+          "z": -0.20011623030836817
+         },
+         {
+          "x": 9.661677231550831,
+          "z": -0.10047475999831657
+         },
+         {
+          "x": 9.99719411248896,
+          "z": -0.0008332896882651819
+         },
+         {
+          "x": 10,
+          "z": 0
+         },
+         {
+          "x": 10,
+          "z": 0
+         },
+         {
+          "x": 10,
+          "z": 0
+         },
+         {
+          "x": 10,
+          "z": 0
+         },
+         {
+          "x": 10,
+          "z": 0
+         },
+         {
+          "x": 10,
+          "z": 0
+         }
+        ]
+       }
+      ],
+      "player": {
+       "end": {
+        "x": 5,
+        "z": 0.1
+       }
+      }
+     }
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 10,
+       "obstacles": [
+        {
+         "minX": -2,
+         "minZ": 0.6,
+         "maxX": 14,
+         "maxZ": 1
+        },
+        {
+         "minX": -2,
+         "minZ": -1,
+         "maxX": 3.4,
+         "maxZ": -0.6
+        },
+        {
+         "minX": 5.4,
+         "minZ": -1,
+         "maxX": 14,
+         "maxZ": -0.6
+        },
+        {
+         "minX": 3.1,
+         "minZ": -2.4,
+         "maxX": 5.7,
+         "maxZ": -2
+        },
+        {
+         "minX": 3.1,
+         "minZ": -2.4,
+         "maxX": 3.4,
+         "maxZ": -0.6
+        },
+        {
+         "minX": 5.4,
+         "minZ": -2.4,
+         "maxX": 5.7,
+         "maxZ": -0.6
+        }
+       ],
+       "player": {
+        "at": {
+         "x": 4.4,
+         "z": 0
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ],
+       "controls": {
+        "straightBack": true
+       }
+      }
+     },
+     "expect": {
+      "frames": 640,
+      "guardFloorM": 0.96,
+      "villagers": [
+       {
+        "id": "villager",
+        "events": [
+         {
+          "t": 1.71875,
+          "what": "no-room"
+         },
+         {
+          "t": 3.875,
+          "what": "guard-flip",
+          "side": -1
+         },
+         {
+          "t": 5.75,
+          "what": "guard-flip",
+          "side": 1
+         },
+         {
+          "t": 7.625,
+          "what": "guard-flip",
+          "side": -1
+         },
+         {
+          "t": 9.5,
+          "what": "guard-flip",
+          "side": 1
+         }
+        ],
+        "steppedAside": false,
+        "side": 0,
+        "abreastAfterS": null,
+        "closestM": 0.9605223480326924,
+        "minGapM": 0.20052234803269248,
+        "guardFrames": 514,
+        "reachedGoal": false,
+        "end": {
+         "x": 3.439163505363557,
+         "z": -0.0346425230718245
+        },
+        "track": [
+         {
+          "x": 0,
+          "z": 0
+         },
+         {
+          "x": 0.3499999999999999,
+          "z": 0
+         },
+         {
+          "x": 0.6999999999999996,
+          "z": 0
+         },
+         {
+          "x": 1.0499999999999996,
+          "z": 0
+         },
+         {
+          "x": 1.400000000000001,
+          "z": 0
+         },
+         {
+          "x": 1.7500000000000024,
+          "z": 0
+         },
+         {
+          "x": 2.1000000000000036,
+          "z": 0
+         },
+         {
+          "x": 2.450000000000005,
+          "z": 0
+         },
+         {
+          "x": 2.7983372072597996,
+          "z": -0.011700049908301955
+         },
+         {
+          "x": 3.0616636308505996,
+          "z": -0.14811207759366313
+         },
+         {
+          "x": 3.238185466833409,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.3558418064105084,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.4309006102944632,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.474345477759929,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.474345477759929,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.474345477759929,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.458814929985393,
+          "z": -0.19270269684297614
+         },
+         {
+          "x": 3.4399996074371124,
+          "z": -0.04404166909929795
+         },
+         {
+          "x": 3.4446427483811632,
+          "z": 0.10573460787808953
+         },
+         {
+          "x": 3.472579436610001,
+          "z": 0.25295645443154563
+         },
+         {
+          "x": 3.472579436610001,
+          "z": 0.25295645443154563
+         },
+         {
+          "x": 3.472579436610001,
+          "z": 0.25295645443154563
+         },
+         {
+          "x": 3.472579436610001,
+          "z": 0.25295645443154563
+         },
+         {
+          "x": 3.472579436610001,
+          "z": 0.25295645443154563
+         },
+         {
+          "x": 3.445551511182098,
+          "z": 0.11507938201537782
+         },
+         {
+          "x": 3.4392225382190635,
+          "z": -0.034636715428189725
+         },
+         {
+          "x": 3.4562512437792106,
+          "z": -0.1835160157803116
+         },
+         {
+          "x": 3.4734150242487485,
+          "z": -0.25650726762980164
+         },
+         {
+          "x": 3.4734150242487485,
+          "z": -0.25650726762980164
+         },
+         {
+          "x": 3.4734150242487485,
+          "z": -0.25650726762980164
+         },
+         {
+          "x": 3.4734150242487485,
+          "z": -0.25650726762980164
+         },
+         {
+          "x": 3.458072045448503,
+          "z": -0.19271311671946062
+         },
+         {
+          "x": 3.439558890804783,
+          "z": -0.04401092949604945
+         },
+         {
+          "x": 3.4443802798167784,
+          "z": 0.10576171350791705
+         },
+         {
+          "x": 3.472417516802866,
+          "z": 0.25296569293135696
+         },
+         {
+          "x": 3.472417516802866,
+          "z": 0.25296569293135696
+         },
+         {
+          "x": 3.472417516802866,
+          "z": 0.25296569293135696
+         },
+         {
+          "x": 3.472417516802866,
+          "z": 0.25296569293135696
+         },
+         {
+          "x": 3.472417516802866,
+          "z": 0.25296569293135696
+         },
+         {
+          "x": 3.4454518930816365,
+          "z": 0.11507575171915736
+         },
+         {
+          "x": 3.439163505363557,
+          "z": -0.0346425230718245
+         }
+        ]
+       }
+      ],
+      "player": {
+       "end": {
+        "x": 4.4,
+        "z": 0
+       }
+      }
+     }
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 10,
+       "obstacles": [
+        {
+         "minX": -2,
+         "minZ": 0.6,
+         "maxX": 14,
+         "maxZ": 1
+        },
+        {
+         "minX": -2,
+         "minZ": -1,
+         "maxX": 3.4,
+         "maxZ": -0.6
+        },
+        {
+         "minX": 5.4,
+         "minZ": -1,
+         "maxX": 14,
+         "maxZ": -0.6
+        },
+        {
+         "minX": 3.1,
+         "minZ": -2.4,
+         "maxX": 5.7,
+         "maxZ": -2
+        },
+        {
+         "minX": 3.1,
+         "minZ": -2.4,
+         "maxX": 3.4,
+         "maxZ": -0.6
+        },
+        {
+         "minX": 5.4,
+         "minZ": -2.4,
+         "maxX": 5.7,
+         "maxZ": -0.6
+        }
+       ],
+       "player": {
+        "at": {
+         "x": 4.4,
+         "z": 0
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ],
+       "controls": {}
+      }
+     },
+     "expect": {
+      "frames": 640,
+      "guardFloorM": 0.96,
+      "villagers": [
+       {
+        "id": "villager",
+        "events": [
+         {
+          "t": 1.71875,
+          "what": "no-room"
+         },
+         {
+          "t": 3.875,
+          "what": "guard-flip",
+          "side": -1
+         },
+         {
+          "t": 5.75,
+          "what": "guard-flip",
+          "side": 1
+         },
+         {
+          "t": 7.625,
+          "what": "guard-flip",
+          "side": -1
+         },
+         {
+          "t": 9.5,
+          "what": "guard-flip",
+          "side": 1
+         }
+        ],
+        "steppedAside": false,
+        "side": 0,
+        "abreastAfterS": null,
+        "closestM": 0.9605223480326924,
+        "minGapM": 0.20052234803269248,
+        "guardFrames": 514,
+        "reachedGoal": false,
+        "end": {
+         "x": 3.439163505363557,
+         "z": -0.0346425230718245
+        },
+        "track": [
+         {
+          "x": 0,
+          "z": 0
+         },
+         {
+          "x": 0.3499999999999999,
+          "z": 0
+         },
+         {
+          "x": 0.6999999999999996,
+          "z": 0
+         },
+         {
+          "x": 1.0499999999999996,
+          "z": 0
+         },
+         {
+          "x": 1.400000000000001,
+          "z": 0
+         },
+         {
+          "x": 1.7500000000000024,
+          "z": 0
+         },
+         {
+          "x": 2.1000000000000036,
+          "z": 0
+         },
+         {
+          "x": 2.450000000000005,
+          "z": 0
+         },
+         {
+          "x": 2.7983372072597996,
+          "z": -0.011700049908301955
+         },
+         {
+          "x": 3.0616636308505996,
+          "z": -0.14811207759366313
+         },
+         {
+          "x": 3.238185466833409,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.3558418064105084,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.4309006102944632,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.474345477759929,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.474345477759929,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.474345477759929,
+          "z": -0.25645055376571485
+         },
+         {
+          "x": 3.458814929985393,
+          "z": -0.19270269684297614
+         },
+         {
+          "x": 3.4399996074371124,
+          "z": -0.04404166909929795
+         },
+         {
+          "x": 3.4446427483811632,
+          "z": 0.10573460787808953
+         },
+         {
+          "x": 3.472579436610001,
+          "z": 0.25295645443154563
+         },
+         {
+          "x": 3.472579436610001,
+          "z": 0.25295645443154563
+         },
+         {
+          "x": 3.472579436610001,
+          "z": 0.25295645443154563
+         },
+         {
+          "x": 3.472579436610001,
+          "z": 0.25295645443154563
+         },
+         {
+          "x": 3.472579436610001,
+          "z": 0.25295645443154563
+         },
+         {
+          "x": 3.445551511182098,
+          "z": 0.11507938201537782
+         },
+         {
+          "x": 3.4392225382190635,
+          "z": -0.034636715428189725
+         },
+         {
+          "x": 3.4562512437792106,
+          "z": -0.1835160157803116
+         },
+         {
+          "x": 3.4734150242487485,
+          "z": -0.25650726762980164
+         },
+         {
+          "x": 3.4734150242487485,
+          "z": -0.25650726762980164
+         },
+         {
+          "x": 3.4734150242487485,
+          "z": -0.25650726762980164
+         },
+         {
+          "x": 3.4734150242487485,
+          "z": -0.25650726762980164
+         },
+         {
+          "x": 3.458072045448503,
+          "z": -0.19271311671946062
+         },
+         {
+          "x": 3.439558890804783,
+          "z": -0.04401092949604945
+         },
+         {
+          "x": 3.4443802798167784,
+          "z": 0.10576171350791705
+         },
+         {
+          "x": 3.472417516802866,
+          "z": 0.25296569293135696
+         },
+         {
+          "x": 3.472417516802866,
+          "z": 0.25296569293135696
+         },
+         {
+          "x": 3.472417516802866,
+          "z": 0.25296569293135696
+         },
+         {
+          "x": 3.472417516802866,
+          "z": 0.25296569293135696
+         },
+         {
+          "x": 3.472417516802866,
+          "z": 0.25296569293135696
+         },
+         {
+          "x": 3.4454518930816365,
+          "z": 0.11507575171915736
+         },
+         {
+          "x": 3.439163505363557,
+          "z": -0.0346425230718245
+         }
+        ]
+       }
+      ],
+      "player": {
+       "end": {
+        "x": 4.4,
+        "z": 0
+       }
+      }
+     }
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 0,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "frames": 0,
+      "guardFloorM": 0.96,
+      "villagers": [
+       {
+        "id": "villager",
+        "events": [],
+        "steppedAside": false,
+        "side": 0,
+        "abreastAfterS": null,
+        "closestM": null,
+        "minGapM": null,
+        "guardFrames": 0,
+        "reachedGoal": false,
+        "end": {
+         "x": 0,
+         "z": 0
+        },
+        "track": [
+         {
+          "x": 0,
+          "z": 0
+         }
+        ]
+       }
+      ],
+      "player": {
+       "end": {
+        "x": 5,
+        "z": 0.1
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "passBy.replay: every declared member of the scene held to core's type, and a villager path core would walk unread",
+   "steps": [
+    {
+     "call": "passBy.replay",
+     "args": {},
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene` is missing"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": null
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene` must not be null"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.seconds` is missing"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ],
+       "dt": "1/64"
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.dt` must be a finite number"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ],
+       "dt": null
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.dt` must not be null"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ],
+       "obstacles": [
+        {
+         "minX": 0,
+         "minZ": 0,
+         "maxX": 1
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.obstacles[0].maxZ` is missing"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ],
+       "obstacles": {}
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.obstacles` must be an array"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.player` is missing"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "radius": 0.4
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.player.at` is missing"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0
+        },
+        "legs": [
+         {
+          "velocity": {
+           "x": -1,
+           "z": 0
+          }
+         }
+        ]
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.player.legs[0].seconds` is missing"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0
+        },
+        "radius": null
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.player.radius` must not be null"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.villagers` is missing"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.villagers[0].id` is missing"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": 7,
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.villagers[0].id` must be a string"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": []
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.villagers[0].path` is empty: core's replay walks to its first point"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ],
+         "speed": null
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.villagers[0].speed` must not be null"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ],
+         "radius": "0.3"
+        }
+       ]
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.villagers[0].radius` must be a finite number"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ],
+       "controls": {
+        "noGuard": 1
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.controls.noGuard` must be a boolean"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ],
+       "controls": {
+        "straightBack": "yes"
+       }
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.controls.straightBack` must be a boolean"
+    },
+    {
+     "call": "passBy.replay",
+     "args": {
+      "scene": {
+       "seconds": 9,
+       "player": {
+        "at": {
+         "x": 5,
+         "z": 0.1
+        }
+       },
+       "villagers": [
+        {
+         "id": "villager",
+         "at": {
+          "x": 0,
+          "z": 0
+         },
+         "path": [
+          {
+           "x": 10,
+           "z": 0
+          }
+         ]
+        }
+       ],
+       "controls": null
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: passBy.replay: `args.scene.controls` must not be null"
+    }
+   ]
+  }
+ ]
+}

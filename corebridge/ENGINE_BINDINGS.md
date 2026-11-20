@@ -714,6 +714,35 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   case as `tests/village_save_corpus.cpp` does: one row per op, `roundTrip` as a write
   whose two bodies are put over the save and then read, `stamp` as the four stamp
   readers, a refusal compared without its `message`.
+- **Villager pass-by (Unreal's `P4.unreal.retire-pass-by-copy`, after
+  PL.native-pass-by-rows; U118, U128, U107(2)).** Core's villager pass-by rule and its
+  replay are the `passBy.*` rows (`README.md`, "The villager pass-by rows"). The
+  retirement row binds them in place of the interim copy on unreal main (`7ff96080`,
+  read only): `Portable/InsimulPassBy.{h,cpp}` (178 + 192 lines), which
+  `InsimulAICharacter.cpp` calls (`KeepClearOfPlayer`, `PlanSidestep` /
+  `TrySidestepPlayer`, `PlanRoundPlayer`, `EndSidestep`, `PassByTick`), and the scene
+  stepper its corpus runner `Tests/test_pass_by_corpus.cpp` (853 lines) ports for the
+  corpus's `replay` op. Every function of the copy, and of that stepper, maps to a row:
+
+  | Unreal's interim copy (`insimul::passby`, `InsimulPassBy.h`) | Row |
+  |---|---|
+  | the 38 constants `kGuardGapM` … `kVillagerWalkMps` (each commented with the `PASS_BY_*` it copies) | `passBy.contract {}` → `constants[<key>]`, keyed as core's corpus contract keys them; `names[<key>]` is the `PASS_BY_*` export, so each `k…` constant finds its value by the name its comment cites |
+  | `GuardFloor` | `passBy.guardFloor { villagerRadius?, playerRadius? }` → `{ floorM }` |
+  | `FGuardInput`, `FGuardOutcome`, `KeepClearOfPlayer` | `passBy.keepClear { at, velocity, player, playerVelocity, villagerRadius?, playerRadius?, maxSpeed?, side? }` → `{ acted, velocity, side }` (`Side` 0: pass 0 or leave it out) |
+  | `FRoom`, `FStepAsideInput`, `FStepAsideDecision`, `PlanStepAside` | `passBy.planStepAside { villager: { at, velocity, path, radius? }, player: { at, velocity?, radius? }, room?: { plus?, minus? } }` → core's decision; `bStepAside` false is `{ stepAside: false, reason, guardFloorM, … }` (`bSeen`: the refusal carries `preferredSide`, `meetAt`, `meetInS`, `aheadM`, `offLineM`), true carries `pastLegsM` beside the fields the struct holds |
+  | `PlanRoundPlayer(Here, Next, Player, OutWay, …)` | `passBy.planRound { here, next, player, villagerRadius?, playerRadius? }` → `{ way }`: three points, or null where the copy answers false |
+  | `DistanceToSegment` (which `InsimulAICharacter.cpp` also calls for its round-point check) | `passBy.distanceToSegment { p, a, b }` → `{ distanceM }` |
+  | `FGround`, `Sub`, `Add`, `Scale`, `Dot`, `Length`, `Distance`, `Perp` | no row: core's `pass-by/ground.ts` is internal (not exported from the package); they are the binding's own vector maths in its frame, around the rows |
+  | the corpus runner's scene stepper (`ReplayPassBy`, `SegmentHitsBox`, `RoomTo`, `InsideBox`, `SideRoom`, `MarkAbreast`, the end of a step aside and the slide move) | `passBy.replay { scene }` → core's `PassByReplay`: the runner sends the case's scene and compares, and stops porting the stepper |
+  | the frame and units (`insimul::frame::UePlanToCore` / `CorePlanToUe`, centimetres to metres) | engine-side; `passBy.contract`'s `sideFrames.unreal` is core's statement of which way `+1` is (its Unreal entry still reads `core (x, z) = Unreal (X, Y)`, written before `B9.unreal.core-handedness` changed Unreal's mapping; restating it is core's) |
+
+  The engine keeps its state machine (`PassByTick`, `EndSidestep`), its navmesh (which
+  answers `room` and the room for a past leg or a round point) and its stall clock; the
+  rows are stateless, so the body guard's `side` is the binding's to pass back each
+  frame and to flip after `stallS` under `stallMps`. Re-vendor
+  `conformance/villagers/pass-by.json` from core at this library's pin and drive each
+  case as `tests/villagers_pass_by_corpus.cpp` does: ONE row call per case, the case's
+  `input` as the args, compared by the corpus's `tolerance`.
 - **The language kernels, slices 1 to 4 (Unreal's `P9h.unreal.retire-language-copy`,
   released by slice 4, the last of PL.native-language-rows; U118, U128, U107(2)).** Core's P9h language
   kernels are the `language.*` rows (`README.md`, "The language rows"). The retirement

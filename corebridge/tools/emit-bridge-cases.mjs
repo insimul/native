@@ -318,6 +318,69 @@ function villageSave(root, coreCommit) {
 	);
 }
 
+// ── villager pass-by: conformance/villagers/pass-by.json (pass-by-corpus.test.ts) ──
+//
+// Core's reference runner is src/pass-by/pass-by-corpus.ts (`runPassByOp`): each op is ONE
+// core call, and each becomes ONE call of the passBy.* row over that function
+// (PL.native-pass-by-rows), the case's whole input as its args and its whole answer as
+// its expectation:
+//
+//   floor   passBy.guardFloor     { villagerRadius?, playerRadius? }  -> { floorM }
+//   guard   passBy.keepClear      the PassByGuardInput                -> { acted, velocity, side }
+//   plan    passBy.planStepAside  the StepAsideInput                  -> the StepAsideDecision
+//   round   passBy.planRound      { here, next, player, radii? }      -> { way }
+//   replay  passBy.replay         { scene }                           -> the PassByReplay
+//
+// Core's runner compares numbers within the file's `tolerance` (1e-6); the bridge's matcher
+// compares them as doubles, exactly, which both legs meet (the rows run core's own code). One
+// more case holds passBy.contract to the corpus's contract: the constants (each key's
+// `value`), the side frames and the measured abreast window; the export names it also states
+// are pinned by the hand cases. An op this map does not know fails the emit.
+
+/** The row each pass-by op calls (pass-by-corpus.ts's runPassByOp, through the rows). */
+const PASS_BY_ROWS = {
+	floor: 'passBy.guardFloor',
+	guard: 'passBy.keepClear',
+	plan: 'passBy.planStepAside',
+	round: 'passBy.planRound',
+	replay: 'passBy.replay',
+};
+
+function passBy(root, coreCommit) {
+	const r = reader(root);
+	const file = r.json('conformance/villagers/pass-by.json');
+	if (file.area !== 'villager-pass-by') throw new Error('emit-bridge-cases: pass-by.json is not the villager pass-by corpus');
+	const cases = [
+		{
+			name: 'pass-by: the contract the passBy.contract row states',
+			steps: [
+				{
+					call: 'passBy.contract',
+					expect: {
+						constants: Object.fromEntries(Object.entries(file.contract.constants).map(([k, v]) => [k, v.value])),
+						names: { $type: 'object' },
+						measuredAbreastS: file.contract.measuredAbreastS,
+						sideFrames: file.contract.sideFrames,
+					},
+				},
+			],
+		},
+	];
+	for (const c of file.cases) {
+		const call = PASS_BY_ROWS[c.op];
+		if (!call) throw new Error(`emit-bridge-cases: pass-by.json op ${c.op} has no transcription (case "${c.name}")`);
+		cases.push({ name: `pass-by ${c.op}: ${c.name}`, steps: [{ call, args: c.input, expect: c.expected }] });
+	}
+	return caseFile(
+		'villagers-pass-by',
+		"core's villager pass-by corpus (conformance/villagers/pass-by.json, PL.pass-by-core) through the passBy.* rows, " +
+			"each op one call of its row, as core's reference runner (pass-by/pass-by-corpus.ts) makes one core call.",
+		coreCommit,
+		r.files,
+		cases,
+	);
+}
+
 // ── ui: conformance/ui/ (dialogue-menu-save-corpus.test.ts, quest-trade-corpus.test.ts, ui-corpus.test.ts)
 
 function pauseMenu(root, coreCommit) {
@@ -2291,6 +2354,7 @@ export function emitBridgeCases(root, coreCommit) {
 	return {
 		'core-saves.json': saves(root, coreCommit),
 		'core-saves-village.json': villageSave(root, coreCommit),
+		'core-villagers-pass-by.json': passBy(root, coreCommit),
 		'core-quests.json': quests(root, coreCommit),
 		'core-ui-pause-menu.json': pauseMenu(root, coreCommit),
 		'core-ui-quest-journal.json': questJournal(root, coreCommit),

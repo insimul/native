@@ -646,6 +646,13 @@ game; **meta** = about the bridge itself.
 | `ui.genreHud` | `{ op: config, view, genre_view, config_of or view_of, ...input }` (a `conformance/ui/genre-hud-cases.json` case's `op` and `input`; `config_of` / `view_of` take a game's own settings, `{ genreConfig }` or `{ recipe, world? }`, plus `state?` for `view_of`) → its `expected` shape: `{ ok: true, value }` or a refusal VALUE `{ ok: false, refusal: { code, field } }` (`unresolved_recipe` also carries `reason`); an unknown `op` is an error `[unknown-op]` | `ui/genre-hud-corpus` `runGenreHudOp` (`genre-hud-model`, `genreHudConfigOf`; `game-genres/resolution` `resolveGameGenre` for a recipe) | P9a.native (U84); `config_of` / `view_of` PL.native-genre-hud-config (U92(2)) |
 | `ui.rulesPanel` | `{ op: panel, card, byCategory, byType or isActive, ...input }` (a `conformance/ui/rules-panel-cases.json` case's `op` and `input`) → its `expected` shape; an unknown `op` is an error `[unknown-op]`, an input of the wrong JSON type `[invalid-input]` | `ui/rules-panel-corpus` `runRulesPanelOp` (`rules-panel-model`) | P9a.native (U84) |
 | `packs.compose` | `{ recipe?, world?, game?, engine?, catalog: { index, manifests } }` → core's `Composition` (packs, settings, activation, overrides; a refused choice is a `refusals` entry; a refused recipe, preset, request or engine is an error with a code) | `system-packs/composer` `resolveComposition` | SP.composer-native (U62(1)) |
+| `passBy.contract` | `{}` → `{ constants, names, measuredAbreastS, sideFrames }` — every PASS_BY_* constant keyed as core's corpus contract keys it, with its export name | `pass-by/pass-by` constants (`PASS_BY_*`, `PASS_BY_ABREAST_MEASURED_S`, `PASS_BY_SIDE_FRAMES`) | P4 villager pass-by (PL.native-pass-by-rows; core's PL.pass-by-core) |
+| `passBy.guardFloor` | `{ villagerRadius?, playerRadius? }` → `{ floorM }` (absent or null: core's default body) | `pass-by/pass-by` `passByGuardFloor` | P4 villager pass-by (PL.native-pass-by-rows; core's PL.pass-by-core) |
+| `passBy.keepClear` | `{ at, velocity, player, playerVelocity, villagerRadius?, playerRadius?, maxSpeed?, side? }` → `{ acted, velocity, side }` | `pass-by/pass-by` `keepClearOfPlayer` | P4 villager pass-by (PL.native-pass-by-rows; core's PL.pass-by-core) |
+| `passBy.planStepAside` | `{ villager: { at, velocity, path, radius? }, player: { at, velocity?, radius? }, room?: { plus?, minus? } }` → core's decision (a refusal `{ stepAside: false, reason, … }` is a value) | `pass-by/pass-by` `planStepAside` | P4 villager pass-by (PL.native-pass-by-rows; core's PL.pass-by-core) |
+| `passBy.planRound` | `{ here, next, player, villagerRadius?, playerRadius? }` → `{ way }` (three points, or null) | `pass-by/pass-by` `planRoundPlayer` | P4 villager pass-by (PL.native-pass-by-rows; core's PL.pass-by-core) |
+| `passBy.distanceToSegment` | `{ p, a, b }` → `{ distanceM }` | `pass-by/pass-by` `passByDistanceToSegment` | P4 villager pass-by (PL.native-pass-by-rows; core's PL.pass-by-core) |
+| `passBy.replay` | `{ scene: { dt?, seconds, obstacles?, player: { at, radius?, legs? }, villagers: [{ id, at, path, speed?, radius? }], controls? } }` → core's `PassByReplay` (`{ frames, guardFloorM, villagers, player }`) | `pass-by/pass-by-replay` `replayPassBy` | P4 villager pass-by (PL.native-pass-by-rows; core's PL.pass-by-core) |
 | `modules.activate` | `{ ir }` or `{ genre }` or `{}` → `{ source, active, predicatePacks, hostInterfaces, reason }` | `modules/module-activation` | P9 (Godot's fork has the same row) |
 | `modules.table` | `{}` → core's `moduleActivationTable()` | same | P9 |
 | `prolog.packs` | `{ areas? }` → `{ packs: [{ area, prolog, runtimePredicates }], order, unknown }` | `prolog/predicate-packs` | P9 |
@@ -2603,6 +2610,61 @@ and anchors, the settle offset below 1 and between whole numbers, the writer's g
 ungrounded plans over a world with other sections and a stale ground, and the
 `[invalid-input]` boundary of every declared member of every argument), every expectation
 computed by core's own functions at the pin.
+
+### The villager pass-by rows: the body guard, the step aside, the turn back and the replay (PL.native-pass-by-rows)
+
+Core's villager pass-by rule (`src/pass-by/pass-by.ts`, `docs/villager-pass-by.md`:
+PL.pass-by-core) and its frame-by-frame replay (`src/pass-by/pass-by-replay.ts`) are
+rows (U128, U118), so an engine binds them instead of keeping a copy (Unreal's interim
+`Portable/InsimulPassBy`, which `P4.unreal.retire-pass-by-copy` retires;
+`ENGINE_BINDINGS.md` maps it function by function). Data in, decision out: metres and
+seconds on core's ground plane `{x, z}`; no navmesh, no physics, no clock. Where a side
+needs room the caller says so (`room`), as its navmesh would.
+
+- **`passBy.keepClear`** is the body guard (`keepClearOfPlayer`): the velocity the
+  villager would move at this frame in, the one it may move at out, `acted` when it had
+  to change, and the side round the body written back. The caller keeps that side for
+  the encounter and passes it back (`side`), and flips it after a stall
+  (`stallMps`/`stallS` in the contract), as core's replay does.
+  **`passBy.guardFloor`** is the radius, centre to centre, it never lets a villager
+  inside (`passByGuardFloor`).
+- **`passBy.planStepAside`** is when to step aside, which side, how far and for how long
+  (`planStepAside`): core's whole decision, or a refusal as a VALUE (`not-walking`,
+  `not-ahead`, `too-far`, `off-line`, `goal-before-player`, `no-room`) with what it saw.
+  **`passBy.planRound`** is the turn back round the player (`planRoundPlayer`): three
+  points, or null when the leg is clear. **`passBy.distanceToSegment`** is the measure
+  both are judged by (`passByDistanceToSegment`).
+- **`passBy.replay`** steps a whole encounter (`replayPassBy`) over a scene given as data
+  (villagers walking straight between path points, a player on constant-velocity legs,
+  axis-aligned walls standing in for a navmesh): an engine replays the same scene through
+  its own binding and compares. It is deterministic.
+- **`passBy.contract`** states every PASS_BY_* constant, keyed as core's corpus contract
+  keys it (`gapM`, `waitS`, …), the name core exports each under (`names`), the measured
+  abreast window and `sideFrames`: which way `+1` is in each engine's frame.
+- **`[invalid-input]` follows core's declared types**: a point that is not `{ x, z }`
+  numbers, a missing required member, a null where core declares an optional member, a
+  string where a number or boolean is declared. Core reads every number itself (a radius
+  that is not positive is the default body; a side that is not ±1 is none) and its corpus
+  pins those readings. Two readings beyond the types: the floor and round rows read a
+  null radius as absent, as core's runner does, and a replay villager with an empty
+  `path` is refused, because core's replay walks to `path[0]` unread.
+
+Evidence: `villagers_pass_by_corpus` (`tests/villagers_pass_by_corpus.cpp`) drives core's
+`conformance/villagers/pass-by.json` (63 cases at 45409ed: floor 3, guard 15, plan 21,
+round 6, replay 18), copied byte for byte at the pin, one row call per case in the file's
+order as core's reference runner (`pass-by-corpus.ts`) makes one core call, compared by
+the corpus's own rule (numbers within its `tolerance`, the rest exactly, key sets
+included; it also counts the answers identical to the last bit), and holds
+`passBy.contract` to the corpus's contract. Its refusal probes show that no room either
+side is core's value and that the boundary refuses what core's types exclude.
+`villagers_pass_by_corpus_negative` perturbs every case's expectation. The same 63 cases
+also run on both case legs (and `corebridge_cases_parity`, byte for byte) as
+`vendor/core/cases/core-villagers-pass-by.json`, which `emit-bridge-cases.mjs` transcribes
+and `core_vendor` holds to the vendored corpus case by case (`core_vendor_pass_by_negative`:
+ten perturbations named). Hand cases: `tests/cases/bridge-pass-by.json` (the contract
+whole, null radii, the segment distance, the replay's `dt`, a villager's speed and radius,
+the player's radius, `straightBack`, no time, and the `[invalid-input]` boundary of every
+declared member), every expectation computed by core's own functions at the pin.
 
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 

@@ -656,6 +656,22 @@ add_test(NAME core_vendor_genre_negative COMMAND
 set_tests_properties(core_vendor_genre_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "genre transcription negative [^ ]* 34 of 34 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_genre_negative")
 
+# And for the pass-by transcription (PL.native-pass-by-rows): the guard that holds
+# cases/core-villagers-pass-by.json to the vendored conformance/villagers/pass-by.json (one
+# case per corpus case by name, one call of its op's row with the case's whole input and
+# answer, on both legs, and the contract case holding passBy.contract to the corpus's
+# constants, side frames and measured window) is given ten perturbations in memory (a
+# dropped case, a case no corpus case names, a call changed, an argument dropped, an answer
+# weakened to a subset, an answer number changed, a refusal reason changed, a case put on one
+# leg, a contract constant dropped, the side frames weakened) and passes only when all ten
+# are named.
+add_test(NAME core_vendor_pass_by_negative COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
+       --check-pass-by-transcription-negative)
+set_tests_properties(core_vendor_pass_by_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "pass-by transcription negative [^ ]* 10 of 10 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_pass_by_negative")
+
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus
 # vendor-core-bundle.mjs transcribes from core's own conformance files at the
@@ -1267,6 +1283,33 @@ set_tests_properties(genre_systems_corpus PROPERTIES
 add_test(NAME genre_systems_corpus_negative COMMAND insimulcore_genre_systems_corpus --negative ${INSIMUL_GENRE_SYSTEMS_CORPORA})
 set_tests_properties(genre_systems_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "refusals: 54 of 54 probe[(]s[)] as core answers[^\n]*\n.*rows: 73 of 73 called by the corpora's cases\ngenre_systems_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\ngenre_systems_corpus --negative: PASS")
+
+# villagers_pass_by_corpus (PL.native-pass-by-rows, rulings U128, U118, U107, U49(3) and U36):
+# core's villager pass-by rule (src/pass-by/pass-by.ts: the body guard, the step aside and
+# the turn back) and its frame-by-frame replay (src/pass-by/pass-by-replay.ts) as
+# libinsimulcore's `passBy.*` rows, held to core's own corpus
+# conformance/villagers/pass-by.json, COPIED byte for byte into
+# corebridge/vendor/core/conformance/villagers/ at the pin (vendor-core-bundle.mjs
+# PASS_BY_CORPUS_FILES; hashed, and byte-compared under --check --core).
+# tests/villagers_pass_by_corpus.cpp calls one row per case, in the file's order, as core's
+# reference runner (pass-by-corpus.ts) makes one core call; the same cases also run on both
+# legs as the transcribed cases/core-villagers-pass-by.json. Unreal's interim
+# Portable/InsimulPassBy is the copy these rows retire (P4.unreal.retire-pass-by-copy). The
+# regex demands the refusal probes' line with every probe refused, the contract line with
+# every constant agreeing, the driven line with each of core's five ops driven and 0
+# undriven, then PASS. It holds no ';' (CMake would split it into a list, and a list passes
+# when ANY part matches).
+add_executable(insimulcore_villagers_pass_by_corpus tests/villagers_pass_by_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_villagers_pass_by_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_villagers_pass_by_corpus PRIVATE insimulcore)
+set(INSIMUL_PASS_BY_CORPUS ${INSIMUL_PROPS_CORPUS}/villagers/pass-by.json)
+add_test(NAME villagers_pass_by_corpus COMMAND insimulcore_villagers_pass_by_corpus ${INSIMUL_PASS_BY_CORPUS})
+set_tests_properties(villagers_pass_by_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\ncontract: [1-9][0-9]* of [1-9][0-9]* constant[(]s[)] passBy.contract states agree with the corpus's, each with its export name, sideFrames and measuredAbreastS agree\n.*villager-pass-by: driven floor [1-9][0-9]*, guard [1-9][0-9]*, plan [1-9][0-9]*, round [1-9][0-9]*, replay [1-9][0-9]*. 0 undriven\nvillagers_pass_by_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nvillagers_pass_by_corpus: PASS")
+# Its negative pass: every case's expectation perturbed (its last leaf) must be refused.
+add_test(NAME villagers_pass_by_corpus_negative COMMAND insimulcore_villagers_pass_by_corpus --negative ${INSIMUL_PASS_BY_CORPUS})
+set_tests_properties(villagers_pass_by_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\n.*villagers_pass_by_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nvillagers_pass_by_corpus --negative: PASS")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest

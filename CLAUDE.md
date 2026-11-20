@@ -957,6 +957,30 @@
   `js/host-structured-clone.js` installs it only when absent, imported first with the text
   codec. `conformance/prolog/mechanic-{puzzle,platformer,strategy}.json` stay with
   PL.native-prolog-mirror-full (U120(9)).
+- **The villager pass-by rows (PL.native-pass-by-rows, U118, U128) run core's
+  `conformance/villagers/pass-by.json` UNCHANGED**, copied as its own set
+  (`PASS_BY_CORPUS_FILES`; 63 cases at 45409ed: floor 3, guard 15, plan 21, round 6,
+  replay 18) and driven by `tests/villagers_pass_by_corpus.cpp` as
+  `villagers_pass_by_corpus` (+ `_negative`): ONE row call per case, in the file's order,
+  as core's runner (`pass-by/pass-by-corpus.ts`) makes one core call, compared by the
+  corpus's own rule (its `tolerance`, key sets included). `emit-bridge-cases.mjs`
+  transcribes it into `vendor/core/cases/core-villagers-pass-by.json` (each case one call,
+  the whole input and answer, exact as doubles on both legs) and `core_vendor` holds that
+  transcription to the vendored corpus case by case and its contract case to the corpus's
+  contract (`core_vendor_pass_by_negative` must see ten perturbations named).
+  `passBy.<fn>` is one function of core's `pass-by/pass-by` or `pass-by/pass-by-replay`
+  each (`guardFloor`, `keepClear`, `planStepAside`, `planRound`, `distanceToSegment`,
+  `replay`), STATELESS (the guard's side and stall clock are the caller's), a refused step
+  aside a VALUE; `passBy.contract` states every PASS_BY_* constant keyed as the corpus's
+  contract keys it, with its export name, `PASS_BY_ABREAST_MEASURED_S` and
+  `PASS_BY_SIDE_FRAMES`. `[invalid-input]` follows core's declared types (`declared()`),
+  plus two readings: the floor and round rows read a null radius as absent (core's runner's
+  `?? undefined`), and a replay villager's empty `path` is refused (core walks to
+  `path[0]` unread). Never import `pass-by/pass-by-corpus` (core's runner: its comparator
+  is the save-file corpus module UNBUNDLED_CORE_MODULES refuses). Unreal's
+  `Portable/InsimulPassBy` is the interim copy these rows retire
+  (`P4.unreal.retire-pass-by-copy`; `corebridge/ENGINE_BINDINGS.md` maps it function by
+  function).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain
