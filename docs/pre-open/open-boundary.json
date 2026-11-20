@@ -4,7 +4,7 @@
   "rulesVersion": 1,
   "repository": {
     "root": "native-native-chat-cefr-rows-s1-lexicon-hints-messages",
-    "gitHead": "c10c34bf9439552db34d5d33a5075089d522e606"
+    "gitHead": "393e84dced2c1574723df155e169c687ecdd066e"
   },
   "coverage": {
     "files": 539,
