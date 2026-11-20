@@ -54618,6 +54618,243 @@ Return JSON format:
       sideFrames: PASS_BY_SIDE_FRAMES
     });
   }
+  var CHAT_CEFR_SOURCES = ["wordTranslationCache", "sampleWords", "corpus:fr"];
+  var CHAT_CEFR_EMPTY_REASONS = ["no-target-language", "target-is-base-language", "no-language-record"];
+  var CHAT_TRANSLATION_MODES = ["inline", "hover", "click"];
+  var CHAT_MESSAGE_KIND_NAMES = ["user", "system", "correct", "tip", "focus", "npc"];
+  var CHAT_MESSAGE_ROLES = ["user", "assistant", "system"];
+  var CHAT_ENGLISH_EVIDENCE_MIN_LENGTH = 3;
+  var CHAT_GLOSS_ARTICLES = ["the", "a", "an"];
+  var CHAT_CLAUSE_END_PATTERN = `[.!?;:\u2026][)\\]\xBB\u201D"']*$`;
+  var CHAT_CLAUSE_END = new RegExp(CHAT_CLAUSE_END_PATTERN);
+  var CHAT_NON_ASCII = /[^\x00-\x7F]/;
+  var tExactly = (value) => (m, v, n) => {
+    if (v !== value) throw refuse2(m, `\`${n}\` must be ${JSON.stringify(value)} (got ${JSON.stringify(v)})`);
+  };
+  var tRgba = (m, v, n) => {
+    tList(tNum)(m, v, n);
+    if (v.length !== 4) throw refuse2(m, `\`${n}\` must hold four numbers (got ${v.length})`);
+  };
+  var CHAT_CEFR_LEVEL_ROW = [
+    ["npcLanguageModes", tObj([["bilingual", tNum, REQ], ["simplified", tNum, REQ], ["natural", tNum, REQ]]), REQ],
+    ["hints", tObj([
+      ["translationMode", tOneOf(CHAT_TRANSLATION_MODES), REQ],
+      ["showTranslateButton", tBool, REQ],
+      ["translateButtonProminence", tNum, REQ],
+      ["newWordHintFrequency", tNum, REQ],
+      ["advancedVocabOnly", tBool, REQ]
+    ]), REQ],
+    ["vocabularyFrequency", tObj([["min", tNum, REQ], ["max", tNum, REQ_NULL], ["label", tStr, REQ]]), REQ]
+  ];
+  var CHAT_LEXICON_ENTRY = [
+    ["word", tStr, REQ],
+    ["key", tStr, REQ],
+    ["translation", tStr, REQ],
+    ["alternatives", tList(tStr), REQ],
+    ["partOfSpeech", tStr, REQ_NULL],
+    ["difficulty", tOneOf(WORD_DIFFICULTIES), REQ_NULL],
+    ["context", tStr, REQ_NULL],
+    ["source", tOneOf(CHAT_CEFR_SOURCES), REQ],
+    ["alsoEnglish", tBool, OPT]
+  ];
+  var CHAT_LEXICON = [
+    ["targetLanguage", tObj([["id", tStr, REQ], ["name", tStr, REQ], ["code", tStr, REQ_NULL], ["kind", tStr, REQ_NULL]]), REQ_NULL],
+    ["reason", tOneOf(CHAT_CEFR_EMPTY_REASONS), REQ_NULL],
+    ["maxPhraseWords", tNum, REQ],
+    ["entries", tList(tObj(CHAT_LEXICON_ENTRY)), REQ],
+    ["evidenceWords", tList(tStr), OPT]
+  ];
+  var CHAT_MESSAGES = [
+    ["kinds", tList(tObj([
+      ["kind", tOneOf(CHAT_MESSAGE_KIND_NAMES), REQ],
+      ["role", tOneOf(CHAT_MESSAGE_ROLES), REQ],
+      ["startsWith", tStr, REQ_NULL],
+      ["color", tObj([["css", tStr, REQ], ["rgba", tRgba, REQ]]), REQ],
+      ["hints", tBool, REQ]
+    ])), REQ],
+    ["hints", tObj([["skipStartsWith", tList(tStr), REQ]]), REQ]
+  ];
+  var CHAT_CEFR_SECTION = [
+    ["version", tExactly(1), REQ],
+    ["baseLanguage", tExactly("English"), REQ],
+    ["levels", tObj(CEFR_ORDER.map((level) => [level, tObj(CHAT_CEFR_LEVEL_ROW), REQ])), REQ],
+    ["lexicon", tObj(CHAT_LEXICON), REQ],
+    ["messages", tObj(CHAT_MESSAGES), OPT]
+  ];
+  var tChatCefrSection = tObj(CHAT_CEFR_SECTION);
+  var CHAT_HINT_STATE = [["seen", tList(tStr), REQ], ["newWordIndex", tNum, REQ]];
+  var CHAT_MESSAGE = [["role", tStr, REQ], ["content", tStr, OPT_NULL]];
+  function chatCefrArgs(method, args, spec) {
+    return coded("invalid-input", () => declared(method, args, "args", [["section", tChatCefrSection, REQ], ...spec]));
+  }
+  function chatWordKey(text4) {
+    return wordKey(String(text4).normalize("NFC").replace(/[‘’]/g, "'").replace(/\s+/g, " ").trim());
+  }
+  function chatLexiconOf(section) {
+    const byKey = /* @__PURE__ */ new Map();
+    for (const e of section.lexicon.entries) if (!byKey.has(e.key)) byKey.set(e.key, e);
+    return { lexicon: section.lexicon, byKey, englishWords: null, evidenceWords: null };
+  }
+  function chatEntryFor(lex, text4) {
+    const key = chatWordKey(text4);
+    return key ? lex.byKey.get(key) ?? null : null;
+  }
+  function chatHintOf(e) {
+    const hint = { word: e.word, translation: e.translation };
+    if (e.context !== null) hint.context = e.context;
+    if (e.partOfSpeech !== null) hint.partOfSpeech = e.partOfSpeech;
+    if (e.difficulty !== null) hint.difficulty = e.difficulty;
+    return hint;
+  }
+  function chatTranslationOf(e) {
+    return {
+      word: e.word,
+      translation: e.translation,
+      alternatives: [...e.alternatives],
+      partOfSpeech: e.partOfSpeech,
+      difficulty: e.difficulty,
+      context: e.context,
+      source: "lexicon"
+    };
+  }
+  function chatShowsHint(row, newWordIndex, difficulty, mastered) {
+    if (mastered) return false;
+    const d = difficulty ?? "beginner";
+    if (row.hints.advancedVocabOnly && d !== "advanced") return false;
+    if (row.hints.newWordHintFrequency === 0) return d === "advanced";
+    return newWordIndex % row.hints.newWordHintFrequency === 0;
+  }
+  function chatEnglishWords(lex) {
+    if (!lex.englishWords) {
+      const words = /* @__PURE__ */ new Set();
+      for (const e of lex.lexicon.entries) {
+        for (const gloss of [e.translation, ...e.alternatives]) {
+          for (const w of String(gloss).split(/\s+/)) {
+            const k = chatWordKey(w);
+            if (Array.from(k).length >= CHAT_ENGLISH_EVIDENCE_MIN_LENGTH) words.add(k);
+          }
+        }
+      }
+      lex.englishWords = words;
+    }
+    return lex.englishWords;
+  }
+  function chatEvidenceWords(lex) {
+    if (!lex.evidenceWords) lex.evidenceWords = new Set(lex.lexicon.evidenceWords ?? []);
+    return lex.evidenceWords;
+  }
+  function chatGlossedAfter(raw, end, e) {
+    let r = end + 1;
+    let separated = false;
+    for (; r < raw.length && chatWordKey(raw[r]) === ""; r++) if (raw[r] !== "") separated = true;
+    if (r >= raw.length) return false;
+    if (raw[r].startsWith("(") || raw[r].startsWith("[")) separated = true;
+    if (!separated) return false;
+    const rest = raw.slice(r).map(chatWordKey).filter((w) => w !== "");
+    const starts = CHAT_GLOSS_ARTICLES.includes(rest[0]) ? [0, 1] : [0];
+    for (const gloss of [e.translation, ...e.alternatives]) {
+      const g = chatWordKey(gloss);
+      if (!g) continue;
+      const k = g.split(" ").length;
+      if (starts.some((s) => rest.slice(s, s + k).join(" ") === g)) return true;
+    }
+    return false;
+  }
+  function chatLineUnits(lex, line) {
+    const raw = String(line).split(/\s+/);
+    const pieces = [];
+    for (let r = 0; r < raw.length; r++) if (chatWordKey(raw[r]) !== "") pieces.push(r);
+    const maxLen = lex.lexicon.maxPhraseWords;
+    const units = [];
+    let clause = 0;
+    let lastRaw = -1;
+    for (let i = 0; i < pieces.length; ) {
+      if (lastRaw >= 0 && (CHAT_CLAUSE_END.test(raw[lastRaw]) || raw.slice(lastRaw + 1, pieces[i]).some((t) => t !== ""))) clause += 1;
+      let matched = null;
+      let len = Math.min(maxLen, pieces.length - i);
+      for (; len >= 1; len--) {
+        matched = chatEntryFor(lex, pieces.slice(i, i + len).map((r) => raw[r]).join(" "));
+        if (matched) break;
+      }
+      if (matched) {
+        const homograph = matched.alsoEnglish === true;
+        lastRaw = pieces[i + len - 1];
+        units.push({ kind: homograph ? "homograph" : "target", entry: matched, glossed: homograph && chatGlossedAfter(raw, lastRaw, matched), clause });
+        i += len;
+      } else {
+        lastRaw = pieces[i];
+        const word = chatWordKey(raw[lastRaw]);
+        const kind = chatEnglishWords(lex).has(word) ? "english" : chatEvidenceWords(lex).has(word) || CHAT_NON_ASCII.test(word) ? "foreign" : "neutral";
+        units.push({ kind, entry: null, glossed: false, clause });
+        i += 1;
+      }
+    }
+    return units;
+  }
+  function chatNearestEvidence(units, u, within3) {
+    for (let d = 1; u - d >= 0 || u + d < units.length; d++) {
+      for (const k of [u - d, u + d]) {
+        const unit = units[k];
+        if (!unit || !within3(unit)) continue;
+        if (unit.kind === "target" || unit.kind === "foreign") return "target";
+        if (unit.kind === "english") return "english";
+      }
+    }
+    return null;
+  }
+  function chatHomographIsTarget(units, u) {
+    if (units[u].glossed) return true;
+    const clause = units[u].clause;
+    return (chatNearestEvidence(units, u, (x) => x.clause === clause) ?? chatNearestEvidence(units, u, () => true)) === "target";
+  }
+  var chatCodeUnitOrder = (a, b) => a < b ? -1 : a > b ? 1 : 0;
+  function chatHintsForLine(section, line, level, state, mastered) {
+    const lex = chatLexiconOf(section);
+    const row = section.levels[level];
+    const seen = new Set(state.seen);
+    let index = state.newWordIndex;
+    const hints = [];
+    const masteredKeys = new Set(mastered.map(chatWordKey));
+    const units = chatLineUnits(lex, line);
+    for (let u = 0; u < units.length; u++) {
+      const unit = units[u];
+      if (unit.kind !== "target" && !(unit.kind === "homograph" && chatHomographIsTarget(units, u))) continue;
+      const e = unit.entry;
+      if (seen.has(e.key)) continue;
+      seen.add(e.key);
+      const newIndex = index++;
+      if (chatShowsHint(row, newIndex, e.difficulty, masteredKeys.has(e.key))) hints.push(chatHintOf(e));
+    }
+    return { hints, state: { seen: [...seen].sort(chatCodeUnitOrder), newWordIndex: index } };
+  }
+  function chatMessageKindRow(section, message) {
+    const content = message.content || "";
+    for (const row of section.messages.kinds) {
+      if (row.role === message.role && (row.startsWith === null || content.startsWith(row.startsWith))) return row;
+    }
+    return null;
+  }
+  function chatMessageGetsHints(section, message) {
+    const row = chatMessageKindRow(section, message);
+    if (!row || !row.hints) return false;
+    const content = message.content || "";
+    return !section.messages.hints.skipStartsWith.some((p) => content.startsWith(p));
+  }
+  function chatNeedMessages(method, section) {
+    if (!hasOwn3(section, "messages")) throw Object.assign(refuse2(method, "`args.section.messages` is missing: the section states no message kinds (one written before them)"), { code: "invalid-input" });
+    return section;
+  }
+  function chatCefrSectionProblem(method, section) {
+    if (section === void 0 || section === null) return "the world states no chatCefr section";
+    try {
+      declared(method, { section }, "args", [["section", tChatCefrSection, REQ]]);
+      return null;
+    } catch (err) {
+      const prefix = `insimulcore: ${method}: `;
+      const text4 = String(err && err.message);
+      return text4.startsWith(prefix) ? text4.slice(prefix.length) : text4;
+    }
+  }
   var QUEST_STATUSES = ["available", "active", "completed"];
   var QUEST_FILTERS = ["all", "active", "completed", "available"];
   function questEntry(method, entry) {
@@ -57146,6 +57383,124 @@ Return JSON format:
     "passBy.replay": (args) => {
       coded("invalid-input", () => declared("passBy.replay", args, "args", [["scene", tObj(PASS_BY_SCENE), REQ]]));
       return plain(replayPassBy(args.scene));
+    },
+    // ── the live NPC chat's CEFR adaptation (PL.native-chat-cefr-rows, slice 1) ──
+    // Every row but `chatCefr.section`, `chatCefr.lineRule` and `chatCefr.normalizeWord` takes the
+    // World IR's `chatCefr` section as `section` and refuses one that does not hold its declared
+    // shape (`[invalid-input]`). Stateless: an engine keeps the hint state between lines.
+    /**
+     * `chatCefr.section { section? }` → `{ valid, why, targetLanguage, targetLanguageName,
+     * lexiconReason, lexiconSize, hasMessages }`: whether a section is readable (absent or null:
+     * the world states none) and, if not, why; else the lexicon's language record (null for a world
+     * with nothing to learn), its name, why the lexicon is empty when the world is the reason, how
+     * many entries it holds, and whether it states the message kinds.
+     */
+    "chatCefr.section": (args) => {
+      const m = "chatCefr.section";
+      coded("invalid-input", () => needObject(m, args, "args"));
+      const why = chatCefrSectionProblem(m, args.section);
+      if (why !== null) return { valid: false, why, targetLanguage: null, targetLanguageName: null, lexiconReason: null, lexiconSize: 0, hasMessages: false };
+      const lexicon = args.section.lexicon;
+      return plain({
+        valid: true,
+        why: null,
+        targetLanguage: lexicon.targetLanguage,
+        targetLanguageName: lexicon.targetLanguage === null ? null : lexicon.targetLanguage.name,
+        lexiconReason: lexicon.reason,
+        lexiconSize: lexicon.entries.length,
+        hasMessages: hasOwn3(args.section, "messages")
+      });
+    },
+    /** `chatCefr.levelRow { section, level }` → `{ row }`: the section's row for a CEFR level (`A1` … `C2`, exactly; anything else is `[invalid-input]`). */
+    "chatCefr.levelRow": (args) => {
+      chatCefrArgs("chatCefr.levelRow", args, [["level", tOneOf(CEFR_ORDER), REQ]]);
+      return { row: plain(args.section.levels[args.level]) };
+    },
+    /** `chatCefr.lineRule {}` → `{ englishEvidenceMinLength, glossArticles, clauseEndPattern }`: the line rule's constants (the corpus's `lineLanguageRule`). */
+    "chatCefr.lineRule": () => ({
+      englishEvidenceMinLength: CHAT_ENGLISH_EVIDENCE_MIN_LENGTH,
+      glossArticles: [...CHAT_GLOSS_ARTICLES],
+      clauseEndPattern: CHAT_CLAUSE_END_PATTERN
+    }),
+    /** `chatCefr.normalizeWord { text }` → `{ key }`: a word or phrase as a lookup sees it (NFC, curly apostrophes, whitespace, then core's `wordKey`). */
+    "chatCefr.normalizeWord": (args) => {
+      coded("invalid-input", () => declared("chatCefr.normalizeWord", args, "args", [["text", tStr, REQ]]));
+      return { key: chatWordKey(args.text) };
+    },
+    /**
+     * `chatCefr.npcMode { section, level, npcId }` → `{ hash, bucket, mode }`: the language mode an
+     * NPC speaks at a level: `hash` is core's `npcHash` of its id, `bucket` that mod 100; `bilingual`
+     * below the level's `bilingual` percent, `simplified` below bilingual + simplified, else `natural`.
+     */
+    "chatCefr.npcMode": (args) => {
+      chatCefrArgs("chatCefr.npcMode", args, [["level", tOneOf(CEFR_ORDER), REQ], ["npcId", tStr, REQ]]);
+      const dist = args.section.levels[args.level].npcLanguageModes;
+      const hash = npcHash(args.npcId);
+      const bucket = hash % 100;
+      const mode = bucket < dist.bilingual ? "bilingual" : bucket < dist.bilingual + dist.simplified ? "simplified" : "natural";
+      return { hash, bucket, mode };
+    },
+    /** `chatCefr.translateWord { section, word }` → `{ translation }`: the lexicon's answer for a word or phrase (`{ word, translation, alternatives, partOfSpeech, difficulty, context, source }`), null when it does not know it. */
+    "chatCefr.translateWord": (args) => {
+      chatCefrArgs("chatCefr.translateWord", args, [["word", tStr, REQ]]);
+      const e = chatEntryFor(chatLexiconOf(args.section), args.word);
+      return { translation: e ? plain(chatTranslationOf(e)) : null };
+    },
+    /** `chatCefr.vocabHintFor { section, word }` → `{ hint }`: the hint card for a word or phrase (`{ word, translation, context?, partOfSpeech?, difficulty? }`), null when the lexicon does not know it. */
+    "chatCefr.vocabHintFor": (args) => {
+      chatCefrArgs("chatCefr.vocabHintFor", args, [["word", tStr, REQ]]);
+      const e = chatEntryFor(chatLexiconOf(args.section), args.word);
+      return { hint: e ? plain(chatHintOf(e)) : null };
+    },
+    /** `chatCefr.shouldShowVocabHint { section, level, newWordIndex, difficulty, mastered }` → `{ show }`: whether the level's hint rule shows a new word's card (difficulty null is beginner). */
+    "chatCefr.shouldShowVocabHint": (args) => {
+      chatCefrArgs("chatCefr.shouldShowVocabHint", args, [
+        ["level", tOneOf(CEFR_ORDER), REQ],
+        ["newWordIndex", tNum, REQ],
+        ["difficulty", tOneOf(WORD_DIFFICULTIES), REQ_NULL],
+        ["mastered", tBool, REQ]
+      ]);
+      return { show: chatShowsHint(args.section.levels[args.level], args.newWordIndex, args.difficulty, args.mastered) };
+    },
+    /**
+     * `chatCefr.vocabHintsForLine { section, line, level, state?, mastered? }` → `{ hints, state }`:
+     * the hint cards for one NPC line and the conversation's next hint state (`{ seen, newWordIndex }`;
+     * absent: none seen, index 0). Only target-language words are the line's lexicon words: a
+     * homograph (`alsoEnglish`) counts when the line glosses it or the nearest evidence says so.
+     */
+    "chatCefr.vocabHintsForLine": (args) => {
+      chatCefrArgs("chatCefr.vocabHintsForLine", args, [
+        ["line", tStr, REQ],
+        ["level", tOneOf(CEFR_ORDER), REQ],
+        ["state", tObj(CHAT_HINT_STATE), OPT],
+        ["mastered", tList(tStr), OPT]
+      ]);
+      return plain(chatHintsForLine(args.section, args.line, args.level, args.state ?? { seen: [], newWordIndex: 0 }, args.mastered ?? []));
+    },
+    /** `chatCefr.messageKind { section, message: { role, content? } }` → `{ row }`: the message's kind row (`{ kind, role, startsWith, color, hints }`), null for a role with none. */
+    "chatCefr.messageKind": (args) => {
+      const m = "chatCefr.messageKind";
+      chatNeedMessages(m, chatCefrArgs(m, args, [["message", tObj(CHAT_MESSAGE), REQ]]).section);
+      return { row: plain(chatMessageKindRow(args.section, args.message)) };
+    },
+    /** `chatCefr.messageGetsHints { section, message }` → `{ hints }`: whether the message is read for hover-translate and vocab hints. */
+    "chatCefr.messageGetsHints": (args) => {
+      const m = "chatCefr.messageGetsHints";
+      chatNeedMessages(m, chatCefrArgs(m, args, [["message", tObj(CHAT_MESSAGE), REQ]]).section);
+      return { hints: chatMessageGetsHints(args.section, args.message) };
+    },
+    /** `chatCefr.messageHints { section, message, level, state?, mastered? }` → `{ hints, state }`: `chatCefr.vocabHintsForLine` over the content when the message is read for hints; otherwise no hints and the state unchanged. */
+    "chatCefr.messageHints": (args) => {
+      const m = "chatCefr.messageHints";
+      chatNeedMessages(m, chatCefrArgs(m, args, [
+        ["message", tObj(CHAT_MESSAGE), REQ],
+        ["level", tOneOf(CEFR_ORDER), REQ],
+        ["state", tObj(CHAT_HINT_STATE), OPT],
+        ["mastered", tList(tStr), OPT]
+      ]).section);
+      const state = args.state ?? { seen: [], newWordIndex: 0 };
+      if (!chatMessageGetsHints(args.section, args.message)) return plain({ hints: [], state });
+      return plain(chatHintsForLine(args.section, args.message.content || "", args.level, state, args.mastered ?? []));
     },
     // ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
     /** `ui.notifications.create {}` → `{ session, view }` — core's `Notifications` toast queue. */

@@ -743,6 +743,34 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `conformance/villagers/pass-by.json` from core at this library's pin and drive each
   case as `tests/villagers_pass_by_corpus.cpp` does: ONE row call per case, the case's
   `input` as the args, compared by the corpus's `tolerance`.
+- **The live NPC chat's CEFR adaptation, slice 1 of 2 (Unreal's
+  `P9h.unreal.retire-chat-cefr-copy`, after PL.native-chat-cefr-rows; U118, U128,
+  U107(2)).** The World IR's `chatCefr` section is read by the `chatCefr.*` rows
+  (`README.md`, "The live NPC chat's CEFR rows"). Slice 1 covers the copy's vocabulary half;
+  its grammar check, strips and marker-only rule wait for slice 2, so the retirement row can
+  start only when slice 2 lands. The interim copy on unreal main (`7ff96080`, read only):
+  `Portable/InsimulChatCefr.{h,cpp}` (129 + 687 lines), which `InsimulVillageLanguage.cpp`
+  and `InsimulPlayerLanguage.cpp` call through `AInsimulVillageDirector::ChatCefrSection()`,
+  and its runner `Tests/test_chat_cefr_corpus.cpp` (525 lines). Slice 1's part of it maps
+  to rows:
+
+  | Unreal's interim copy (`insimul::chatcefr`, `InsimulChatCefr.h`) | Row |
+  |---|---|
+  | `FChatCefr::From`, `IsValid`, `Why` | `chatCefr.section { section }` → `valid`, `why` (the rows hold the section to its whole declared shape; the copy checked `levels`, `lexicon` and `lexicon.entries` only) |
+  | `HasLexicon`, `LexiconReason`, `TargetLanguageName`, `LexiconSize` | `chatCefr.section` → `targetLanguage !== null && lexiconSize > 0`, `lexiconReason`, `targetLanguageName`, `lexiconSize` |
+  | `HasMessages` | `chatCefr.section` → `hasMessages` (the message rows refuse a section without kinds; the copy's `ChatLineHoverable` reads "no kinds" as hoverable, which is its own reading, not the section's) |
+  | `LevelRow` | `chatCefr.levelRow { section, level }` → `{ row }` (a level outside A1-C2 is `[invalid-input]`, where the copy answered nullptr) |
+  | `NpcModeHash`, `NpcLanguageMode` | `chatCefr.npcMode { section, level, npcId }` → `{ hash, bucket, mode }` (the hash alone is also `language.npc.hash`) |
+  | `Nfc`, `NormalizeChatWord` | `chatCefr.normalizeWord { text }` → `{ key }` (no row for NFC alone: the rows normalise inside) |
+  | `TranslateWord`, `VocabHintFor` | `chatCefr.translateWord` / `chatCefr.vocabHintFor { section, word }` → `{ translation }` / `{ hint }`, null when unknown |
+  | `ShouldShowVocabHint` | `chatCefr.shouldShowVocabHint { section, level, newWordIndex, difficulty, mastered }` → `{ show }` (`difficulty` null, where the copy took `""`) |
+  | `VocabHintsForLine` | `chatCefr.vocabHintsForLine { section, line, level, state?, mastered? }` → `{ hints, state }`. **The copy predates the target-language-only rule** (PL.pipelines-hint-language-filter, U118(10)): it hints every lexicon match, so on a homograph in an English line (`Last chance, friend`) the row and the copy differ; the row is the section's rule |
+  | `MessageKind`, `MessageGetsHints`, `MessageHints` | `chatCefr.messageKind` → `{ row }` (the kind row; its `color.rgba` is what `ChatKindColor` draws), `chatCefr.messageGetsHints` → `{ hints }`, `chatCefr.messageHints` → `{ hints, state }` |
+  | the runner's parts (1), (2), (4), (5), (11), (12) | `tests/chat-cefr/chat-cefr-corpus.json`'s `levelCases`, `npcModeCases`, `lookupCases`, `lineCases` (with `lineLanguageRule`), `messageKindCases`, `messageHintCases`: the same families, so the runner replays this library's corpus as it replays the export's, one row call per expectation (`tools/chat-cefr-cases.mjs` shows the mapping) |
+  | `ReadGrammarFields`, `ConversationTurnGrammar`, `StripBlocks`, `SharedStarNames`, `SharedStarSplit`, `MarkerOnlyReplyLine`, `HasGrammar`, `GrammarActive`, `GrammarInactiveReason`, `GrammarReadable`, `ParseGrammarFeedback`, `StripMarkers`, `PresentGrammarFeedback` | slice 2 (no row yet) |
+
+  The engine keeps the hint state (`ChatHintState`) between lines and passes it back, as
+  the copy does; the rows are stateless and take the section on every call.
 - **The language kernels, slices 1 to 4 (Unreal's `P9h.unreal.retire-language-copy`,
   released by slice 4, the last of PL.native-language-rows; U118, U128, U107(2)).** Core's P9h language
   kernels are the `language.*` rows (`README.md`, "The language rows"). The retirement

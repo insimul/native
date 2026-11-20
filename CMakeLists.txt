@@ -672,6 +672,24 @@ add_test(NAME core_vendor_pass_by_negative COMMAND
 set_tests_properties(core_vendor_pass_by_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "pass-by transcription negative [^ ]* 10 of 10 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_pass_by_negative")
 
+# chat_cefr_cases (PL.native-chat-cefr-rows slice 1, rulings U118, U128, U110(3), U113(1)): the
+# chatCefr.* rows' corpus, corebridge/tests/chat-cefr/chat-cefr-corpus.json (hand-written sections
+# and the section's conformance families, every expectation computed by the export's own rule), is
+# transcribed by corebridge/tools/chat-cefr-cases.mjs into corebridge/tests/cases/chat-cefr-corpus.json,
+# which corebridge_cases and corebridge_cases_js run (and corebridge_cases_parity diffs). This ctest
+# holds the transcription to the corpus (and refuses a family the slice does not map); its negative
+# perturbs the corpus in every family (sixteen ways) and passes only when every one is named.
+add_test(NAME chat_cefr_cases COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_chat_cefr_cases.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/chat-cefr-cases.mjs --check)
+set_tests_properties(chat_cefr_cases PROPERTIES
+  PASS_REGULAR_EXPRESSION "chat-cefr-cases: [1-9][0-9]* world[(]s[)], levelCases [1-9][0-9]*, npcModeCases [1-9][0-9]*, lookupCases [1-9][0-9]*, lineCases [1-9][0-9]*, lineLanguageRule 1, messageKindCases [1-9][0-9]*, messageHintCases [1-9][0-9]*, and the transcription is the corpus's mapping: PASS|\\[SKIP\\] chat_cefr_cases")
+add_test(NAME chat_cefr_cases_negative COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_chat_cefr_cases.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/chat-cefr-cases.mjs --check-negative)
+set_tests_properties(chat_cefr_cases_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "chat-cefr-cases --check-negative: 16 of 16 perturbed corpora named|\\[SKIP\\] chat_cefr_cases_negative")
+
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus
 # vendor-core-bundle.mjs transcribes from core's own conformance files at the

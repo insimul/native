@@ -1,0 +1,4894 @@
+{
+ "area": "chat-cefr",
+ "description": "The live NPC chat's CEFR adaptation over the World IR's `chatCefr` section (PL.native-chat-cefr-rows, slice 1): its vocabulary half, as replayable data. An engine runner answers every family from the section alone, with no model call and no key (corebridge/ENGINE_BINDINGS.md, `chatCefr`). (1) `worlds`: hand-written sections, each `{name, note, chatCefr}`; a section is `{version: 1, baseLanguage: 'English', levels, lexicon, messages}` (`levels`: a row per CEFR level A1-C2, `{npcLanguageModes: {bilingual, simplified, natural} percent, hints: {translationMode, showTranslateButton, translateButtonProminence, newWordHintFrequency, advancedVocabOnly}, vocabularyFrequency: {min, max (null: unrestricted), label}}`; `lexicon`: `{targetLanguage ({id, name, code, kind}, or null with a `reason`: no-target-language, target-is-base-language or no-language-record), reason, maxPhraseWords, entries, evidenceWords?}`, each entry `{word, key, translation, alternatives, partOfSpeech, difficulty, context, source, alsoEnglish?}`, one per key, in key order; `messages`: `{kinds: [{kind, role, startsWith, color: {css, rgba}, hints}], hints: {skipStartsWith}}`). The `earlier-shape` world omits `alsoEnglish`, `evidenceWords` and `messages`, as a section written before them does: an absent `alsoEnglish` is false and absent `evidenceWords` is none. The grammar check and the speech steps (`grammar`, `messages.speech`) are slice 2's and are not here. (2) `levelCases` `{level, row}`: every world's `levels[level]` is `row`. (3) `npcModeCases` `{level, npcId, hash, bucket, mode}`, read against the first world: `hash` is the 32-bit string hash of the id over its UTF-16 code units (h = h*31 + unit, wrapped to a signed 32-bit integer), absolute; `bucket` is hash mod 100; the mode is `bilingual` when bucket < the level's bilingual percent, `simplified` when bucket < bilingual + simplified, else `natural`. (4) `lookupCases` `{world, word, translation, hint}`: a word's KEY is its text NFC-normalised, U+2018 and U+2019 made `'`, every whitespace run made one space, the ends trimmed, every character at either end that is not a letter, combining mark, number or `_` (Unicode \\p{L} \\p{M} \\p{N}) stripped, then lower-cased; an empty key finds nothing, else the first entry with that key answers. `translation` is `{word, translation, alternatives, partOfSpeech, difficulty, context, source: 'lexicon'}` from the entry, or null; `hint` (the hint card) is `{word, translation}` plus `context`, `partOfSpeech` and `difficulty` each only when the entry's is not null, or null. (5) `lineCases` `{world, why, level, line, state, mastered, hints, nextState}`: the hint rule over one NPC line. The line splits on whitespace runs into tokens; its PIECES are the tokens whose key is not empty. From the first piece, the longest run of up to `maxPhraseWords` pieces whose text (joined by single spaces) looks an entry up is one UNIT: a target word, or a HOMOGRAPH when the entry's `alsoEnglish` is true; a piece that starts no match is one unit: ENGLISH when its key is a word of the lexicon's English glosses (every entry's translation and alternatives split on whitespace and keyed) of at least `lineLanguageRule.englishEvidenceMinLength` code points, else FOREIGN when its key is one of `evidenceWords` or holds a character outside ASCII, else neutral. A new CLAUSE starts after a unit whose last token matches `lineLanguageRule.clauseEndPattern`, and wherever a token whose key is empty stands between two units. A homograph is a target-language word when the line GLOSSES it (right after its last token come one or more tokens whose key is empty, or a token opening with `(` or `[`, and then the next pieces, read past one optional `lineLanguageRule.glossArticles` word, key to its translation or one of its alternatives, a gloss of k words against the next k pieces), or else when the nearest evidence unit (target, foreign or English) in its own clause, or with none there the nearest in the line, is a target or foreign word; nearest is fewest units away, the one before first at equal distance; no evidence leaves it English. Each target-language unit (a target word, or a homograph judged target-language) whose key is not in `state.seen` is NEW: it is added to seen, takes `state.newWordIndex` (which then grows by one), and gets its hint card when the level's hint rule shows it: never when its key is one of `mastered` (each keyed); a word of null difficulty is beginner; when `advancedVocabOnly` only an advanced word; when `newWordHintFrequency` is 0 only an advanced word; else when the index mod the frequency is 0. A homograph judged English is passed over (no index, not seen). `hints` are in line order; `nextState.seen` is sorted by UTF-16 code unit. (6) `lineLanguageRule`: the line rule's three constants. (7) `messageKindCases` `{why, message, kind, color, hints}`, read against the first world: a message's kind row is the first of `messages.kinds` whose `role` equals the message's and whose `startsWith` is null or a prefix of its content as stored (absent or null content is ''); `kind` and `color` are that row's `kind` and `color.css`, or null for none; `hints` is true when that row's `hints` is true and the content starts with none of `messages.hints.skipStartsWith`. (8) `messageHintCases` `{why, world, level, message, state, mastered, hints, nextState}`: when the message gets hints, (5) over its content; otherwise no hints and the state unchanged. Every expectation was computed by the export's own rule (the writer of the section), never by this library; the rule is ported from insimul/babylon (Apache-2.0).",
+ "sources": [
+  "pipelines c807d4e: pipelines/game-export/chat-cefr.ts (the export's rule over the section: translateWord, vocabHintFor, npcLanguageMode, vocabHintsForLine, chatMessageKind, chatMessageGetsHints, chatMessageHints and the line rule's constants), every expectation computed by it"
+ ],
+ "worlds": [
+  {
+   "name": "constructed-tongue",
+   "note": "A constructed language (no code): a two-word phrase (`tesh mira`), an apostrophe inside a word (`dor'ath`), an advanced word (`zhaltor`), an intermediate one (`varenn`), a word with an English alternative and a part of speech (`kesh`), a context note (`lune`), a capitalised source word (`Varo`), and sampleWords entries with no difficulty.",
+   "chatCefr": {
+    "version": 1,
+    "baseLanguage": "English",
+    "levels": {
+     "A1": {
+      "npcLanguageModes": {
+       "bilingual": 60,
+       "simplified": 40,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 200,
+       "label": "top 200 most common words"
+      }
+     },
+     "A2": {
+      "npcLanguageModes": {
+       "bilingual": 30,
+       "simplified": 70,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 500,
+       "label": "top 500 most common words"
+      }
+     },
+     "B1": {
+      "npcLanguageModes": {
+       "bilingual": 10,
+       "simplified": 0,
+       "natural": 90
+      },
+      "hints": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 1500,
+       "label": "top 1500 most common words"
+      }
+     },
+     "B2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary"
+      }
+     },
+     "C1": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary with sophisticated register"
+      }
+     },
+     "C2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "native-level unrestricted vocabulary"
+      }
+     }
+    },
+    "lexicon": {
+     "targetLanguage": {
+      "id": "tongue-1",
+      "name": "Ostrari",
+      "code": null,
+      "kind": "constructed"
+     },
+     "reason": null,
+     "maxPhraseWords": 2,
+     "entries": [
+      {
+       "word": "dor'ath",
+       "key": "dor'ath",
+       "translation": "gate",
+       "alternatives": [],
+       "partOfSpeech": null,
+       "difficulty": null,
+       "context": null,
+       "source": "sampleWords",
+       "alsoEnglish": false
+      },
+      {
+       "word": "ilo",
+       "key": "ilo",
+       "translation": "friend",
+       "alternatives": [],
+       "partOfSpeech": null,
+       "difficulty": null,
+       "context": null,
+       "source": "sampleWords",
+       "alsoEnglish": false
+      },
+      {
+       "word": "kesh",
+       "key": "kesh",
+       "translation": "drink",
+       "alternatives": [
+        "water"
+       ],
+       "partOfSpeech": "verb",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "lune",
+       "key": "lune",
+       "translation": "bread",
+       "alternatives": [],
+       "partOfSpeech": null,
+       "difficulty": "beginner",
+       "context": "the daily loaf",
+       "source": "sampleWords",
+       "alsoEnglish": false
+      },
+      {
+       "word": "tesh mira",
+       "key": "tesh mira",
+       "translation": "good day",
+       "alternatives": [],
+       "partOfSpeech": null,
+       "difficulty": "beginner",
+       "context": null,
+       "source": "sampleWords",
+       "alsoEnglish": false
+      },
+      {
+       "word": "varenn",
+       "key": "varenn",
+       "translation": "harbour",
+       "alternatives": [],
+       "partOfSpeech": null,
+       "difficulty": "intermediate",
+       "context": null,
+       "source": "sampleWords",
+       "alsoEnglish": false
+      },
+      {
+       "word": "Varo",
+       "key": "varo",
+       "translation": "market",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "zhaltor",
+       "key": "zhaltor",
+       "translation": "thousand",
+       "alternatives": [],
+       "partOfSpeech": null,
+       "difficulty": "advanced",
+       "context": null,
+       "source": "sampleWords",
+       "alsoEnglish": false
+      }
+     ]
+    },
+    "messages": {
+     "kinds": [
+      {
+       "kind": "user",
+       "role": "user",
+       "startsWith": null,
+       "color": {
+        "css": "#87CEEB",
+        "rgba": [
+         135,
+         206,
+         235,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "system",
+       "role": "system",
+       "startsWith": null,
+       "color": {
+        "css": "#888888",
+        "rgba": [
+         136,
+         136,
+         136,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "correct",
+       "role": "assistant",
+       "startsWith": "✓ ",
+       "color": {
+        "css": "#4CAF50",
+        "rgba": [
+         76,
+         175,
+         80,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "tip",
+       "role": "assistant",
+       "startsWith": "✎ Tip: ",
+       "color": {
+        "css": "#FFC107",
+        "rgba": [
+         255,
+         193,
+         7,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "focus",
+       "role": "assistant",
+       "startsWith": "📖 Grammar Focus",
+       "color": {
+        "css": "#FF9800",
+        "rgba": [
+         255,
+         152,
+         0,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "npc",
+       "role": "assistant",
+       "startsWith": null,
+       "color": {
+        "css": "rgba(255, 255, 255, 0.9)",
+        "rgba": [
+         255,
+         255,
+         255,
+         0.9
+        ]
+       },
+       "hints": true
+      }
+     ],
+     "hints": {
+      "skipStartsWith": [
+       "("
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "spanish-real",
+   "note": "A real language with homographs: `once` (eleven), `sin` (without) and `red` (net) are English words too (`alsoEnglish`); accented keys (`dónde`, `mañana` with an alternative), a two-word phrase (`buenos días`), and the three difficulties.",
+   "chatCefr": {
+    "version": 1,
+    "baseLanguage": "English",
+    "levels": {
+     "A1": {
+      "npcLanguageModes": {
+       "bilingual": 60,
+       "simplified": 40,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 200,
+       "label": "top 200 most common words"
+      }
+     },
+     "A2": {
+      "npcLanguageModes": {
+       "bilingual": 30,
+       "simplified": 70,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 500,
+       "label": "top 500 most common words"
+      }
+     },
+     "B1": {
+      "npcLanguageModes": {
+       "bilingual": 10,
+       "simplified": 0,
+       "natural": 90
+      },
+      "hints": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 1500,
+       "label": "top 1500 most common words"
+      }
+     },
+     "B2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary"
+      }
+     },
+     "C1": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary with sophisticated register"
+      }
+     },
+     "C2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "native-level unrestricted vocabulary"
+      }
+     }
+    },
+    "lexicon": {
+     "targetLanguage": {
+      "id": "lang-es",
+      "name": "Spanish",
+      "code": "es",
+      "kind": "real"
+     },
+     "reason": null,
+     "maxPhraseWords": 2,
+     "entries": [
+      {
+       "word": "agua",
+       "key": "agua",
+       "translation": "water",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "amigo",
+       "key": "amigo",
+       "translation": "friend",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "biblioteca",
+       "key": "biblioteca",
+       "translation": "library",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "intermediate",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "buenos días",
+       "key": "buenos días",
+       "translation": "good morning",
+       "alternatives": [],
+       "partOfSpeech": null,
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "calle",
+       "key": "calle",
+       "translation": "street",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "desafortunadamente",
+       "key": "desafortunadamente",
+       "translation": "unfortunately",
+       "alternatives": [],
+       "partOfSpeech": "adverb",
+       "difficulty": "advanced",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "dónde",
+       "key": "dónde",
+       "translation": "where",
+       "alternatives": [],
+       "partOfSpeech": "adverb",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "mañana",
+       "key": "mañana",
+       "translation": "tomorrow",
+       "alternatives": [
+        "morning"
+       ],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "once",
+       "key": "once",
+       "translation": "eleven",
+       "alternatives": [],
+       "partOfSpeech": "number",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      },
+      {
+       "word": "pan",
+       "key": "pan",
+       "translation": "bread",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "red",
+       "key": "red",
+       "translation": "net",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      },
+      {
+       "word": "sin",
+       "key": "sin",
+       "translation": "without",
+       "alternatives": [],
+       "partOfSpeech": "preposition",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      }
+     ],
+     "evidenceWords": [
+      "de",
+      "el",
+      "es",
+      "hay",
+      "la",
+      "los",
+      "muy",
+      "por",
+      "una"
+     ]
+    },
+    "messages": {
+     "kinds": [
+      {
+       "kind": "user",
+       "role": "user",
+       "startsWith": null,
+       "color": {
+        "css": "#87CEEB",
+        "rgba": [
+         135,
+         206,
+         235,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "system",
+       "role": "system",
+       "startsWith": null,
+       "color": {
+        "css": "#888888",
+        "rgba": [
+         136,
+         136,
+         136,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "correct",
+       "role": "assistant",
+       "startsWith": "✓ ",
+       "color": {
+        "css": "#4CAF50",
+        "rgba": [
+         76,
+         175,
+         80,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "tip",
+       "role": "assistant",
+       "startsWith": "✎ Tip: ",
+       "color": {
+        "css": "#FFC107",
+        "rgba": [
+         255,
+         193,
+         7,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "focus",
+       "role": "assistant",
+       "startsWith": "📖 Grammar Focus",
+       "color": {
+        "css": "#FF9800",
+        "rgba": [
+         255,
+         152,
+         0,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "npc",
+       "role": "assistant",
+       "startsWith": null,
+       "color": {
+        "css": "rgba(255, 255, 255, 0.9)",
+        "rgba": [
+         255,
+         255,
+         255,
+         0.9
+        ]
+       },
+       "hints": true
+      }
+     ],
+     "hints": {
+      "skipStartsWith": [
+       "("
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "french-real",
+   "note": "A real language whose lexicon holds homographs (`chance`, `place`, `or`, `an`, `pain`) and target-language evidence words; `marché` is non-ASCII, a three-word phrase (`il y a`) sets maxPhraseWords 3.",
+   "chatCefr": {
+    "version": 1,
+    "baseLanguage": "English",
+    "levels": {
+     "A1": {
+      "npcLanguageModes": {
+       "bilingual": 60,
+       "simplified": 40,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 200,
+       "label": "top 200 most common words"
+      }
+     },
+     "A2": {
+      "npcLanguageModes": {
+       "bilingual": 30,
+       "simplified": 70,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 500,
+       "label": "top 500 most common words"
+      }
+     },
+     "B1": {
+      "npcLanguageModes": {
+       "bilingual": 10,
+       "simplified": 0,
+       "natural": 90
+      },
+      "hints": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 1500,
+       "label": "top 1500 most common words"
+      }
+     },
+     "B2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary"
+      }
+     },
+     "C1": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary with sophisticated register"
+      }
+     },
+     "C2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "native-level unrestricted vocabulary"
+      }
+     }
+    },
+    "lexicon": {
+     "targetLanguage": {
+      "id": "lang-fr",
+      "name": "French",
+      "code": "fr",
+      "kind": "real"
+     },
+     "reason": null,
+     "maxPhraseWords": 3,
+     "entries": [
+      {
+       "word": "ami",
+       "key": "ami",
+       "translation": "friend",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "an",
+       "key": "an",
+       "translation": "year",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      },
+      {
+       "word": "chance",
+       "key": "chance",
+       "translation": "luck",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "intermediate",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      },
+      {
+       "word": "dernier",
+       "key": "dernier",
+       "translation": "last",
+       "alternatives": [],
+       "partOfSpeech": "adjective",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "grand",
+       "key": "grand",
+       "translation": "big",
+       "alternatives": [
+        "tall"
+       ],
+       "partOfSpeech": "adjective",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "il y a",
+       "key": "il y a",
+       "translation": "there is",
+       "alternatives": [
+        "ago"
+       ],
+       "partOfSpeech": null,
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "marché",
+       "key": "marché",
+       "translation": "market",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "mon",
+       "key": "mon",
+       "translation": "my",
+       "alternatives": [],
+       "partOfSpeech": "determiner",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "or",
+       "key": "or",
+       "translation": "gold",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      },
+      {
+       "word": "pain",
+       "key": "pain",
+       "translation": "bread",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      },
+      {
+       "word": "place",
+       "key": "place",
+       "translation": "square",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      },
+      {
+       "word": "ville",
+       "key": "ville",
+       "translation": "town",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      }
+     ],
+     "evidenceWords": [
+      "bonne",
+      "c'est",
+      "de",
+      "du",
+      "est",
+      "et",
+      "je",
+      "la",
+      "le",
+      "les",
+      "nous",
+      "tu",
+      "un",
+      "une"
+     ]
+    },
+    "messages": {
+     "kinds": [
+      {
+       "kind": "user",
+       "role": "user",
+       "startsWith": null,
+       "color": {
+        "css": "#87CEEB",
+        "rgba": [
+         135,
+         206,
+         235,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "system",
+       "role": "system",
+       "startsWith": null,
+       "color": {
+        "css": "#888888",
+        "rgba": [
+         136,
+         136,
+         136,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "correct",
+       "role": "assistant",
+       "startsWith": "✓ ",
+       "color": {
+        "css": "#4CAF50",
+        "rgba": [
+         76,
+         175,
+         80,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "tip",
+       "role": "assistant",
+       "startsWith": "✎ Tip: ",
+       "color": {
+        "css": "#FFC107",
+        "rgba": [
+         255,
+         193,
+         7,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "focus",
+       "role": "assistant",
+       "startsWith": "📖 Grammar Focus",
+       "color": {
+        "css": "#FF9800",
+        "rgba": [
+         255,
+         152,
+         0,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "npc",
+       "role": "assistant",
+       "startsWith": null,
+       "color": {
+        "css": "rgba(255, 255, 255, 0.9)",
+        "rgba": [
+         255,
+         255,
+         255,
+         0.9
+        ]
+       },
+       "hints": true
+      }
+     ],
+     "hints": {
+      "skipStartsWith": [
+       "("
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "cyrillic-real",
+   "note": "A Cyrillic lexicon: keys keep every letter; a two-word phrase (`добрый день`).",
+   "chatCefr": {
+    "version": 1,
+    "baseLanguage": "English",
+    "levels": {
+     "A1": {
+      "npcLanguageModes": {
+       "bilingual": 60,
+       "simplified": 40,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 200,
+       "label": "top 200 most common words"
+      }
+     },
+     "A2": {
+      "npcLanguageModes": {
+       "bilingual": 30,
+       "simplified": 70,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 500,
+       "label": "top 500 most common words"
+      }
+     },
+     "B1": {
+      "npcLanguageModes": {
+       "bilingual": 10,
+       "simplified": 0,
+       "natural": 90
+      },
+      "hints": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 1500,
+       "label": "top 1500 most common words"
+      }
+     },
+     "B2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary"
+      }
+     },
+     "C1": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary with sophisticated register"
+      }
+     },
+     "C2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "native-level unrestricted vocabulary"
+      }
+     }
+    },
+    "lexicon": {
+     "targetLanguage": {
+      "id": "lang-ru",
+      "name": "Russian",
+      "code": "ru",
+      "kind": "real"
+     },
+     "reason": null,
+     "maxPhraseWords": 2,
+     "entries": [
+      {
+       "word": "добрый день",
+       "key": "добрый день",
+       "translation": "good afternoon",
+       "alternatives": [],
+       "partOfSpeech": null,
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "привет",
+       "key": "привет",
+       "translation": "hello",
+       "alternatives": [],
+       "partOfSpeech": "interjection",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "рынок",
+       "key": "рынок",
+       "translation": "market",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "intermediate",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "хлеб",
+       "key": "хлеб",
+       "translation": "bread",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      }
+     ]
+    },
+    "messages": {
+     "kinds": [
+      {
+       "kind": "user",
+       "role": "user",
+       "startsWith": null,
+       "color": {
+        "css": "#87CEEB",
+        "rgba": [
+         135,
+         206,
+         235,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "system",
+       "role": "system",
+       "startsWith": null,
+       "color": {
+        "css": "#888888",
+        "rgba": [
+         136,
+         136,
+         136,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "correct",
+       "role": "assistant",
+       "startsWith": "✓ ",
+       "color": {
+        "css": "#4CAF50",
+        "rgba": [
+         76,
+         175,
+         80,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "tip",
+       "role": "assistant",
+       "startsWith": "✎ Tip: ",
+       "color": {
+        "css": "#FFC107",
+        "rgba": [
+         255,
+         193,
+         7,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "focus",
+       "role": "assistant",
+       "startsWith": "📖 Grammar Focus",
+       "color": {
+        "css": "#FF9800",
+        "rgba": [
+         255,
+         152,
+         0,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "npc",
+       "role": "assistant",
+       "startsWith": null,
+       "color": {
+        "css": "rgba(255, 255, 255, 0.9)",
+        "rgba": [
+         255,
+         255,
+         255,
+         0.9
+        ]
+       },
+       "hints": true
+      }
+     ],
+     "hints": {
+      "skipStartsWith": [
+       "("
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "vietnamese-real",
+   "note": "Letters above U+024F and combining marks: a line written decomposed still finds the composed key (NFC).",
+   "chatCefr": {
+    "version": 1,
+    "baseLanguage": "English",
+    "levels": {
+     "A1": {
+      "npcLanguageModes": {
+       "bilingual": 60,
+       "simplified": 40,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 200,
+       "label": "top 200 most common words"
+      }
+     },
+     "A2": {
+      "npcLanguageModes": {
+       "bilingual": 30,
+       "simplified": 70,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 500,
+       "label": "top 500 most common words"
+      }
+     },
+     "B1": {
+      "npcLanguageModes": {
+       "bilingual": 10,
+       "simplified": 0,
+       "natural": 90
+      },
+      "hints": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 1500,
+       "label": "top 1500 most common words"
+      }
+     },
+     "B2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary"
+      }
+     },
+     "C1": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary with sophisticated register"
+      }
+     },
+     "C2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "native-level unrestricted vocabulary"
+      }
+     }
+    },
+    "lexicon": {
+     "targetLanguage": {
+      "id": "lang-vi",
+      "name": "Vietnamese",
+      "code": "vi",
+      "kind": "real"
+     },
+     "reason": null,
+     "maxPhraseWords": 2,
+     "entries": [
+      {
+       "word": "chợ",
+       "key": "chợ",
+       "translation": "market",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "cà phê",
+       "key": "cà phê",
+       "translation": "coffee",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "phở",
+       "key": "phở",
+       "translation": "noodle soup",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      }
+     ]
+    },
+    "messages": {
+     "kinds": [
+      {
+       "kind": "user",
+       "role": "user",
+       "startsWith": null,
+       "color": {
+        "css": "#87CEEB",
+        "rgba": [
+         135,
+         206,
+         235,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "system",
+       "role": "system",
+       "startsWith": null,
+       "color": {
+        "css": "#888888",
+        "rgba": [
+         136,
+         136,
+         136,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "correct",
+       "role": "assistant",
+       "startsWith": "✓ ",
+       "color": {
+        "css": "#4CAF50",
+        "rgba": [
+         76,
+         175,
+         80,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "tip",
+       "role": "assistant",
+       "startsWith": "✎ Tip: ",
+       "color": {
+        "css": "#FFC107",
+        "rgba": [
+         255,
+         193,
+         7,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "focus",
+       "role": "assistant",
+       "startsWith": "📖 Grammar Focus",
+       "color": {
+        "css": "#FF9800",
+        "rgba": [
+         255,
+         152,
+         0,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "npc",
+       "role": "assistant",
+       "startsWith": null,
+       "color": {
+        "css": "rgba(255, 255, 255, 0.9)",
+        "rgba": [
+         255,
+         255,
+         255,
+         0.9
+        ]
+       },
+       "hints": true
+      }
+     ],
+     "hints": {
+      "skipStartsWith": [
+       "("
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "no-language-system",
+   "note": "A world with nothing to learn: an empty lexicon, reason no-target-language.",
+   "chatCefr": {
+    "version": 1,
+    "baseLanguage": "English",
+    "levels": {
+     "A1": {
+      "npcLanguageModes": {
+       "bilingual": 60,
+       "simplified": 40,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 200,
+       "label": "top 200 most common words"
+      }
+     },
+     "A2": {
+      "npcLanguageModes": {
+       "bilingual": 30,
+       "simplified": 70,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 500,
+       "label": "top 500 most common words"
+      }
+     },
+     "B1": {
+      "npcLanguageModes": {
+       "bilingual": 10,
+       "simplified": 0,
+       "natural": 90
+      },
+      "hints": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 1500,
+       "label": "top 1500 most common words"
+      }
+     },
+     "B2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary"
+      }
+     },
+     "C1": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary with sophisticated register"
+      }
+     },
+     "C2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "native-level unrestricted vocabulary"
+      }
+     }
+    },
+    "lexicon": {
+     "targetLanguage": null,
+     "reason": "no-target-language",
+     "maxPhraseWords": 0,
+     "entries": []
+    },
+    "messages": {
+     "kinds": [
+      {
+       "kind": "user",
+       "role": "user",
+       "startsWith": null,
+       "color": {
+        "css": "#87CEEB",
+        "rgba": [
+         135,
+         206,
+         235,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "system",
+       "role": "system",
+       "startsWith": null,
+       "color": {
+        "css": "#888888",
+        "rgba": [
+         136,
+         136,
+         136,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "correct",
+       "role": "assistant",
+       "startsWith": "✓ ",
+       "color": {
+        "css": "#4CAF50",
+        "rgba": [
+         76,
+         175,
+         80,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "tip",
+       "role": "assistant",
+       "startsWith": "✎ Tip: ",
+       "color": {
+        "css": "#FFC107",
+        "rgba": [
+         255,
+         193,
+         7,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "focus",
+       "role": "assistant",
+       "startsWith": "📖 Grammar Focus",
+       "color": {
+        "css": "#FF9800",
+        "rgba": [
+         255,
+         152,
+         0,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "npc",
+       "role": "assistant",
+       "startsWith": null,
+       "color": {
+        "css": "rgba(255, 255, 255, 0.9)",
+        "rgba": [
+         255,
+         255,
+         255,
+         0.9
+        ]
+       },
+       "hints": true
+      }
+     ],
+     "hints": {
+      "skipStartsWith": [
+       "("
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "target-is-base-language",
+   "note": "A world whose target is English, the base language: an empty lexicon.",
+   "chatCefr": {
+    "version": 1,
+    "baseLanguage": "English",
+    "levels": {
+     "A1": {
+      "npcLanguageModes": {
+       "bilingual": 60,
+       "simplified": 40,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 200,
+       "label": "top 200 most common words"
+      }
+     },
+     "A2": {
+      "npcLanguageModes": {
+       "bilingual": 30,
+       "simplified": 70,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 500,
+       "label": "top 500 most common words"
+      }
+     },
+     "B1": {
+      "npcLanguageModes": {
+       "bilingual": 10,
+       "simplified": 0,
+       "natural": 90
+      },
+      "hints": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 1500,
+       "label": "top 1500 most common words"
+      }
+     },
+     "B2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary"
+      }
+     },
+     "C1": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary with sophisticated register"
+      }
+     },
+     "C2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "native-level unrestricted vocabulary"
+      }
+     }
+    },
+    "lexicon": {
+     "targetLanguage": null,
+     "reason": "target-is-base-language",
+     "maxPhraseWords": 0,
+     "entries": []
+    },
+    "messages": {
+     "kinds": [
+      {
+       "kind": "user",
+       "role": "user",
+       "startsWith": null,
+       "color": {
+        "css": "#87CEEB",
+        "rgba": [
+         135,
+         206,
+         235,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "system",
+       "role": "system",
+       "startsWith": null,
+       "color": {
+        "css": "#888888",
+        "rgba": [
+         136,
+         136,
+         136,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "correct",
+       "role": "assistant",
+       "startsWith": "✓ ",
+       "color": {
+        "css": "#4CAF50",
+        "rgba": [
+         76,
+         175,
+         80,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "tip",
+       "role": "assistant",
+       "startsWith": "✎ Tip: ",
+       "color": {
+        "css": "#FFC107",
+        "rgba": [
+         255,
+         193,
+         7,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "focus",
+       "role": "assistant",
+       "startsWith": "📖 Grammar Focus",
+       "color": {
+        "css": "#FF9800",
+        "rgba": [
+         255,
+         152,
+         0,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "npc",
+       "role": "assistant",
+       "startsWith": null,
+       "color": {
+        "css": "rgba(255, 255, 255, 0.9)",
+        "rgba": [
+         255,
+         255,
+         255,
+         0.9
+        ]
+       },
+       "hints": true
+      }
+     ],
+     "hints": {
+      "skipStartsWith": [
+       "("
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "no-language-record",
+   "note": "A target language the world holds no record for: an empty lexicon.",
+   "chatCefr": {
+    "version": 1,
+    "baseLanguage": "English",
+    "levels": {
+     "A1": {
+      "npcLanguageModes": {
+       "bilingual": 60,
+       "simplified": 40,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 200,
+       "label": "top 200 most common words"
+      }
+     },
+     "A2": {
+      "npcLanguageModes": {
+       "bilingual": 30,
+       "simplified": 70,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 500,
+       "label": "top 500 most common words"
+      }
+     },
+     "B1": {
+      "npcLanguageModes": {
+       "bilingual": 10,
+       "simplified": 0,
+       "natural": 90
+      },
+      "hints": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 1500,
+       "label": "top 1500 most common words"
+      }
+     },
+     "B2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary"
+      }
+     },
+     "C1": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary with sophisticated register"
+      }
+     },
+     "C2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "native-level unrestricted vocabulary"
+      }
+     }
+    },
+    "lexicon": {
+     "targetLanguage": null,
+     "reason": "no-language-record",
+     "maxPhraseWords": 0,
+     "entries": []
+    },
+    "messages": {
+     "kinds": [
+      {
+       "kind": "user",
+       "role": "user",
+       "startsWith": null,
+       "color": {
+        "css": "#87CEEB",
+        "rgba": [
+         135,
+         206,
+         235,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "system",
+       "role": "system",
+       "startsWith": null,
+       "color": {
+        "css": "#888888",
+        "rgba": [
+         136,
+         136,
+         136,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "correct",
+       "role": "assistant",
+       "startsWith": "✓ ",
+       "color": {
+        "css": "#4CAF50",
+        "rgba": [
+         76,
+         175,
+         80,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "tip",
+       "role": "assistant",
+       "startsWith": "✎ Tip: ",
+       "color": {
+        "css": "#FFC107",
+        "rgba": [
+         255,
+         193,
+         7,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "focus",
+       "role": "assistant",
+       "startsWith": "📖 Grammar Focus",
+       "color": {
+        "css": "#FF9800",
+        "rgba": [
+         255,
+         152,
+         0,
+         1
+        ]
+       },
+       "hints": false
+      },
+      {
+       "kind": "npc",
+       "role": "assistant",
+       "startsWith": null,
+       "color": {
+        "css": "rgba(255, 255, 255, 0.9)",
+        "rgba": [
+         255,
+         255,
+         255,
+         0.9
+        ]
+       },
+       "hints": true
+      }
+     ],
+     "hints": {
+      "skipStartsWith": [
+       "("
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "earlier-shape",
+   "note": "A section written before `alsoEnglish`, `evidenceWords` and `messages`: every entry is read as no homograph, there are no evidence words, and the message rows refuse it.",
+   "chatCefr": {
+    "version": 1,
+    "baseLanguage": "English",
+    "levels": {
+     "A1": {
+      "npcLanguageModes": {
+       "bilingual": 60,
+       "simplified": 40,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 2,
+       "newWordHintFrequency": 1,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 200,
+       "label": "top 200 most common words"
+      }
+     },
+     "A2": {
+      "npcLanguageModes": {
+       "bilingual": 30,
+       "simplified": 70,
+       "natural": 0
+      },
+      "hints": {
+       "translationMode": "inline",
+       "showTranslateButton": true,
+       "translateButtonProminence": 1,
+       "newWordHintFrequency": 3,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 500,
+       "label": "top 500 most common words"
+      }
+     },
+     "B1": {
+      "npcLanguageModes": {
+       "bilingual": 10,
+       "simplified": 0,
+       "natural": 90
+      },
+      "hints": {
+       "translationMode": "hover",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": 1500,
+       "label": "top 1500 most common words"
+      }
+     },
+     "B2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": true
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary"
+      }
+     },
+     "C1": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "unrestricted vocabulary with sophisticated register"
+      }
+     },
+     "C2": {
+      "npcLanguageModes": {
+       "bilingual": 0,
+       "simplified": 0,
+       "natural": 100
+      },
+      "hints": {
+       "translationMode": "click",
+       "showTranslateButton": false,
+       "translateButtonProminence": 0,
+       "newWordHintFrequency": 0,
+       "advancedVocabOnly": false
+      },
+      "vocabularyFrequency": {
+       "min": 1,
+       "max": null,
+       "label": "native-level unrestricted vocabulary"
+      }
+     }
+    },
+    "lexicon": {
+     "targetLanguage": {
+      "id": "lang-es-old",
+      "name": "Spanish",
+      "code": "es",
+      "kind": "real"
+     },
+     "reason": null,
+     "maxPhraseWords": 1,
+     "entries": [
+      {
+       "word": "amigo",
+       "key": "amigo",
+       "translation": "friend",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache"
+      },
+      {
+       "word": "once",
+       "key": "once",
+       "translation": "eleven",
+       "alternatives": [],
+       "partOfSpeech": "number",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache"
+      },
+      {
+       "word": "pan",
+       "key": "pan",
+       "translation": "bread",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache"
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "levelCases": [
+  {
+   "level": "A1",
+   "row": {
+    "npcLanguageModes": {
+     "bilingual": 60,
+     "simplified": 40,
+     "natural": 0
+    },
+    "hints": {
+     "translationMode": "inline",
+     "showTranslateButton": true,
+     "translateButtonProminence": 2,
+     "newWordHintFrequency": 1,
+     "advancedVocabOnly": false
+    },
+    "vocabularyFrequency": {
+     "min": 1,
+     "max": 200,
+     "label": "top 200 most common words"
+    }
+   }
+  },
+  {
+   "level": "A2",
+   "row": {
+    "npcLanguageModes": {
+     "bilingual": 30,
+     "simplified": 70,
+     "natural": 0
+    },
+    "hints": {
+     "translationMode": "inline",
+     "showTranslateButton": true,
+     "translateButtonProminence": 1,
+     "newWordHintFrequency": 3,
+     "advancedVocabOnly": false
+    },
+    "vocabularyFrequency": {
+     "min": 1,
+     "max": 500,
+     "label": "top 500 most common words"
+    }
+   }
+  },
+  {
+   "level": "B1",
+   "row": {
+    "npcLanguageModes": {
+     "bilingual": 10,
+     "simplified": 0,
+     "natural": 90
+    },
+    "hints": {
+     "translationMode": "hover",
+     "showTranslateButton": false,
+     "translateButtonProminence": 0,
+     "newWordHintFrequency": 0,
+     "advancedVocabOnly": true
+    },
+    "vocabularyFrequency": {
+     "min": 1,
+     "max": 1500,
+     "label": "top 1500 most common words"
+    }
+   }
+  },
+  {
+   "level": "B2",
+   "row": {
+    "npcLanguageModes": {
+     "bilingual": 0,
+     "simplified": 0,
+     "natural": 100
+    },
+    "hints": {
+     "translationMode": "click",
+     "showTranslateButton": false,
+     "translateButtonProminence": 0,
+     "newWordHintFrequency": 0,
+     "advancedVocabOnly": true
+    },
+    "vocabularyFrequency": {
+     "min": 1,
+     "max": null,
+     "label": "unrestricted vocabulary"
+    }
+   }
+  },
+  {
+   "level": "C1",
+   "row": {
+    "npcLanguageModes": {
+     "bilingual": 0,
+     "simplified": 0,
+     "natural": 100
+    },
+    "hints": {
+     "translationMode": "click",
+     "showTranslateButton": false,
+     "translateButtonProminence": 0,
+     "newWordHintFrequency": 0,
+     "advancedVocabOnly": false
+    },
+    "vocabularyFrequency": {
+     "min": 1,
+     "max": null,
+     "label": "unrestricted vocabulary with sophisticated register"
+    }
+   }
+  },
+  {
+   "level": "C2",
+   "row": {
+    "npcLanguageModes": {
+     "bilingual": 0,
+     "simplified": 0,
+     "natural": 100
+    },
+    "hints": {
+     "translationMode": "click",
+     "showTranslateButton": false,
+     "translateButtonProminence": 0,
+     "newWordHintFrequency": 0,
+     "advancedVocabOnly": false
+    },
+    "vocabularyFrequency": {
+     "min": 1,
+     "max": null,
+     "label": "native-level unrestricted vocabulary"
+    }
+   }
+  }
+ ],
+ "npcModeCases": [
+  {
+   "level": "A1",
+   "npcId": "villager-23",
+   "hash": 198512600,
+   "bucket": 0,
+   "mode": "bilingual"
+  },
+  {
+   "level": "A1",
+   "npcId": "villager-183",
+   "hash": 1858924059,
+   "bucket": 59,
+   "mode": "bilingual"
+  },
+  {
+   "level": "A1",
+   "npcId": "char_2a",
+   "hash": 739053560,
+   "bucket": 60,
+   "mode": "simplified"
+  },
+  {
+   "level": "A1",
+   "npcId": "villager-24",
+   "hash": 198512599,
+   "bucket": 99,
+   "mode": "simplified"
+  },
+  {
+   "level": "A2",
+   "npcId": "villager-15",
+   "hash": 198512629,
+   "bucket": 29,
+   "mode": "bilingual"
+  },
+  {
+   "level": "A2",
+   "npcId": "villager-14",
+   "hash": 198512630,
+   "bucket": 30,
+   "mode": "simplified"
+  },
+  {
+   "level": "A2",
+   "npcId": "villager-24",
+   "hash": 198512599,
+   "bucket": 99,
+   "mode": "simplified"
+  },
+  {
+   "level": "A2",
+   "npcId": "char_2a",
+   "hash": 739053560,
+   "bucket": 60,
+   "mode": "simplified"
+  },
+  {
+   "level": "B1",
+   "npcId": "villager-51",
+   "hash": 198512509,
+   "bucket": 9,
+   "mode": "bilingual"
+  },
+  {
+   "level": "B1",
+   "npcId": "villager-50",
+   "hash": 198512510,
+   "bucket": 10,
+   "mode": "natural"
+  },
+  {
+   "level": "B1",
+   "npcId": "villager-23",
+   "hash": 198512600,
+   "bucket": 0,
+   "mode": "bilingual"
+  },
+  {
+   "level": "B1",
+   "npcId": "villager-24",
+   "hash": 198512599,
+   "bucket": 99,
+   "mode": "natural"
+  },
+  {
+   "level": "B2",
+   "npcId": "villager-23",
+   "hash": 198512600,
+   "bucket": 0,
+   "mode": "natural"
+  },
+  {
+   "level": "C1",
+   "npcId": "villager-51",
+   "hash": 198512509,
+   "bucket": 9,
+   "mode": "natural"
+  },
+  {
+   "level": "C2",
+   "npcId": "villager-24",
+   "hash": 198512599,
+   "bucket": 99,
+   "mode": "natural"
+  },
+  {
+   "level": "A1",
+   "npcId": "",
+   "hash": 0,
+   "bucket": 0,
+   "mode": "bilingual"
+  },
+  {
+   "level": "A1",
+   "npcId": "Ana",
+   "hash": 65972,
+   "bucket": 72,
+   "mode": "simplified"
+  },
+  {
+   "level": "A2",
+   "npcId": "npc-🐉",
+   "hash": 1037561384,
+   "bucket": 84,
+   "mode": "simplified"
+  },
+  {
+   "level": "A1",
+   "npcId": "ÉLODIE",
+   "hash": 1532100820,
+   "bucket": 20,
+   "mode": "bilingual"
+  },
+  {
+   "level": "B1",
+   "npcId": "guard-10",
+   "hash": 1530080697,
+   "bucket": 97,
+   "mode": "natural"
+  },
+  {
+   "level": "A2",
+   "npcId": "merchant-of-the-east-gate-0001",
+   "hash": 297316288,
+   "bucket": 88,
+   "mode": "simplified"
+  }
+ ],
+ "lookupCases": [
+  {
+   "world": "constructed-tongue",
+   "word": "lune",
+   "translation": {
+    "word": "lune",
+    "translation": "bread",
+    "alternatives": [],
+    "partOfSpeech": null,
+    "difficulty": "beginner",
+    "context": "the daily loaf",
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "lune",
+    "translation": "bread",
+    "context": "the daily loaf",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "Lune!",
+   "translation": {
+    "word": "lune",
+    "translation": "bread",
+    "alternatives": [],
+    "partOfSpeech": null,
+    "difficulty": "beginner",
+    "context": "the daily loaf",
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "lune",
+    "translation": "bread",
+    "context": "the daily loaf",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "VARO",
+   "translation": {
+    "word": "Varo",
+    "translation": "market",
+    "alternatives": [],
+    "partOfSpeech": "noun",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "Varo",
+    "translation": "market",
+    "partOfSpeech": "noun",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "varo",
+   "translation": {
+    "word": "Varo",
+    "translation": "market",
+    "alternatives": [],
+    "partOfSpeech": "noun",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "Varo",
+    "translation": "market",
+    "partOfSpeech": "noun",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "tesh mira",
+   "translation": {
+    "word": "tesh mira",
+    "translation": "good day",
+    "alternatives": [],
+    "partOfSpeech": null,
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "tesh mira",
+    "translation": "good day",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "  Tesh   Mira, ",
+   "translation": {
+    "word": "tesh mira",
+    "translation": "good day",
+    "alternatives": [],
+    "partOfSpeech": null,
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "tesh mira",
+    "translation": "good day",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "tesh\tmira",
+   "translation": {
+    "word": "tesh mira",
+    "translation": "good day",
+    "alternatives": [],
+    "partOfSpeech": null,
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "tesh mira",
+    "translation": "good day",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "dor’ath",
+   "translation": {
+    "word": "dor'ath",
+    "translation": "gate",
+    "alternatives": [],
+    "partOfSpeech": null,
+    "difficulty": null,
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "dor'ath",
+    "translation": "gate"
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "dor'ath",
+   "translation": {
+    "word": "dor'ath",
+    "translation": "gate",
+    "alternatives": [],
+    "partOfSpeech": null,
+    "difficulty": null,
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "dor'ath",
+    "translation": "gate"
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "kesh",
+   "translation": {
+    "word": "kesh",
+    "translation": "drink",
+    "alternatives": [
+     "water"
+    ],
+    "partOfSpeech": "verb",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "kesh",
+    "translation": "drink",
+    "partOfSpeech": "verb",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "zhaltor",
+   "translation": {
+    "word": "zhaltor",
+    "translation": "thousand",
+    "alternatives": [],
+    "partOfSpeech": null,
+    "difficulty": "advanced",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "zhaltor",
+    "translation": "thousand",
+    "difficulty": "advanced"
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "tesh",
+   "translation": null,
+   "hint": null
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "water",
+   "translation": null,
+   "hint": null
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "",
+   "translation": null,
+   "hint": null
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "...!?",
+   "translation": null,
+   "hint": null
+  },
+  {
+   "world": "constructed-tongue",
+   "word": "«ilo»",
+   "translation": {
+    "word": "ilo",
+    "translation": "friend",
+    "alternatives": [],
+    "partOfSpeech": null,
+    "difficulty": null,
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "ilo",
+    "translation": "friend"
+   }
+  },
+  {
+   "world": "spanish-real",
+   "word": "¿Dónde?",
+   "translation": {
+    "word": "dónde",
+    "translation": "where",
+    "alternatives": [],
+    "partOfSpeech": "adverb",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "dónde",
+    "translation": "where",
+    "partOfSpeech": "adverb",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "spanish-real",
+   "word": "donde",
+   "translation": null,
+   "hint": null
+  },
+  {
+   "world": "spanish-real",
+   "word": "MAÑANA",
+   "translation": {
+    "word": "mañana",
+    "translation": "tomorrow",
+    "alternatives": [
+     "morning"
+    ],
+    "partOfSpeech": "noun",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "mañana",
+    "translation": "tomorrow",
+    "partOfSpeech": "noun",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "spanish-real",
+   "word": "once",
+   "translation": {
+    "word": "once",
+    "translation": "eleven",
+    "alternatives": [],
+    "partOfSpeech": "number",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "once",
+    "translation": "eleven",
+    "partOfSpeech": "number",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "spanish-real",
+   "word": "Buenos días",
+   "translation": {
+    "word": "buenos días",
+    "translation": "good morning",
+    "alternatives": [],
+    "partOfSpeech": null,
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "buenos días",
+    "translation": "good morning",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "spanish-real",
+   "word": "desafortunadamente",
+   "translation": {
+    "word": "desafortunadamente",
+    "translation": "unfortunately",
+    "alternatives": [],
+    "partOfSpeech": "adverb",
+    "difficulty": "advanced",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "desafortunadamente",
+    "translation": "unfortunately",
+    "partOfSpeech": "adverb",
+    "difficulty": "advanced"
+   }
+  },
+  {
+   "world": "spanish-real",
+   "word": "biblioteca.",
+   "translation": {
+    "word": "biblioteca",
+    "translation": "library",
+    "alternatives": [],
+    "partOfSpeech": "noun",
+    "difficulty": "intermediate",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "biblioteca",
+    "translation": "library",
+    "partOfSpeech": "noun",
+    "difficulty": "intermediate"
+   }
+  },
+  {
+   "world": "french-real",
+   "word": "chance",
+   "translation": {
+    "word": "chance",
+    "translation": "luck",
+    "alternatives": [],
+    "partOfSpeech": "noun",
+    "difficulty": "intermediate",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "chance",
+    "translation": "luck",
+    "partOfSpeech": "noun",
+    "difficulty": "intermediate"
+   }
+  },
+  {
+   "world": "french-real",
+   "word": "Marché",
+   "translation": {
+    "word": "marché",
+    "translation": "market",
+    "alternatives": [],
+    "partOfSpeech": "noun",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "marché",
+    "translation": "market",
+    "partOfSpeech": "noun",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "french-real",
+   "word": "marche",
+   "translation": null,
+   "hint": null
+  },
+  {
+   "world": "french-real",
+   "word": "il y a",
+   "translation": {
+    "word": "il y a",
+    "translation": "there is",
+    "alternatives": [
+     "ago"
+    ],
+    "partOfSpeech": null,
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "il y a",
+    "translation": "there is",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "french-real",
+   "word": "grand",
+   "translation": {
+    "word": "grand",
+    "translation": "big",
+    "alternatives": [
+     "tall"
+    ],
+    "partOfSpeech": "adjective",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "grand",
+    "translation": "big",
+    "partOfSpeech": "adjective",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "cyrillic-real",
+   "word": "Хлеб,",
+   "translation": {
+    "word": "хлеб",
+    "translation": "bread",
+    "alternatives": [],
+    "partOfSpeech": "noun",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "хлеб",
+    "translation": "bread",
+    "partOfSpeech": "noun",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "cyrillic-real",
+   "word": "добрый день!",
+   "translation": {
+    "word": "добрый день",
+    "translation": "good afternoon",
+    "alternatives": [],
+    "partOfSpeech": null,
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "добрый день",
+    "translation": "good afternoon",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "cyrillic-real",
+   "word": "хлеба",
+   "translation": null,
+   "hint": null
+  },
+  {
+   "world": "vietnamese-real",
+   "word": "phở",
+   "translation": {
+    "word": "phở",
+    "translation": "noodle soup",
+    "alternatives": [],
+    "partOfSpeech": "noun",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "phở",
+    "translation": "noodle soup",
+    "partOfSpeech": "noun",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "vietnamese-real",
+   "word": "Cà phê?",
+   "translation": {
+    "word": "cà phê",
+    "translation": "coffee",
+    "alternatives": [],
+    "partOfSpeech": "noun",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "cà phê",
+    "translation": "coffee",
+    "partOfSpeech": "noun",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "vietnamese-real",
+   "word": "chợ",
+   "translation": {
+    "word": "chợ",
+    "translation": "market",
+    "alternatives": [],
+    "partOfSpeech": "noun",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "chợ",
+    "translation": "market",
+    "partOfSpeech": "noun",
+    "difficulty": "beginner"
+   }
+  },
+  {
+   "world": "no-language-system",
+   "word": "pan",
+   "translation": null,
+   "hint": null
+  },
+  {
+   "world": "target-is-base-language",
+   "word": "bread",
+   "translation": null,
+   "hint": null
+  },
+  {
+   "world": "no-language-record",
+   "word": "brot",
+   "translation": null,
+   "hint": null
+  },
+  {
+   "world": "earlier-shape",
+   "word": "once",
+   "translation": {
+    "word": "once",
+    "translation": "eleven",
+    "alternatives": [],
+    "partOfSpeech": "number",
+    "difficulty": "beginner",
+    "context": null,
+    "source": "lexicon"
+   },
+   "hint": {
+    "word": "once",
+    "translation": "eleven",
+    "partOfSpeech": "number",
+    "difficulty": "beginner"
+   }
+  }
+ ],
+ "lineCases": [
+  {
+   "world": "constructed-tongue",
+   "why": "A1 hints every new word; the phrase is one match (longest first); `and` is no lexicon word and takes no index.",
+   "level": "A1",
+   "line": "Tesh mira, ilo! Lune and kesh?",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "tesh mira",
+     "translation": "good day",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "ilo",
+     "translation": "friend"
+    },
+    {
+     "word": "lune",
+     "translation": "bread",
+     "context": "the daily loaf",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "kesh",
+     "translation": "drink",
+     "partOfSpeech": "verb",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ilo",
+     "kesh",
+     "lune",
+     "tesh mira"
+    ],
+    "newWordIndex": 4
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "A2 hints every third new word: indices 0 and 3 get cards, 1 and 2 do not.",
+   "level": "A2",
+   "line": "Varo lune kesh ilo varenn",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "Varo",
+     "translation": "market",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "ilo",
+     "translation": "friend"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ilo",
+     "kesh",
+     "lune",
+     "varenn",
+     "varo"
+    ],
+    "newWordIndex": 5
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "A second meeting of a word in the same line takes no new index.",
+   "level": "A1",
+   "line": "Lune, lune, LUNE! Kesh.",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "lune",
+     "translation": "bread",
+     "context": "the daily loaf",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "kesh",
+     "translation": "drink",
+     "partOfSpeech": "verb",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "kesh",
+     "lune"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "The state carries over: a seen word is not new; the next new word takes the carried index (A2: 3 gets a card).",
+   "level": "A2",
+   "line": "Lune varo kesh ilo",
+   "state": {
+    "seen": [
+     "lune"
+    ],
+    "newWordIndex": 3
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "Varo",
+     "translation": "market",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ilo",
+     "kesh",
+     "lune",
+     "varo"
+    ],
+    "newWordIndex": 6
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "A mastered word (keyed, so its case does not matter) takes an index but no card.",
+   "level": "A1",
+   "line": "Lune kesh ilo",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [
+    "KESH"
+   ],
+   "hints": [
+    {
+     "word": "lune",
+     "translation": "bread",
+     "context": "the daily loaf",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "ilo",
+     "translation": "friend"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ilo",
+     "kesh",
+     "lune"
+    ],
+    "newWordIndex": 3
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "B1 shows only advanced words: zhaltor gets a card, the intermediate varenn and beginner lune do not, though all three take indices.",
+   "level": "B1",
+   "line": "Lune varenn zhaltor",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "zhaltor",
+     "translation": "thousand",
+     "difficulty": "advanced"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "lune",
+     "varenn",
+     "zhaltor"
+    ],
+    "newWordIndex": 3
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "B2 (frequency 0, advanced only) and the same line: only the advanced word.",
+   "level": "B2",
+   "line": "Zhaltor varo!",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "zhaltor",
+     "translation": "thousand",
+     "difficulty": "advanced"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "varo",
+     "zhaltor"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "C1 (frequency 0, not advanced only): only advanced words still, since a frequency of 0 shows advanced words alone.",
+   "level": "C1",
+   "line": "Zhaltor varo varenn",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "zhaltor",
+     "translation": "thousand",
+     "difficulty": "advanced"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "varenn",
+     "varo",
+     "zhaltor"
+    ],
+    "newWordIndex": 3
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "A word of unknown difficulty is beginner: at B1 it gets no card.",
+   "level": "B1",
+   "line": "Dor'ath ilo",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [
+     "dor'ath",
+     "ilo"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "A curly apostrophe in the line matches the straight one in the key.",
+   "level": "A1",
+   "line": "Dor’ath, ilo.",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "dor'ath",
+     "translation": "gate"
+    },
+    {
+     "word": "ilo",
+     "translation": "friend"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "dor'ath",
+     "ilo"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "A comma inside the phrase breaks it: `Tesh, mira` keys to `tesh, mira`, which is no key, and neither word alone is one; only `ilo` is hinted.",
+   "level": "A1",
+   "line": "Tesh, mira ilo",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "ilo",
+     "translation": "friend"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ilo"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "An empty line: no hints, the state unchanged.",
+   "level": "A1",
+   "line": "",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "A line of punctuation only: no pieces.",
+   "level": "A1",
+   "line": "— … !!",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "The seen list is sorted by code unit, not by locale (uppercase-free keys; `dor'ath` sorts before `ilo`).",
+   "level": "A1",
+   "line": "ilo dor'ath varo",
+   "state": {
+    "seen": [
+     "zhaltor"
+    ],
+    "newWordIndex": 1
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "ilo",
+     "translation": "friend"
+    },
+    {
+     "word": "dor'ath",
+     "translation": "gate"
+    },
+    {
+     "word": "Varo",
+     "translation": "market",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "dor'ath",
+     "ilo",
+     "varo",
+     "zhaltor"
+    ],
+    "newWordIndex": 4
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "Accents and inverted marks: `¿Dónde` keys to `dónde`; the phrase `buenos días` is one match.",
+   "level": "A1",
+   "line": "¡Buenos días! ¿Dónde está el pan?",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "buenos días",
+     "translation": "good morning",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "dónde",
+     "translation": "where",
+     "partOfSpeech": "adverb",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "pan",
+     "translation": "bread",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "buenos días",
+     "dónde",
+     "pan"
+    ],
+    "newWordIndex": 3
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "An English line using the homograph `once`: no target evidence anywhere, so `once` stays English.",
+   "level": "A1",
+   "line": "I was there once, my friend.",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "The same homograph beside target evidence (`calle`, and the evidence word `la`) is Spanish.",
+   "level": "A1",
+   "line": "La calle once está aquí",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "calle",
+     "translation": "street",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "once",
+     "translation": "eleven",
+     "partOfSpeech": "number",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "calle",
+     "once"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A homograph glossed after a dash, read past one article (`— the net —`), is target-language even in an English line.",
+   "level": "A1",
+   "line": "Bring the red — the net — tomorrow",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "red"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A homograph glossed in parentheses (no separator token needed) is target-language.",
+   "level": "A1",
+   "line": "We fish with a red (net) here",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "red"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A gloss after a dash with no article: `sin — without —` glosses `sin`.",
+   "level": "A1",
+   "line": "Coffee sin — without — sugar",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "sin",
+     "translation": "without",
+     "partOfSpeech": "preposition",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "sin"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "No separator and no bracket between `red` and `net`: no gloss; `net`, an English gloss word of the lexicon, is the nearest evidence, so `red` is English.",
+   "level": "A1",
+   "line": "The red net is old",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "Clause rule: the homograph `once` after the `;` takes the evidence of its own clause (`amigo`), though the English `friend` is as near across the clause end.",
+   "level": "A1",
+   "line": "Good morning friend; once amigo",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "once",
+     "translation": "eleven",
+     "partOfSpeech": "number",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "amigo",
+     "translation": "friend",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "amigo",
+     "once"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "Equal distance: the evidence before decides (`morning` English two units before, `pan` Spanish two after).",
+   "level": "A1",
+   "line": "morning ago once wait pan",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "pan",
+     "translation": "bread",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "pan"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A non-ASCII word that is no key is foreign evidence: `está` makes `sin` Spanish.",
+   "level": "A1",
+   "line": "Sin azúcar está bien",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "sin",
+     "translation": "without",
+     "partOfSpeech": "preposition",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "sin"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "Gloss words shorter than three letters are no English evidence: `red` with `on` and `it` only stays without evidence (English).",
+   "level": "A1",
+   "line": "Put it on red",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A homograph judged English (its clause holds the English `friend`) takes no index and is not marked seen; `amigo` after the `;` takes index 0 and, at A2, its card.",
+   "level": "A2",
+   "line": "Once upon a time, my friend; amigo",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "amigo",
+     "translation": "friend",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "amigo"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A1 with a mastered accented word given decomposed: keyed through NFC it matches `mañana`.",
+   "level": "A1",
+   "line": "Mañana pan",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [
+    "mañana"
+   ],
+   "hints": [
+    {
+     "word": "pan",
+     "translation": "bread",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "mañana",
+     "pan"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "C2 (frequency 0): only the advanced `desafortunadamente`.",
+   "level": "C2",
+   "line": "Desafortunadamente, la biblioteca está cerrada.",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "desafortunadamente",
+     "translation": "unfortunately",
+     "partOfSpeech": "adverb",
+     "difficulty": "advanced"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "biblioteca",
+     "desafortunadamente"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "french-real",
+   "why": "An English line with four homographs and English glosses: no target evidence, nothing hinted.",
+   "level": "A1",
+   "line": "Last chance, friend. Meet me at the place, gold or not, in an hour.",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "french-real",
+   "why": "A mixed line: the English `chance` is passed over; the French clause after the dash hints its words.",
+   "level": "A1",
+   "line": "Last chance, friend — dernière chance, mon ami !",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "chance",
+     "translation": "luck",
+     "partOfSpeech": "noun",
+     "difficulty": "intermediate"
+    },
+    {
+     "word": "mon",
+     "translation": "my",
+     "partOfSpeech": "determiner",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "ami",
+     "translation": "friend",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ami",
+     "chance",
+     "mon"
+    ],
+    "newWordIndex": 3
+   }
+  },
+  {
+   "world": "french-real",
+   "why": "Evidence words: `bonne` speaks for `chance`.",
+   "level": "A1",
+   "line": "Bonne chance !",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "chance",
+     "translation": "luck",
+     "partOfSpeech": "noun",
+     "difficulty": "intermediate"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "chance"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "french-real",
+   "why": "A three-word phrase is one match (`il y a`), then `un an` makes `an` French by the evidence word `un`.",
+   "level": "A1",
+   "line": "Il y a un an.",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "il y a",
+     "translation": "there is",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "an",
+     "translation": "year",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "an",
+     "il y a"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "french-real",
+   "why": "With no evidence in its own clause, a homograph takes the nearest in the whole line: the first sentence holds none for `pain` (`no` and `gain` are no evidence), and the nearest in the line is the evidence word `La`, so `pain` is hinted; `place` is French by its own clause.",
+   "level": "A1",
+   "line": "No pain, no gain. La place du marché est grande.",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "pain",
+     "translation": "bread",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "place",
+     "translation": "square",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "marché",
+     "translation": "market",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "marché",
+     "pain",
+     "place"
+    ],
+    "newWordIndex": 3
+   }
+  },
+  {
+   "world": "french-real",
+   "why": "A gloss with an article read past: `pain — the bread —` glosses `pain`.",
+   "level": "A1",
+   "line": "Le pain — the bread — est bon",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "pain",
+     "translation": "bread",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "pain"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "french-real",
+   "why": "A2 hints every third new word: `mon` (index 0) gets its card, `ami` (1) and `grand` (2) do not; the bracketed gloss after a target word changes nothing.",
+   "level": "A2",
+   "line": "Mon ami est grand (tall)",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "mon",
+     "translation": "my",
+     "partOfSpeech": "determiner",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ami",
+     "grand",
+     "mon"
+    ],
+    "newWordIndex": 3
+   }
+  },
+  {
+   "world": "cyrillic-real",
+   "why": "Cyrillic words keep their letters; the phrase matches first.",
+   "level": "A1",
+   "line": "Добрый день! Хлеб на рынок?",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "добрый день",
+     "translation": "good afternoon",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "хлеб",
+     "translation": "bread",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "рынок",
+     "translation": "market",
+     "partOfSpeech": "noun",
+     "difficulty": "intermediate"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "добрый день",
+     "рынок",
+     "хлеб"
+    ],
+    "newWordIndex": 3
+   }
+  },
+  {
+   "world": "vietnamese-real",
+   "why": "A decomposed line finds the composed keys (NFC); the phrase `cà phê` is one match.",
+   "level": "A1",
+   "line": "Phở và cà phê ở chợ.",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "phở",
+     "translation": "noodle soup",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "cà phê",
+     "translation": "coffee",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "chợ",
+     "translation": "market",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "chợ",
+     "cà phê",
+     "phở"
+    ],
+    "newWordIndex": 3
+   }
+  },
+  {
+   "world": "no-language-system",
+   "why": "A world with nothing to learn: no hints, the state unchanged.",
+   "level": "A1",
+   "line": "Pan, agua, ilo.",
+   "state": {
+    "seen": [
+     "x"
+    ],
+    "newWordIndex": 2
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [
+     "x"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "earlier-shape",
+   "why": "An entry with no alsoEnglish is no homograph: `once` is hinted even in an English line (the earlier rule).",
+   "level": "A1",
+   "line": "I was there once, amigo",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "once",
+     "translation": "eleven",
+     "partOfSpeech": "number",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "amigo",
+     "translation": "friend",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "amigo",
+     "once"
+    ],
+    "newWordIndex": 2
+   }
+  }
+ ],
+ "lineLanguageRule": {
+  "englishEvidenceMinLength": 3,
+  "glossArticles": [
+   "the",
+   "a",
+   "an"
+  ],
+  "clauseEndPattern": "[.!?;:…][)\\]»”\"']*$"
+ },
+ "messageKindCases": [
+  {
+   "why": "A player line is user, whatever it says.",
+   "message": {
+    "role": "user",
+    "content": "¿Dónde está el pan?"
+   },
+   "kind": "user",
+   "color": "#87CEEB",
+   "hints": false
+  },
+  {
+   "why": "Role first: a player line that starts like a check-mark message is still user.",
+   "message": {
+    "role": "user",
+    "content": "✓ Good"
+   },
+   "kind": "user",
+   "color": "#87CEEB",
+   "hints": false
+  },
+  {
+   "why": "A system line is system.",
+   "message": {
+    "role": "system",
+    "content": "Repeat after me: \"pan\""
+   },
+   "kind": "system",
+   "color": "#888888",
+   "hints": false
+  },
+  {
+   "why": "A system line starting with ( is system, and gets no hints either way.",
+   "message": {
+    "role": "system",
+    "content": "(listening)"
+   },
+   "kind": "system",
+   "color": "#888888",
+   "hints": false
+  },
+  {
+   "why": "The check-mark prefix (mark and space) is correct.",
+   "message": {
+    "role": "assistant",
+    "content": "✓ Well said!"
+   },
+   "kind": "correct",
+   "color": "#4CAF50",
+   "hints": false
+  },
+  {
+   "why": "The tip prefix is tip.",
+   "message": {
+    "role": "assistant",
+    "content": "✎ Tip: \"el agua\" is feminine"
+   },
+   "kind": "tip",
+   "color": "#FFC107",
+   "hints": false
+  },
+  {
+   "why": "The Grammar Focus prefix is focus.",
+   "message": {
+    "role": "assistant",
+    "content": "📖 Grammar Focus: gender\nCorrect form: \"la calle\""
+   },
+   "kind": "focus",
+   "color": "#FF9800",
+   "hints": false
+  },
+  {
+   "why": "The check mark without its space is an NPC line.",
+   "message": {
+    "role": "assistant",
+    "content": "✓Bien"
+   },
+   "kind": "npc",
+   "color": "rgba(255, 255, 255, 0.9)",
+   "hints": true
+  },
+  {
+   "why": "Half of the Focus prefix is an NPC line.",
+   "message": {
+    "role": "assistant",
+    "content": "📖 Gram"
+   },
+   "kind": "npc",
+   "color": "rgba(255, 255, 255, 0.9)",
+   "hints": true
+  },
+  {
+   "why": "Content is read untrimmed: a leading space before the tip prefix makes an NPC line.",
+   "message": {
+    "role": "assistant",
+    "content": " ✎ Tip: x"
+   },
+   "kind": "npc",
+   "color": "rgba(255, 255, 255, 0.9)",
+   "hints": true
+  },
+  {
+   "why": "An NPC line is npc and gets hints.",
+   "message": {
+    "role": "assistant",
+    "content": "Tesh mira, ilo!"
+   },
+   "kind": "npc",
+   "color": "rgba(255, 255, 255, 0.9)",
+   "hints": true
+  },
+  {
+   "why": "An NPC line starting with ( is npc but gets no hints.",
+   "message": {
+    "role": "assistant",
+    "content": "(Try one of the words I used.)"
+   },
+   "kind": "npc",
+   "color": "rgba(255, 255, 255, 0.9)",
+   "hints": false
+  },
+  {
+   "why": "A ( after a leading space keeps the hints.",
+   "message": {
+    "role": "assistant",
+    "content": " (tesh mira)"
+   },
+   "kind": "npc",
+   "color": "rgba(255, 255, 255, 0.9)",
+   "hints": true
+  },
+  {
+   "why": "An empty NPC line is npc with hints.",
+   "message": {
+    "role": "assistant",
+    "content": ""
+   },
+   "kind": "npc",
+   "color": "rgba(255, 255, 255, 0.9)",
+   "hints": true
+  },
+  {
+   "why": "Null content is the empty string.",
+   "message": {
+    "role": "assistant",
+    "content": null
+   },
+   "kind": "npc",
+   "color": "rgba(255, 255, 255, 0.9)",
+   "hints": true
+  },
+  {
+   "why": "Absent content is the empty string.",
+   "message": {
+    "role": "assistant"
+   },
+   "kind": "npc",
+   "color": "rgba(255, 255, 255, 0.9)",
+   "hints": true
+  },
+  {
+   "why": "A role outside user, assistant and system has no kind.",
+   "message": {
+    "role": "narrator",
+    "content": "Tesh mira"
+   },
+   "kind": null,
+   "color": null,
+   "hints": false
+  },
+  {
+   "why": "Roles are exact: `Assistant` has no kind.",
+   "message": {
+    "role": "Assistant",
+    "content": "Tesh mira"
+   },
+   "kind": null,
+   "color": null,
+   "hints": false
+  }
+ ],
+ "messageHintCases": [
+  {
+   "why": "An NPC line gets the line rule over its content.",
+   "world": "constructed-tongue",
+   "level": "A1",
+   "message": {
+    "role": "assistant",
+    "content": "Tesh mira, ilo!"
+   },
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "tesh mira",
+     "translation": "good day",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "ilo",
+     "translation": "friend"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ilo",
+     "tesh mira"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "why": "The same words from the player: no hints, the state unchanged.",
+   "world": "constructed-tongue",
+   "level": "A1",
+   "message": {
+    "role": "user",
+    "content": "Tesh mira, ilo!"
+   },
+   "state": {
+    "seen": [
+     "lune"
+    ],
+    "newWordIndex": 1
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [
+     "lune"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "why": "A system line: no hints, state unchanged.",
+   "world": "constructed-tongue",
+   "level": "A1",
+   "message": {
+    "role": "system",
+    "content": "Tesh mira, ilo!"
+   },
+   "state": {
+    "seen": [
+     "lune"
+    ],
+    "newWordIndex": 1
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [
+     "lune"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "why": "An NPC aside starting with (: it meets no word.",
+   "world": "constructed-tongue",
+   "level": "A1",
+   "message": {
+    "role": "assistant",
+    "content": "(Tesh mira, ilo!)"
+   },
+   "state": {
+    "seen": [
+     "lune"
+    ],
+    "newWordIndex": 1
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [
+     "lune"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "why": "A tip naming lexicon words: none.",
+   "world": "constructed-tongue",
+   "level": "A1",
+   "message": {
+    "role": "assistant",
+    "content": "✎ Tip: \"lune\" → \"kesh\""
+   },
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "why": "A check-mark message: none.",
+   "world": "constructed-tongue",
+   "level": "A1",
+   "message": {
+    "role": "assistant",
+    "content": "✓ Lune"
+   },
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "why": "A leading space before (: the line is read.",
+   "world": "constructed-tongue",
+   "level": "A2",
+   "message": {
+    "role": "assistant",
+    "content": " (Lune kesh ilo varo)"
+   },
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "lune",
+     "translation": "bread",
+     "context": "the daily loaf",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "Varo",
+     "translation": "market",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ilo",
+     "kesh",
+     "lune",
+     "varo"
+    ],
+    "newWordIndex": 4
+   }
+  },
+  {
+   "why": "A role with no kind: no hints, state unchanged.",
+   "world": "constructed-tongue",
+   "level": "A1",
+   "message": {
+    "role": "narrator",
+    "content": "Lune"
+   },
+   "state": {
+    "seen": [
+     "ilo"
+    ],
+    "newWordIndex": 4
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [
+     "ilo"
+    ],
+    "newWordIndex": 4
+   }
+  },
+  {
+   "why": "A mixed NPC line in French at A2 with a carried state: the English homograph takes no index.",
+   "world": "french-real",
+   "level": "A2",
+   "message": {
+    "role": "assistant",
+    "content": "Last chance, friend — dernière chance, mon ami !"
+   },
+   "state": {
+    "seen": [
+     "ami"
+    ],
+    "newWordIndex": 2
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "mon",
+     "translation": "my",
+     "partOfSpeech": "determiner",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ami",
+     "chance",
+     "mon"
+    ],
+    "newWordIndex": 4
+   }
+  },
+  {
+   "why": "Null content on an NPC line: no words, the state unchanged by the line rule.",
+   "world": "spanish-real",
+   "level": "A1",
+   "message": {
+    "role": "assistant",
+    "content": null
+   },
+   "state": {
+    "seen": [
+     "pan"
+    ],
+    "newWordIndex": 1
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [
+     "pan"
+    ],
+    "newWordIndex": 1
+   }
+  }
+ ]
+}
