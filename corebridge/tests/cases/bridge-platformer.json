@@ -12499,6 +12499,96 @@
          "order": 1,
          "start": "gate",
          "goal": "roof",
+         "goalKind": "shop",
+         "subject": null,
+         "checkpoints": [
+          "yard"
+         ],
+         "par": 10
+        }
+       ],
+       "runnerModes": [
+        "walk",
+        "jump",
+        "climb"
+       ],
+       "tuning": {
+        "defaultCost": 2,
+        "modeCost": {
+         "walk": 1,
+         "climb": 1,
+         "swim": 2.5,
+         "jump": 2,
+         "ride": 0.2,
+         "boat": 0.2
+        },
+        "modeAction": {
+         "walk": "walk",
+         "climb": "climb",
+         "swim": "swim",
+         "jump": "jump",
+         "ride": "ride",
+         "boat": "row"
+        },
+        "defaultAction": "traverse"
+       },
+       "source": "authored",
+       "notes": []
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: platformer.levelFacts: `course.levels[0].goalKind` must be one of home, work, place (got \"shop\")"
+    },
+    {
+     "call": "platformer.levelFacts",
+     "args": {
+      "course": {
+       "places": [],
+       "links": [
+        {
+         "from": "gate",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 4
+        },
+        {
+         "from": "yard",
+         "to": "gate",
+         "mode": "walk",
+         "cost": 4
+        },
+        {
+         "id": "leap",
+         "from": "yard",
+         "to": "roof",
+         "mode": "jump",
+         "cost": 3,
+         "geometric": true
+        },
+        {
+         "from": "roof",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 2
+        },
+        {
+         "from": "yard",
+         "to": "shed",
+         "mode": "walk",
+         "cost": 5
+        },
+        {
+         "from": "shed",
+         "to": "roof",
+         "mode": "climb",
+         "cost": 9
+        }
+       ],
+       "levels": [
+        {
+         "id": "up",
+         "order": 1,
+         "start": "gate",
+         "goal": "roof",
          "goalKind": "place",
          "subject": null,
          "checkpoints": [
