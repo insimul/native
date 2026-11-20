@@ -500,6 +500,6 @@
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
     "tools/emit-bridge-cases.mjs": "e6782ade2ed80eb5628ffac9b2dd1badba7eb8d7d57e3176c697df50f1d8089a",
-    "core-pin.json": "2b188c5123cda680400dae284ef1a614afa77e41f69b75d2abd75d7dd8e54093"
+    "core-pin.json": "f4077d4bd2244ea1c195612dcd7cd33f9ce2ba630edac808ad7d146b9a257f11"
   }
 }
