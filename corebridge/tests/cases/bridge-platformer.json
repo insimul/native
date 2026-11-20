@@ -1,6 +1,6 @@
 {
  "area": "platformer",
- "description": "Hand cases for the platformer.* rows (PL.native-genre-rows slice 2): what core's corpora conformance/platformer/ leave unpinned — the contract, junction atoms and labels, courseGraph, generateCourse and courseFromIR alone, the row's sections over a world's own, routes with modes and tuning, the stars at their edges, the save block's defaults and refusals, ids naming Object.prototype members, the [invalid-input] boundary of every argument, and directors over their own KB with and without the probe and locomotion hosts. Every expectation is computed by core's own functions at the pin (gen-bridge-platformer-cases.mts, kept with the builder's record).",
+ "description": "Hand cases for the platformer.* rows (PL.native-genre-rows slice 2): what core's corpora conformance/platformer/ leave unpinned — the contract, junction atoms and labels, courseGraph, generateCourse and courseFromIR alone, the row's sections over a world's own, routes with modes and tuning, the stars at their edges, the save block's defaults and refusals, ids naming Object.prototype members, the [invalid-input] boundary of every argument, directors over their own KB with and without the probe and locomotion hosts, and a director's kb meeting a link's requirement and forbidding a walk. Every expectation is computed by core's own functions at the pin (gen-bridge-platformer-cases.mts, kept with the builder's record).",
  "cases": [
   {
    "name": "platformer.contract: the pack area, its predicates, the defaults and tuning, the junction words and the save block",
@@ -15039,6 +15039,743 @@
       }
      },
      "expect": {}
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "a director's kb meets a link's requirement: gate>yard requires bridge_repaired, the kb states it, and the step is made (checkpoint 1)",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's PlatformerDirector over a KB (GamePrologEngine's platformer and traversal packs on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "platformer.director.create",
+     "args": {
+      "course": {
+       "places": [],
+       "links": [
+        {
+         "from": "gate",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 4,
+         "requires": [
+          "bridge_repaired"
+         ]
+        },
+        {
+         "from": "yard",
+         "to": "gate",
+         "mode": "walk",
+         "cost": 4
+        },
+        {
+         "id": "leap",
+         "from": "yard",
+         "to": "roof",
+         "mode": "jump",
+         "cost": 3,
+         "geometric": true
+        },
+        {
+         "from": "roof",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 2
+        },
+        {
+         "from": "yard",
+         "to": "shed",
+         "mode": "walk",
+         "cost": 5
+        },
+        {
+         "from": "shed",
+         "to": "roof",
+         "mode": "climb",
+         "cost": 9
+        }
+       ],
+       "levels": [
+        {
+         "id": "up",
+         "order": 1,
+         "start": "gate",
+         "goal": "roof",
+         "goalKind": "place",
+         "subject": null,
+         "checkpoints": [
+          "yard"
+         ],
+         "par": 10
+        },
+        {
+         "id": "down",
+         "order": 2,
+         "start": "roof",
+         "goal": "gate",
+         "goalKind": "home",
+         "subject": "ada_stone",
+         "checkpoints": [],
+         "par": 3
+        }
+       ],
+       "runnerModes": [
+        "walk",
+        "jump",
+        "climb"
+       ],
+       "tuning": {
+        "defaultCost": 2,
+        "modeCost": {
+         "walk": 1,
+         "climb": 1,
+         "swim": 2.5,
+         "jump": 2,
+         "ride": 0.2,
+         "boat": 0.2
+        },
+        "modeAction": {
+         "walk": "walk",
+         "climb": "climb",
+         "swim": "swim",
+         "jump": "jump",
+         "ride": "ride",
+         "boat": "row"
+        },
+        "defaultAction": "traverse"
+       },
+       "source": "authored",
+       "notes": []
+      },
+      "kb": [
+       "bridge_repaired."
+      ]
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      },
+      "published": 25
+     },
+     "bind": "s"
+    },
+    {
+     "call": "platformer.director.enter",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "runner": "player",
+      "level": "up"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "platformer_running(player, up).",
+       "platformer_run_cost(player, up, 0)."
+      ]
+     }
+    },
+    {
+     "call": "platformer.director.step",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "runner": "player",
+      "to": "yard"
+     },
+     "expect": {
+      "outcome": {
+       "ok": true,
+       "reason": null,
+       "applied": [
+        "platformer_run_cost(player, up, 0).",
+        "platformer_run_cost(player, up, 4).",
+        "platformer_checkpoint_reached(player, up, 1)."
+       ],
+       "movement": {
+        "actor": "player",
+        "from": "gate",
+        "to": "yard",
+        "affordance": {
+         "id": "gate>yard:walk",
+         "from": "gate",
+         "to": "yard",
+         "mode": "walk",
+         "action": "walk",
+         "cost": 4,
+         "available": true,
+         "requires": [
+          "bridge_repaired"
+         ],
+         "conditional": true
+        },
+        "cost": 4,
+        "permitted": true,
+        "check": {
+         "agent": "player",
+         "action": "walk",
+         "target": "yard",
+         "permitted": true,
+         "breached": []
+        },
+        "unmet": [],
+        "performed": true,
+        "arrival": {
+         "arrived": true
+        },
+        "location": "yard",
+        "facts": {
+         "retract": [
+          "at_location(player, gate)."
+         ],
+         "assert": [
+          "at_location(player, yard)."
+         ]
+        },
+        "applied": true
+       },
+       "location": "yard",
+       "checkpoint": 1,
+       "runCost": 4
+      },
+      "probed": [],
+      "orders": []
+     }
+    },
+    {
+     "call": "platformer.director.locationOf",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "runner": "player"
+     },
+     "expect": {
+      "location": "yard"
+     }
+    },
+    {
+     "call": "platformer.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "runners": [
+        {
+         "runner": "player",
+         "level": "up",
+         "location": "yard",
+         "runCost": 4,
+         "checkpoints": [
+          1
+         ],
+         "cleared": []
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "a director with no kb: the same requirement is unmet, so the same step is refused as a value (movement, requires, unmet [bridge_repaired]) and the runner stays on the gate",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's PlatformerDirector over a KB (GamePrologEngine's platformer and traversal packs on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "platformer.director.create",
+     "args": {
+      "course": {
+       "places": [],
+       "links": [
+        {
+         "from": "gate",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 4,
+         "requires": [
+          "bridge_repaired"
+         ]
+        },
+        {
+         "from": "yard",
+         "to": "gate",
+         "mode": "walk",
+         "cost": 4
+        },
+        {
+         "id": "leap",
+         "from": "yard",
+         "to": "roof",
+         "mode": "jump",
+         "cost": 3,
+         "geometric": true
+        },
+        {
+         "from": "roof",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 2
+        },
+        {
+         "from": "yard",
+         "to": "shed",
+         "mode": "walk",
+         "cost": 5
+        },
+        {
+         "from": "shed",
+         "to": "roof",
+         "mode": "climb",
+         "cost": 9
+        }
+       ],
+       "levels": [
+        {
+         "id": "up",
+         "order": 1,
+         "start": "gate",
+         "goal": "roof",
+         "goalKind": "place",
+         "subject": null,
+         "checkpoints": [
+          "yard"
+         ],
+         "par": 10
+        },
+        {
+         "id": "down",
+         "order": 2,
+         "start": "roof",
+         "goal": "gate",
+         "goalKind": "home",
+         "subject": "ada_stone",
+         "checkpoints": [],
+         "par": 3
+        }
+       ],
+       "runnerModes": [
+        "walk",
+        "jump",
+        "climb"
+       ],
+       "tuning": {
+        "defaultCost": 2,
+        "modeCost": {
+         "walk": 1,
+         "climb": 1,
+         "swim": 2.5,
+         "jump": 2,
+         "ride": 0.2,
+         "boat": 0.2
+        },
+        "modeAction": {
+         "walk": "walk",
+         "climb": "climb",
+         "swim": "swim",
+         "jump": "jump",
+         "ride": "ride",
+         "boat": "row"
+        },
+        "defaultAction": "traverse"
+       },
+       "source": "authored",
+       "notes": []
+      }
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      },
+      "published": 25
+     },
+     "bind": "s"
+    },
+    {
+     "call": "platformer.director.enter",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "runner": "player",
+      "level": "up"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "platformer_running(player, up).",
+       "platformer_run_cost(player, up, 0)."
+      ]
+     }
+    },
+    {
+     "call": "platformer.director.step",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "runner": "player",
+      "to": "yard"
+     },
+     "expect": {
+      "outcome": {
+       "ok": false,
+       "refusal": "movement",
+       "reason": "traversal refused the step (requires)",
+       "applied": [],
+       "movement": {
+        "actor": "player",
+        "from": "gate",
+        "to": "yard",
+        "affordance": {
+         "id": "gate>yard:walk",
+         "from": "gate",
+         "to": "yard",
+         "mode": "walk",
+         "action": "walk",
+         "cost": 4,
+         "available": true,
+         "requires": [
+          "bridge_repaired"
+         ],
+         "conditional": true
+        },
+        "cost": 4,
+        "permitted": false,
+        "refusal": "requires",
+        "unmet": [
+         "bridge_repaired"
+        ],
+        "performed": false,
+        "location": "gate",
+        "facts": {
+         "retract": [],
+         "assert": []
+        },
+        "applied": false
+       },
+       "location": "gate",
+       "runCost": 0
+      },
+      "probed": [],
+      "orders": []
+     }
+    },
+    {
+     "call": "platformer.director.locationOf",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "runner": "player"
+     },
+     "expect": {
+      "location": "gate"
+     }
+    },
+    {
+     "call": "platformer.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "runners": [
+        {
+         "runner": "player",
+         "level": "up",
+         "location": "gate",
+         "runCost": 0,
+         "checkpoints": [],
+         "cleared": []
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "disposed": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "a director's kb forbids the walk: the requirement is met but the kb's forbidden_by/4 norm (with its norm_kind/2) refuses the step (movement, forbidden, breached gate_shut)",
+   "legs": [
+    "c"
+   ],
+   "why": "it drives core's PlatformerDirector over a KB (GamePrologEngine's platformer and traversal packs on the native Prolog seam), which the JS leg does not have",
+   "steps": [
+    {
+     "call": "platformer.director.create",
+     "args": {
+      "course": {
+       "places": [],
+       "links": [
+        {
+         "from": "gate",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 4,
+         "requires": [
+          "bridge_repaired"
+         ]
+        },
+        {
+         "from": "yard",
+         "to": "gate",
+         "mode": "walk",
+         "cost": 4
+        },
+        {
+         "id": "leap",
+         "from": "yard",
+         "to": "roof",
+         "mode": "jump",
+         "cost": 3,
+         "geometric": true
+        },
+        {
+         "from": "roof",
+         "to": "yard",
+         "mode": "walk",
+         "cost": 2
+        },
+        {
+         "from": "yard",
+         "to": "shed",
+         "mode": "walk",
+         "cost": 5
+        },
+        {
+         "from": "shed",
+         "to": "roof",
+         "mode": "climb",
+         "cost": 9
+        }
+       ],
+       "levels": [
+        {
+         "id": "up",
+         "order": 1,
+         "start": "gate",
+         "goal": "roof",
+         "goalKind": "place",
+         "subject": null,
+         "checkpoints": [
+          "yard"
+         ],
+         "par": 10
+        },
+        {
+         "id": "down",
+         "order": 2,
+         "start": "roof",
+         "goal": "gate",
+         "goalKind": "home",
+         "subject": "ada_stone",
+         "checkpoints": [],
+         "par": 3
+        }
+       ],
+       "runnerModes": [
+        "walk",
+        "jump",
+        "climb"
+       ],
+       "tuning": {
+        "defaultCost": 2,
+        "modeCost": {
+         "walk": 1,
+         "climb": 1,
+         "swim": 2.5,
+         "jump": 2,
+         "ride": 0.2,
+         "boat": 0.2
+        },
+        "modeAction": {
+         "walk": "walk",
+         "climb": "climb",
+         "swim": "swim",
+         "jump": "jump",
+         "ride": "ride",
+         "boat": "row"
+        },
+        "defaultAction": "traverse"
+       },
+       "source": "authored",
+       "notes": []
+      },
+      "kb": [
+       "bridge_repaired.",
+       "forbidden_by(player, walk, yard, gate_shut).",
+       "norm_kind(gate_shut, law)."
+      ]
+     },
+     "expect": {
+      "session": {
+       "$type": "number"
+      },
+      "published": 25
+     },
+     "bind": "s"
+    },
+    {
+     "call": "platformer.director.enter",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "runner": "player",
+      "level": "up"
+     },
+     "expect": {
+      "ok": true,
+      "reason": null,
+      "applied": [
+       "platformer_running(player, up).",
+       "platformer_run_cost(player, up, 0)."
+      ]
+     }
+    },
+    {
+     "call": "platformer.director.step",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "runner": "player",
+      "to": "yard"
+     },
+     "expect": {
+      "outcome": {
+       "ok": false,
+       "refusal": "movement",
+       "reason": "traversal refused the step (forbidden)",
+       "applied": [],
+       "movement": {
+        "actor": "player",
+        "from": "gate",
+        "to": "yard",
+        "affordance": {
+         "id": "gate>yard:walk",
+         "from": "gate",
+         "to": "yard",
+         "mode": "walk",
+         "action": "walk",
+         "cost": 4,
+         "available": true,
+         "requires": [
+          "bridge_repaired"
+         ],
+         "conditional": true
+        },
+        "cost": 4,
+        "permitted": false,
+        "refusal": "forbidden",
+        "check": {
+         "agent": "player",
+         "action": "walk",
+         "target": "yard",
+         "permitted": false,
+         "breached": [
+          {
+           "rule": "gate_shut",
+           "kind": "law"
+          }
+         ]
+        },
+        "unmet": [],
+        "performed": false,
+        "location": "gate",
+        "facts": {
+         "retract": [],
+         "assert": []
+        },
+        "applied": false
+       },
+       "location": "gate",
+       "runCost": 0
+      },
+      "probed": [],
+      "orders": []
+     }
+    },
+    {
+     "call": "platformer.director.locationOf",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      },
+      "runner": "player"
+     },
+     "expect": {
+      "location": "gate"
+     }
+    },
+    {
+     "call": "platformer.director.serialize",
+     "args": {
+      "session": {
+       "$ref": "s.session"
+      }
+     },
+     "expect": {
+      "state": {
+       "runners": [
+        {
+         "runner": "player",
+         "level": "up",
+         "location": "gate",
+         "runCost": 0,
+         "checkpoints": [],
+         "cleared": []
+        }
+       ]
+      }
+     }
     },
     {
      "call": "session.dispose",

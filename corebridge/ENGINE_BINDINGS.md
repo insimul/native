@@ -828,7 +828,13 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   KB through an `FScopedKb` (`FGenreSystemsSession`'s `PlatformerKb`), so its verdicts also
   see the game's rules. Through the rows, whatever of those rules a verdict must see (the facts
   an authored link's `requires` goal names, a norm that forbids a mode's action through
-  `forbidden_by/4`) is passed as `kb`, and a binding whose game rules must see the run mirrors each outcome's `applied` facts and a
+  `forbidden_by/4`) is passed as `kb`. The director's KB loads no enforcement pack, so a
+  norm passed this way carries its category too: `kb: ["forbidden_by(player, walk, yard,
+  gate_shut).", "norm_kind(gate_shut, law)."]` refuses that walk (`movement`, `forbidden`,
+  `breached: [{ rule: gate_shut, kind: law }]`), while a `forbidden_by/4` without its
+  `norm_kind/2` makes core's `checkAction` throw (uncoded). `kb: ["bridge_repaired."]` meets a
+  link's `requires: ["bridge_repaired"]`; with no `kb` the same step is refused `requires`
+  (the hand cases in `tests/cases/bridge-platformer.json` pin all three). A binding whose game rules must see the run mirrors each outcome's `applied` facts and a
   step's `outcome.movement.facts` (the traversal delta) into the game's KB, as the scoped KB
   did. The host's probe (`FProbe`) is a callback core calls mid-decision, which
   cannot cross the ABI: the binding states its answers as data, `probe { <link id>: passable }`
