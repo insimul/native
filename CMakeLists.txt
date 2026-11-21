@@ -707,6 +707,8 @@ add_test(NAME corebridge_cases COMMAND insimulcore_cases
 # the same file's rebuild-only oracle; `cost` pins that a fact write in a held KB
 # creates no KB and consults only its own text, and `kbSlots` that the bridge's KB
 # table reuses its holes. Uses corebridge/src/insimulcore_testing.h (test-only).
+# A case file during which the library wrote anything to stdout fails
+# (tests/stdout_guard.h; frame-bindings.json is PL.native-kb-instantiation-error's).
 file(GLOB INSIMUL_PROLOG_ENGINE_CASES CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tests/prolog-engine/*.json")
 if(NOT INSIMUL_PROLOG_ENGINE_CASES)

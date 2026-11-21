@@ -14,11 +14,17 @@
  * KB table, which corebridge/src/insimulcore_testing.h exposes to this repository's
  * tests only.
  *
+ * A KB must not print (PL.native-kb-instantiation-error): each case file runs
+ * under tests/stdout_guard.h, and a file during which the library wrote anything
+ * to stdout FAILS with those bytes shown, even when every answer held.
+ *
  * usage: insimulcore_prolog_engine <host-prolog-engine.js> <driver.js> <case.json>...
- * Exit 0 when every case and the fuzz block hold and at least one step ran.
+ * Exit 0 when every case and the fuzz block hold, nothing reached stdout, and at
+ * least one step ran.
  */
 #include "insimulcore.h"
 #include "insimulcore_testing.h"
+#include "stdout_guard.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -141,10 +147,24 @@ int main(int argc, char **argv) {
 		}
 		JSValue arg = JS_NewString(ctx, text);
 		free(text);
+		stdout_guard guard;
+		if (stdout_guard_begin(&guard) != 0) {
+			fprintf(stderr, "prolog_engine_cases: cannot watch stdout for %s\n", argv[f]);
+			return 2;
+		}
 		JSValue p = JS_Call(ctx, run, global, 1, (JSValueConst *)&arg);
 		JS_FreeValue(ctx, arg);
 		JSValue res;
-		if (JS_IsException(p) || settle(ctx, p, &res) != 0) {
+		int threw = JS_IsException(p) || settle(ctx, p, &res) != 0;
+		size_t stray_len = 0;
+		char *stray = stdout_guard_end(&guard, &stray_len);
+		if (!stray || stray_len) {
+			printf("[FAIL] %s: the library wrote %zu byte(s) to stdout while its cases ran (a KB must not print):\n%s\n",
+			       argv[f], stray_len, stray ? stray : "(could not read them back)");
+			failed++;
+		}
+		free(stray);
+		if (threw) {
 			if (JS_IsException(p)) res = JS_GetException(ctx);
 			print_value(ctx, "prolog_engine_cases: the driver threw: ", res);
 			return 1;

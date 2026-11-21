@@ -119,7 +119,10 @@
 // FAILS on a file that is not a genre systems corpus or holds no case, on an op of a file
 // that no case drives, on a row missing from the method table or named here and never
 // called, on a session left open, and when its comparator or its perturbation cannot fail
-// (a self-test on every start).
+// (a self-test on every start). It also FAILS a case during which the library wrote
+// anything to stdout (tests/stdout_guard.h; PL.native-kb-instantiation-error: two
+// strategy/run cases used to print the engine's `   true  error(instantiation_error,list).`
+// while every answer still matched).
 //
 // --negative perturbs EVERY driven case's expectation (its last leaf) and requires
 // every one to be refused.
@@ -132,10 +135,12 @@
 
 #include "insimulcore.h"
 #include "radiant/json_value.h"
+#include "stdout_guard.h"
 
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <fstream>
 #include <functional>
 #include <map>
@@ -1457,13 +1462,37 @@ int main(int argc, char **argv) {
 				continue;
 			}
 			JsonValuePtr actual;
+			// A KB must not print (PL.native-kb-instantiation-error): the case runs with
+			// stdout pointed at a file, and anything the library wrote fails the case.
+			stdout_guard guard;
+			if (stdout_guard_begin(&guard) != 0) {
+				std::printf("  [FAIL] %s — cannot watch stdout while it runs\n", name.c_str());
+				file_failed++;
+				continue;
+			}
+			std::string drive_error;
 			try {
 				Run r{c, steps_driven, *spec, slices.v};
 				// The build plan's inputs name the file's fixtures (core's resolveGenreBuildPlanFixtures).
 				JsonValuePtr resolved = file == "genre-pieces/build-plan" ? resolve_fixtures(*input, doc.find("fixtures")) : nullptr;
 				actual = drive(r, op, resolved ? *resolved : *input);
 			} catch (const std::exception &e) {
-				std::printf("  [FAIL] %s — not driven: %s\n", name.c_str(), e.what());
+				drive_error = e.what();
+				if (drive_error.empty()) drive_error = "(no message)";
+			}
+			size_t stray_len = 0;
+			char *stray = stdout_guard_end(&guard, &stray_len);
+			const std::string stray_text = stray ? stray : "(could not read them back)";
+			const bool printed = !stray || stray_len > 0;
+			std::free(stray);
+			if (printed) {
+				std::printf("  [FAIL] %s — the library wrote %zu byte(s) to stdout while it ran (a KB must not print): %s\n", name.c_str(),
+				            stray_len, stray_text.c_str());
+				file_failed++;
+				continue;
+			}
+			if (!drive_error.empty()) {
+				std::printf("  [FAIL] %s — not driven: %s\n", name.c_str(), drive_error.c_str());
 				file_failed++;
 				continue;
 			}

@@ -20,7 +20,7 @@
   findings became.
 - `src/insimul.c` is the only unit that includes `trealla.h`. It talks to Trealla
   through the **public** C API (`pl_create`, `pl_consult_fp`, `pl_query`/`pl_redo`,
-  `set_quiet`, `get_status`), never internal headers.
+  `set_quiet`, `set_opt`, `get_status`), never internal headers.
 
 ## Two engines, one tree: the engine PORT (tasklist 250)
 - **`src/insimul.c` names no engine.** It talks to `src/insimul_engine.h` — three
@@ -198,6 +198,26 @@
   and tau-prolog accepts it. The conformance harness handles this with a
   documented, printed amendment (rename), never a silent skip — see its
   `AMENDMENTS` table.
+- **The runtime optimiser is OFF in every KB (`set_opt(pl, 0)` after the
+  bootstrap; PL.native-kb-instantiation-error).** With it on, the pinned engine's
+  frame recovery (trimming a clause's frame on exit when no newer choice point is
+  left) LOSES BINDINGS on this tree's KBs, whose clauses are all `assertz`'d by the
+  bootstrap: after a goal that backtracks through an asserted rule holding an
+  if-then-else, variables bound before it read as unbound. A host query lost its
+  own `variable_names` list, `'$ij_binds'` raised `instantiation_error(list)`
+  outside the catch, the engine printed `   true  error(instantiation_error,list).`
+  to stdout, and the answer came back as `[{}]`. It is layout-sensitive (the same
+  program consulted by Trealla's own loader, or a slightly smaller one, does not
+  show it), so the regression data is the programs that did:
+  `corebridge/tests/prolog-engine/frame-bindings.json`. Do not switch the
+  optimiser back on without re-running that file on the engine with it on; a pin
+  bump is the moment to check whether upstream fixed it. Cost, measured on an arm64
+  macOS host: the bench world unchanged within noise (query ~29 ms, 720 solutions, peak
+  RSS +~1 MB); deep recursion holds more frames (a 3M-step tail-recursive count:
+  peak 0.60 → 0.92 GB; a 300k-element list built and measured: 0.25 → 0.46 GB).
+  Both runners that drive KBs from C now FAIL on any library output to stdout
+  (`tests/stdout_guard.h`, in `prolog_engine_cases` and `genre_systems_corpus`) —
+  a test-only fd 1 redirect around the calls under test, never a runtime one.
 
 ## The per-KB floor and the Prolog seam's cost (PL.native-consult-floor-leak)
 - **What a KB leaves behind is stated as data, native's part and the engine's.**
