@@ -869,7 +869,7 @@ add_test(NAME saves_slots_corpus COMMAND insimulcore_saves_slots
 add_test(NAME saves_slots_corpus_negative COMMAND insimulcore_saves_slots
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/saves-negative/slots-wrong.json)
 set_tests_properties(saves_slots_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "expected WRONGLY to resolve no config to four slots [^\n]*slotCount: 4 != 3.*expected WRONGLY to delete an empty slot [^\n]*unexpected key 'refusal'.*expected WRONGLY to hold [^\n]*show/tick/view: [$][.]views[[]1[]][.]opacity: 1 != 0[.]75.*expected WRONGLY to hold [^\n]*saves[.]indicator[.]apply: [$][.]views[[]1[]][.]opacity: 1 != 0[.]75.*WRONGLY undrivable [^\n]*not driven: an indicator step this runner does not know.*1 undriven, 7 failed.*saves_slots_corpus: FAIL")
+  PASS_REGULAR_EXPRESSION "expected WRONGLY to resolve no config to four slots [^\n]*slotCount: 4 != 3.*expected WRONGLY to delete an empty slot [^\n]*unexpected key 'refusal'.*expected WRONGLY to hold [^\n]*show/tick/view: [^\n]*views.1.[.]opacity: 1 != 0[.]75.*expected WRONGLY to hold [^\n]*saves[.]indicator[.]apply: [^\n]*views.1.[.]opacity: 1 != 0[.]75.*WRONGLY undrivable[^\n]*not driven: an indicator step this runner does not know.*1 undriven, 7 failed.*saves_slots_corpus: FAIL")
 
 # props_corpus (PL.native-props-rows, rulings U89(2) and U36): core's P6 logic —
 # containers, documents and the reader, doors, the notice board and the notices a

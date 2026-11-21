@@ -45,8 +45,8 @@
 //              indicator }` is the step's view. (2) The whole case as ONE
 //              `saves.indicator.apply { ops }` (no indicator: the hidden one),
 //              `show` ops carrying the show's fields and `tick` ops `dtSec`: its
-//              `results` are the views, and its `indicator` must equal (1)'s last.
-//              Both must match `expected.views`.
+//              `results` are the views, and its `indicator` must equal (1)'s last
+//              exactly (a FAIL otherwise). Both must match `expected.views`.
 //
 // A case of any op that cannot be driven, or a step that cannot be expressed as
 // a row call, FAILS the run: no case goes undriven. The run also fails when the
@@ -372,6 +372,7 @@ std::string op_of_step(const JsonValue &step, std::string &why) {
 struct Driven {
 	JsonValuePtr actual;  // the case's answer, in its `expected` shape
 	JsonValuePtr batch;   // indicator cases: the same answer through one saves.indicator.apply
+	std::string batch_held;  // indicator cases: how apply's indicator differs from the rows' last ("" when equal)
 };
 
 // An indicator step as a `saves.indicator.apply` op, or "" with `why` set. A
@@ -503,8 +504,7 @@ bool drive(Caller &c, const std::string &op, const JsonValue &input, Driven &out
 		if (!results || !results->is_array() || !last || !b->find("view")) {
 			return why = std::string(kIndicatorApply) + " answered no results, indicator and view", false;
 		}
-		const std::string held = compare(*ind, *last, 0.0, "$.indicator");
-		if (!held.empty()) return why = std::string(kIndicatorApply) + "'s indicator is not the rows' last: " + held, false;
+		out.batch_held = compare(*ind, *last, 0.0, "$.indicator");
 		out.batch = make_object({{"views", std::make_shared<JsonValue>(*results)}});
 		return true;
 	}
@@ -620,9 +620,12 @@ int main(int argc, char **argv) {
 		}
 		const std::string diff = compare(*expected, *d.actual, tol, "$");
 		const std::string batch_diff = d.batch ? compare(*expected, *d.batch, tol, "$") : std::string();
-		if (!diff.empty() || !batch_diff.empty()) {
+		if (!diff.empty() || !batch_diff.empty() || !d.batch_held.empty()) {
 			if (!diff.empty()) std::printf("  [FAIL] %s — %s%s\n", name.c_str(), d.batch ? "show/tick/view: " : "", diff.c_str());
 			if (!batch_diff.empty()) std::printf("  [FAIL] %s — %s: %s\n", name.c_str(), kIndicatorApply, batch_diff.c_str());
+			if (!d.batch_held.empty()) {
+				std::printf("  [FAIL] %s — %s's indicator is not the rows' last: %s\n", name.c_str(), kIndicatorApply, d.batch_held.c_str());
+			}
 			failed++;
 			continue;
 		}
