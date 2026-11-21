@@ -671,6 +671,21 @@ add_test(NAME core_vendor_pass_by_negative COMMAND
        --check-pass-by-transcription-negative)
 set_tests_properties(core_vendor_pass_by_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "pass-by transcription negative [^ ]* 10 of 10 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_pass_by_negative")
+# PL.native-vehicle-rows: the same for the world-vehicle parking transcription. The guard holding
+# cases/core-props-vehicle-placement.json to the vendored conformance/props/vehicle-placement.json
+# (one case per corpus case by name, one call of its op's row with the case's whole input and
+# answer, on both legs, and the contract case holding props.vehicle.contract to the corpus's
+# constants, refusals, tiers and deviations) is given thirteen perturbations in memory (a dropped
+# case, a case no corpus case names, a call changed, an argument dropped, an answer weakened to a
+# subset, an answer number changed, a refusal code changed, a case put on one leg, a contract
+# constant dropped, the deviations weakened, a tier reworded, a declared library-version answer outside the
+# corpus's tolerance, a declaration whose V8 answer is not the corpus's) and passes only when all thirteen are named.
+add_test(NAME core_vendor_vehicle_placement_negative COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
+       --check-vehicle-placement-transcription-negative)
+set_tests_properties(core_vendor_vehicle_placement_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "vehicle-placement transcription negative [^ ]* 13 of 13 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_vehicle_placement_negative")
 
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus
@@ -1037,7 +1052,7 @@ set_tests_properties(survival_corpus_negative PROPERTIES
 
 # traversal_corpus (PL.native-traversal-rows, rulings U106(1), U107 and U36):
 # core's P9e traversal (P9e.core) as libinsimulcore's `traversal.*` rows, held to
-# core's own seven corpora, COPIED byte for byte into
+# core's own eight corpora, COPIED byte for byte into
 # corebridge/vendor/core/conformance/traversal/ at the pin
 # (vendor-core-bundle.mjs TRAVERSAL_CORPUS_FILES; hashed, and byte-compared under
 # --check --core). Slice 1, the stateless kernels (src/traversal/traversal.ts and
@@ -1052,7 +1067,10 @@ set_tests_properties(survival_corpus_negative PROPERTIES
 # StaminaPool and the personal vehicles), each step composed from the session's ops;
 # mounts.json through the traversal.personal.* rows (src/traversal/personal-vehicles.ts);
 # save.json through traversal.save.* (src/traversal/traversal-save.ts) and a
-# session's load. Unreal's Portable/InsimulTraversal is the interim copy these rows
+# session's load; vehicles-only.json (PL.native-vehicle-rows, core's
+# PL.core-vehicle-rules) in one session created with runsTraversal false (a game
+# that runs the vehicles pack without traversal: no planner, no block written or
+# read, loadVehicleLayers(registry, null) on a load). Unreal's Portable/InsimulTraversal is the interim copy these rows
 # retire (P9e.unreal.retire-traversal-copy). The regex demands each file's driven
 # line with every part driven and 0 undriven, in file order, and holds no ';'
 # outside it; the runner also fails a header step no case drives.
@@ -1062,17 +1080,17 @@ target_link_libraries(insimulcore_traversal_corpus PRIVATE insimulcore)
 set(INSIMUL_TRAVERSAL_CORPORA ${INSIMUL_PROPS_CORPUS}/traversal/affordances.json ${INSIMUL_PROPS_CORPUS}/traversal/vehicles.json
   ${INSIMUL_PROPS_CORPUS}/traversal/fast-travel.json ${INSIMUL_PROPS_CORPUS}/traversal/ground-seating.json
   ${INSIMUL_PROPS_CORPUS}/traversal/session.json ${INSIMUL_PROPS_CORPUS}/traversal/mounts.json
-  ${INSIMUL_PROPS_CORPUS}/traversal/save.json)
+  ${INSIMUL_PROPS_CORPUS}/traversal/save.json ${INSIMUL_PROPS_CORPUS}/traversal/vehicles-only.json)
 add_test(NAME traversal_corpus COMMAND insimulcore_traversal_corpus ${INSIMUL_TRAVERSAL_CORPORA})
 set_tests_properties(traversal_corpus PROPERTIES
-  PASS_REGULAR_EXPRESSION "traversal-affordances: [0-9]+ case[(]s[)], driven resolve [1-9][0-9]*, best [1-9][0-9]*, route [1-9][0-9]*, graphFacts [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal-vehicles: [0-9]+ case[(]s[)], driven resolve [1-9][0-9]*, apply [1-9][0-9]*, actions [1-9][0-9]*, seats [1-9][0-9]*, modeFact [1-9][0-9]*, stateFacts [1-9][0-9]*, stateDelta [1-9][0-9]*, anothers [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal-fast-travel: [0-9]+ case[(]s[)], driven route [1-9][0-9]*, plan [1-9][0-9]*, ceiling [1-9][0-9]*, hours [1-9][0-9]*, arrival [1-9][0-9]*, discovery [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal/ground-seating: [0-9]+ case[(]s[)], driven tuning [1-9][0-9]*, footprint [1-9][0-9]*, ground [1-9][0-9]*, target [1-9][0-9]*, stand [1-9][0-9]*, moved [1-9][0-9]*, settle [1-9][0-9]*. 0 undriven\n.*traversal/session: [0-9]+ case[(]s[)], driven run [1-9][0-9]*. 0 undriven\n.*traversal/mounts: [0-9]+ case[(]s[)], driven tuning [1-9][0-9]*, pace [1-9][0-9]*, modes [1-9][0-9]*, run [1-9][0-9]*. 0 undriven\n.*traversal/save: [0-9]+ case[(]s[)], driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*traversal_corpus: PASS")
+  PASS_REGULAR_EXPRESSION "traversal-affordances: [0-9]+ case[(]s[)], driven resolve [1-9][0-9]*, best [1-9][0-9]*, route [1-9][0-9]*, graphFacts [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal-vehicles: [0-9]+ case[(]s[)], driven resolve [1-9][0-9]*, apply [1-9][0-9]*, actions [1-9][0-9]*, seats [1-9][0-9]*, modeFact [1-9][0-9]*, stateFacts [1-9][0-9]*, stateDelta [1-9][0-9]*, anothers [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal-fast-travel: [0-9]+ case[(]s[)], driven route [1-9][0-9]*, plan [1-9][0-9]*, ceiling [1-9][0-9]*, hours [1-9][0-9]*, arrival [1-9][0-9]*, discovery [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal/ground-seating: [0-9]+ case[(]s[)], driven tuning [1-9][0-9]*, footprint [1-9][0-9]*, ground [1-9][0-9]*, target [1-9][0-9]*, stand [1-9][0-9]*, moved [1-9][0-9]*, settle [1-9][0-9]*. 0 undriven\n.*traversal/session: [0-9]+ case[(]s[)], driven run [1-9][0-9]*. 0 undriven\n.*traversal/mounts: [0-9]+ case[(]s[)], driven tuning [1-9][0-9]*, pace [1-9][0-9]*, modes [1-9][0-9]*, run [1-9][0-9]*. 0 undriven\n.*traversal/save: [0-9]+ case[(]s[)], driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*traversal/vehicles-only: [0-9]+ case[(]s[)], driven run [1-9][0-9]*. 0 undriven\n.*traversal_corpus: PASS")
 # Its negative pass, as Unreal's traversal_corpus_negative: every case's expectation
 # perturbed (its last leaf) must be refused, each file's count and the total stated;
 # the runner prints PASS only when every case of every file was refused (refused ==
 # cases, none accepted, no case undriven).
 add_test(NAME traversal_corpus_negative COMMAND insimulcore_traversal_corpus --negative ${INSIMUL_TRAVERSAL_CORPORA})
 set_tests_properties(traversal_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*traversal_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*traversal_corpus --negative: PASS")
+  PASS_REGULAR_EXPRESSION "negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*traversal_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*traversal_corpus --negative: PASS")
 
 # build_corpus (PL.native-headless-build, rulings U106(1), U107 and U36): core's
 # P10 headless build contract (P10.core: src/build/headless-build.ts) as
@@ -1310,6 +1328,33 @@ set_tests_properties(villagers_pass_by_corpus PROPERTIES
 add_test(NAME villagers_pass_by_corpus_negative COMMAND insimulcore_villagers_pass_by_corpus --negative ${INSIMUL_PASS_BY_CORPUS})
 set_tests_properties(villagers_pass_by_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\n.*villagers_pass_by_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nvillagers_pass_by_corpus --negative: PASS")
+
+# props_vehicle_placement_corpus (PL.native-vehicle-rows, rulings U128, U115, U107, U106(3),
+# U49(3) and U36): core's world-vehicle parking rule (PL.core-vehicle-rules:
+# src/props/vehicle-placement.ts, parkVehicle and vehicleStreetProbes) as libinsimulcore's
+# `props.vehicle.*` rows, held to core's own corpus conformance/props/vehicle-placement.json
+# (26 cases at the 45409ed pin: park 23, probes 3), COPIED byte for byte with the props set
+# (sha256 in VENDORED.json, checked by core_vendor; byte-compared with core by `--check
+# --core`). tests/props_vehicle_placement_corpus.cpp calls one row per case, in the file's
+# order, as core's runner (vehicle-placement-corpus.ts, runVehiclePlacementOp) makes one core
+# call, and compares as checkVehiclePlacementCase does (numbers within the file's tolerance,
+# key sets both ways); it holds props.vehicle.contract to the file's contract (every
+# constant's value with its VEHICLE_PARK_* export name, refusals, tiers, deviations), requires
+# the file's numerics to name double precision, and proves on every start that its
+# comparator, perturbation and contract check can fail (eleven contract probes) and that the
+# rows refuse what core cannot read while a refused parking is core's value. The regex demands
+# every probe, the contract, both ops driven, 0 undriven and PASS.
+add_executable(insimulcore_props_vehicle_placement_corpus tests/props_vehicle_placement_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_props_vehicle_placement_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_props_vehicle_placement_corpus PRIVATE insimulcore)
+set(INSIMUL_VEHICLE_PLACEMENT_CORPUS ${INSIMUL_PROPS_CORPUS}/props/vehicle-placement.json)
+add_test(NAME props_vehicle_placement_corpus COMMAND insimulcore_props_vehicle_placement_corpus ${INSIMUL_VEHICLE_PLACEMENT_CORPUS})
+set_tests_properties(props_vehicle_placement_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\nnumerics: double precision, as the file states[^\n]*\ncontract: [1-9][0-9]* of [1-9][0-9]* constant[(]s[)] props.vehicle.contract states agree with the corpus's, each with its export name, and refusals, tiers and deviations agree\n.*props-vehicle-placement: driven probes [1-9][0-9]*, park [1-9][0-9]*. 0 undriven\nprops_vehicle_placement_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nprops_vehicle_placement_corpus: PASS")
+# Its negative pass: every case's expectation perturbed (its last leaf) must be refused.
+add_test(NAME props_vehicle_placement_corpus_negative COMMAND insimulcore_props_vehicle_placement_corpus --negative ${INSIMUL_VEHICLE_PLACEMENT_CORPUS})
+set_tests_properties(props_vehicle_placement_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\n.*props_vehicle_placement_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nprops_vehicle_placement_corpus --negative: PASS")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest

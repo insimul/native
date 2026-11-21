@@ -1,0 +1,1865 @@
+{
+ "area": "props-vehicle-placement",
+ "description": "core's world-vehicle parking corpus (conformance/props/vehicle-placement.json, PL.core-vehicle-rules) through the props.vehicle.* rows, each op one call of its row, as core's reference runner (props/vehicle-placement-corpus.ts) makes one core call.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/props/vehicle-placement.json": "fa07f7aed13d7cb9e3cdb24d78850114814a94614f75e73f9a4ada1fea0d1384"
+  }
+ },
+ "cases": [
+  {
+   "name": "vehicle-placement: the contract the props.vehicle.contract row states",
+   "steps": [
+    {
+     "call": "props.vehicle.contract",
+     "expect": {
+      "constants": {
+       "ringsM": [
+        7,
+        9,
+        11,
+        13,
+        5
+       ],
+       "headings": 16,
+       "snapM": 1.5,
+       "snapStepM": 0.75,
+       "snapDirections": 8,
+       "minFromPlaceM": 4,
+       "footprintMarginM": 0.6,
+       "bodyRadiusM": 0.4,
+       "bodyLowM": 0.12,
+       "bodyHighM": 1.88,
+       "stands": 8,
+       "standM": 2.5,
+       "slotClearM": 4,
+       "reachMarginM": 0.5,
+       "reachM": 4,
+       "fallbackM": 8
+      },
+      "names": {
+       "$type": "object"
+      },
+      "refusals": [
+       "no-open-spot",
+       "bad-place"
+      ],
+      "tiers": {
+       "1": "every rule: open ground, clear of the slots, and nothing E acts on in reach of the spot or of any of its eight stands",
+       "2": "open ground clear of the slots; nothing E acts on in reach of the spot (its stands need only be open)",
+       "3": "open ground with nothing E acts on in reach of the spot; a villager's slot may be nearer than 4 m"
+      },
+      "deviations": [
+       {
+        "id": "refuse-when-nothing-open",
+        "unreal": "no tier finds a spot: the vehicle stands at the street by the place itself (StreetPointNear 8 m), or the place's point, logged \"NO open spot\" (VT:431–436)",
+        "core": "refuses with `no-open-spot`, carrying that same spot as `at` (and `onStreet`)",
+        "why": "the ruling's shape asks for a decision or a refusal with a code; an engine that still draws the vehicle draws it at `at`, as Unreal does"
+       },
+       {
+        "id": "stated-streets",
+        "unreal": "a street point is the navmesh point a probe projects to (60 x 60 x 80 cm box) that lies on a road band or paving (OnStreet; VD:1663–1688)",
+        "core": "the caller states the street as areas (`streets`) or passes `isStreet`; the spot is the probe point itself",
+        "why": "core has no navmesh; the probe pattern (rings 0.75 m apart, eight ways, odd rings turned half a step) is core's"
+       },
+       {
+        "id": "stated-footprints",
+        "unreal": "a building's footprint is the world-aligned bounds of its colliding components, grown 60 cm on X and Y (VT:372–383)",
+        "core": "the caller states each footprint as a box (`at`, `half`, `axis`) or a circle, grown 0.6 m along its own axes (a circle by its radius)",
+        "why": "meshes and transforms are the engine's; for a box on the world axes the two agree"
+       },
+       {
+        "id": "open-as-cylinder",
+        "unreal": "open ground is no WorldStatic overlap with a capsule of radius 40 cm and half-height 88 cm centred 100 cm up (VT:386–390)",
+        "core": "no stated static within 0.4 m (strictly) of the spot whose height band meets 0.12–1.88 m above the ground; a static with no band always meets it",
+        "why": "the capsule's rounded ends are the engine's shape; the statics are stated, not overlapped"
+       },
+       {
+        "id": "one-ground-height",
+        "unreal": "the overlap is tested at each candidate's own navmesh height",
+        "core": "the band is read at the place's ground (`groundY`) for every spot",
+        "why": "core works on (x, z) with no terrain, as pickup-placement.ts does"
+       },
+       {
+        "id": "panel-open",
+        "unreal": "AnyInteractableNear answers true everywhere while a props panel is open (VP:1132), so a load with a panel open finds no tier's spot",
+        "core": "an open panel is not read: only where things stand",
+        "why": "where a vehicle is parked does not depend on what the player has open"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement probes: probes: within 1.5 m, the point, eight at 0.75 m turned 22.5°, eight at 1.5 m from +x",
+   "steps": [
+    {
+     "call": "props.vehicle.streetProbes",
+     "args": {
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "radiusM": 1.5
+     },
+     "expect": {
+      "points": [
+       {
+        "x": 7,
+        "z": 0
+       },
+       {
+        "x": 7.6929096493834646,
+        "z": 0.2870125742738173
+       },
+       {
+        "x": 7.287012574273818,
+        "z": 0.692909649383465
+       },
+       {
+        "x": 6.712987425726182,
+        "z": 0.692909649383465
+       },
+       {
+        "x": 6.3070903506165354,
+        "z": 0.28701257427381743
+       },
+       {
+        "x": 6.307090350616535,
+        "z": -0.28701257427381693
+       },
+       {
+        "x": 6.712987425726183,
+        "z": -0.6929096493834651
+       },
+       {
+        "x": 7.287012574273818,
+        "z": -0.692909649383465
+       },
+       {
+        "x": 7.692909649383465,
+        "z": -0.28701257427381716
+       },
+       {
+        "x": 8.5,
+        "z": 0
+       },
+       {
+        "x": 8.060660171779821,
+        "z": 1.0606601717798212
+       },
+       {
+        "x": 7,
+        "z": 1.5
+       },
+       {
+        "x": 5.939339828220179,
+        "z": 1.0606601717798214
+       },
+       {
+        "x": 5.5,
+        "z": 1.8369701987210297e-16
+       },
+       {
+        "x": 5.939339828220179,
+        "z": -1.0606601717798212
+       },
+       {
+        "x": 7,
+        "z": -1.5
+       },
+       {
+        "x": 8.060660171779821,
+        "z": -1.0606601717798214
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement probes: probes: within 0 m, the point alone",
+   "steps": [
+    {
+     "call": "props.vehicle.streetProbes",
+     "args": {
+      "at": {
+       "x": 2,
+       "z": 3
+      },
+      "radiusM": 0
+     },
+     "expect": {
+      "points": [
+       {
+        "x": 2,
+        "z": 3
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement probes: probes: within 8 m (the fallback), ten rings",
+   "steps": [
+    {
+     "call": "props.vehicle.streetProbes",
+     "args": {
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "radiusM": 8
+     },
+     "expect": {
+      "points": [
+       {
+        "x": 0,
+        "z": 0
+       },
+       {
+        "x": 0.692909649383465,
+        "z": 0.2870125742738173
+       },
+       {
+        "x": 0.2870125742738174,
+        "z": 0.692909649383465
+       },
+       {
+        "x": -0.2870125742738173,
+        "z": 0.692909649383465
+       },
+       {
+        "x": -0.692909649383465,
+        "z": 0.28701257427381743
+       },
+       {
+        "x": -0.6929096493834652,
+        "z": -0.28701257427381693
+       },
+       {
+        "x": -0.2870125742738171,
+        "z": -0.6929096493834651
+       },
+       {
+        "x": 0.2870125742738175,
+        "z": -0.692909649383465
+       },
+       {
+        "x": 0.6929096493834651,
+        "z": -0.28701257427381716
+       },
+       {
+        "x": 1.5,
+        "z": 0
+       },
+       {
+        "x": 1.0606601717798214,
+        "z": 1.0606601717798212
+       },
+       {
+        "x": 9.184850993605148e-17,
+        "z": 1.5
+       },
+       {
+        "x": -1.0606601717798212,
+        "z": 1.0606601717798214
+       },
+       {
+        "x": -1.5,
+        "z": 1.8369701987210297e-16
+       },
+       {
+        "x": -1.0606601717798214,
+        "z": -1.0606601717798212
+       },
+       {
+        "x": -2.755455298081545e-16,
+        "z": -1.5
+       },
+       {
+        "x": 1.060660171779821,
+        "z": -1.0606601717798214
+       },
+       {
+        "x": 2.078728948150395,
+        "z": 0.861037722821452
+       },
+       {
+        "x": 0.8610377228214521,
+        "z": 2.078728948150395
+       },
+       {
+        "x": -0.8610377228214519,
+        "z": 2.078728948150395
+       },
+       {
+        "x": -2.078728948150395,
+        "z": 0.8610377228214523
+       },
+       {
+        "x": -2.0787289481503954,
+        "z": -0.8610377228214507
+       },
+       {
+        "x": -0.8610377228214514,
+        "z": -2.0787289481503954
+       },
+       {
+        "x": 0.8610377228214525,
+        "z": -2.078728948150395
+       },
+       {
+        "x": 2.0787289481503954,
+        "z": -0.8610377228214515
+       },
+       {
+        "x": 3,
+        "z": 0
+       },
+       {
+        "x": 2.121320343559643,
+        "z": 2.1213203435596424
+       },
+       {
+        "x": 1.8369701987210297e-16,
+        "z": 3
+       },
+       {
+        "x": -2.1213203435596424,
+        "z": 2.121320343559643
+       },
+       {
+        "x": -3,
+        "z": 3.6739403974420594e-16
+       },
+       {
+        "x": -2.121320343559643,
+        "z": -2.1213203435596424
+       },
+       {
+        "x": -5.51091059616309e-16,
+        "z": -3
+       },
+       {
+        "x": 2.121320343559642,
+        "z": -2.121320343559643
+       },
+       {
+        "x": 3.4645482469173254,
+        "z": 1.4350628713690867
+       },
+       {
+        "x": 1.435062871369087,
+        "z": 3.4645482469173254
+       },
+       {
+        "x": -1.4350628713690865,
+        "z": 3.4645482469173254
+       },
+       {
+        "x": -3.4645482469173254,
+        "z": 1.4350628713690872
+       },
+       {
+        "x": -3.4645482469173263,
+        "z": -1.4350628713690845
+       },
+       {
+        "x": -1.4350628713690856,
+        "z": -3.464548246917326
+       },
+       {
+        "x": 1.4350628713690876,
+        "z": -3.464548246917325
+       },
+       {
+        "x": 3.464548246917326,
+        "z": -1.4350628713690858
+       },
+       {
+        "x": 4.5,
+        "z": 0
+       },
+       {
+        "x": 3.1819805153394642,
+        "z": 3.181980515339464
+       },
+       {
+        "x": 2.755455298081545e-16,
+        "z": 4.5
+       },
+       {
+        "x": -3.181980515339464,
+        "z": 3.1819805153394642
+       },
+       {
+        "x": -4.5,
+        "z": 5.51091059616309e-16
+       },
+       {
+        "x": -3.1819805153394647,
+        "z": -3.181980515339464
+       },
+       {
+        "x": -8.266365894244633e-16,
+        "z": -4.5
+       },
+       {
+        "x": 3.181980515339463,
+        "z": -3.1819805153394647
+       },
+       {
+        "x": 4.850367545684255,
+        "z": 2.0090880199167214
+       },
+       {
+        "x": 2.009088019916722,
+        "z": 4.850367545684255
+       },
+       {
+        "x": -2.009088019916721,
+        "z": 4.850367545684255
+       },
+       {
+        "x": -4.850367545684255,
+        "z": 2.009088019916722
+       },
+       {
+        "x": -4.850367545684256,
+        "z": -2.0090880199167183
+       },
+       {
+        "x": -2.00908801991672,
+        "z": -4.850367545684256
+       },
+       {
+        "x": 2.0090880199167227,
+        "z": -4.8503675456842545
+       },
+       {
+        "x": 4.850367545684256,
+        "z": -2.00908801991672
+       },
+       {
+        "x": 6,
+        "z": 0
+       },
+       {
+        "x": 4.242640687119286,
+        "z": 4.242640687119285
+       },
+       {
+        "x": 3.6739403974420594e-16,
+        "z": 6
+       },
+       {
+        "x": -4.242640687119285,
+        "z": 4.242640687119286
+       },
+       {
+        "x": -6,
+        "z": 7.347880794884119e-16
+       },
+       {
+        "x": -4.242640687119286,
+        "z": -4.242640687119285
+       },
+       {
+        "x": -1.102182119232618e-15,
+        "z": -6
+       },
+       {
+        "x": 4.242640687119284,
+        "z": -4.242640687119286
+       },
+       {
+        "x": 6.236186844451185,
+        "z": 2.5831131684643562
+       },
+       {
+        "x": 2.5831131684643562,
+        "z": 6.236186844451185
+       },
+       {
+        "x": -2.583113168464356,
+        "z": 6.236186844451185
+       },
+       {
+        "x": -6.236186844451185,
+        "z": 2.5831131684643567
+       },
+       {
+        "x": -6.236186844451187,
+        "z": -2.5831131684643522
+       },
+       {
+        "x": -2.583113168464354,
+        "z": -6.236186844451186
+       },
+       {
+        "x": 2.5831131684643576,
+        "z": -6.2361868444511845
+       },
+       {
+        "x": 6.236186844451186,
+        "z": -2.5831131684643545
+       },
+       {
+        "x": 7.5,
+        "z": 0
+       },
+       {
+        "x": 5.303300858899107,
+        "z": 5.303300858899106
+       },
+       {
+        "x": 4.592425496802575e-16,
+        "z": 7.5
+       },
+       {
+        "x": -5.303300858899106,
+        "z": 5.303300858899107
+       },
+       {
+        "x": -7.5,
+        "z": 9.18485099360515e-16
+       },
+       {
+        "x": -5.3033008588991075,
+        "z": -5.303300858899106
+       },
+       {
+        "x": -1.3777276490407722e-15,
+        "z": -7.5
+       },
+       {
+        "x": 5.303300858899105,
+        "z": -5.3033008588991075
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: open street everywhere and nothing near: tier 1, ring 7 m, heading 0 (+x)",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      }
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 0,
+      "distanceM": 7,
+      "misses": {
+       "street": 0,
+       "closed": 0,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: the rings go 7, 9, 11, 13, then 5 m: with street only at 11 m and 5 m, 11 m is taken",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 5,
+         "z": 0
+        },
+        "radius": 0.2
+       },
+       {
+        "at": {
+         "x": 11,
+         "z": 0
+        },
+        "radius": 0.2
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 11,
+       "z": 0
+      },
+      "tier": 1,
+      "ringM": 11,
+      "heading": 0,
+      "distanceM": 11,
+      "misses": {
+       "street": 32,
+       "closed": 0,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: the headings go from +x toward +z: with street at 90° and 180° on the 7 m ring, 90° is taken",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": -7,
+         "z": 0
+        },
+        "radius": 0.2
+       },
+       {
+        "at": {
+         "x": 0,
+         "z": 7
+        },
+        "radius": 0.2
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 4.286263797015736e-16,
+       "z": 7
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 4,
+      "distanceM": 7,
+      "misses": {
+       "street": 4,
+       "closed": 0,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: a ring point off the street moves to the first street point within 1.5 m (here 1.5 m toward +z)",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 0,
+         "z": 2.1
+        },
+        "half": {
+         "x": 30,
+         "z": 0.9
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 7,
+       "z": 1.5
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 0,
+      "distanceM": 7.158910531638177,
+      "misses": {
+       "street": 0,
+       "closed": 0,
+       "interactable": 0,
+       "slot": 0
+      }
+     },
+     "libraryVersion": {
+      "library": "QuickJS 2025-04-26 Math.hypot (correctly rounded), against V8 Math.hypot",
+      "v8": {
+       "ok": true,
+       "at": {
+        "x": 7,
+        "z": 1.5
+       },
+       "tier": 1,
+       "ringM": 7,
+       "heading": 0,
+       "distanceM": 7.158910531638176,
+       "misses": {
+        "street": 0,
+        "closed": 0,
+        "interactable": 0,
+        "slot": 0
+       }
+      },
+      "why": "the corpus's answer was written on V8, whose Math.hypot is one ulp from QuickJS's here (distanceM); core's runner compares within the file's tolerance 0.000001, which both meet"
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: a street point nearer the place than 4 m is closed: here every one is, so no tier finds a spot and the vehicle stands at the street by the place",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 3.5,
+         "z": 0
+        },
+        "radius": 0.6
+       }
+      ]
+     },
+     "expect": {
+      "ok": false,
+      "code": "no-open-spot",
+      "at": {
+       "x": 3,
+       "z": 0
+      },
+      "onStreet": true,
+      "distanceM": 3,
+      "misses": {
+       "street": 237,
+       "closed": 3,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: no street anywhere: no spot, and the vehicle stands at the place's own point (onStreet false); every candidate missed the street",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": []
+     },
+     "expect": {
+      "ok": false,
+      "code": "no-open-spot",
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "onStreet": false,
+      "distanceM": 0,
+      "misses": {
+       "street": 240,
+       "closed": 0,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: a building's footprint grown by 0.6 m is indoors: a shed whose wall is 0.59 m from the spot closes it at every tier",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.2
+       }
+      ],
+      "buildings": [
+       {
+        "at": {
+         "x": 7,
+         "z": -0.69
+        },
+        "half": {
+         "x": 0.1,
+         "z": 0.1
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": false,
+      "code": "no-open-spot",
+      "at": {
+       "x": 0,
+       "z": 0
+      },
+      "onStreet": false,
+      "distanceM": 0,
+      "misses": {
+       "street": 237,
+       "closed": 3,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: a shed whose wall is 0.61 m from the spot leaves it outdoors: tier 1",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.2
+       }
+      ],
+      "buildings": [
+       {
+        "at": {
+         "x": 7,
+         "z": -0.71
+        },
+        "half": {
+         "x": 0.1,
+         "z": 0.1
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 0,
+      "distanceM": 7,
+      "misses": {
+       "street": 0,
+       "closed": 0,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: a stand 2.5 m round the spot inside a building closes the spot: a later heading is taken",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "buildings": [
+       {
+        "at": {
+         "x": 7,
+         "z": 3.2
+        },
+        "half": {
+         "x": 2,
+         "z": 0.3
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 2.678784026555629,
+       "z": 6.467156727579007
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 3,
+      "distanceM": 7,
+      "misses": {
+       "street": 0,
+       "closed": 3,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: open ground: a fence 0.38 m from the spot closes it; one 0.42 m off leaves it open",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.2
+       },
+       {
+        "at": {
+         "x": 0,
+         "z": 7
+        },
+        "radius": 0.2
+       }
+      ],
+      "statics": [
+       {
+        "at": {
+         "x": 7,
+         "z": -0.48
+        },
+        "half": {
+         "x": 2,
+         "z": 0.1
+        },
+        "yMin": 0,
+        "yMax": 1.2
+       },
+       {
+        "at": {
+         "x": 0.52,
+         "z": 7
+        },
+        "half": {
+         "x": 0.1,
+         "z": 2
+        },
+        "yMin": 0,
+        "yMax": 1.2
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 4.286263797015736e-16,
+       "z": 7
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 4,
+      "distanceM": 7,
+      "misses": {
+       "street": 3,
+       "closed": 1,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: open ground: a static overhead (from 1.9 m) or flat on the ground (to 0.1 m) leaves the spot open; one with no band closes it",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.2
+       },
+       {
+        "at": {
+         "x": 0,
+         "z": 7
+        },
+        "radius": 0.2
+       },
+       {
+        "at": {
+         "x": -7,
+         "z": 0
+        },
+        "radius": 0.2
+       }
+      ],
+      "statics": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "half": {
+         "x": 1,
+         "z": 1
+        },
+        "yMin": 1.9,
+        "yMax": 3
+       },
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "half": {
+         "x": 1,
+         "z": 1
+        },
+        "yMin": 0,
+        "yMax": 0.1
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 0,
+      "distanceM": 7,
+      "misses": {
+       "street": 0,
+       "closed": 0,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: open ground: a static with no band stands in the way at any height",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.2
+       },
+       {
+        "at": {
+         "x": 0,
+         "z": 7
+        },
+        "radius": 0.2
+       }
+      ],
+      "statics": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.3
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 4.286263797015736e-16,
+       "z": 7
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 4,
+      "distanceM": 7,
+      "misses": {
+       "street": 3,
+       "closed": 1,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: the band is read from the ground at the place: raised 2 m, a static from 1.9 m is in the body's way",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "groundY": 2,
+      "streets": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.2
+       },
+       {
+        "at": {
+         "x": 0,
+         "z": 7
+        },
+        "radius": 0.2
+       }
+      ],
+      "statics": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "half": {
+         "x": 1,
+         "z": 1
+        },
+        "yMin": 1.9,
+        "yMax": 3
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 4.286263797015736e-16,
+       "z": 7
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 4,
+      "distanceM": 7,
+      "misses": {
+       "street": 3,
+       "closed": 1,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: something E acts on within 4.0 m of the spot (E's farthest reach, 3.5 m, plus 0.5 m) closes it at every tier: the next heading",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "interactables": [
+       {
+        "x": 7,
+        "z": 4
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 4.286263797015736e-16,
+       "z": 7
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 4,
+      "distanceM": 7,
+      "misses": {
+       "street": 0,
+       "closed": 0,
+       "interactable": 4,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: something E acts on 6 m from the spot but 3.5 m from its stand: tier 1 needs the stands quiet too and turns it away; tier 2 takes it",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.2
+       }
+      ],
+      "interactables": [
+       {
+        "x": 7,
+        "z": 6
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "tier": 2,
+      "ringM": 7,
+      "heading": 0,
+      "distanceM": 7,
+      "misses": {
+       "street": 79,
+       "closed": 0,
+       "interactable": 1,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: something E acts on 4.01 m from the spot is out of reach of it: tier 2 takes it (its stand (7, 2.5) is 1.51 m off)",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.2
+       }
+      ],
+      "interactables": [
+       {
+        "x": 7,
+        "z": 4.01
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "tier": 2,
+      "ringM": 7,
+      "heading": 0,
+      "distanceM": 7,
+      "misses": {
+       "street": 79,
+       "closed": 0,
+       "interactable": 1,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: a villager's slot nearer the spot than 4 m: tiers 1 and 2 turn it away, tier 3 takes it",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.2
+       }
+      ],
+      "slots": [
+       {
+        "x": 7,
+        "z": 3.99
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "tier": 3,
+      "ringM": 7,
+      "heading": 0,
+      "distanceM": 7,
+      "misses": {
+       "street": 158,
+       "closed": 0,
+       "interactable": 0,
+       "slot": 2
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: a villager's slot exactly 4 m from the spot: clear, tier 1",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.2
+       }
+      ],
+      "slots": [
+       {
+        "x": 7,
+        "z": 4
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 0,
+      "distanceM": 7,
+      "misses": {
+       "street": 0,
+       "closed": 0,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: a place with no finite point is refused",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": null,
+       "z": 0
+      }
+     },
+     "expect": {
+      "ok": false,
+      "code": "bad-place"
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: a ground height that is not a number is refused",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "groundY": "low"
+     },
+     "expect": {
+      "ok": false,
+      "code": "bad-place"
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: entries with no finite point are skipped",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": 0
+      },
+      "streets": [
+       {
+        "at": {
+         "x": null,
+         "z": 0
+        },
+        "radius": 50
+       },
+       {
+        "at": {
+         "x": 7,
+         "z": 0
+        },
+        "radius": 0.2
+       }
+      ],
+      "buildings": [
+       {
+        "at": {
+         "x": "here",
+         "z": 0
+        },
+        "half": {
+         "x": 100,
+         "z": 100
+        }
+       }
+      ],
+      "statics": [
+       {
+        "at": {
+         "x": null,
+         "z": null
+        },
+        "radius": 100
+       }
+      ],
+      "slots": [
+       {
+        "x": null,
+        "z": 7
+       }
+      ],
+      "interactables": [
+       {
+        "x": 7,
+        "z": null
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": 7,
+       "z": 0
+      },
+      "tier": 1,
+      "ringM": 7,
+      "heading": 0,
+      "distanceM": 7,
+      "misses": {
+       "street": 0,
+       "closed": 0,
+       "interactable": 0,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: a village street: the inn door's place, its villagers' slots, a fence, a barrel, a lamp and a side lane",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": -4
+      },
+      "groundY": 0,
+      "streets": [
+       {
+        "at": {
+         "x": 0,
+         "z": 0
+        },
+        "half": {
+         "x": 40,
+         "z": 3
+        }
+       },
+       {
+        "at": {
+         "x": 12,
+         "z": 10
+        },
+        "half": {
+         "x": 2,
+         "z": 12
+        }
+       }
+      ],
+      "buildings": [
+       {
+        "at": {
+         "x": 0,
+         "z": -9
+        },
+        "half": {
+         "x": 4,
+         "z": 4
+        }
+       },
+       {
+        "at": {
+         "x": 10,
+         "z": -9
+        },
+        "half": {
+         "x": 4,
+         "z": 4
+        }
+       },
+       {
+        "at": {
+         "x": -10,
+         "z": -9
+        },
+        "half": {
+         "x": 4,
+         "z": 4
+        }
+       },
+       {
+        "at": {
+         "x": 5,
+         "z": 9
+        },
+        "half": {
+         "x": 3,
+         "z": 4
+        }
+       }
+      ],
+      "statics": [
+       {
+        "at": {
+         "x": -6,
+         "z": -3.1
+        },
+        "half": {
+         "x": 2,
+         "z": 0.05
+        },
+        "yMin": 0,
+        "yMax": 1.1
+       },
+       {
+        "at": {
+         "x": 4,
+         "z": 2.6
+        },
+        "radius": 0.3
+       }
+      ],
+      "slots": [
+       {
+        "x": 0,
+        "z": -3
+       },
+       {
+        "x": 1.5,
+        "z": -2.8
+       }
+      ],
+      "interactables": [
+       {
+        "x": -3,
+        "z": 2
+       },
+       {
+        "x": 6.5,
+        "z": -3.5
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "at": {
+       "x": -10.162674857624154,
+       "z": 0.20951775601598843
+      },
+      "tier": 1,
+      "ringM": 11,
+      "heading": 7,
+      "distanceM": 11,
+      "misses": {
+       "street": 18,
+       "closed": 12,
+       "interactable": 9,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "vehicle-placement park: park: the same street with a cart, a crate and a sign along the near kerb: every spot near the inn turned away",
+   "steps": [
+    {
+     "call": "props.vehicle.park",
+     "args": {
+      "place": {
+       "x": 0,
+       "z": -4
+      },
+      "groundY": 0,
+      "streets": [
+       {
+        "at": {
+         "x": 0,
+         "z": 0
+        },
+        "half": {
+         "x": 40,
+         "z": 3
+        }
+       },
+       {
+        "at": {
+         "x": 12,
+         "z": 10
+        },
+        "half": {
+         "x": 2,
+         "z": 12
+        }
+       }
+      ],
+      "buildings": [
+       {
+        "at": {
+         "x": 0,
+         "z": -9
+        },
+        "half": {
+         "x": 4,
+         "z": 4
+        }
+       },
+       {
+        "at": {
+         "x": 10,
+         "z": -9
+        },
+        "half": {
+         "x": 4,
+         "z": 4
+        }
+       },
+       {
+        "at": {
+         "x": -10,
+         "z": -9
+        },
+        "half": {
+         "x": 4,
+         "z": 4
+        }
+       },
+       {
+        "at": {
+         "x": 5,
+         "z": 9
+        },
+        "half": {
+         "x": 3,
+         "z": 4
+        }
+       }
+      ],
+      "statics": [
+       {
+        "at": {
+         "x": -6,
+         "z": -3.1
+        },
+        "half": {
+         "x": 2,
+         "z": 0.05
+        },
+        "yMin": 0,
+        "yMax": 1.1
+       },
+       {
+        "at": {
+         "x": 4,
+         "z": 2.6
+        },
+        "radius": 0.3
+       }
+      ],
+      "slots": [
+       {
+        "x": 0,
+        "z": -3
+       },
+       {
+        "x": 1.5,
+        "z": -2.8
+       }
+      ],
+      "interactables": [
+       {
+        "x": -3,
+        "z": 2
+       },
+       {
+        "x": 6.5,
+        "z": -3.5
+       },
+       {
+        "x": 7,
+        "z": 1
+       },
+       {
+        "x": -7,
+        "z": 1
+       },
+       {
+        "x": 10,
+        "z": -1
+       },
+       {
+        "x": -10,
+        "z": -1
+       },
+       {
+        "x": 0,
+        "z": 2.5
+       },
+       {
+        "x": 13,
+        "z": 2
+       },
+       {
+        "x": -13,
+        "z": 2
+       }
+      ]
+     },
+     "expect": {
+      "ok": false,
+      "code": "no-open-spot",
+      "at": {
+       "x": 1.0606601717798214,
+       "z": -2.939339828220179
+      },
+      "onStreet": true,
+      "distanceM": 1.4999999999999998,
+      "misses": {
+       "street": 129,
+       "closed": 57,
+       "interactable": 54,
+       "slot": 0
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

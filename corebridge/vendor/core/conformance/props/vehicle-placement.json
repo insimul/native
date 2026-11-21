@@ -1,0 +1,1793 @@
+{
+  "area": "props-vehicle-placement",
+  "description": "Where a world vehicle is parked (PL.core-vehicle-rules, U106(3), U49(3); the Unreal P9e critic's M3): given its place's point, where the street is, the buildings' footprints, the statics a body cannot stand in, the villagers' slots and where everything E acts on stands, the parking spot and its tier, or a refusal with a code and the spot an engine that still draws the vehicle draws it at. Metres on core's ground plane (x, z); heights are y. Data in, decision out: no navmesh and no overlap test (the caller states the street and the statics). Owned by the vehicles pack (packs/vehicles). Ops: probes {at, radiusM} -> {points}; park VehicleParkingInput -> VehicleParking. Every case is {name, note?, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included. Runner: src/props/vehicle-placement-corpus.ts. Regenerate with npm run vehicle-placement-corpus; npm run vehicle-placement-corpus:check fails on any difference.",
+  "version": 1,
+  "pack": "packs/vehicles",
+  "sources": [
+    "packages/core/src/props/vehicle-placement.ts (the rule) and src/props/vehicle-placement-corpus.ts (the runner)",
+    "unreal feat/p9e-unreal a68b6d0, Source/InsimulRuntime/Private/InsimulVillageTraversal.cpp PlaceWorldVehicles 324–443 (the interim parking every constant is measured from, U106(3)); InsimulVillageDirector.cpp StreetPointNear 1663–1688; InsimulVillageProps.cpp AnyInteractableNear 1127–1139 and the farthest reach 404–420. Unreal's rule is not changed by this corpus",
+    "packages/core/docs/traversal-systems.md §9b"
+  ],
+  "tolerance": 0.000001,
+  "numerics": "Runners compute in IEEE-754 double precision (Unreal: double, as its FVector is). The tolerance covers reported numbers, not decisions: several cases decide exactly on a boundary (4.0 m from the place or a slot is far enough; 4.0 m from something E acts on is in reach; a static exactly 0.4 m off leaves room; a point 0.6 m outside a footprint is indoors), each exact in binary and in Unreal's whole centimetres.",
+  "contract": {
+    "units": "metres on the ground plane {x, z}; y is up; angles turn from +x toward +z (pickup-placement.json contract.frames)",
+    "refusals": [
+      "no-open-spot",
+      "bad-place"
+    ],
+    "tiers": {
+      "1": "every rule: open ground, clear of the slots, and nothing E acts on in reach of the spot or of any of its eight stands",
+      "2": "open ground clear of the slots; nothing E acts on in reach of the spot (its stands need only be open)",
+      "3": "open ground with nothing E acts on in reach of the spot; a villager's slot may be nearer than 4 m"
+    },
+    "constants": {
+      "ringsM": {
+        "value": [
+          7,
+          9,
+          11,
+          13,
+          5
+        ],
+        "source": "VT:398 {700.0, 900.0, 1100.0, 1300.0, 500.0} cm, in that order"
+      },
+      "headings": {
+        "value": 16,
+        "source": "VT:400–403 K < 16, FRotator(0, 22.5 * K, 0)"
+      },
+      "snapM": {
+        "value": 1.5,
+        "source": "VT:403 StreetPointNear(…, 150.0, …) cm"
+      },
+      "snapStepM": {
+        "value": 0.75,
+        "source": "VD:1671 Ring * 75.0 cm"
+      },
+      "snapDirections": {
+        "value": 8,
+        "source": "VD:1673–1675 K < 8, 45 * K + 22.5 * (Ring % 2)"
+      },
+      "minFromPlaceM": {
+        "value": 4,
+        "source": "VT:408 Dist2D(Cand, Place) >= 400.0 cm"
+      },
+      "footprintMarginM": {
+        "value": 0.6,
+        "source": "VT:379 FVector(60, 60, 0) cm"
+      },
+      "bodyRadiusM": {
+        "value": 0.4,
+        "source": "VT:389 MakeCapsule(40.f, 88.f) cm"
+      },
+      "bodyLowM": {
+        "value": 0.12,
+        "source": "VT:388–389 100.0 - 88 cm"
+      },
+      "bodyHighM": {
+        "value": 1.88,
+        "source": "VT:388–389 100.0 + 88 cm"
+      },
+      "stands": {
+        "value": 8,
+        "source": "VT:410–415 Q < 8, 45.0 * Q"
+      },
+      "standM": {
+        "value": 2.5,
+        "source": "VT:412 * 250.0 cm"
+      },
+      "slotClearM": {
+        "value": 4,
+        "source": "VT:417 >= 400.0 cm"
+      },
+      "reachMarginM": {
+        "value": 0.5,
+        "source": "VP:1131 InteractReachCm + 50.0 cm"
+      },
+      "reachM": {
+        "value": 4,
+        "source": "VP:417–419 the largest of props.contract rangesM and doorPromptRadiusM (props/interactables.json), plus reachMarginM"
+      },
+      "fallbackM": {
+        "value": 8,
+        "source": "VT:436 StreetPointNear(Place, 800.0, Street) cm"
+      }
+    },
+    "probes": "the street search round a point out to radiusM: the point itself, then ring r = 1, 2, … while 0.75 · r <= radiusM (+1e-9), each with eight points at 0.75 · r m, heading 45° · k plus 22.5° on odd rings, k = 0..7",
+    "park": "place or groundY not finite -> bad-place. For tier 1, 2, 3, for each ring of ringsM in order, for heading k = 0..15 (22.5° · k): the ring point is moved to the first probe within snapM that is on the street (absent streets: everywhere; an area holds a point on or inside it); none -> a street miss. The spot is closed when it is nearer the place than minFromPlaceM, indoors (inside a building footprint grown by footprintMarginM on each side along its own axes, inclusive; a circle by its radius), or not open (a static whose height band, absent or meeting groundY + bodyLowM .. groundY + bodyHighM, lies strictly within bodyRadiusM), or any of its eight stands (standM away, heading 45° · q) is indoors or not open. It is not quiet when anything E acts on stands within reachM (<=) of it, or, in tier 1 only, of any stand. It is not clear of the slots when a slot is nearer than slotClearM. Closed -> a closed miss; else not quiet -> an interactable miss; else not clear of the slots and tier < 3 -> a slot miss; else taken: {ok, at, tier, ringM, heading, distanceM, misses}. No tier takes a spot -> {ok: false, code: no-open-spot, at: the first street probe within fallbackM of the place (onStreet true), else the place itself (onStreet false), distanceM, misses}. misses counts every turned-away candidate over all tiers",
+    "when": "an engine parks each world vehicle nobody drives at its registry location's place, at world start and after every load; a driven vehicle follows its driver; one got off stays where it was left until the next load. Each vehicle is parked on its own (two at one place get the same spot: Unreal's rule as it stands, docs/traversal-systems.md §9b)",
+    "deviations": [
+      {
+        "id": "refuse-when-nothing-open",
+        "unreal": "no tier finds a spot: the vehicle stands at the street by the place itself (StreetPointNear 8 m), or the place's point, logged \"NO open spot\" (VT:431–436)",
+        "core": "refuses with `no-open-spot`, carrying that same spot as `at` (and `onStreet`)",
+        "why": "the ruling's shape asks for a decision or a refusal with a code; an engine that still draws the vehicle draws it at `at`, as Unreal does"
+      },
+      {
+        "id": "stated-streets",
+        "unreal": "a street point is the navmesh point a probe projects to (60 x 60 x 80 cm box) that lies on a road band or paving (OnStreet; VD:1663–1688)",
+        "core": "the caller states the street as areas (`streets`) or passes `isStreet`; the spot is the probe point itself",
+        "why": "core has no navmesh; the probe pattern (rings 0.75 m apart, eight ways, odd rings turned half a step) is core's"
+      },
+      {
+        "id": "stated-footprints",
+        "unreal": "a building's footprint is the world-aligned bounds of its colliding components, grown 60 cm on X and Y (VT:372–383)",
+        "core": "the caller states each footprint as a box (`at`, `half`, `axis`) or a circle, grown 0.6 m along its own axes (a circle by its radius)",
+        "why": "meshes and transforms are the engine's; for a box on the world axes the two agree"
+      },
+      {
+        "id": "open-as-cylinder",
+        "unreal": "open ground is no WorldStatic overlap with a capsule of radius 40 cm and half-height 88 cm centred 100 cm up (VT:386–390)",
+        "core": "no stated static within 0.4 m (strictly) of the spot whose height band meets 0.12–1.88 m above the ground; a static with no band always meets it",
+        "why": "the capsule's rounded ends are the engine's shape; the statics are stated, not overlapped"
+      },
+      {
+        "id": "one-ground-height",
+        "unreal": "the overlap is tested at each candidate's own navmesh height",
+        "core": "the band is read at the place's ground (`groundY`) for every spot",
+        "why": "core works on (x, z) with no terrain, as pickup-placement.ts does"
+      },
+      {
+        "id": "panel-open",
+        "unreal": "AnyInteractableNear answers true everywhere while a props panel is open (VP:1132), so a load with a panel open finds no tier's spot",
+        "core": "an open panel is not read: only where things stand",
+        "why": "where a vehicle is parked does not depend on what the player has open"
+      }
+    ],
+    "sourceAbbreviation": "VT = unreal a68b6d0 Source/InsimulRuntime/Private/InsimulVillageTraversal.cpp; VD = …/InsimulVillageDirector.cpp; VP = …/InsimulVillageProps.cpp"
+  },
+  "cases": [
+    {
+      "name": "probes: within 1.5 m, the point, eight at 0.75 m turned 22.5°, eight at 1.5 m from +x",
+      "op": "probes",
+      "input": {
+        "at": {
+          "x": 7,
+          "z": 0
+        },
+        "radiusM": 1.5
+      },
+      "expected": {
+        "points": [
+          {
+            "x": 7,
+            "z": 0
+          },
+          {
+            "x": 7.6929096493834646,
+            "z": 0.2870125742738173
+          },
+          {
+            "x": 7.287012574273818,
+            "z": 0.692909649383465
+          },
+          {
+            "x": 6.712987425726182,
+            "z": 0.692909649383465
+          },
+          {
+            "x": 6.3070903506165354,
+            "z": 0.28701257427381743
+          },
+          {
+            "x": 6.307090350616535,
+            "z": -0.28701257427381693
+          },
+          {
+            "x": 6.712987425726183,
+            "z": -0.6929096493834651
+          },
+          {
+            "x": 7.287012574273818,
+            "z": -0.692909649383465
+          },
+          {
+            "x": 7.692909649383465,
+            "z": -0.28701257427381716
+          },
+          {
+            "x": 8.5,
+            "z": 0
+          },
+          {
+            "x": 8.060660171779821,
+            "z": 1.0606601717798212
+          },
+          {
+            "x": 7,
+            "z": 1.5
+          },
+          {
+            "x": 5.939339828220179,
+            "z": 1.0606601717798214
+          },
+          {
+            "x": 5.5,
+            "z": 1.8369701987210297e-16
+          },
+          {
+            "x": 5.939339828220179,
+            "z": -1.0606601717798212
+          },
+          {
+            "x": 7,
+            "z": -1.5
+          },
+          {
+            "x": 8.060660171779821,
+            "z": -1.0606601717798214
+          }
+        ]
+      }
+    },
+    {
+      "name": "probes: within 0 m, the point alone",
+      "op": "probes",
+      "input": {
+        "at": {
+          "x": 2,
+          "z": 3
+        },
+        "radiusM": 0
+      },
+      "expected": {
+        "points": [
+          {
+            "x": 2,
+            "z": 3
+          }
+        ]
+      }
+    },
+    {
+      "name": "probes: within 8 m (the fallback), ten rings",
+      "op": "probes",
+      "input": {
+        "at": {
+          "x": 0,
+          "z": 0
+        },
+        "radiusM": 8
+      },
+      "expected": {
+        "points": [
+          {
+            "x": 0,
+            "z": 0
+          },
+          {
+            "x": 0.692909649383465,
+            "z": 0.2870125742738173
+          },
+          {
+            "x": 0.2870125742738174,
+            "z": 0.692909649383465
+          },
+          {
+            "x": -0.2870125742738173,
+            "z": 0.692909649383465
+          },
+          {
+            "x": -0.692909649383465,
+            "z": 0.28701257427381743
+          },
+          {
+            "x": -0.6929096493834652,
+            "z": -0.28701257427381693
+          },
+          {
+            "x": -0.2870125742738171,
+            "z": -0.6929096493834651
+          },
+          {
+            "x": 0.2870125742738175,
+            "z": -0.692909649383465
+          },
+          {
+            "x": 0.6929096493834651,
+            "z": -0.28701257427381716
+          },
+          {
+            "x": 1.5,
+            "z": 0
+          },
+          {
+            "x": 1.0606601717798214,
+            "z": 1.0606601717798212
+          },
+          {
+            "x": 9.184850993605148e-17,
+            "z": 1.5
+          },
+          {
+            "x": -1.0606601717798212,
+            "z": 1.0606601717798214
+          },
+          {
+            "x": -1.5,
+            "z": 1.8369701987210297e-16
+          },
+          {
+            "x": -1.0606601717798214,
+            "z": -1.0606601717798212
+          },
+          {
+            "x": -2.755455298081545e-16,
+            "z": -1.5
+          },
+          {
+            "x": 1.060660171779821,
+            "z": -1.0606601717798214
+          },
+          {
+            "x": 2.078728948150395,
+            "z": 0.861037722821452
+          },
+          {
+            "x": 0.8610377228214521,
+            "z": 2.078728948150395
+          },
+          {
+            "x": -0.8610377228214519,
+            "z": 2.078728948150395
+          },
+          {
+            "x": -2.078728948150395,
+            "z": 0.8610377228214523
+          },
+          {
+            "x": -2.0787289481503954,
+            "z": -0.8610377228214507
+          },
+          {
+            "x": -0.8610377228214514,
+            "z": -2.0787289481503954
+          },
+          {
+            "x": 0.8610377228214525,
+            "z": -2.078728948150395
+          },
+          {
+            "x": 2.0787289481503954,
+            "z": -0.8610377228214515
+          },
+          {
+            "x": 3,
+            "z": 0
+          },
+          {
+            "x": 2.121320343559643,
+            "z": 2.1213203435596424
+          },
+          {
+            "x": 1.8369701987210297e-16,
+            "z": 3
+          },
+          {
+            "x": -2.1213203435596424,
+            "z": 2.121320343559643
+          },
+          {
+            "x": -3,
+            "z": 3.6739403974420594e-16
+          },
+          {
+            "x": -2.121320343559643,
+            "z": -2.1213203435596424
+          },
+          {
+            "x": -5.51091059616309e-16,
+            "z": -3
+          },
+          {
+            "x": 2.121320343559642,
+            "z": -2.121320343559643
+          },
+          {
+            "x": 3.4645482469173254,
+            "z": 1.4350628713690867
+          },
+          {
+            "x": 1.435062871369087,
+            "z": 3.4645482469173254
+          },
+          {
+            "x": -1.4350628713690865,
+            "z": 3.4645482469173254
+          },
+          {
+            "x": -3.4645482469173254,
+            "z": 1.4350628713690872
+          },
+          {
+            "x": -3.4645482469173263,
+            "z": -1.4350628713690845
+          },
+          {
+            "x": -1.4350628713690856,
+            "z": -3.464548246917326
+          },
+          {
+            "x": 1.4350628713690876,
+            "z": -3.464548246917325
+          },
+          {
+            "x": 3.464548246917326,
+            "z": -1.4350628713690858
+          },
+          {
+            "x": 4.5,
+            "z": 0
+          },
+          {
+            "x": 3.1819805153394642,
+            "z": 3.181980515339464
+          },
+          {
+            "x": 2.755455298081545e-16,
+            "z": 4.5
+          },
+          {
+            "x": -3.181980515339464,
+            "z": 3.1819805153394642
+          },
+          {
+            "x": -4.5,
+            "z": 5.51091059616309e-16
+          },
+          {
+            "x": -3.1819805153394647,
+            "z": -3.181980515339464
+          },
+          {
+            "x": -8.266365894244633e-16,
+            "z": -4.5
+          },
+          {
+            "x": 3.181980515339463,
+            "z": -3.1819805153394647
+          },
+          {
+            "x": 4.850367545684255,
+            "z": 2.0090880199167214
+          },
+          {
+            "x": 2.009088019916722,
+            "z": 4.850367545684255
+          },
+          {
+            "x": -2.009088019916721,
+            "z": 4.850367545684255
+          },
+          {
+            "x": -4.850367545684255,
+            "z": 2.009088019916722
+          },
+          {
+            "x": -4.850367545684256,
+            "z": -2.0090880199167183
+          },
+          {
+            "x": -2.00908801991672,
+            "z": -4.850367545684256
+          },
+          {
+            "x": 2.0090880199167227,
+            "z": -4.8503675456842545
+          },
+          {
+            "x": 4.850367545684256,
+            "z": -2.00908801991672
+          },
+          {
+            "x": 6,
+            "z": 0
+          },
+          {
+            "x": 4.242640687119286,
+            "z": 4.242640687119285
+          },
+          {
+            "x": 3.6739403974420594e-16,
+            "z": 6
+          },
+          {
+            "x": -4.242640687119285,
+            "z": 4.242640687119286
+          },
+          {
+            "x": -6,
+            "z": 7.347880794884119e-16
+          },
+          {
+            "x": -4.242640687119286,
+            "z": -4.242640687119285
+          },
+          {
+            "x": -1.102182119232618e-15,
+            "z": -6
+          },
+          {
+            "x": 4.242640687119284,
+            "z": -4.242640687119286
+          },
+          {
+            "x": 6.236186844451185,
+            "z": 2.5831131684643562
+          },
+          {
+            "x": 2.5831131684643562,
+            "z": 6.236186844451185
+          },
+          {
+            "x": -2.583113168464356,
+            "z": 6.236186844451185
+          },
+          {
+            "x": -6.236186844451185,
+            "z": 2.5831131684643567
+          },
+          {
+            "x": -6.236186844451187,
+            "z": -2.5831131684643522
+          },
+          {
+            "x": -2.583113168464354,
+            "z": -6.236186844451186
+          },
+          {
+            "x": 2.5831131684643576,
+            "z": -6.2361868444511845
+          },
+          {
+            "x": 6.236186844451186,
+            "z": -2.5831131684643545
+          },
+          {
+            "x": 7.5,
+            "z": 0
+          },
+          {
+            "x": 5.303300858899107,
+            "z": 5.303300858899106
+          },
+          {
+            "x": 4.592425496802575e-16,
+            "z": 7.5
+          },
+          {
+            "x": -5.303300858899106,
+            "z": 5.303300858899107
+          },
+          {
+            "x": -7.5,
+            "z": 9.18485099360515e-16
+          },
+          {
+            "x": -5.3033008588991075,
+            "z": -5.303300858899106
+          },
+          {
+            "x": -1.3777276490407722e-15,
+            "z": -7.5
+          },
+          {
+            "x": 5.303300858899105,
+            "z": -5.3033008588991075
+          }
+        ]
+      }
+    },
+    {
+      "name": "park: open street everywhere and nothing near: tier 1, ring 7 m, heading 0 (+x)",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 7,
+          "z": 0
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 0,
+        "distanceM": 7,
+        "misses": {
+          "street": 0,
+          "closed": 0,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: the rings go 7, 9, 11, 13, then 5 m: with street only at 11 m and 5 m, 11 m is taken",
+      "note": "Ring 5 is tried last though it is nearer.",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 5,
+              "z": 0
+            },
+            "radius": 0.2
+          },
+          {
+            "at": {
+              "x": 11,
+              "z": 0
+            },
+            "radius": 0.2
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 11,
+          "z": 0
+        },
+        "tier": 1,
+        "ringM": 11,
+        "heading": 0,
+        "distanceM": 11,
+        "misses": {
+          "street": 32,
+          "closed": 0,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: the headings go from +x toward +z: with street at 90° and 180° on the 7 m ring, 90° is taken",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": -7,
+              "z": 0
+            },
+            "radius": 0.2
+          },
+          {
+            "at": {
+              "x": 0,
+              "z": 7
+            },
+            "radius": 0.2
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 4.286263797015736e-16,
+          "z": 7
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 4,
+        "distanceM": 7,
+        "misses": {
+          "street": 4,
+          "closed": 0,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: a ring point off the street moves to the first street point within 1.5 m (here 1.5 m toward +z)",
+      "note": "The street is the band 1.2 m ≤ z ≤ 3 m: (7, 0) is off it; its probes at 0.75 m miss it, and the first at 1.5 m on it is (7, 1.5).",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 0,
+              "z": 2.1
+            },
+            "half": {
+              "x": 30,
+              "z": 0.9
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 7,
+          "z": 1.5
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 0,
+        "distanceM": 7.158910531638176,
+        "misses": {
+          "street": 0,
+          "closed": 0,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: a street point nearer the place than 4 m is closed: here every one is, so no tier finds a spot and the vehicle stands at the street by the place",
+      "note": "Ring 5's heading 0 snaps to (3.5, 0), 3.5 m from the place. The fallback walks the 8 m search from the place and takes the first street point, (3, 0).",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 3.5,
+              "z": 0
+            },
+            "radius": 0.6
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "code": "no-open-spot",
+        "at": {
+          "x": 3,
+          "z": 0
+        },
+        "onStreet": true,
+        "distanceM": 3,
+        "misses": {
+          "street": 237,
+          "closed": 3,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: no street anywhere: no spot, and the vehicle stands at the place's own point (onStreet false); every candidate missed the street",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": []
+      },
+      "expected": {
+        "ok": false,
+        "code": "no-open-spot",
+        "at": {
+          "x": 0,
+          "z": 0
+        },
+        "onStreet": false,
+        "distanceM": 0,
+        "misses": {
+          "street": 240,
+          "closed": 0,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: a building's footprint grown by 0.6 m is indoors: a shed whose wall is 0.59 m from the spot closes it at every tier",
+      "note": "The shed's wall is z = -0.59; grown by 0.6 m it reaches past the spot (7, 0). Every other ring point is off the street.",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.2
+          }
+        ],
+        "buildings": [
+          {
+            "at": {
+              "x": 7,
+              "z": -0.69
+            },
+            "half": {
+              "x": 0.1,
+              "z": 0.1
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "code": "no-open-spot",
+        "at": {
+          "x": 0,
+          "z": 0
+        },
+        "onStreet": false,
+        "distanceM": 0,
+        "misses": {
+          "street": 237,
+          "closed": 3,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: a shed whose wall is 0.61 m from the spot leaves it outdoors: tier 1",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.2
+          }
+        ],
+        "buildings": [
+          {
+            "at": {
+              "x": 7,
+              "z": -0.71
+            },
+            "half": {
+              "x": 0.1,
+              "z": 0.1
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 7,
+          "z": 0
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 0,
+        "distanceM": 7,
+        "misses": {
+          "street": 0,
+          "closed": 0,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: a stand 2.5 m round the spot inside a building closes the spot: a later heading is taken",
+      "note": "The house's grown footprint (z 2.3 to 4.1) covers the stand (7, 2.5) of heading 0's spot (7, 0), not the spot itself.",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "buildings": [
+          {
+            "at": {
+              "x": 7,
+              "z": 3.2
+            },
+            "half": {
+              "x": 2,
+              "z": 0.3
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 2.678784026555629,
+          "z": 6.467156727579007
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 3,
+        "distanceM": 7,
+        "misses": {
+          "street": 0,
+          "closed": 3,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: open ground: a fence 0.38 m from the spot closes it; one 0.42 m off leaves it open",
+      "note": "Heading 0's spot (7, 0) has the fence 0.38 m off: closed. Heading 4's (0, 7) has a fence 0.42 m off: open (only a static strictly within the body's 0.4 m radius closes a spot).",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.2
+          },
+          {
+            "at": {
+              "x": 0,
+              "z": 7
+            },
+            "radius": 0.2
+          }
+        ],
+        "statics": [
+          {
+            "at": {
+              "x": 7,
+              "z": -0.48
+            },
+            "half": {
+              "x": 2,
+              "z": 0.1
+            },
+            "yMin": 0,
+            "yMax": 1.2
+          },
+          {
+            "at": {
+              "x": 0.52,
+              "z": 7
+            },
+            "half": {
+              "x": 0.1,
+              "z": 2
+            },
+            "yMin": 0,
+            "yMax": 1.2
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 4.286263797015736e-16,
+          "z": 7
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 4,
+        "distanceM": 7,
+        "misses": {
+          "street": 3,
+          "closed": 1,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: open ground: a static overhead (from 1.9 m) or flat on the ground (to 0.1 m) leaves the spot open; one with no band closes it",
+      "note": "Both statics stand right on (7, 0); the body spans 0.12–1.88 m, so neither meets it: tier 1 at (7, 0).",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.2
+          },
+          {
+            "at": {
+              "x": 0,
+              "z": 7
+            },
+            "radius": 0.2
+          },
+          {
+            "at": {
+              "x": -7,
+              "z": 0
+            },
+            "radius": 0.2
+          }
+        ],
+        "statics": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "half": {
+              "x": 1,
+              "z": 1
+            },
+            "yMin": 1.9,
+            "yMax": 3
+          },
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "half": {
+              "x": 1,
+              "z": 1
+            },
+            "yMin": 0,
+            "yMax": 0.1
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 7,
+          "z": 0
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 0,
+        "distanceM": 7,
+        "misses": {
+          "street": 0,
+          "closed": 0,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: open ground: a static with no band stands in the way at any height",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.2
+          },
+          {
+            "at": {
+              "x": 0,
+              "z": 7
+            },
+            "radius": 0.2
+          }
+        ],
+        "statics": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.3
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 4.286263797015736e-16,
+          "z": 7
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 4,
+        "distanceM": 7,
+        "misses": {
+          "street": 3,
+          "closed": 1,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: the band is read from the ground at the place: raised 2 m, a static from 1.9 m is in the body's way",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "groundY": 2,
+        "streets": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.2
+          },
+          {
+            "at": {
+              "x": 0,
+              "z": 7
+            },
+            "radius": 0.2
+          }
+        ],
+        "statics": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "half": {
+              "x": 1,
+              "z": 1
+            },
+            "yMin": 1.9,
+            "yMax": 3
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 4.286263797015736e-16,
+          "z": 7
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 4,
+        "distanceM": 7,
+        "misses": {
+          "street": 3,
+          "closed": 1,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: something E acts on within 4.0 m of the spot (E's farthest reach, 3.5 m, plus 0.5 m) closes it at every tier: the next heading",
+      "note": "Exactly 4.0 m from (7, 0): not quiet (<=). The next heading's spot is further than 4 m from it.",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "interactables": [
+          {
+            "x": 7,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 4.286263797015736e-16,
+          "z": 7
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 4,
+        "distanceM": 7,
+        "misses": {
+          "street": 0,
+          "closed": 0,
+          "interactable": 4,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: something E acts on 6 m from the spot but 3.5 m from its stand: tier 1 needs the stands quiet too and turns it away; tier 2 takes it",
+      "note": "The stand (7, 2.5) is 3.5 m from it; tier 2 reads only the spot, 6 m off.",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.2
+          }
+        ],
+        "interactables": [
+          {
+            "x": 7,
+            "z": 6
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 7,
+          "z": 0
+        },
+        "tier": 2,
+        "ringM": 7,
+        "heading": 0,
+        "distanceM": 7,
+        "misses": {
+          "street": 79,
+          "closed": 0,
+          "interactable": 1,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: something E acts on 4.01 m from the spot is out of reach of it: tier 2 takes it (its stand (7, 2.5) is 1.51 m off)",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.2
+          }
+        ],
+        "interactables": [
+          {
+            "x": 7,
+            "z": 4.01
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 7,
+          "z": 0
+        },
+        "tier": 2,
+        "ringM": 7,
+        "heading": 0,
+        "distanceM": 7,
+        "misses": {
+          "street": 79,
+          "closed": 0,
+          "interactable": 1,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: a villager's slot nearer the spot than 4 m: tiers 1 and 2 turn it away, tier 3 takes it",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.2
+          }
+        ],
+        "slots": [
+          {
+            "x": 7,
+            "z": 3.99
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 7,
+          "z": 0
+        },
+        "tier": 3,
+        "ringM": 7,
+        "heading": 0,
+        "distanceM": 7,
+        "misses": {
+          "street": 158,
+          "closed": 0,
+          "interactable": 0,
+          "slot": 2
+        }
+      }
+    },
+    {
+      "name": "park: a villager's slot exactly 4 m from the spot: clear, tier 1",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.2
+          }
+        ],
+        "slots": [
+          {
+            "x": 7,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 7,
+          "z": 0
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 0,
+        "distanceM": 7,
+        "misses": {
+          "street": 0,
+          "closed": 0,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: a place with no finite point is refused",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": null,
+          "z": 0
+        }
+      },
+      "expected": {
+        "ok": false,
+        "code": "bad-place"
+      }
+    },
+    {
+      "name": "park: a ground height that is not a number is refused",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "groundY": "low"
+      },
+      "expected": {
+        "ok": false,
+        "code": "bad-place"
+      }
+    },
+    {
+      "name": "park: entries with no finite point are skipped",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": 0
+        },
+        "streets": [
+          {
+            "at": {
+              "x": null,
+              "z": 0
+            },
+            "radius": 50
+          },
+          {
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "radius": 0.2
+          }
+        ],
+        "buildings": [
+          {
+            "at": {
+              "x": "here",
+              "z": 0
+            },
+            "half": {
+              "x": 100,
+              "z": 100
+            }
+          }
+        ],
+        "statics": [
+          {
+            "at": {
+              "x": null,
+              "z": null
+            },
+            "radius": 100
+          }
+        ],
+        "slots": [
+          {
+            "x": null,
+            "z": 7
+          }
+        ],
+        "interactables": [
+          {
+            "x": 7,
+            "z": null
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 7,
+          "z": 0
+        },
+        "tier": 1,
+        "ringM": 7,
+        "heading": 0,
+        "distanceM": 7,
+        "misses": {
+          "street": 0,
+          "closed": 0,
+          "interactable": 0,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: a village street: the inn door's place, its villagers' slots, a fence, a barrel, a lamp and a side lane",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": -4
+        },
+        "groundY": 0,
+        "streets": [
+          {
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 40,
+              "z": 3
+            }
+          },
+          {
+            "at": {
+              "x": 12,
+              "z": 10
+            },
+            "half": {
+              "x": 2,
+              "z": 12
+            }
+          }
+        ],
+        "buildings": [
+          {
+            "at": {
+              "x": 0,
+              "z": -9
+            },
+            "half": {
+              "x": 4,
+              "z": 4
+            }
+          },
+          {
+            "at": {
+              "x": 10,
+              "z": -9
+            },
+            "half": {
+              "x": 4,
+              "z": 4
+            }
+          },
+          {
+            "at": {
+              "x": -10,
+              "z": -9
+            },
+            "half": {
+              "x": 4,
+              "z": 4
+            }
+          },
+          {
+            "at": {
+              "x": 5,
+              "z": 9
+            },
+            "half": {
+              "x": 3,
+              "z": 4
+            }
+          }
+        ],
+        "statics": [
+          {
+            "at": {
+              "x": -6,
+              "z": -3.1
+            },
+            "half": {
+              "x": 2,
+              "z": 0.05
+            },
+            "yMin": 0,
+            "yMax": 1.1
+          },
+          {
+            "at": {
+              "x": 4,
+              "z": 2.6
+            },
+            "radius": 0.3
+          }
+        ],
+        "slots": [
+          {
+            "x": 0,
+            "z": -3
+          },
+          {
+            "x": 1.5,
+            "z": -2.8
+          }
+        ],
+        "interactables": [
+          {
+            "x": -3,
+            "z": 2
+          },
+          {
+            "x": 6.5,
+            "z": -3.5
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": -10.162674857624154,
+          "z": 0.20951775601598843
+        },
+        "tier": 1,
+        "ringM": 11,
+        "heading": 7,
+        "distanceM": 11,
+        "misses": {
+          "street": 18,
+          "closed": 12,
+          "interactable": 9,
+          "slot": 0
+        }
+      }
+    },
+    {
+      "name": "park: the same street with a cart, a crate and a sign along the near kerb: every spot near the inn turned away",
+      "op": "park",
+      "input": {
+        "place": {
+          "x": 0,
+          "z": -4
+        },
+        "groundY": 0,
+        "streets": [
+          {
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 40,
+              "z": 3
+            }
+          },
+          {
+            "at": {
+              "x": 12,
+              "z": 10
+            },
+            "half": {
+              "x": 2,
+              "z": 12
+            }
+          }
+        ],
+        "buildings": [
+          {
+            "at": {
+              "x": 0,
+              "z": -9
+            },
+            "half": {
+              "x": 4,
+              "z": 4
+            }
+          },
+          {
+            "at": {
+              "x": 10,
+              "z": -9
+            },
+            "half": {
+              "x": 4,
+              "z": 4
+            }
+          },
+          {
+            "at": {
+              "x": -10,
+              "z": -9
+            },
+            "half": {
+              "x": 4,
+              "z": 4
+            }
+          },
+          {
+            "at": {
+              "x": 5,
+              "z": 9
+            },
+            "half": {
+              "x": 3,
+              "z": 4
+            }
+          }
+        ],
+        "statics": [
+          {
+            "at": {
+              "x": -6,
+              "z": -3.1
+            },
+            "half": {
+              "x": 2,
+              "z": 0.05
+            },
+            "yMin": 0,
+            "yMax": 1.1
+          },
+          {
+            "at": {
+              "x": 4,
+              "z": 2.6
+            },
+            "radius": 0.3
+          }
+        ],
+        "slots": [
+          {
+            "x": 0,
+            "z": -3
+          },
+          {
+            "x": 1.5,
+            "z": -2.8
+          }
+        ],
+        "interactables": [
+          {
+            "x": -3,
+            "z": 2
+          },
+          {
+            "x": 6.5,
+            "z": -3.5
+          },
+          {
+            "x": 7,
+            "z": 1
+          },
+          {
+            "x": -7,
+            "z": 1
+          },
+          {
+            "x": 10,
+            "z": -1
+          },
+          {
+            "x": -10,
+            "z": -1
+          },
+          {
+            "x": 0,
+            "z": 2.5
+          },
+          {
+            "x": 13,
+            "z": 2
+          },
+          {
+            "x": -13,
+            "z": 2
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "code": "no-open-spot",
+        "at": {
+          "x": 1.0606601717798214,
+          "z": -2.939339828220179
+        },
+        "onStreet": true,
+        "distanceM": 1.4999999999999998,
+        "misses": {
+          "street": 129,
+          "closed": 57,
+          "interactable": 54,
+          "slot": 0
+        }
+      }
+    }
+  ]
+}

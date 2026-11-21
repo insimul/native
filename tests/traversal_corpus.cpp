@@ -20,6 +20,9 @@
 //   traversal/session.json         file traversal/session, op run (the same runner)
 //   traversal/mounts.json          file traversal/mounts, ops tuning, pace, modes, run
 //   traversal/save.json            file traversal/save, ops block, read, restore
+//   traversal/vehicles-only.json   file traversal/vehicles-only, op run (the same runner;
+//                                  PL.native-vehicle-rows: core's PL.core-vehicle-rules,
+//                                  a game that runs the vehicles pack without traversal)
 //
 // Nothing here re-writes a case or computes an answer: every answer comes out of a
 // row. How each case is driven (core's own corpus test, which composes a case's
@@ -80,6 +83,15 @@
 //   restore {block, vehicles, params} → a session created with `vehicles` and `personal:
 //   params`, one `load` op: `{ ok:false, keys }`, or `{ ok, planner, vehicles,
 //   fastTravel, riding, dropped }` from the view (a load that records anything fails).
+//   vehicles-only run {vehicles, personal, steps}: ONE traversal.session.create with those
+//   and `runsTraversal: false` (core's runner: a VehicleRegistry with no planner, the
+//   personal vehicles, a recording bus), then each step one traversal.session.apply:
+//   board/drive/disembark → that op, vehicleOf, roster `{ report, aboard, vehicles, events }`;
+//   mount/dismount/cycle → that op `{ ok, refusal?, detail?, kind, pace, label, mountEvents,
+//   events }`; save → save `{ block }` (the row answers null: traversal does not run);
+//   load → load (the step's block passed as the file carries it; the row reads none)
+//   `{ dropped, vehicles, riding, events }` (the two from the view); intent and riders as
+//   in a session run. The session is disposed at the case's end.
 //
 // A step this runner does not know fails its case (never a skip). The run FAILS on a
 // file whose area is not one of these, on a systems-corpus file's header (file, catalog,
@@ -531,6 +543,13 @@ const std::vector<Area> &areas() {
 	     true,
 	     {"traversal-planner", "traversal-vehicles", "traversal-fast-travel"},
 	     {}},
+	    // PL.native-vehicle-rows: core's vehicles-only corpus (PL.core-vehicle-rules, U106(3)), a session
+	    // created with `runsTraversal: false`. core's TRAVERSAL_SYSTEMS_CORPUS_* for the file.
+	    {"traversal/vehicles-only", "traversal", {"run"},
+	     {"traversal.session.create", "traversal.session.apply"},
+	     true,
+	     {"traversal-vehicles"},
+	     {{"run", {"board", "drive", "disembark", "mount", "dismount", "cycle", "save", "load", "intent", "riders"}}}},
 	};
 	return list;
 }
@@ -1057,6 +1076,99 @@ bool drive_session(Caller &c, const JsonValue &input, JsonValuePtr &out, std::st
 	return true;
 }
 
+// vehicles-only {vehicles, personal, steps}: one traversal.session.create with `runsTraversal: false` per
+// case (core's vehiclesOnlyRun: no planner), then each step as core's runner records it, composed from the
+// ops' answers (see the file header).
+bool drive_vehicles_only(Caller &c, const JsonValue &input, JsonValuePtr &out, std::string &why) {
+	const JsonValue *steps = input.find("steps");
+	if (!steps || !steps->is_array()) return why = "a run needs steps", false;
+	Items cargs;
+	for (const char *k : {"vehicles", "personal"}) add_if(cargs, k, input.find(k));
+	cargs.emplace_back("runsTraversal", make_bool(false));
+	SessionScope scope{c, nullptr};
+	if (!open_session(c, cargs, scope, why)) return false;
+	Pending p;
+	std::vector<JsonValuePtr> rec, rs;
+	auto res = [&](std::size_t i, const char *key) -> JsonValuePtr {
+		const JsonValue *x = i < rs.size() ? rs[i]->find(key) : nullptr;
+		if (!x) {
+			if (why.empty()) why = std::string("traversal.session.apply answered no '") + key + "'";
+			return nullptr;
+		}
+		return copy_of(*x);
+	};
+	for (const auto &sp : steps->array_items) {
+		const JsonValue &step = *sp;
+		const std::string d = step.get_string("do");
+		const char *dn = d.c_str();
+		if (d == "board" || d == "drive" || d == "disembark") {
+			if (!session_apply(c, scope.handle, {op_of(dn, step, {"actor", "vehicle"}), op_of("vehicleOf", step, {"actor"}), op_of("roster", step, {})},
+			                   p, rs, nullptr, why))
+				return false;
+			JsonValuePtr report = res(0, "report"), aboard = res(1, "vehicle"), vehicles = res(2, "vehicles");
+			if (!report || !aboard || !vehicles) return false;
+			rec.push_back(record_of(d, {{"report", report}, {"aboard", aboard}, {"vehicles", vehicles}, {"events", take(p.events)}}));
+		} else if (d == "mount" || d == "dismount" || d == "cycle") {
+			if (!session_apply(c, scope.handle, {op_of(dn, step, {"actor", "kind"})}, p, rs, nullptr, why)) return false;
+			JsonValuePtr result = res(0, "result");
+			if (!result || !result->is_object()) return why.empty() ? (why = "a personal op answered no result object", false) : false;
+			Items items;
+			for (const char *k : {"ok", "refusal", "detail", "kind", "pace", "label"}) add_if(items, k, result->find(k));
+			const JsonValue *mount_events = result->find("events");
+			if (!mount_events) return why = "a personal op's result has no events", false;
+			items.emplace_back("mountEvents", copy_of(*mount_events));
+			items.emplace_back("events", take(p.events));
+			rec.push_back(record_of(d, items));
+		} else if (d == "save") {
+			if (!session_apply(c, scope.handle, {op_of("save", step, {})}, p, rs, nullptr, why)) return false;
+			JsonValuePtr block = res(0, "block");
+			if (!block) return false;
+			rec.push_back(record_of(d, {{"block", block}}));
+		} else if (d == "load") {
+			// The step's block (one a file still carries) goes to the row as the file has it; the row reads none.
+			JsonValuePtr view;
+			if (!session_apply(c, scope.handle, {op_of("load", step, {"block"})}, p, rs, &view, why)) return false;
+			JsonValuePtr ok = res(0, "ok"), dropped = res(0, "dropped");
+			if (!ok || !dropped) return false;
+			if (ok->type != JsonType::Bool || !ok->bool_value) return why = "a load without traversal answered ok false", false;
+			Items items = {{"dropped", dropped}};
+			for (const char *k : {"vehicles", "riding"}) {
+				const JsonValue *x = view->find(k);
+				if (!x) return why = std::string("the session's view has no '") + k + "'", false;
+				items.emplace_back(k, copy_of(*x));
+			}
+			items.emplace_back("events", take(p.events));
+			rec.push_back(record_of(d, items));
+		} else if (d == "intent") {
+			if (!session_apply(c, scope.handle, {op_of("riderIntent", step, {"actor", "prior"})}, p, rs, nullptr, why)) return false;
+			JsonValuePtr posture = res(0, "posture"), rider = res(0, "rider"), body = res(0, "body");
+			if (!posture || !rider || !body) return false;
+			const JsonValue *kind = posture->find("kind"), *aboard = posture->find("aboard");
+			if (!kind || !aboard) return why = "riderIntent's posture has no kind or aboard", false;
+			Items items;
+			add_if(items, "actor", step.find("actor"));
+			items.emplace_back("kind", copy_of(*kind));
+			items.emplace_back("aboard", copy_of(*aboard));
+			items.emplace_back("rider", rider);
+			items.emplace_back("body", body);
+			rec.push_back(record_of(d, items));
+		} else if (d == "riders") {
+			if (!session_apply(c, scope.handle, {op_of("riders", step, {"vehicle"})}, p, rs, nullptr, why)) return false;
+			JsonValuePtr riders = res(0, "riders");
+			if (!riders) return false;
+			Items items;
+			add_if(items, "vehicle", step.find("vehicle"));
+			items.emplace_back("riders", riders);
+			rec.push_back(record_of(d, items));
+		} else {
+			return why = "unknown vehicles-only step '" + d + "'", false;
+		}
+		g_steps[d]++;
+	}
+	out = make_array(rec);
+	return true;
+}
+
 // mounts tuning/pace/modes/run through the traversal.personal.* rows (core's runner: pure functions).
 bool drive_mounts(Caller &c, const std::string &op, const JsonValue &input, JsonValuePtr &out, std::string &why) {
 	auto row = [&](const char *method, const Items &args) -> JsonValuePtr {
@@ -1348,6 +1460,7 @@ int main(int argc, char **argv) {
 					if (area->key == "traversal/ground-seating") ok = drive_seating(c, op, *input, actual, why_case);
 					else if (area->key == "traversal/session") ok = drive_session(c, *input, actual, why_case);
 					else if (area->key == "traversal/mounts") ok = drive_mounts(c, op, *input, actual, why_case);
+					else if (area->key == "traversal/vehicles-only") ok = drive_vehicles_only(c, *input, actual, why_case);
 					else ok = drive_save(c, op, *input, actual, why_case);
 					if (ok) case_driven[op]++;
 				}

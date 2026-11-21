@@ -583,7 +583,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival, traversal, headless build, progression, village save and villager pass-by ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival, traversal (vehicles-only among them), headless build, progression, village save, villager pass-by and world-vehicle parking ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -813,7 +813,13 @@
   with one apply per step; the runner keeps the recordings pending until a step
   records them, as core's runner does. Unreal's `Portable/InsimulTraversal` is the
   interim copy both slices retire (`P9e.unreal.retire-traversal-copy`;
-  `corebridge/ENGINE_BINDINGS.md` maps every function of it to its row).
+  `corebridge/ENGINE_BINDINGS.md` maps every function of it to its row). A session's
+  `load` runs core's `loadVehicleLayers` (the registry starts again from the authored
+  vehicles, then takes the block's), as core's session runner loads; a session created
+  with `runsTraversal: false` is a game that runs the vehicles pack WITHOUT traversal
+  (PL.native-vehicle-rows; core's `conformance/traversal/vehicles-only.json`, in the same
+  set and runner): no planner, director or meter (their ops are unknown ops), `save`
+  writes no block and `load` reads none, even one given.
 - **The headless build rows (PL.native-headless-build, U106(1), U107) run core's
   P10 corpus UNCHANGED**, `conformance/build/headless.json` copied as its own set
   (`BUILD_CORPUS_FROM`) to `vendor/core/conformance/headless-build/headless.json`:
@@ -981,6 +987,30 @@
   `Portable/InsimulPassBy` is the interim copy these rows retire
   (`P4.unreal.retire-pass-by-copy`; `corebridge/ENGINE_BINDINGS.md` maps it function by
   function).
+- **The world-vehicle parking rows (PL.native-vehicle-rows, U115, U128) run core's
+  `conformance/props/vehicle-placement.json` UNCHANGED**, copied with the props set
+  (`PROPS_CORPUS_FILES`; 26 cases at 45409ed: park 23, probes 3) and driven by
+  `tests/props_vehicle_placement_corpus.cpp` as `props_vehicle_placement_corpus` (+
+  `_negative`): ONE row call per case, in the file's order, as core's runner
+  (`props/vehicle-placement-corpus.ts`, `runVehiclePlacementOp`) makes one core call,
+  compared by the corpus's own rule (its `tolerance`, key sets included; its `numerics` must
+  name double precision). `emit-bridge-cases.mjs` transcribes it into
+  `vendor/core/cases/core-props-vehicle-placement.json` and `core_vendor` holds that
+  transcription to the vendored corpus case by case and its contract case to the corpus's
+  contract (`core_vendor_vehicle_placement_negative` must see thirteen perturbations named). One
+  case's `distanceM` is one ulp apart on QuickJS and V8 (`Math.hypot`), within the corpus's
+  tolerance: it is a declared library-version answer, which the guard holds to the corpus.
+  `props.vehicle.park` is core's `parkVehicle` and `props.vehicle.streetProbes` its
+  `vehicleStreetProbes`, STATELESS, a refusal (`no-open-spot`, `bad-place`) a VALUE;
+  `props.vehicle.contract` states every VEHICLE_PARK_* constant keyed as the corpus's
+  contract keys it, with its export name, the refusals, tiers and deviations.
+  `[invalid-input]` only for what core cannot read (a list that is not an array, a null
+  `streets`); every other member goes to core as sent, because core reads it and its corpus
+  pins the reading. Core's `isStreet`/`isOpen` callbacks have no row: the binding states its
+  street and statics as areas. Never import `props/vehicle-placement-corpus` (core's runner).
+  Unreal's `Portable/InsimulVehicleRules` is the interim copy these rows (with the
+  interactables, rider and session rows already here) retire
+  (`P9e.unreal.retire-vehicle-rules-copy`; `corebridge/ENGINE_BINDINGS.md` maps it).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

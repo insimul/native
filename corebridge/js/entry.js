@@ -261,7 +261,9 @@ import {
 	personalVehicleTuning,
 } from '@insimul/core/traversal/personal-vehicles';
 import { canonicalLent, lendMode, personalLender, returnMode, vehicleLender } from '@insimul/core/traversal/mode-lending';
-import { TRAVERSAL_EXTENSION_KEY, readTraversalBlock, traversalBlockOf, traversalSaveBlock } from '@insimul/core/traversal/traversal-save';
+// `loadVehicleLayers` (core's PL.core-vehicle-rules, U106(3)): what a load does to the world vehicles and the
+// riders, in a session that runs traversal (the block's) and in one that runs the vehicles pack alone (none).
+import { TRAVERSAL_EXTENSION_KEY, loadVehicleLayers, readTraversalBlock, traversalBlockOf, traversalSaveBlock } from '@insimul/core/traversal/traversal-save';
 // The rider's intent (core's PL.core-ride-intent, 844020e, U106(4); bound here by PL.native-bundle-core):
 // the `traversal.rider.*` rows and the session's `riderIntent` and `riders` ops.
 import { bodyIntent, riderIntent, riderPostureOf, vehicleRiderIntents } from '@insimul/core/traversal/rider-intent';
@@ -624,6 +626,39 @@ import {
 // One E press, one object (core's PL.core-interact-pick-precedence, U118(4)): the
 // language world's examine pick, which a press weighs against the target above.
 import { EXAMINE_RANGE, examinePick } from '@insimul/core/language-learning/prompt-selector';
+
+// ── where a world vehicle is parked (PL.native-vehicle-rows, U128, U115; core's PL.core-vehicle-rules, U106(3)) ──
+// Core's parking rule (src/props/vehicle-placement.ts): the street spot a world vehicle nobody drives stands at by its
+// place, in three tiers, or a refusal (`no-open-spot` with the spot an engine that still draws it draws it at, or
+// `bad-place`), and the street search's probe points. Data in, decision out, in core's metres on its ground plane
+// (x, z). The `props.vehicle.*` rows call these and decide nothing, so an engine drops its own copy of
+// `parkVehicle` / `vehicleStreetProbes` (Unreal's interim `Portable/InsimulVehicleRules`) for them. The constants,
+// tiers, refusals and deviations are imported for `props.vehicle.contract`. Never
+// `props/vehicle-placement-corpus`, core's corpus runner: its comparator import is the save-file code
+// UNBUNDLED_CORE_MODULES refuses.
+import {
+	VEHICLE_PARKING_DEVIATIONS,
+	VEHICLE_PARKING_REFUSALS,
+	VEHICLE_PARK_BODY_HIGH_M,
+	VEHICLE_PARK_BODY_LOW_M,
+	VEHICLE_PARK_BODY_RADIUS_M,
+	VEHICLE_PARK_FALLBACK_M,
+	VEHICLE_PARK_FOOTPRINT_MARGIN_M,
+	VEHICLE_PARK_HEADINGS,
+	VEHICLE_PARK_MIN_FROM_PLACE_M,
+	VEHICLE_PARK_REACH_M,
+	VEHICLE_PARK_REACH_MARGIN_M,
+	VEHICLE_PARK_RINGS_M,
+	VEHICLE_PARK_SLOT_CLEAR_M,
+	VEHICLE_PARK_SNAP_DIRECTIONS,
+	VEHICLE_PARK_SNAP_M,
+	VEHICLE_PARK_SNAP_STEP_M,
+	VEHICLE_PARK_STANDS,
+	VEHICLE_PARK_STAND_M,
+	VEHICLE_PARK_TIERS,
+	parkVehicle,
+	vehicleStreetProbes,
+} from '@insimul/core/props/vehicle-placement';
 
 // ── language learning (PL.native-language-rows, slice 1: U128, U118, U107(2)) ──
 // Core's P9h language kernels: the language book and the player's CEFR facts, the
@@ -2088,12 +2123,14 @@ function traversalSavePartsOf(method, args) {
  * A traversal session's view: what each layer remembers, as a save carries it —
  * core's `TraversalPlanner.serialize()`, `VehicleRegistry.serialize()`,
  * `FastTravelDirector.serialize()` and `personalVehicleSaveRows()` of who rides what.
+ * A session that runs the vehicles pack without traversal has no planner and no
+ * director: `planner` and `fastTravel` are null.
  */
 function traversalSessionView(s) {
 	return plain({
-		planner: s.planner.serialize(),
+		planner: s.planner ? s.planner.serialize() : null,
 		vehicles: s.registry.serialize(),
-		fastTravel: s.director.serialize(),
+		fastTravel: s.director ? s.director.serialize() : null,
 		riding: personalVehicleSaveRows(s.riding),
 	});
 }
@@ -2140,7 +2177,8 @@ async function personalSessionVerb(s, verb, op) {
 	}
 	s.riding = r.state;
 	let delta = null;
-	if (r.ok) {
+	// No planner (the vehicles pack without traversal): no mode is lent, as core's vehicles-only runner plays it.
+	if (r.ok && s.planner) {
 		const held = personalVehicleModes({ modes: s.planner.modesOf(actor), lent: s.planner.lentOf(actor) }, before, r.kind, s.ptuning);
 		delta = await s.planner.setModes(actor, held.modes, held.lent);
 	}
@@ -3874,6 +3912,69 @@ function passByContract() {
 		names: Object.fromEntries(PASS_BY_CONSTANTS.map(([key, name]) => [key, name])),
 		measuredAbreastS: PASS_BY_ABREAST_MEASURED_S,
 		sideFrames: PASS_BY_SIDE_FRAMES,
+	});
+}
+
+// ── where a world vehicle is parked (PL.native-vehicle-rows) ──────────────────
+// The props rows' line (`interactInputOf`, `pickupWorldOf`): an argument is checked
+// for the JSON type core reads it as and nothing more, and goes to core AS IS, because
+// core reads every member itself and its corpus pins the reading: a `place` or
+// `groundY` that is not finite is core's `bad-place` VALUE (a null or absent groundY
+// is 0), a list entry with no finite point is skipped, a footprint with no finite
+// `half` is a circle, a radius that is not a number is 0, an axis that is not a
+// finite non-zero point is +x, a height band that is not two numbers is no band.
+// What core cannot read is refused: a list that is not an array (core walks it; a
+// string would be walked by character, an object throws), and a null `streets`
+// (core tells absent, the street everywhere, from a list, `[]` nowhere, by
+// `=== undefined`, then walks it). The other four lists read null as absent (`?? []`).
+
+/** core's `PickupPoint` as `vehicleStreetProbes` reads it: a point on the ground plane. */
+const VEHICLE_POINT = [['x', tNum, REQ], ['z', tNum, REQ]];
+
+/** core's `VehicleParkingInput`, checked for the types core reads (see above), returned as given. */
+function vehicleParkingInputOf(method, args) {
+	if (args.streets !== undefined) {
+		if (args.streets === null) throw refuse(method, '`streets` must not be null: absent is the street everywhere, [] nowhere');
+		needArray(method, args.streets, 'streets');
+	}
+	for (const key of ['buildings', 'statics', 'slots', 'interactables']) optArrayValue(method, args[key], key);
+	return args;
+}
+
+/**
+ * core's VEHICLE_PARK_* constants, keyed as core's corpus contract keys them
+ * (`conformance/props/vehicle-placement.json` `contract.constants`, built by core's
+ * `scripts/emit-vehicle-placement-corpus.ts`), each with the name core exports it
+ * under. The values are core's own exports (`reachM` is core's computed
+ * VEHICLE_PARK_REACH_M); nothing here restates a number.
+ */
+const VEHICLE_PARK_CONSTANTS = [
+	['ringsM', 'VEHICLE_PARK_RINGS_M', VEHICLE_PARK_RINGS_M],
+	['headings', 'VEHICLE_PARK_HEADINGS', VEHICLE_PARK_HEADINGS],
+	['snapM', 'VEHICLE_PARK_SNAP_M', VEHICLE_PARK_SNAP_M],
+	['snapStepM', 'VEHICLE_PARK_SNAP_STEP_M', VEHICLE_PARK_SNAP_STEP_M],
+	['snapDirections', 'VEHICLE_PARK_SNAP_DIRECTIONS', VEHICLE_PARK_SNAP_DIRECTIONS],
+	['minFromPlaceM', 'VEHICLE_PARK_MIN_FROM_PLACE_M', VEHICLE_PARK_MIN_FROM_PLACE_M],
+	['footprintMarginM', 'VEHICLE_PARK_FOOTPRINT_MARGIN_M', VEHICLE_PARK_FOOTPRINT_MARGIN_M],
+	['bodyRadiusM', 'VEHICLE_PARK_BODY_RADIUS_M', VEHICLE_PARK_BODY_RADIUS_M],
+	['bodyLowM', 'VEHICLE_PARK_BODY_LOW_M', VEHICLE_PARK_BODY_LOW_M],
+	['bodyHighM', 'VEHICLE_PARK_BODY_HIGH_M', VEHICLE_PARK_BODY_HIGH_M],
+	['stands', 'VEHICLE_PARK_STANDS', VEHICLE_PARK_STANDS],
+	['standM', 'VEHICLE_PARK_STAND_M', VEHICLE_PARK_STAND_M],
+	['slotClearM', 'VEHICLE_PARK_SLOT_CLEAR_M', VEHICLE_PARK_SLOT_CLEAR_M],
+	['reachMarginM', 'VEHICLE_PARK_REACH_MARGIN_M', VEHICLE_PARK_REACH_MARGIN_M],
+	['reachM', 'VEHICLE_PARK_REACH_M', VEHICLE_PARK_REACH_M],
+	['fallbackM', 'VEHICLE_PARK_FALLBACK_M', VEHICLE_PARK_FALLBACK_M],
+];
+
+/** `props.vehicle.contract`'s answer: the constants, their export names, the refusals, the tiers and the deviations. */
+function vehicleParkingContract() {
+	return plain({
+		constants: Object.fromEntries(VEHICLE_PARK_CONSTANTS.map(([key, , value]) => [key, value])),
+		names: Object.fromEntries(VEHICLE_PARK_CONSTANTS.map(([key, name]) => [key, name])),
+		refusals: VEHICLE_PARKING_REFUSALS,
+		tiers: VEHICLE_PARK_TIERS,
+		deviations: VEHICLE_PARKING_DEVIATIONS,
 	});
 }
 
@@ -7801,6 +7902,48 @@ const METHODS = {
 		return { noun: propNoun(archetype) };
 	},
 
+	// Where a world vehicle is parked (PL.native-vehicle-rows, U128, U115; core's
+	// PL.core-vehicle-rules, U106(3), U49(3)). Stateless, one core function each,
+	// answering what core's function answers (the shape its corpus runner,
+	// `runVehiclePlacementOp`, records: ops park and probes). Metres on core's ground
+	// plane `(x, z)`, heights `y`, angles from +x toward +z; a binding maps its own frame
+	// in (Unreal: its (X, Y) ÷ 100 as core (z, x) since B9.unreal.core-handedness, its
+	// Z ÷ 100 as y) and states its street, footprints and statics as areas (core's
+	// `isStreet` / `isOpen` callbacks cannot cross this ABI, so they have no row). A
+	// refusal (`no-open-spot`, `bad-place`) is a VALUE `{ ok: false, code, … }`; the
+	// rows' own errors are `[invalid-input]` for a member of a JSON type core cannot read.
+
+	/** `props.vehicle.contract` → `{ constants, names, refusals, tiers, deviations }` — core's VEHICLE_PARK_* constants keyed as its corpus contract keys them, the name each is exported under, VEHICLE_PARKING_REFUSALS, VEHICLE_PARK_TIERS and VEHICLE_PARKING_DEVIATIONS. */
+	'props.vehicle.contract': () => vehicleParkingContract(),
+
+	/**
+	 * `props.vehicle.park { place, groundY?, streets?, buildings?, statics?, slots?,
+	 * interactables? }` → core's `parkVehicle`: `{ ok: true, at, tier, ringM, heading,
+	 * distanceM, misses: { street, closed, interactable, slot } }`, or `{ ok: false, code:
+	 * 'no-open-spot', at, onStreet, distanceM, misses }` (`at` is where an engine that still
+	 * draws the vehicle draws it), or `{ ok: false, code: 'bad-place' }`. `streets` absent is
+	 * the street everywhere, `[]` nowhere; each footprint is a box (`at`, `half`, `axis`) or
+	 * a circle (`at`, `radius`), a static with an optional height band (`yMin`, `yMax`).
+	 * Called once per world vehicle nobody drives, at its registry location's place, at
+	 * world start and after every load (core's `docs/traversal-systems.md` §9).
+	 */
+	'props.vehicle.park': (args) => {
+		const input = coded('invalid-input', () => vehicleParkingInputOf('props.vehicle.park', args));
+		return plain(parkVehicle(input));
+	},
+
+	/**
+	 * `props.vehicle.streetProbes { at, radiusM }` → `{ points: [{ x, z }] }` — core's
+	 * `vehicleStreetProbes`: the street search's probe points round `at`, nearest first
+	 * (the point, then rings 0.75 m apart out to `radiusM`, eight ways round, odd rings
+	 * turned half a step). The points a parking spot is snapped to and the fallback walks.
+	 */
+	'props.vehicle.streetProbes': (args) => {
+		const m = 'props.vehicle.streetProbes';
+		coded('invalid-input', () => declared(m, args, 'args', [['at', tObj(VEHICLE_POINT), REQ], ['radiusM', tNum, REQ]]));
+		return { points: plain(vehicleStreetProbes(args.at, args.radiusM)) };
+	},
+
 	/**
 	 * `inventory.create { player? }` → `{ session, view }` — the inventory panel's
 	 * `InventoryViewModel` (`ui/inventory-model`, moved into core from Babylon by
@@ -9084,9 +9227,38 @@ const METHODS = {
 	 * Probe and locomotion are callbacks core calls mid-decision, which cannot cross
 	 * this ABI, so the host states its answers as data (and restates them with the
 	 * `host` op); a host whose actor ends up elsewhere later says so with `arrive`.
+	 *  - `runsTraversal: false` (PL.native-vehicle-rows; core's PL.core-vehicle-rules,
+	 *    U106(3)): a game that runs the vehicles pack WITHOUT traversal, as core's
+	 *    `traversal/vehicles-only` corpus plays it — a `VehicleRegistry` with no planner
+	 *    (nobody's location asserted, no mode lent) and the personal vehicles on the
+	 *    recording bus, no fast travel. Only `vehicles` and `personal` may be given (every
+	 *    other member configures the planner or the director, and is refused); the view's
+	 *    `planner` and `fastTravel` are null; `save` writes no block and `load` reads none
+	 *    (see `traversal.session.apply`). Absent, null or true: the session above.
 	 */
 	'traversal.session.create': (args) => {
 		const m = 'traversal.session.create';
+		const runsTraversal = coded('invalid-input', () => optBoolean(m, args.runsTraversal, 'runsTraversal') ?? true);
+		if (!runsTraversal) {
+			const input = coded('invalid-input', () => {
+				for (const key of ['links', 'tuning', 'fastTravel', 'seed', 'stamina', 'probe', 'locomotion']) {
+					if (args[key] !== undefined && args[key] !== null) {
+						throw refuse(m, `\`${key}\` configures traversal, which a session with \`runsTraversal: false\` does not run`);
+					}
+				}
+				return {
+					vehicles: optionalArg(args.vehicles, (v) => objectList(m, v, 'vehicles')) ?? [],
+					personal: personalParamsArg(m, args.personal, 'personal'),
+				};
+			});
+			// core's vehicles-only runner: new VehicleRegistry({ vehicles, eventBus }), no planner, no director.
+			const s = { events: [], orders: [], clock: [], hosts: { probe: null, stuck: null } };
+			const bus = new GameEventBus();
+			bus.onAny((event) => void s.events.push(plain(event)));
+			const registry = new VehicleRegistry({ vehicles: vehiclesFromIR(input.vehicles), eventBus: bus });
+			Object.assign(s, { planner: null, registry, director: null, pool: null, ptuning: personalVehicleTuning(input.personal), riding: initialPersonalVehicles() });
+			return { session: openSession('traversal', s), view: traversalSessionView(s) };
+		}
 		const input = coded('invalid-input', () => ({
 			links: optionalArg(args.links, (v) => objectList(m, v, 'links')),
 			tuning: optionalArg(args.tuning, (v) => traversalTuningArg(m, v, 'tuning')),
@@ -9179,10 +9351,20 @@ const METHODS = {
 	 *    Neither changes any state.
 	 *  - save: `save` → `{ key, block }` (the four layers' block, as `traversal.save.block`
 	 *    writes it); `load { block? }` → `{ ok: true, dropped }` after core's
-	 *    `readTraversalBlock` hands each member to its layer's `restore()` and `riding` to
-	 *    `personalVehiclesFromSave`, or the VALUE `{ ok: false, keys }` with nothing
-	 *    changed (an absent or null block reads as no traversal: nothing restored, and
-	 *    nobody riding).
+	 *    `readTraversalBlock` hands `planner` and `fastTravel` to their layers' `restore()`
+	 *    and the block to core's `loadVehicleLayers` (the registry starts again from the
+	 *    world's authored vehicles, then takes the block's `vehicles`; the riders are the
+	 *    block's `riding`, through `personalVehiclesFromSave`), as core's session runner
+	 *    loads; or the VALUE `{ ok: false, keys }` with nothing changed. An absent or null
+	 *    block reads as no traversal: planner and fast travel untouched, every world
+	 *    vehicle back at its authored place with nobody aboard, and nobody riding.
+	 *  - a session created with `runsTraversal: false` knows only the registry, personal,
+	 *    rider, `save` and `load` ops (a planner, director, meter or host op is an unknown
+	 *    op). There `save` → `{ key, block: null }` (traversal owns the block and does not
+	 *    run, so the game writes none) and `load { block? }` → `{ ok: true, dropped }` after
+	 *    core's `loadVehicleLayers(registry, null)`: it reads NO block, even one given (a
+	 *    file written while traversal ran still carries one), so every world vehicle is back
+	 *    at its authored place with nobody aboard and every rider on foot. Silent: no events.
 	 *  - `host { probe?, stuck? }` → `{}`: replace the scripted geometry answers or the
 	 *    `stuck` table (only for a session created with a probe / a locomotion host).
 	 * The view is the four layers' state (`traversalSessionView`). Every op settles the
@@ -9258,19 +9440,26 @@ const METHODS = {
 			cycle: (st, op) => personalSessionVerb(st, 'cycle', op),
 			save: (st) => ({
 				key: TRAVERSAL_EXTENSION_KEY,
-				block: traversalBlockOf(
-					traversalSaveBlock({ planner: st.planner.serialize(), vehicles: st.registry.serialize(), fastTravel: st.director.serialize(), riding: st.riding }),
-				),
+				// Without traversal the game writes no block (core's vehicles-only runner: `{ block: null }`).
+				block: st.planner
+					? traversalBlockOf(
+							traversalSaveBlock({ planner: st.planner.serialize(), vehicles: st.registry.serialize(), fastTravel: st.director.serialize(), riding: st.riding }),
+						)
+					: null,
 			}),
 			load: (st, op) => {
-				const read = readTraversalBlock(op.block);
-				if (!read.ok) return { ok: false, keys: read.keys };
-				const b = read.value;
-				if (b?.planner) st.planner.restore(b.planner);
-				if (b?.vehicles) st.registry.restore(b.vehicles);
-				if (b?.fastTravel) st.director.restore(b.fastTravel);
-				const back = personalVehiclesFromSave(b?.riding ?? {}, st.ptuning);
-				st.riding = back.state;
+				// Without traversal no block is read, whatever the op carries (core's loadVehicleLayers(registry, null)).
+				let b = null;
+				if (st.planner) {
+					const read = readTraversalBlock(op.block);
+					if (!read.ok) return { ok: false, keys: read.keys };
+					b = read.value;
+					if (b?.planner) st.planner.restore(b.planner);
+					if (b?.fastTravel) st.director.restore(b.fastTravel);
+				}
+				// The registry starts again from the world's vehicles, then takes the block's (core's session runner).
+				const back = loadVehicleLayers(st.registry, b, st.ptuning);
+				st.riding = back.riding;
 				return { ok: true, dropped: back.dropped };
 			},
 			host: (st, op) => {
@@ -9286,8 +9475,12 @@ const METHODS = {
 				return {};
 			},
 		};
+		// A session without traversal (`runsTraversal: false`) has no planner, director, meter or host to ask.
+		const traversalOnly = new Set(['register', 'setModes', 'lendMode', 'returnMode', 'arrive', 'block', 'unblock', 'isBlocked', 'affordances', 'route',
+			'canTraverse', 'traverse', 'locationOf', 'modesOf', 'lentOf', 'discover', 'discoveries', 'destinations', 'canFastTravel', 'fastTravel', 'meter', 'host']);
 		const recorded = {};
 		for (const [name, fn] of Object.entries(ops)) {
+			if (s.planner === null && traversalOnly.has(name)) continue;
 			recorded[name] = async (st, op) => {
 				const answer = await fn(st, op);
 				await st.registry.settle();

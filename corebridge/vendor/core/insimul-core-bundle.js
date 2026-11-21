@@ -3076,8 +3076,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     const [first, ...rest] = Array.from(raw);
     return LOCAL_ID_GUARD + percentEncodeChar(first) + encodeLocalIdBody(rest.join(""));
   }
-  function unsanitizeLocalId(local) {
-    const body2 = local.startsWith(LOCAL_ID_GUARD) ? local.slice(LOCAL_ID_GUARD.length) : local;
+  function unsanitizeLocalId(local2) {
+    const body2 = local2.startsWith(LOCAL_ID_GUARD) ? local2.slice(LOCAL_ID_GUARD.length) : local2;
     const bytes = [];
     let out = "";
     const flush = () => {
@@ -4254,6 +4254,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       fastTravel: b.fastTravel ? { discovered: [...b.fastTravel.discovered], journeys: b.fastTravel.journeys } : null,
       riding: Object.fromEntries(Object.keys(b.riding).sort(compareIds).map((actor) => [actor, b.riding[actor]]))
     };
+  }
+  function loadVehicleLayers(registry, block, tuning) {
+    registry.loadVehicles(registry.getVehicles());
+    if (block?.vehicles) registry.restore(block.vehicles);
+    const back = personalVehiclesFromSave(block?.riding ?? {}, tuning);
+    return { riding: back.state, dropped: back.dropped };
   }
 
   // @insimul/core/src/conversation/context-memory.ts
@@ -10610,9 +10616,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       let nearest = null;
       let nearestDist = Infinity;
       for (const wp of waypoints) {
-        const dist = this.distance2D(playerPosition, wp.position);
-        if (dist < nearestDist) {
-          nearestDist = dist;
+        const dist2 = this.distance2D(playerPosition, wp.position);
+        if (dist2 < nearestDist) {
+          nearestDist = dist2;
           nearest = wp;
         }
       }
@@ -10642,8 +10648,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
      * Delegates to shared computeWaypointAlpha for consistent breakpoints.
      */
     getDistanceAlpha(playerPosition, waypointPosition) {
-      const dist = this.distance2D(playerPosition, waypointPosition);
-      return computeWaypointAlpha(dist);
+      const dist2 = this.distance2D(playerPosition, waypointPosition);
+      return computeWaypointAlpha(dist2);
     }
     // ── Private helpers ──────────────────────────────────────────────────────
     getIncompleteObjectives(quest) {
@@ -10850,9 +10856,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       let nearest = null;
       let nearestDist = Infinity;
       for (const npc of npcPositions) {
-        const dist = this.distance2D(playerPosition, npc.position);
-        if (dist < nearestDist) {
-          nearestDist = dist;
+        const dist2 = this.distance2D(playerPosition, npc.position);
+        if (dist2 < nearestDist) {
+          nearestDist = dist2;
           nearest = npc;
         }
       }
@@ -34672,9 +34678,9 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
      * must never grow one.
      */
     async refusalToward(graph, actor, destination) {
-      const toward = (await graph.affordances(actor)).filter((way) => way.to === destination);
-      if (toward.length === 0) return void 0;
-      return toward.sort((a, b) => a.cost - b.cost)[0].refusal;
+      const toward2 = (await graph.affordances(actor)).filter((way) => way.to === destination);
+      if (toward2.length === 0) return void 0;
+      return toward2.sort((a, b) => a.cost - b.cost)[0].refusal;
     }
     // ── Failure bookkeeping ───────────────────────────────────────────────────
     /**
@@ -38491,7 +38497,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     }
     const reach = { ...INTERACT_RANGES_M, ...ranges };
     const at = input.at;
-    const dist = (p) => Math.hypot(p.x - at.x, p.z - at.z);
+    const dist2 = (p) => Math.hypot(p.x - at.x, p.z - at.z);
     const actions = [];
     const looks = [];
     const offer = (list3, t, range) => {
@@ -38499,21 +38505,21 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     };
     const v = input.villager;
     if (v && nonEmpty3(v.id) && finitePoint2(v.position)) {
-      offer(actions, { action: "talk", kind: "villager", id: v.id, prompt: `Talk to ${nonEmpty3(v.name) ? v.name : v.id}`, distance: dist(v.position) }, reach.talk);
+      offer(actions, { action: "talk", kind: "villager", id: v.id, prompt: `Talk to ${nonEmpty3(v.name) ? v.name : v.id}`, distance: dist2(v.position) }, reach.talk);
     }
     for (const p of input.pickups ?? []) {
       if (!p || !nonEmpty3(p.id) || p.taken === true || !finitePoint2(p.position)) continue;
-      offer(actions, { action: "pick_up", kind: "pickup", id: p.id, prompt: `Pick up ${nonEmpty3(p.name) ? p.name : p.id}`, distance: dist(p.position) }, reach.pick_up);
+      offer(actions, { action: "pick_up", kind: "pickup", id: p.id, prompt: `Pick up ${nonEmpty3(p.name) ? p.name : p.id}`, distance: dist2(p.position) }, reach.pick_up);
     }
     for (const k of input.containers ?? []) {
       if (!k || !nonEmpty3(k.id) || !finitePoint2(k.position)) continue;
-      offer(actions, { action: "open_container", kind: "container", id: k.id, prompt: `Open the ${asciiLower(nonEmpty3(k.label) ? k.label : "container")}`, distance: dist(k.position) }, reach.open_container);
+      offer(actions, { action: "open_container", kind: "container", id: k.id, prompt: `Open the ${asciiLower(nonEmpty3(k.label) ? k.label : "container")}`, distance: dist2(k.position) }, reach.open_container);
     }
     for (const p of input.props ?? []) {
       if (!p || !nonEmpty3(p.id) || !finitePoint2(p.position)) continue;
       const m = propInteraction(p, input.board);
       if (m.action === null) continue;
-      const t = { action: m.action, kind: "prop", id: p.id, prompt: m.prompt, distance: dist(p.position) };
+      const t = { action: m.action, kind: "prop", id: p.id, prompt: m.prompt, distance: dist2(p.position) };
       if (m.action === "open_board") offer(actions, t, reach.open_board);
       else offer(looks, t, reach[m.action]);
     }
@@ -38528,13 +38534,13 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
         const respawned = now !== null && typeof n.respawnAt === "number" && Number.isFinite(n.respawnAt) && n.respawnAt <= now;
         if (n.remaining <= 0 && !respawned) continue;
         const words = nonEmpty3(n.item) ? n.item.replace(/_/g, " ") : n.id;
-        offer(actions, { action: "gather", kind: "node", id: n.id, prompt: `Gather ${words}`, distance: dist(n.position) }, reach.gather);
+        offer(actions, { action: "gather", kind: "node", id: n.id, prompt: `Gather ${words}`, distance: dist2(n.position) }, reach.gather);
       }
       const table2 = input.actionTable ?? DEFAULT_PHYSICAL_ACTION_TUNING;
       for (const h of input.hotspots ?? []) {
         if (!h || !nonEmpty3(h.id) || !nonEmpty3(h.actionType) || !finitePoint2(h.position)) continue;
         if (!(table2.actions ?? []).some((a) => a.id === h.actionType)) continue;
-        offer(actions, { action: "perform", kind: "hotspot", id: h.id, prompt: actionPrompt(table2, h.actionType), distance: dist(h.position) }, reach.perform);
+        offer(actions, { action: "perform", kind: "hotspot", id: h.id, prompt: actionPrompt(table2, h.actionType), distance: dist2(h.position) }, reach.perform);
       }
     }
     const nearest = (list3) => {
@@ -38547,19 +38553,19 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     const rides = [];
     for (const w of input.vehicles ?? []) {
       if (!w || !nonEmpty3(w.id) || !finitePoint2(w.position)) continue;
-      offer(rides, { action: "board", kind: "vehicle", id: w.id, prompt: `Board the ${nonEmpty3(w.name) ? w.name : w.id}`, distance: dist(w.position) }, reach.board);
+      offer(rides, { action: "board", kind: "vehicle", id: w.id, prompt: `Board the ${nonEmpty3(w.name) ? w.name : w.id}`, distance: dist2(w.position) }, reach.board);
     }
     return { ok: true, target: nearest(rides) };
   }
   function interiorTarget(input, buildingId, stated2, ranges) {
     const reach = { ...INTERACT_RANGES_M, ...ranges };
     const at = input.at;
-    const dist = (p) => Math.hypot(p.x - at.x, p.z - at.z);
+    const dist2 = (p) => Math.hypot(p.x - at.x, p.z - at.z);
     const onFloor = (y) => !Number.isFinite(at.y) || !Number.isFinite(y) || Math.abs(at.y - y) < INTERACT_FLOOR_BAND_M;
     const inReach = [];
     for (const k of input.interior?.containers ?? []) {
       if (!k || !nonEmpty3(k.id) || !finitePoint2(k.position)) continue;
-      const d2 = dist(k.position);
+      const d2 = dist2(k.position);
       if (onFloor(k.position.y) && d2 <= reach.open_container) inReach.push({ action: "open_container", kind: "container", id: k.id, prompt: `Open the ${asciiLower(nonEmpty3(k.label) ? k.label : "container")}`, distance: d2 });
     }
     let exit = null;
@@ -38568,7 +38574,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     if (d !== null && d.action === "exit") {
       const b = buildings.find((x) => x.id === buildingId);
       const entrance = stated2 ? (b?.interior?.doors ?? []).find((x) => x && x.kind === "entrance") : void 0;
-      const distance2 = entrance && finitePoint2(entrance.position) ? dist(entrance.position) : null;
+      const distance2 = entrance && finitePoint2(entrance.position) ? dist2(entrance.position) : null;
       exit = { action: "exit", kind: "door", id: d.building, prompt: `Exit ${d.label}`, distance: distance2 };
       if (distance2 !== null && onFloor(entrance?.position.y) && distance2 <= reach.exit) inReach.push(exit);
     }
@@ -38741,8 +38747,8 @@ Do NOT mention that you are increasing difficulty. Be natural.
   }
   var rank = (l) => CEFR_ORDER.indexOf(l);
   function filterQuestsByCefr(quests, player) {
-    const dist = (q) => Math.abs(rank(q.cefrLevel ?? player) - rank(player));
-    return quests.filter((q) => !q.cefrLevel || Math.abs(rank(q.cefrLevel) - rank(player)) <= 1).sort((a, b) => dist(a) - dist(b)).map((q) => q.id);
+    const dist2 = (q) => Math.abs(rank(q.cefrLevel ?? player) - rank(player));
+    return quests.filter((q) => !q.cefrLevel || Math.abs(rank(q.cefrLevel) - rank(player)) <= 1).sort((a, b) => dist2(a) - dist2(b)).map((q) => q.id);
   }
   var CEFR_ADVANCEMENT = Object.freeze({
     "A1\u2192A2": { wordsLearned: 50, conversations: 3, textsRead: 0 },
@@ -39431,6 +39437,157 @@ Do NOT mention that you are increasing difficulty. Be natural.
     if (state.quiz === null) return { ok: false, state, collection, refusal: "no_quiz" };
     const { state: next, ok: _ok, ...answer2 } = answerQuiz(collection, state.quiz, selected, t);
     return { ok: true, state: { ...state, quiz: null }, collection: next, objectId: state.quiz, answer: answer2 };
+  }
+
+  // @insimul/core/src/props/vehicle-placement.ts
+  var VEHICLE_PARKING_REFUSALS = Object.freeze(["no-open-spot", "bad-place"]);
+  var VEHICLE_PARK_TIERS = Object.freeze({
+    1: "every rule: open ground, clear of the slots, and nothing E acts on in reach of the spot or of any of its eight stands",
+    2: "open ground clear of the slots; nothing E acts on in reach of the spot (its stands need only be open)",
+    3: "open ground with nothing E acts on in reach of the spot; a villager's slot may be nearer than 4 m"
+  });
+  var VEHICLE_PARK_RINGS_M = Object.freeze([7, 9, 11, 13, 5]);
+  var VEHICLE_PARK_HEADINGS = 16;
+  var VEHICLE_PARK_SNAP_M = 1.5;
+  var VEHICLE_PARK_SNAP_STEP_M = 0.75;
+  var VEHICLE_PARK_SNAP_DIRECTIONS = 8;
+  var VEHICLE_PARK_MIN_FROM_PLACE_M = 4;
+  var VEHICLE_PARK_FOOTPRINT_MARGIN_M = 0.6;
+  var VEHICLE_PARK_BODY_RADIUS_M = 0.4;
+  var VEHICLE_PARK_BODY_LOW_M = 0.12;
+  var VEHICLE_PARK_BODY_HIGH_M = 1.88;
+  var VEHICLE_PARK_STANDS = 8;
+  var VEHICLE_PARK_STAND_M = 2.5;
+  var VEHICLE_PARK_SLOT_CLEAR_M = 4;
+  var VEHICLE_PARK_REACH_MARGIN_M = 0.5;
+  var VEHICLE_PARK_REACH_M = Math.max(DOOR_PROMPT_RADIUS_M, ...Object.values(INTERACT_RANGES_M)) + VEHICLE_PARK_REACH_MARGIN_M;
+  var VEHICLE_PARK_FALLBACK_M = 8;
+  var VEHICLE_PARKING_DEVIATIONS = Object.freeze([
+    {
+      id: "refuse-when-nothing-open",
+      unreal: `no tier finds a spot: the vehicle stands at the street by the place itself (StreetPointNear 8 m), or the place's point, logged "NO open spot" (VT:431\u2013436)`,
+      core: "refuses with `no-open-spot`, carrying that same spot as `at` (and `onStreet`)",
+      why: "the ruling's shape asks for a decision or a refusal with a code; an engine that still draws the vehicle draws it at `at`, as Unreal does"
+    },
+    {
+      id: "stated-streets",
+      unreal: "a street point is the navmesh point a probe projects to (60 x 60 x 80 cm box) that lies on a road band or paving (OnStreet; VD:1663\u20131688)",
+      core: "the caller states the street as areas (`streets`) or passes `isStreet`; the spot is the probe point itself",
+      why: "core has no navmesh; the probe pattern (rings 0.75 m apart, eight ways, odd rings turned half a step) is core's"
+    },
+    {
+      id: "stated-footprints",
+      unreal: "a building's footprint is the world-aligned bounds of its colliding components, grown 60 cm on X and Y (VT:372\u2013383)",
+      core: "the caller states each footprint as a box (`at`, `half`, `axis`) or a circle, grown 0.6 m along its own axes (a circle by its radius)",
+      why: "meshes and transforms are the engine's; for a box on the world axes the two agree"
+    },
+    {
+      id: "open-as-cylinder",
+      unreal: "open ground is no WorldStatic overlap with a capsule of radius 40 cm and half-height 88 cm centred 100 cm up (VT:386\u2013390)",
+      core: "no stated static within 0.4 m (strictly) of the spot whose height band meets 0.12\u20131.88 m above the ground; a static with no band always meets it",
+      why: "the capsule's rounded ends are the engine's shape; the statics are stated, not overlapped"
+    },
+    {
+      id: "one-ground-height",
+      unreal: "the overlap is tested at each candidate's own navmesh height",
+      core: "the band is read at the place's ground (`groundY`) for every spot",
+      why: "core works on (x, z) with no terrain, as pickup-placement.ts does"
+    },
+    {
+      id: "panel-open",
+      unreal: "AnyInteractableNear answers true everywhere while a props panel is open (VP:1132), so a load with a panel open finds no tier's spot",
+      core: "an open panel is not read: only where things stand",
+      why: "where a vehicle is parked does not depend on what the player has open"
+    }
+  ]);
+  var finite4 = (v) => typeof v === "number" && Number.isFinite(v);
+  var finitePoint3 = (p) => !!p && finite4(p.x) && finite4(p.z);
+  function unitAxis2(axis) {
+    if (!finitePoint3(axis)) return { x: 1, z: 0 };
+    const l = Math.hypot(axis.x, axis.z);
+    return l > 1e-9 ? { x: axis.x / l, z: axis.z / l } : { x: 1, z: 0 };
+  }
+  function shapeOf(a) {
+    if (finitePoint3(a.half)) return { c: a.at, radius: -1, ax: unitAxis2(a.axis), half: { x: Math.abs(a.half.x), z: Math.abs(a.half.z) } };
+    return { c: a.at, radius: finite4(a.radius) ? Math.max(0, a.radius) : 0, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
+  }
+  function local(s, p) {
+    const dx = p.x - s.c.x;
+    const dz = p.z - s.c.z;
+    return { lx: Math.abs(dx * s.ax.x + dz * s.ax.z), lz: Math.abs(dx * -s.ax.z + dz * s.ax.x) };
+  }
+  function distanceTo(s, p) {
+    if (s.radius >= 0) return Math.max(0, Math.hypot(p.x - s.c.x, p.z - s.c.z) - s.radius);
+    const { lx, lz } = local(s, p);
+    return Math.hypot(Math.max(lx - s.half.x, 0), Math.max(lz - s.half.z, 0));
+  }
+  function within2(s, p, m) {
+    if (s.radius >= 0) return Math.hypot(p.x - s.c.x, p.z - s.c.z) <= s.radius + m;
+    const { lx, lz } = local(s, p);
+    return lx <= s.half.x + m && lz <= s.half.z + m;
+  }
+  var dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+  var toward = (from, deg, m) => {
+    const a = deg * Math.PI / 180;
+    return { x: from.x + Math.cos(a) * m, z: from.z + Math.sin(a) * m };
+  };
+  function vehicleStreetProbes(at, radiusM) {
+    const out = [];
+    const rings = Math.floor(radiusM / VEHICLE_PARK_SNAP_STEP_M + 1e-9);
+    for (let ring = 0; ring <= rings; ring++) {
+      if (ring === 0) {
+        out.push({ x: at.x, z: at.z });
+        continue;
+      }
+      for (let k = 0; k < VEHICLE_PARK_SNAP_DIRECTIONS; k++) {
+        out.push(toward(at, 360 / VEHICLE_PARK_SNAP_DIRECTIONS * k + 180 / VEHICLE_PARK_SNAP_DIRECTIONS * (ring % 2), VEHICLE_PARK_SNAP_STEP_M * ring));
+      }
+    }
+    return out;
+  }
+  function parkVehicle(input, options = {}) {
+    const groundY = input?.groundY ?? 0;
+    if (!finitePoint3(input?.place) || !finite4(groundY)) return { ok: false, code: "bad-place" };
+    const place = { x: input.place.x, z: input.place.z };
+    const streets = input.streets === void 0 ? null : input.streets.filter((a) => a && finitePoint3(a.at)).map(shapeOf);
+    const isStreet = options.isStreet ?? ((p) => streets === null || streets.some((s) => distanceTo(s, p) <= 0));
+    const footprints = (input.buildings ?? []).filter((a) => a && finitePoint3(a.at)).map(shapeOf);
+    const indoors = (p) => footprints.some((s) => within2(s, p, VEHICLE_PARK_FOOTPRINT_MARGIN_M));
+    const low = groundY + VEHICLE_PARK_BODY_LOW_M;
+    const high = groundY + VEHICLE_PARK_BODY_HIGH_M;
+    const statics = (input.statics ?? []).filter((o) => o && finitePoint3(o.at)).filter((o) => !(finite4(o.yMin) && finite4(o.yMax)) || !(o.yMax < low || o.yMin > high)).map(shapeOf);
+    const isOpen = options.isOpen ?? ((p) => !statics.some((s) => distanceTo(s, p) < VEHICLE_PARK_BODY_RADIUS_M));
+    const things = (input.interactables ?? []).filter(finitePoint3);
+    const quiet = (p) => !things.some((q) => dist(p, q) <= VEHICLE_PARK_REACH_M);
+    const slots = (input.slots ?? []).filter(finitePoint3);
+    const streetNear = (p, radiusM) => vehicleStreetProbes(p, radiusM).find((q) => isStreet(q)) ?? null;
+    const misses = { street: 0, closed: 0, interactable: 0, slot: 0 };
+    for (let tier = 1; tier <= 3; tier = tier + 1) {
+      for (const ringM of VEHICLE_PARK_RINGS_M) {
+        for (let k = 0; k < VEHICLE_PARK_HEADINGS; k++) {
+          const cand = streetNear(toward(place, 360 / VEHICLE_PARK_HEADINGS * k, ringM), VEHICLE_PARK_SNAP_M);
+          if (cand === null) {
+            misses.street += 1;
+            continue;
+          }
+          let open = dist(cand, place) >= VEHICLE_PARK_MIN_FROM_PLACE_M && !indoors(cand) && isOpen(cand);
+          let calm = quiet(cand);
+          for (let q = 0; q < VEHICLE_PARK_STANDS && open; q++) {
+            const stand = toward(cand, 360 / VEHICLE_PARK_STANDS * q, VEHICLE_PARK_STAND_M);
+            open = !indoors(stand) && isOpen(stand);
+            if (tier === 1) calm = calm && quiet(stand);
+          }
+          const clearOfSlots = slots.every((s) => dist(cand, s) >= VEHICLE_PARK_SLOT_CLEAR_M);
+          if (!open) misses.closed += 1;
+          else if (!calm) misses.interactable += 1;
+          else if (!clearOfSlots && tier < 3) misses.slot += 1;
+          else return { ok: true, at: cand, tier, ringM, heading: k, distanceM: dist(cand, place), misses };
+        }
+      }
+    }
+    const fallback = streetNear(place, VEHICLE_PARK_FALLBACK_M);
+    const at = fallback ?? place;
+    return { ok: false, code: "no-open-spot", at, onStreet: fallback !== null, distanceM: dist(at, place), misses };
   }
 
   // @insimul/core/src/prolog/player-language-state.ts
@@ -46747,17 +46904,17 @@ Return JSON format:
     const floor = passByGuardFloor(input.villagerRadius, input.playerRadius);
     const maxSpeed = typeof input.maxSpeed === "number" && input.maxSpeed > 0 ? input.maxSpeed : PASS_BY_VILLAGER_WALK_MPS;
     const d = sub(input.at, input.player);
-    const dist = length(d);
+    const dist2 = length(d);
     const rel = sub(vel, input.playerVelocity);
     const relSq = dot(rel, rel);
-    if (dist >= floor + Math.max(PASS_BY_GUARD_BAND_MIN_M, Math.sqrt(relSq) * PASS_BY_GUARD_LOOKAHEAD_S)) return untouched;
+    if (dist2 >= floor + Math.max(PASS_BY_GUARD_BAND_MIN_M, Math.sqrt(relSq) * PASS_BY_GUARD_LOOKAHEAD_S)) return untouched;
     const tClosest = relSq > PASS_BY_GUARD_REST_SQ ? Math.min(PASS_BY_GUARD_LOOKAHEAD_S, Math.max(0, -dot(d, rel) / relSq)) : 0;
     if (length(add(d, scale(rel, tClosest))) >= floor) return untouched;
     const still = Math.abs(vel.x) <= PASS_BY_GUARD_STILL_MPS && Math.abs(vel.z) <= PASS_BY_GUARD_STILL_MPS;
-    const u = dist > PASS_BY_GUARD_COINCIDENT_M ? scale(d, 1 / dist) : still ? { x: 1, z: 0 } : scale(vel, -1 / length(vel));
+    const u = dist2 > PASS_BY_GUARD_COINCIDENT_M ? scale(d, 1 / dist2) : still ? { x: 1, z: 0 } : scale(vel, -1 / length(vel));
     const mine = dot(vel, u);
     const theirs = dot(input.playerVelocity, u);
-    const minOpening = dist >= floor ? -(dist - floor) / PASS_BY_GUARD_HORIZON_S : (floor - dist) / PASS_BY_GUARD_HORIZON_S;
+    const minOpening = dist2 >= floor ? -(dist2 - floor) / PASS_BY_GUARD_HORIZON_S : (floor - dist2) / PASS_BY_GUARD_HORIZON_S;
     if (mine - theirs >= minOpening) return untouched;
     const radial = Math.min(minOpening + theirs, maxSpeed);
     let along = sub(vel, scale(u, mine));
@@ -47823,22 +47980,22 @@ Return JSON format:
   function isRecord(v) {
     return typeof v === "object" && v !== null && !Array.isArray(v);
   }
-  function finite4(v, fallback) {
+  function finite5(v, fallback) {
     return typeof v === "number" && Number.isFinite(v) ? v : fallback;
   }
   function vec32(v, fallback) {
     if (!isRecord(v)) return { ...fallback };
     return {
-      x: finite4(v.x, fallback.x),
-      y: finite4(v.y, fallback.y),
-      z: finite4(v.z, fallback.z)
+      x: finite5(v.x, fallback.x),
+      y: finite5(v.y, fallback.y),
+      z: finite5(v.z, fallback.z)
     };
   }
   function readConvention(raw) {
     if (!isRecord(raw)) return { ...CORE_CONVENTION };
     const up = raw.up === "z" || raw.up === "y" ? raw.up : CORE_CONVENTION.up;
     const handedness = raw.handedness === "left" || raw.handedness === "right" ? raw.handedness : CORE_CONVENTION.handedness;
-    const units = finite4(raw.unitsPerMetre, CORE_CONVENTION.unitsPerMetre);
+    const units = finite5(raw.unitsPerMetre, CORE_CONVENTION.unitsPerMetre);
     return {
       up,
       handedness,
@@ -47867,7 +48024,7 @@ Return JSON format:
       name,
       kind: typeof rec.kind === "string" ? rec.kind : "",
       position: vec32(rec.position, { x: 0, y: 0, z: 0 }),
-      yaw: finite4(rec.yaw, 0),
+      yaw: finite5(rec.yaw, 0),
       node: typeof rec.node === "string" ? rec.node : ""
     };
   }
@@ -47883,7 +48040,7 @@ Return JSON format:
       measured: true,
       footprint: readFootprint(transform?.footprint, declared2.up),
       offset: vec32(transform?.offset, { x: 0, y: 0, z: 0 }),
-      yaw: finite4(transform?.yaw, 0),
+      yaw: finite5(transform?.yaw, 0),
       scale: readScale(transform?.scale),
       sockets: Object.keys(hasSockets ? sockets : {}).sort().map((name) => readSocket(name, sockets[name]))
     };
@@ -48006,7 +48163,7 @@ Return JSON format:
       away: quantizeFitMetre(sizeX * s + sizeZ * c)
     };
   }
-  function within2(required2, lot) {
+  function within3(required2, lot) {
     return required2.across <= lot.width + FIT_QUANTUM && required2.away <= lot.depth + FIT_QUANTUM;
   }
   function scaled(size, factor) {
@@ -48053,9 +48210,9 @@ Return JSON format:
         required: required2
       };
     }
-    if (!within2(required2, lot)) {
+    if (!within3(required2, lot)) {
       const turned = { across: required2.away, away: required2.across };
-      issues.push(within2(turned, lot) ? "wrong-aspect" : "too-large");
+      issues.push(within3(turned, lot) ? "wrong-aspect" : "too-large");
     }
     issues.sort();
     return {
@@ -48937,20 +49094,20 @@ Return JSON format:
     let doorWorld = { x: 0, y: 0, z: 0 };
     let doorHeading = 0;
     if (hasDoor) {
-      let local;
+      let local2;
       if (b !== null) {
         const face = faceCentreFor(door2.yaw, b.min, b.max, floorLocal);
         if (door2.hasPosition) {
           const alongRight = Math.abs(Math.cos(door2.yaw)) > 0.5;
-          local = alongRight ? { x: door2.position.x, y: floorLocal, z: face.z } : { x: face.x, y: floorLocal, z: door2.position.z };
+          local2 = alongRight ? { x: door2.position.x, y: floorLocal, z: face.z } : { x: face.x, y: floorLocal, z: door2.position.z };
         } else {
-          local = face;
+          local2 = face;
         }
       } else {
-        local = door2.hasPosition ? { ...door2.position } : { x: 0, y: 0, z: 0 };
+        local2 = door2.hasPosition ? { ...door2.position } : { x: 0, y: 0, z: 0 };
       }
-      const w = turn(local.z * scale2.z, local.x * scale2.x, heading);
-      doorWorld = { x: location.x + w[0], y: location.y + local.y * scale2.y, z: location.z + w[1] };
+      const w = turn(local2.z * scale2.z, local2.x * scale2.x, heading);
+      doorWorld = { x: location.x + w[0], y: location.y + local2.y * scale2.y, z: location.z + w[1] };
       doorHeading = normalizeYaw(heading + door2.yaw);
     } else {
       notes.push("no-door");
@@ -52097,9 +52254,9 @@ Return JSON format:
     for (const p of posts) {
       let best = null;
       for (const d of input.doors) {
-        const dist = Math.hypot(p.x - d.x, p.z - d.z);
-        if (dist > y.porchPostReachM + COMPOSITION_SLACK) continue;
-        if (best === null || dist < best.d - COMPOSITION_SLACK || Math.abs(dist - best.d) <= COMPOSITION_SLACK && d.entityId < best.id) best = { id: d.entityId, d: dist };
+        const dist2 = Math.hypot(p.x - d.x, p.z - d.z);
+        if (dist2 > y.porchPostReachM + COMPOSITION_SLACK) continue;
+        if (best === null || dist2 < best.d - COMPOSITION_SLACK || Math.abs(dist2 - best.d) <= COMPOSITION_SLACK && d.entityId < best.id) best = { id: d.entityId, d: dist2 };
       }
       if (best === null) loosePosts.push(p.entityId);
       else claimed.set(best.id, [...claimed.get(best.id) ?? [], p]);
@@ -53322,9 +53479,9 @@ Return JSON format:
   }
   function traversalSessionView(s) {
     return plain({
-      planner: s.planner.serialize(),
+      planner: s.planner ? s.planner.serialize() : null,
       vehicles: s.registry.serialize(),
-      fastTravel: s.director.serialize(),
+      fastTravel: s.director ? s.director.serialize() : null,
       riding: personalVehicleSaveRows(s.riding)
     });
   }
@@ -53357,7 +53514,7 @@ Return JSON format:
     }
     s.riding = r.state;
     let delta = null;
-    if (r.ok) {
+    if (r.ok && s.planner) {
       const held = personalVehicleModes({ modes: s.planner.modesOf(actor), lent: s.planner.lentOf(actor) }, before, r.kind, s.ptuning);
       delta = await s.planner.setModes(actor, held.modes, held.lent);
     }
@@ -54616,6 +54773,42 @@ Return JSON format:
       names: Object.fromEntries(PASS_BY_CONSTANTS.map(([key, name]) => [key, name])),
       measuredAbreastS: PASS_BY_ABREAST_MEASURED_S,
       sideFrames: PASS_BY_SIDE_FRAMES
+    });
+  }
+  var VEHICLE_POINT = [["x", tNum, REQ], ["z", tNum, REQ]];
+  function vehicleParkingInputOf(method, args) {
+    if (args.streets !== void 0) {
+      if (args.streets === null) throw refuse2(method, "`streets` must not be null: absent is the street everywhere, [] nowhere");
+      needArray(method, args.streets, "streets");
+    }
+    for (const key of ["buildings", "statics", "slots", "interactables"]) optArrayValue(method, args[key], key);
+    return args;
+  }
+  var VEHICLE_PARK_CONSTANTS = [
+    ["ringsM", "VEHICLE_PARK_RINGS_M", VEHICLE_PARK_RINGS_M],
+    ["headings", "VEHICLE_PARK_HEADINGS", VEHICLE_PARK_HEADINGS],
+    ["snapM", "VEHICLE_PARK_SNAP_M", VEHICLE_PARK_SNAP_M],
+    ["snapStepM", "VEHICLE_PARK_SNAP_STEP_M", VEHICLE_PARK_SNAP_STEP_M],
+    ["snapDirections", "VEHICLE_PARK_SNAP_DIRECTIONS", VEHICLE_PARK_SNAP_DIRECTIONS],
+    ["minFromPlaceM", "VEHICLE_PARK_MIN_FROM_PLACE_M", VEHICLE_PARK_MIN_FROM_PLACE_M],
+    ["footprintMarginM", "VEHICLE_PARK_FOOTPRINT_MARGIN_M", VEHICLE_PARK_FOOTPRINT_MARGIN_M],
+    ["bodyRadiusM", "VEHICLE_PARK_BODY_RADIUS_M", VEHICLE_PARK_BODY_RADIUS_M],
+    ["bodyLowM", "VEHICLE_PARK_BODY_LOW_M", VEHICLE_PARK_BODY_LOW_M],
+    ["bodyHighM", "VEHICLE_PARK_BODY_HIGH_M", VEHICLE_PARK_BODY_HIGH_M],
+    ["stands", "VEHICLE_PARK_STANDS", VEHICLE_PARK_STANDS],
+    ["standM", "VEHICLE_PARK_STAND_M", VEHICLE_PARK_STAND_M],
+    ["slotClearM", "VEHICLE_PARK_SLOT_CLEAR_M", VEHICLE_PARK_SLOT_CLEAR_M],
+    ["reachMarginM", "VEHICLE_PARK_REACH_MARGIN_M", VEHICLE_PARK_REACH_MARGIN_M],
+    ["reachM", "VEHICLE_PARK_REACH_M", VEHICLE_PARK_REACH_M],
+    ["fallbackM", "VEHICLE_PARK_FALLBACK_M", VEHICLE_PARK_FALLBACK_M]
+  ];
+  function vehicleParkingContract() {
+    return plain({
+      constants: Object.fromEntries(VEHICLE_PARK_CONSTANTS.map(([key, , value]) => [key, value])),
+      names: Object.fromEntries(VEHICLE_PARK_CONSTANTS.map(([key, name]) => [key, name])),
+      refusals: VEHICLE_PARKING_REFUSALS,
+      tiers: VEHICLE_PARK_TIERS,
+      deviations: VEHICLE_PARKING_DEVIATIONS
     });
   }
   var QUEST_STATUSES = ["available", "active", "completed"];
@@ -58131,6 +58324,44 @@ Return JSON format:
       );
       return { noun: propNoun(archetype) };
     },
+    // Where a world vehicle is parked (PL.native-vehicle-rows, U128, U115; core's
+    // PL.core-vehicle-rules, U106(3), U49(3)). Stateless, one core function each,
+    // answering what core's function answers (the shape its corpus runner,
+    // `runVehiclePlacementOp`, records: ops park and probes). Metres on core's ground
+    // plane `(x, z)`, heights `y`, angles from +x toward +z; a binding maps its own frame
+    // in (Unreal: its (X, Y) ÷ 100 as core (z, x) since B9.unreal.core-handedness, its
+    // Z ÷ 100 as y) and states its street, footprints and statics as areas (core's
+    // `isStreet` / `isOpen` callbacks cannot cross this ABI, so they have no row). A
+    // refusal (`no-open-spot`, `bad-place`) is a VALUE `{ ok: false, code, … }`; the
+    // rows' own errors are `[invalid-input]` for a member of a JSON type core cannot read.
+    /** `props.vehicle.contract` → `{ constants, names, refusals, tiers, deviations }` — core's VEHICLE_PARK_* constants keyed as its corpus contract keys them, the name each is exported under, VEHICLE_PARKING_REFUSALS, VEHICLE_PARK_TIERS and VEHICLE_PARKING_DEVIATIONS. */
+    "props.vehicle.contract": () => vehicleParkingContract(),
+    /**
+     * `props.vehicle.park { place, groundY?, streets?, buildings?, statics?, slots?,
+     * interactables? }` → core's `parkVehicle`: `{ ok: true, at, tier, ringM, heading,
+     * distanceM, misses: { street, closed, interactable, slot } }`, or `{ ok: false, code:
+     * 'no-open-spot', at, onStreet, distanceM, misses }` (`at` is where an engine that still
+     * draws the vehicle draws it), or `{ ok: false, code: 'bad-place' }`. `streets` absent is
+     * the street everywhere, `[]` nowhere; each footprint is a box (`at`, `half`, `axis`) or
+     * a circle (`at`, `radius`), a static with an optional height band (`yMin`, `yMax`).
+     * Called once per world vehicle nobody drives, at its registry location's place, at
+     * world start and after every load (core's `docs/traversal-systems.md` §9).
+     */
+    "props.vehicle.park": (args) => {
+      const input = coded("invalid-input", () => vehicleParkingInputOf("props.vehicle.park", args));
+      return plain(parkVehicle(input));
+    },
+    /**
+     * `props.vehicle.streetProbes { at, radiusM }` → `{ points: [{ x, z }] }` — core's
+     * `vehicleStreetProbes`: the street search's probe points round `at`, nearest first
+     * (the point, then rings 0.75 m apart out to `radiusM`, eight ways round, odd rings
+     * turned half a step). The points a parking spot is snapped to and the fallback walks.
+     */
+    "props.vehicle.streetProbes": (args) => {
+      const m = "props.vehicle.streetProbes";
+      coded("invalid-input", () => declared(m, args, "args", [["at", tObj(VEHICLE_POINT), REQ], ["radiusM", tNum, REQ]]));
+      return { points: plain(vehicleStreetProbes(args.at, args.radiusM)) };
+    },
     /**
      * `inventory.create { player? }` → `{ session, view }` — the inventory panel's
      * `InventoryViewModel` (`ui/inventory-model`, moved into core from Babylon by
@@ -59292,9 +59523,37 @@ Return JSON format:
      * Probe and locomotion are callbacks core calls mid-decision, which cannot cross
      * this ABI, so the host states its answers as data (and restates them with the
      * `host` op); a host whose actor ends up elsewhere later says so with `arrive`.
+     *  - `runsTraversal: false` (PL.native-vehicle-rows; core's PL.core-vehicle-rules,
+     *    U106(3)): a game that runs the vehicles pack WITHOUT traversal, as core's
+     *    `traversal/vehicles-only` corpus plays it — a `VehicleRegistry` with no planner
+     *    (nobody's location asserted, no mode lent) and the personal vehicles on the
+     *    recording bus, no fast travel. Only `vehicles` and `personal` may be given (every
+     *    other member configures the planner or the director, and is refused); the view's
+     *    `planner` and `fastTravel` are null; `save` writes no block and `load` reads none
+     *    (see `traversal.session.apply`). Absent, null or true: the session above.
      */
     "traversal.session.create": (args) => {
       const m = "traversal.session.create";
+      const runsTraversal = coded("invalid-input", () => optBoolean(m, args.runsTraversal, "runsTraversal") ?? true);
+      if (!runsTraversal) {
+        const input2 = coded("invalid-input", () => {
+          for (const key of ["links", "tuning", "fastTravel", "seed", "stamina", "probe", "locomotion"]) {
+            if (args[key] !== void 0 && args[key] !== null) {
+              throw refuse2(m, `\`${key}\` configures traversal, which a session with \`runsTraversal: false\` does not run`);
+            }
+          }
+          return {
+            vehicles: optionalArg(args.vehicles, (v) => objectList(m, v, "vehicles")) ?? [],
+            personal: personalParamsArg(m, args.personal, "personal")
+          };
+        });
+        const s2 = { events: [], orders: [], clock: [], hosts: { probe: null, stuck: null } };
+        const bus2 = new GameEventBus();
+        bus2.onAny((event) => void s2.events.push(plain(event)));
+        const registry2 = new VehicleRegistry({ vehicles: vehiclesFromIR(input2.vehicles), eventBus: bus2 });
+        Object.assign(s2, { planner: null, registry: registry2, director: null, pool: null, ptuning: personalVehicleTuning(input2.personal), riding: initialPersonalVehicles() });
+        return { session: openSession("traversal", s2), view: traversalSessionView(s2) };
+      }
       const input = coded("invalid-input", () => ({
         links: optionalArg(args.links, (v) => objectList(m, v, "links")),
         tuning: optionalArg(args.tuning, (v) => traversalTuningArg(m, v, "tuning")),
@@ -59379,10 +59638,20 @@ Return JSON format:
      *    Neither changes any state.
      *  - save: `save` → `{ key, block }` (the four layers' block, as `traversal.save.block`
      *    writes it); `load { block? }` → `{ ok: true, dropped }` after core's
-     *    `readTraversalBlock` hands each member to its layer's `restore()` and `riding` to
-     *    `personalVehiclesFromSave`, or the VALUE `{ ok: false, keys }` with nothing
-     *    changed (an absent or null block reads as no traversal: nothing restored, and
-     *    nobody riding).
+     *    `readTraversalBlock` hands `planner` and `fastTravel` to their layers' `restore()`
+     *    and the block to core's `loadVehicleLayers` (the registry starts again from the
+     *    world's authored vehicles, then takes the block's `vehicles`; the riders are the
+     *    block's `riding`, through `personalVehiclesFromSave`), as core's session runner
+     *    loads; or the VALUE `{ ok: false, keys }` with nothing changed. An absent or null
+     *    block reads as no traversal: planner and fast travel untouched, every world
+     *    vehicle back at its authored place with nobody aboard, and nobody riding.
+     *  - a session created with `runsTraversal: false` knows only the registry, personal,
+     *    rider, `save` and `load` ops (a planner, director, meter or host op is an unknown
+     *    op). There `save` → `{ key, block: null }` (traversal owns the block and does not
+     *    run, so the game writes none) and `load { block? }` → `{ ok: true, dropped }` after
+     *    core's `loadVehicleLayers(registry, null)`: it reads NO block, even one given (a
+     *    file written while traversal ran still carries one), so every world vehicle is back
+     *    at its authored place with nobody aboard and every rider on foot. Silent: no events.
      *  - `host { probe?, stuck? }` → `{}`: replace the scripted geometry answers or the
      *    `stuck` table (only for a session created with a probe / a locomotion host).
      * The view is the four layers' state (`traversalSessionView`). Every op settles the
@@ -59459,19 +59728,22 @@ Return JSON format:
         cycle: (st, op) => personalSessionVerb(st, "cycle", op),
         save: (st) => ({
           key: TRAVERSAL_EXTENSION_KEY,
-          block: traversalBlockOf(
+          // Without traversal the game writes no block (core's vehicles-only runner: `{ block: null }`).
+          block: st.planner ? traversalBlockOf(
             traversalSaveBlock({ planner: st.planner.serialize(), vehicles: st.registry.serialize(), fastTravel: st.director.serialize(), riding: st.riding })
-          )
+          ) : null
         }),
         load: (st, op) => {
-          const read = readTraversalBlock(op.block);
-          if (!read.ok) return { ok: false, keys: read.keys };
-          const b = read.value;
-          if (b?.planner) st.planner.restore(b.planner);
-          if (b?.vehicles) st.registry.restore(b.vehicles);
-          if (b?.fastTravel) st.director.restore(b.fastTravel);
-          const back = personalVehiclesFromSave(b?.riding ?? {}, st.ptuning);
-          st.riding = back.state;
+          let b = null;
+          if (st.planner) {
+            const read = readTraversalBlock(op.block);
+            if (!read.ok) return { ok: false, keys: read.keys };
+            b = read.value;
+            if (b?.planner) st.planner.restore(b.planner);
+            if (b?.fastTravel) st.director.restore(b.fastTravel);
+          }
+          const back = loadVehicleLayers(st.registry, b, st.ptuning);
+          st.riding = back.riding;
           return { ok: true, dropped: back.dropped };
         },
         host: (st, op) => {
@@ -59487,8 +59759,33 @@ Return JSON format:
           return {};
         }
       };
+      const traversalOnly = /* @__PURE__ */ new Set([
+        "register",
+        "setModes",
+        "lendMode",
+        "returnMode",
+        "arrive",
+        "block",
+        "unblock",
+        "isBlocked",
+        "affordances",
+        "route",
+        "canTraverse",
+        "traverse",
+        "locationOf",
+        "modesOf",
+        "lentOf",
+        "discover",
+        "discoveries",
+        "destinations",
+        "canFastTravel",
+        "fastTravel",
+        "meter",
+        "host"
+      ]);
       const recorded = {};
       for (const [name, fn] of Object.entries(ops)) {
+        if (s.planner === null && traversalOnly.has(name)) continue;
         recorded[name] = async (st, op) => {
           const answer2 = await fn(st, op);
           await st.registry.settle();

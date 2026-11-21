@@ -743,6 +743,38 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `conformance/villagers/pass-by.json` from core at this library's pin and drive each
   case as `tests/villagers_pass_by_corpus.cpp` does: ONE row call per case, the case's
   `input` as the args, compared by the corpus's `tolerance`.
+- **World-vehicle parking, and what a load does to the vehicles (Unreal's
+  `P9e.unreal.retire-vehicle-rules-copy`, after PL.native-vehicle-rows; U115, U128,
+  U106(3)/(4), U107(2)).** Core's parking rule is the `props.vehicle.*` rows (`README.md`,
+  "The world-vehicle parking rows"); the rest of what the interim copy holds was already
+  rows. The retirement row binds them in place of the copy on unreal main (`7ff96080`,
+  read only): `Portable/InsimulVehicleRules.{h,cpp}` (208 + 323 lines), called from
+  `InsimulVillageTraversal.cpp` (`PlaceWorldVehicles`: `ParkVehicle`, `ParkTierWords`),
+  `InsimulInteractables.cpp` (`GetOffTarget`, `BoardTarget`), `InsimulTraversalBinding.cpp`
+  (`RiderIntent`), `InsimulPlayerTraversal.cpp` and `InsimulVillageProps.cpp`
+  (`kBoardReachM`), and its corpus runner `tools/verify-unreal/test_vehicle_placement_corpus.cpp`
+  (399 lines). Every function of the copy maps to a row:
+
+  | Unreal's interim copy (`insimul::vehiclerules`, `InsimulVehicleRules.h`) | Row |
+  |---|---|
+  | `kParkRingsM`, `kParkHeadings`, `kParkSnapM`, `kParkSnapStepM`, `kParkSnapDirections`, `kParkMinFromPlaceM`, `kParkFootprintMarginM`, `kParkBodyRadiusM`, `kParkBodyLowM`, `kParkBodyHighM`, `kParkStands`, `kParkStandM`, `kParkSlotClearM`, `kParkReachMarginM`, `kParkReachM`, `kParkFallbackM` | `props.vehicle.contract {}` → `constants[<key>]`, keyed as core's corpus contract keys them; `names[<key>]` is the `VEHICLE_PARK_*` export each copies |
+  | `FArea`, `FParkInput`, `FParkMisses`, `FParking`, `ParkVehicle(In, Options)` | `props.vehicle.park { place, groundY?, streets?, buildings?, statics?, slots?, interactables? }` → core's `VehicleParking` (`bOk` true: `{ ok, at, tier, ringM, heading, distanceM, misses }`; `Code` `no-open-spot`: `{ ok: false, code, at, onStreet, distanceM, misses }`; `bad-place`: `{ ok: false, code }`). `bStreets` false is `streets` left out; `bBox` is a stated `half`, `bAxis` an `axis`, `bRadius` a `radius`, `bYMin`/`bYMax` a static's `yMin`/`yMax` |
+  | `FParkOptions` (`IsStreet`, `IsOpen`) | no row: core's `VehicleParkingOptions` are callbacks, which cannot cross this ABI. The binding states its street (`streets`: the road bands and paving its `OnStreet` reads, as areas) and what a body cannot stand in (`statics`: footprints with their height bands) as data, which is core's own reading of them (the corpus's `stated-streets` and `open-as-cylinder` deviations). Unreal's `PlaceWorldVehicles` passes its navmesh projection and its WorldStatic overlap today, so its retire row moves those two tests into stated areas |
+  | `StreetProbes` | `props.vehicle.streetProbes { at, radiusM }` → `{ points }` |
+  | `ParkTierWords` | `props.vehicle.contract {}` → `tiers["<tier>"]` |
+  | `kBoardReachM`, `FAboard`, `FStanding`, `FVehicleTarget`, `GetOffTarget`, `BoardTarget`, `RoundDistance` | `props.interactables.target { …, aboard?, vehicles? }` (`get_off`, `board`; core's PL.core-vehicle-rules, already rows: core 9312ec7's ten vehicle cases of `conformance/props/interactables.json` run on `props_interactables_corpus`) and `props.contract`'s `props-interactables.rangesM.board` |
+  | `kRiderIntent`, `FPosture`, `FCarrying`, `PostureOf`, `RiderIntent`, `BodyIntent`, `VehicleRiderIntents` | `traversal.rider.posture`, `.intent`, `.body`, `.vehicleRiders`, and a session's `riderIntent` / `riders` ops (core's PL.core-ride-intent, bound by PL.native-bundle-core; held by `mounts.json` and `session.json`, and now `vehicles-only.json`) |
+  | `Finite`, `FinitePt`, `Dist`, `UnitAxis`, `ShapeOf`, `Local`, `DistanceTo`, `Within`, `Toward`, `Shapes` | no row: `parkVehicle`'s own geometry, inside the row |
+  | `FTraversalSession::ResetVehicleLayers` (`InsimulTraversalBinding.cpp`: a FRESH `traversal.session.create` in place of a load, because a load with no block kept the registry's state) | a session's `load` now runs core's `loadVehicleLayers` (no block, or a block with no `vehicles`: every world vehicle back at its authored place, nobody aboard, nobody riding). A game that runs the vehicles pack without traversal is a session created with `runsTraversal: false`: its `save` writes no block and its `load` reads none, as core's `traversal/vehicles-only` corpus plays it |
+
+  The engine keeps what it draws: the frame and units (core `(x, z)` in metres is Unreal
+  `(Y, X)` ÷ 100 since `B9.unreal.core-handedness`), which way the drawn cart faces at its
+  spot (core states the spot, not a facing), its collision and its navmesh hole. Re-vendor
+  `conformance/props/vehicle-placement.json` and `conformance/traversal/vehicles-only.json`
+  from core at this library's pin and drive each case as
+  `tests/props_vehicle_placement_corpus.cpp` and `tests/traversal_corpus.cpp` do: ONE row
+  call per parking case, the case's `input` as the args, compared by the corpus's
+  `tolerance`; a vehicles-only run one `runsTraversal: false` session.
 - **The language kernels, slices 1 to 4 (Unreal's `P9h.unreal.retire-language-copy`,
   released by slice 4, the last of PL.native-language-rows; U118, U128, U107(2)).** Core's P9h language
   kernels are the `language.*` rows (`README.md`, "The language rows"). The retirement

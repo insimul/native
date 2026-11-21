@@ -1,0 +1,2252 @@
+{
+  "area": "props-vehicle",
+  "description": "Hand cases for the props.vehicle.* rows and the vehicles pack's session (PL.native-vehicle-rows): what core's corpora conformance/props/vehicle-placement.json and conformance/traversal/vehicles-only.json leave unpinned — props.vehicle.contract whole (each constant's export name), a footprint and a street turned by their axis, a round building, a point street, a half-stated height band, a box whose half is not a point, a street with a slot and something E acts on, null lists and groundY read as absent, a negative and a short probe radius, the [invalid-input] boundary of what core cannot read, a session with runsTraversal false (no planner op, no block written, a carried block not read), and a session's load through core's loadVehicleLayers (no block, or a block with no vehicles, starts the registry again). Every expectation is computed by core's own functions and classes at the pin (gen-bridge-vehicle-cases.mts, kept with the builder's record); each case asserts the input it pins changes core's answer.",
+  "cases": [
+    {
+      "name": "props.vehicle.contract: every constant keyed as core's corpus contract keys it, the name core exports it under, the refusals, the tiers and the deviations",
+      "steps": [
+        {
+          "call": "props.vehicle.contract",
+          "args": {},
+          "expect": {
+            "constants": {
+              "ringsM": [
+                7,
+                9,
+                11,
+                13,
+                5
+              ],
+              "headings": 16,
+              "snapM": 1.5,
+              "snapStepM": 0.75,
+              "snapDirections": 8,
+              "minFromPlaceM": 4,
+              "footprintMarginM": 0.6,
+              "bodyRadiusM": 0.4,
+              "bodyLowM": 0.12,
+              "bodyHighM": 1.88,
+              "stands": 8,
+              "standM": 2.5,
+              "slotClearM": 4,
+              "reachMarginM": 0.5,
+              "reachM": 4,
+              "fallbackM": 8
+            },
+            "names": {
+              "ringsM": "VEHICLE_PARK_RINGS_M",
+              "headings": "VEHICLE_PARK_HEADINGS",
+              "snapM": "VEHICLE_PARK_SNAP_M",
+              "snapStepM": "VEHICLE_PARK_SNAP_STEP_M",
+              "snapDirections": "VEHICLE_PARK_SNAP_DIRECTIONS",
+              "minFromPlaceM": "VEHICLE_PARK_MIN_FROM_PLACE_M",
+              "footprintMarginM": "VEHICLE_PARK_FOOTPRINT_MARGIN_M",
+              "bodyRadiusM": "VEHICLE_PARK_BODY_RADIUS_M",
+              "bodyLowM": "VEHICLE_PARK_BODY_LOW_M",
+              "bodyHighM": "VEHICLE_PARK_BODY_HIGH_M",
+              "stands": "VEHICLE_PARK_STANDS",
+              "standM": "VEHICLE_PARK_STAND_M",
+              "slotClearM": "VEHICLE_PARK_SLOT_CLEAR_M",
+              "reachMarginM": "VEHICLE_PARK_REACH_MARGIN_M",
+              "reachM": "VEHICLE_PARK_REACH_M",
+              "fallbackM": "VEHICLE_PARK_FALLBACK_M"
+            },
+            "refusals": [
+              "no-open-spot",
+              "bad-place"
+            ],
+            "tiers": {
+              "1": "every rule: open ground, clear of the slots, and nothing E acts on in reach of the spot or of any of its eight stands",
+              "2": "open ground clear of the slots; nothing E acts on in reach of the spot (its stands need only be open)",
+              "3": "open ground with nothing E acts on in reach of the spot; a villager's slot may be nearer than 4 m"
+            },
+            "deviations": [
+              {
+                "id": "refuse-when-nothing-open",
+                "unreal": "no tier finds a spot: the vehicle stands at the street by the place itself (StreetPointNear 8 m), or the place's point, logged \"NO open spot\" (VT:431–436)",
+                "core": "refuses with `no-open-spot`, carrying that same spot as `at` (and `onStreet`)",
+                "why": "the ruling's shape asks for a decision or a refusal with a code; an engine that still draws the vehicle draws it at `at`, as Unreal does"
+              },
+              {
+                "id": "stated-streets",
+                "unreal": "a street point is the navmesh point a probe projects to (60 x 60 x 80 cm box) that lies on a road band or paving (OnStreet; VD:1663–1688)",
+                "core": "the caller states the street as areas (`streets`) or passes `isStreet`; the spot is the probe point itself",
+                "why": "core has no navmesh; the probe pattern (rings 0.75 m apart, eight ways, odd rings turned half a step) is core's"
+              },
+              {
+                "id": "stated-footprints",
+                "unreal": "a building's footprint is the world-aligned bounds of its colliding components, grown 60 cm on X and Y (VT:372–383)",
+                "core": "the caller states each footprint as a box (`at`, `half`, `axis`) or a circle, grown 0.6 m along its own axes (a circle by its radius)",
+                "why": "meshes and transforms are the engine's; for a box on the world axes the two agree"
+              },
+              {
+                "id": "open-as-cylinder",
+                "unreal": "open ground is no WorldStatic overlap with a capsule of radius 40 cm and half-height 88 cm centred 100 cm up (VT:386–390)",
+                "core": "no stated static within 0.4 m (strictly) of the spot whose height band meets 0.12–1.88 m above the ground; a static with no band always meets it",
+                "why": "the capsule's rounded ends are the engine's shape; the statics are stated, not overlapped"
+              },
+              {
+                "id": "one-ground-height",
+                "unreal": "the overlap is tested at each candidate's own navmesh height",
+                "core": "the band is read at the place's ground (`groundY`) for every spot",
+                "why": "core works on (x, z) with no terrain, as pickup-placement.ts does"
+              },
+              {
+                "id": "panel-open",
+                "unreal": "AnyInteractableNear answers true everywhere while a props panel is open (VP:1132), so a load with a panel open finds no tier's spot",
+                "core": "an open panel is not read: only where things stand",
+                "why": "where a vehicle is parked does not depend on what the player has open"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "props.vehicle.park: a footprint and a street turned by their axis, a round building, a point street (negative radius), a half-stated height band, a box whose half is not a point, a street with a slot and something E acts on, null lists and groundY read as absent, a place carrying a y",
+      "steps": [
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "buildings": [
+              {
+                "at": {
+                  "x": 7.8,
+                  "z": 0
+                },
+                "half": {
+                  "x": 2,
+                  "z": 0.1
+                },
+                "axis": {
+                  "x": 0,
+                  "z": 1
+                }
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "tier": 1,
+            "ringM": 7,
+            "heading": 0,
+            "distanceM": 7,
+            "misses": {
+              "street": 0,
+              "closed": 0,
+              "interactable": 0,
+              "slot": 0
+            }
+          }
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "buildings": [
+              {
+                "at": {
+                  "x": 7.8,
+                  "z": 0
+                },
+                "half": {
+                  "x": 2,
+                  "z": 0.1
+                }
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "at": {
+              "x": 4.949747468305833,
+              "z": 4.949747468305832
+            },
+            "tier": 1,
+            "ringM": 7,
+            "heading": 2,
+            "distanceM": 6.999999999999999,
+            "misses": {
+              "street": 0,
+              "closed": 2,
+              "interactable": 0,
+              "slot": 0
+            }
+          }
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "streets": [
+              {
+                "at": {
+                  "x": 0,
+                  "z": 9
+                },
+                "half": {
+                  "x": 0.5,
+                  "z": 4
+                },
+                "axis": {
+                  "x": 0,
+                  "z": 1
+                }
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "at": {
+              "x": 5.204748896376251e-16,
+              "z": 8.5
+            },
+            "tier": 1,
+            "ringM": 7,
+            "heading": 4,
+            "distanceM": 8.5,
+            "misses": {
+              "street": 4,
+              "closed": 0,
+              "interactable": 0,
+              "slot": 0
+            }
+          }
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "streets": [
+              {
+                "at": {
+                  "x": 0,
+                  "z": 9
+                },
+                "half": {
+                  "x": 0.5,
+                  "z": 4
+                }
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "at": {
+              "x": 4.286263797015736e-16,
+              "z": 7
+            },
+            "tier": 1,
+            "ringM": 7,
+            "heading": 4,
+            "distanceM": 7,
+            "misses": {
+              "street": 4,
+              "closed": 0,
+              "interactable": 0,
+              "slot": 0
+            }
+          }
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "buildings": [
+              {
+                "at": {
+                  "x": 7,
+                  "z": 1.5
+                },
+                "radius": 0.95
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "at": {
+              "x": 4.949747468305833,
+              "z": 4.949747468305832
+            },
+            "tier": 1,
+            "ringM": 7,
+            "heading": 2,
+            "distanceM": 6.999999999999999,
+            "misses": {
+              "street": 0,
+              "closed": 2,
+              "interactable": 0,
+              "slot": 0
+            }
+          }
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "streets": [
+              {
+                "at": {
+                  "x": 7,
+                  "z": 0.5
+                },
+                "radius": -3
+              }
+            ]
+          },
+          "expect": {
+            "ok": false,
+            "code": "no-open-spot",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "onStreet": false,
+            "distanceM": 0,
+            "misses": {
+              "street": 240,
+              "closed": 0,
+              "interactable": 0,
+              "slot": 0
+            }
+          }
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "streets": [
+              {
+                "at": {
+                  "x": 7,
+                  "z": 0.5
+                },
+                "radius": 3
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "tier": 1,
+            "ringM": 7,
+            "heading": 0,
+            "distanceM": 7,
+            "misses": {
+              "street": 0,
+              "closed": 0,
+              "interactable": 0,
+              "slot": 0
+            }
+          }
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "streets": [
+              {
+                "at": {
+                  "x": 7,
+                  "z": 0
+                },
+                "radius": 0.2
+              },
+              {
+                "at": {
+                  "x": 0,
+                  "z": 7
+                },
+                "radius": 0.2
+              }
+            ],
+            "statics": [
+              {
+                "at": {
+                  "x": 7,
+                  "z": 0
+                },
+                "radius": 0.3,
+                "yMin": 1.9
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "at": {
+              "x": 4.286263797015736e-16,
+              "z": 7
+            },
+            "tier": 1,
+            "ringM": 7,
+            "heading": 4,
+            "distanceM": 7,
+            "misses": {
+              "street": 3,
+              "closed": 1,
+              "interactable": 0,
+              "slot": 0
+            }
+          }
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "streets": [
+              {
+                "at": {
+                  "x": 7,
+                  "z": 0
+                },
+                "radius": 0.2
+              },
+              {
+                "at": {
+                  "x": 0,
+                  "z": 7
+                },
+                "radius": 0.2
+              }
+            ],
+            "statics": [
+              {
+                "at": {
+                  "x": 7,
+                  "z": 0.6
+                },
+                "half": {
+                  "x": "wide",
+                  "z": 1
+                }
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "tier": 1,
+            "ringM": 7,
+            "heading": 0,
+            "distanceM": 7,
+            "misses": {
+              "street": 0,
+              "closed": 0,
+              "interactable": 0,
+              "slot": 0
+            }
+          }
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 2,
+              "z": -1
+            },
+            "groundY": 0.5,
+            "streets": [
+              {
+                "at": {
+                  "x": 0,
+                  "z": 6
+                },
+                "half": {
+                  "x": 20,
+                  "z": 2.5
+                }
+              }
+            ],
+            "slots": [
+              {
+                "x": 2,
+                "z": 6.5
+              }
+            ],
+            "interactables": [
+              {
+                "x": 9,
+                "z": 9.5
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "at": {
+              "x": -2.949747468305832,
+              "z": 3.9497474683058327
+            },
+            "tier": 1,
+            "ringM": 7,
+            "heading": 6,
+            "distanceM": 6.999999999999999,
+            "misses": {
+              "street": 2,
+              "closed": 0,
+              "interactable": 2,
+              "slot": 2
+            }
+          }
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "groundY": null,
+            "buildings": null,
+            "statics": null,
+            "slots": null,
+            "interactables": null
+          },
+          "expect": {
+            "ok": true,
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "tier": 1,
+            "ringM": 7,
+            "heading": 0,
+            "distanceM": 7,
+            "misses": {
+              "street": 0,
+              "closed": 0,
+              "interactable": 0,
+              "slot": 0
+            }
+          }
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "y": 4,
+              "z": 0
+            },
+            "streets": [
+              {
+                "at": {
+                  "x": 7,
+                  "z": 0
+                },
+                "radius": 0.2
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "at": {
+              "x": 7,
+              "z": 0
+            },
+            "tier": 1,
+            "ringM": 7,
+            "heading": 0,
+            "distanceM": 7,
+            "misses": {
+              "street": 0,
+              "closed": 0,
+              "interactable": 0,
+              "slot": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "props.vehicle.park: what core cannot read is [invalid-input] (a null or non-list streets, a list that is not an array); arguments that are not an object",
+      "steps": [
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "streets": null
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.park: `streets` must not be null: absent is the street everywhere, [] nowhere"
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "streets": "the high street"
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.park: `streets` must be an array"
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "streets": {
+              "at": {
+                "x": 0,
+                "z": 0
+              },
+              "radius": 3
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.park: `streets` must be an array"
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "buildings": {
+              "at": {
+                "x": 0,
+                "z": 0
+              },
+              "radius": 3
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.park: `buildings` must be an array"
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "statics": "fence"
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.park: `statics` must be an array"
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "slots": 3
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.park: `slots` must be an array"
+        },
+        {
+          "call": "props.vehicle.park",
+          "args": {
+            "place": {
+              "x": 0,
+              "z": 0
+            },
+            "interactables": {
+              "x": 1,
+              "z": 2
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.park: `interactables` must be an array"
+        },
+        {
+          "call": "props.vehicle.park",
+          "argsText": "[]",
+          "expectError": "must be a JSON object"
+        }
+      ]
+    },
+    {
+      "name": "props.vehicle.streetProbes: a negative radius (no point at all), a radius short of the first ring, three rings (the odd ones turned), a point carrying a y; every declared member held to its type",
+      "steps": [
+        {
+          "call": "props.vehicle.streetProbes",
+          "args": {
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "radiusM": -1
+          },
+          "expect": {
+            "points": []
+          }
+        },
+        {
+          "call": "props.vehicle.streetProbes",
+          "args": {
+            "at": {
+              "x": 3,
+              "z": -2
+            },
+            "radiusM": 0.74
+          },
+          "expect": {
+            "points": [
+              {
+                "x": 3,
+                "z": -2
+              }
+            ]
+          }
+        },
+        {
+          "call": "props.vehicle.streetProbes",
+          "args": {
+            "at": {
+              "x": -1.5,
+              "z": 4
+            },
+            "radiusM": 2.25
+          },
+          "expect": {
+            "points": [
+              {
+                "x": -1.5,
+                "z": 4
+              },
+              {
+                "x": -0.807090350616535,
+                "z": 4.287012574273818
+              },
+              {
+                "x": -1.2129874257261826,
+                "z": 4.6929096493834646
+              },
+              {
+                "x": -1.7870125742738172,
+                "z": 4.6929096493834646
+              },
+              {
+                "x": -2.192909649383465,
+                "z": 4.287012574273818
+              },
+              {
+                "x": -2.1929096493834654,
+                "z": 3.7129874257261832
+              },
+              {
+                "x": -1.7870125742738172,
+                "z": 3.307090350616535
+              },
+              {
+                "x": -1.2129874257261826,
+                "z": 3.307090350616535
+              },
+              {
+                "x": -0.8070903506165349,
+                "z": 3.712987425726183
+              },
+              {
+                "x": 0,
+                "z": 4
+              },
+              {
+                "x": -0.4393398282201786,
+                "z": 5.060660171779821
+              },
+              {
+                "x": -1.5,
+                "z": 5.5
+              },
+              {
+                "x": -2.560660171779821,
+                "z": 5.060660171779821
+              },
+              {
+                "x": -3,
+                "z": 4
+              },
+              {
+                "x": -2.5606601717798214,
+                "z": 2.939339828220179
+              },
+              {
+                "x": -1.5000000000000002,
+                "z": 2.5
+              },
+              {
+                "x": -0.43933982822017903,
+                "z": 2.9393398282201786
+              },
+              {
+                "x": 0.578728948150395,
+                "z": 4.861037722821452
+              },
+              {
+                "x": -0.6389622771785479,
+                "z": 6.078728948150395
+              },
+              {
+                "x": -2.361037722821452,
+                "z": 6.078728948150395
+              },
+              {
+                "x": -3.578728948150395,
+                "z": 4.861037722821452
+              },
+              {
+                "x": -3.5787289481503954,
+                "z": 3.1389622771785493
+              },
+              {
+                "x": -2.361037722821451,
+                "z": 1.9212710518496046
+              },
+              {
+                "x": -0.6389622771785475,
+                "z": 1.921271051849605
+              },
+              {
+                "x": 0.5787289481503954,
+                "z": 3.1389622771785484
+              }
+            ]
+          }
+        },
+        {
+          "call": "props.vehicle.streetProbes",
+          "args": {
+            "at": {
+              "x": 1,
+              "y": 9,
+              "z": 2
+            },
+            "radiusM": 0.75
+          },
+          "expect": {
+            "points": [
+              {
+                "x": 1,
+                "z": 2
+              },
+              {
+                "x": 1.692909649383465,
+                "z": 2.287012574273817
+              },
+              {
+                "x": 1.2870125742738174,
+                "z": 2.692909649383465
+              },
+              {
+                "x": 0.7129874257261827,
+                "z": 2.692909649383465
+              },
+              {
+                "x": 0.307090350616535,
+                "z": 2.2870125742738177
+              },
+              {
+                "x": 0.3070903506165348,
+                "z": 1.712987425726183
+              },
+              {
+                "x": 0.7129874257261829,
+                "z": 1.307090350616535
+              },
+              {
+                "x": 1.2870125742738174,
+                "z": 1.307090350616535
+              },
+              {
+                "x": 1.692909649383465,
+                "z": 1.7129874257261828
+              }
+            ]
+          }
+        },
+        {
+          "call": "props.vehicle.streetProbes",
+          "args": {
+            "radiusM": 1
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.streetProbes: `args.at` is missing"
+        },
+        {
+          "call": "props.vehicle.streetProbes",
+          "args": {
+            "at": null,
+            "radiusM": 1
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.streetProbes: `args.at` must not be null"
+        },
+        {
+          "call": "props.vehicle.streetProbes",
+          "args": {
+            "at": {
+              "x": 1
+            },
+            "radiusM": 1
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.streetProbes: `args.at.z` is missing"
+        },
+        {
+          "call": "props.vehicle.streetProbes",
+          "args": {
+            "at": {
+              "x": "7",
+              "z": 0
+            },
+            "radiusM": 1
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.streetProbes: `args.at.x` must be a finite number"
+        },
+        {
+          "call": "props.vehicle.streetProbes",
+          "args": {
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.streetProbes: `args.radiusM` is missing"
+        },
+        {
+          "call": "props.vehicle.streetProbes",
+          "args": {
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "radiusM": null
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.streetProbes: `args.radiusM` must not be null"
+        },
+        {
+          "call": "props.vehicle.streetProbes",
+          "args": {
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "radiusM": "1.5"
+          },
+          "expectError": "[invalid-input] insimulcore: props.vehicle.streetProbes: `args.radiusM` must be a finite number"
+        }
+      ]
+    },
+    {
+      "name": "traversal.session runsTraversal false: the vehicles pack without traversal, as core's vehicles-only runner plays it (no planner: no mode lent, no location asserted; save writes no block; load reads none, even one the file carries, so every world vehicle is back at its authored place, empty, and every rider on foot, silently)",
+      "steps": [
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "vehicles": [
+              {
+                "id": "skiff",
+                "name": "The skiff",
+                "mode": "boat",
+                "owner": "ferryman",
+                "location": "riverside",
+                "seats": 2
+              },
+              {
+                "id": "cart",
+                "name": "A hay cart",
+                "mode": "ride",
+                "location": "ford_path",
+                "seats": 2
+              }
+            ],
+            "personal": {
+              "kinds": [
+                {
+                  "id": "horse",
+                  "walk": 2800
+                },
+                {
+                  "id": "bicycle"
+                }
+              ],
+              "cycle": [
+                "bicycle",
+                "horse"
+              ]
+            },
+            "runsTraversal": false
+          },
+          "expect": {
+            "session": 1,
+            "view": {
+              "planner": null,
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": []
+                  },
+                  {
+                    "id": "skiff",
+                    "location": "riverside",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": null,
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "board",
+                "actor": "mira",
+                "vehicle": "cart"
+              },
+              {
+                "op": "drive",
+                "actor": "wren",
+                "vehicle": "cart"
+              },
+              {
+                "op": "board",
+                "actor": "wren",
+                "vehicle": "cart"
+              },
+              {
+                "op": "drive",
+                "actor": "wren",
+                "vehicle": "cart"
+              },
+              {
+                "op": "vehicleOf",
+                "actor": "wren"
+              },
+              {
+                "op": "roster"
+              },
+              {
+                "op": "cycle",
+                "actor": "wren"
+              },
+              {
+                "op": "mount",
+                "actor": "tam",
+                "kind": "horse"
+              },
+              {
+                "op": "riderIntent",
+                "actor": "wren",
+                "prior": "idle"
+              },
+              {
+                "op": "riders",
+                "vehicle": "cart"
+              },
+              {
+                "op": "save"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "report": {
+                  "actor": "mira",
+                  "vehicle": "cart",
+                  "verb": "board",
+                  "action": "board",
+                  "permitted": true,
+                  "check": {
+                    "agent": "mira",
+                    "action": "board",
+                    "target": "cart",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "performed": true,
+                  "state": {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": [
+                      "mira"
+                    ]
+                  },
+                  "facts": {
+                    "retract": [],
+                    "assert": [
+                      "vehicle_occupant(cart, mira)."
+                    ]
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "vehicle_state_changed",
+                    "actorId": "mira",
+                    "vehicleId": "cart",
+                    "verb": "board",
+                    "driver": null,
+                    "occupants": [
+                      "mira"
+                    ],
+                    "location": "ford_path"
+                  },
+                  {
+                    "type": "vehicle_mounted",
+                    "vehicleType": "cart",
+                    "actorId": "mira"
+                  }
+                ],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "wren",
+                  "vehicle": "cart",
+                  "verb": "drive",
+                  "action": "drive",
+                  "grants": "ride",
+                  "permitted": false,
+                  "refusal": "not_aboard",
+                  "performed": false,
+                  "state": {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": [
+                      "mira"
+                    ]
+                  },
+                  "facts": {
+                    "retract": [],
+                    "assert": []
+                  },
+                  "applied": false
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "wren",
+                  "vehicle": "cart",
+                  "verb": "board",
+                  "action": "board",
+                  "permitted": true,
+                  "check": {
+                    "agent": "wren",
+                    "action": "board",
+                    "target": "cart",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "performed": true,
+                  "state": {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": [
+                      "mira",
+                      "wren"
+                    ]
+                  },
+                  "facts": {
+                    "retract": [],
+                    "assert": [
+                      "vehicle_occupant(cart, wren)."
+                    ]
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "vehicle_state_changed",
+                    "actorId": "wren",
+                    "vehicleId": "cart",
+                    "verb": "board",
+                    "driver": null,
+                    "occupants": [
+                      "mira",
+                      "wren"
+                    ],
+                    "location": "ford_path"
+                  },
+                  {
+                    "type": "vehicle_mounted",
+                    "vehicleType": "cart",
+                    "actorId": "wren"
+                  }
+                ],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "wren",
+                  "vehicle": "cart",
+                  "verb": "drive",
+                  "action": "drive",
+                  "grants": "ride",
+                  "permitted": true,
+                  "check": {
+                    "agent": "wren",
+                    "action": "drive",
+                    "target": "cart",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "performed": true,
+                  "state": {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": [
+                      "mira",
+                      "wren"
+                    ],
+                    "driver": "wren"
+                  },
+                  "facts": {
+                    "retract": [],
+                    "assert": [
+                      "vehicle_driver(cart, wren)."
+                    ]
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "vehicle_state_changed",
+                    "actorId": "wren",
+                    "vehicleId": "cart",
+                    "verb": "drive",
+                    "driver": "wren",
+                    "occupants": [
+                      "mira",
+                      "wren"
+                    ],
+                    "location": "ford_path"
+                  }
+                ],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "vehicle": "cart",
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "vehicles": [
+                  {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": [
+                      "mira",
+                      "wren"
+                    ],
+                    "driver": "wren"
+                  },
+                  {
+                    "id": "skiff",
+                    "location": "riverside",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ],
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "result": {
+                  "ok": false,
+                  "refusal": "in_vehicle",
+                  "detail": "cart",
+                  "kind": null,
+                  "pace": {
+                    "walk": 1000,
+                    "run": 1000,
+                    "turn": 1000,
+                    "strafe": 800,
+                    "back": 600
+                  },
+                  "label": "On Foot",
+                  "events": []
+                },
+                "delta": null,
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "result": {
+                  "ok": true,
+                  "kind": "horse",
+                  "pace": {
+                    "walk": 2800,
+                    "run": 2500,
+                    "turn": 800,
+                    "strafe": 2240,
+                    "back": 1400
+                  },
+                  "label": "Horse",
+                  "events": [
+                    {
+                      "type": "vehicle_mounted",
+                      "actorId": "tam",
+                      "vehicleType": "horse"
+                    }
+                  ]
+                },
+                "delta": null,
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "posture": {
+                  "kind": null,
+                  "aboard": "cart"
+                },
+                "rider": "ride",
+                "body": "ride",
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "riders": {
+                  "mira": "ride",
+                  "wren": "ride"
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "key": "traversal",
+                "block": null,
+                "events": [],
+                "orders": [],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": null,
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": [
+                      "mira",
+                      "wren"
+                    ],
+                    "driver": "wren"
+                  },
+                  {
+                    "id": "skiff",
+                    "location": "riverside",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": null,
+              "riding": {
+                "tam": "horse"
+              }
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "load",
+                "block": {
+                  "planner": {
+                    "actors": [],
+                    "blocked": []
+                  },
+                  "vehicles": {
+                    "vehicles": [
+                      {
+                        "id": "cart",
+                        "location": "mill",
+                        "occupants": [
+                          "wren"
+                        ],
+                        "driver": "wren"
+                      }
+                    ]
+                  },
+                  "fastTravel": {
+                    "discovered": [],
+                    "journeys": 0
+                  },
+                  "riding": {
+                    "mira": "horse"
+                  }
+                }
+              },
+              {
+                "op": "stateOf",
+                "vehicle": "cart"
+              },
+              {
+                "op": "riderIntent",
+                "actor": "tam",
+                "prior": "walk"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "dropped": [],
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "state": {
+                  "id": "cart",
+                  "location": "ford_path",
+                  "occupants": []
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "posture": {
+                  "kind": null,
+                  "aboard": null
+                },
+                "rider": null,
+                "body": "walk",
+                "events": [],
+                "orders": [],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": null,
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": []
+                  },
+                  {
+                    "id": "skiff",
+                    "location": "riverside",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": null,
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "register",
+                "actor": "mira",
+                "location": "mill"
+              }
+            ]
+          },
+          "expectError": "no known op \"register\""
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "meter",
+                "actor": "mira"
+              }
+            ]
+          },
+          "expectError": "no known op \"meter\""
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "fastTravel",
+                "actor": "mira",
+                "to": "mill"
+              }
+            ]
+          },
+          "expectError": "no known op \"fastTravel\""
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "disposed": true
+          }
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "runsTraversal": false,
+            "links": []
+          },
+          "expectError": "[invalid-input] insimulcore: traversal.session.create: `links` configures traversal, which a session with `runsTraversal: false` does not run"
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "runsTraversal": false,
+            "seed": "hand"
+          },
+          "expectError": "[invalid-input] insimulcore: traversal.session.create: `seed` configures traversal, which a session with `runsTraversal: false` does not run"
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "runsTraversal": false,
+            "stamina": {}
+          },
+          "expectError": "[invalid-input] insimulcore: traversal.session.create: `stamina` configures traversal, which a session with `runsTraversal: false` does not run"
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "runsTraversal": false,
+            "vehicles": "cart"
+          },
+          "expectError": "[invalid-input] insimulcore: traversal.session.create: `vehicles` must be an array"
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "runsTraversal": "no"
+          },
+          "expectError": "[invalid-input] insimulcore: traversal.session.create: `runsTraversal` must be a boolean"
+        }
+      ]
+    },
+    {
+      "name": "traversal.session load: core's loadVehicleLayers (PL.core-vehicle-rules), as core's session runner loads: with no block, or a block with no vehicles, every world vehicle starts again at its authored place with nobody aboard and nobody rides; a block's vehicles and riding are then taken",
+      "steps": [
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "links": [
+              {
+                "from": "ford_path",
+                "to": "mill",
+                "mode": "walk",
+                "cost": 2
+              }
+            ],
+            "vehicles": [
+              {
+                "id": "skiff",
+                "name": "The skiff",
+                "mode": "boat",
+                "owner": "ferryman",
+                "location": "riverside",
+                "seats": 2
+              },
+              {
+                "id": "cart",
+                "name": "A hay cart",
+                "mode": "ride",
+                "location": "ford_path",
+                "seats": 2
+              }
+            ],
+            "personal": {
+              "kinds": [
+                {
+                  "id": "horse",
+                  "walk": 2800
+                },
+                {
+                  "id": "bicycle"
+                }
+              ],
+              "cycle": [
+                "bicycle",
+                "horse"
+              ]
+            }
+          },
+          "expect": {
+            "$subset": {
+              "session": 1
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "register",
+                "actor": "wren",
+                "location": "ford_path"
+              },
+              {
+                "op": "board",
+                "actor": "wren",
+                "vehicle": "cart"
+              },
+              {
+                "op": "drive",
+                "actor": "wren",
+                "vehicle": "cart"
+              },
+              {
+                "op": "mount",
+                "actor": "tam",
+                "kind": "horse"
+              },
+              {
+                "op": "save"
+              },
+              {
+                "op": "stateOf",
+                "vehicle": "cart"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "delta": {
+                  "retract": [],
+                  "assert": [
+                    "movement_mode(wren, walk).",
+                    "at_location(wren, ford_path)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "wren",
+                  "vehicle": "cart",
+                  "verb": "board",
+                  "action": "board",
+                  "permitted": true,
+                  "check": {
+                    "agent": "wren",
+                    "action": "board",
+                    "target": "cart",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "performed": true,
+                  "state": {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": [
+                      "wren"
+                    ]
+                  },
+                  "facts": {
+                    "retract": [],
+                    "assert": [
+                      "vehicle_occupant(cart, wren)."
+                    ]
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "vehicle_state_changed",
+                    "actorId": "wren",
+                    "vehicleId": "cart",
+                    "verb": "board",
+                    "driver": null,
+                    "occupants": [
+                      "wren"
+                    ],
+                    "location": "ford_path"
+                  },
+                  {
+                    "type": "vehicle_mounted",
+                    "vehicleType": "cart",
+                    "actorId": "wren"
+                  }
+                ],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "wren",
+                  "vehicle": "cart",
+                  "verb": "drive",
+                  "action": "drive",
+                  "grants": "ride",
+                  "permitted": true,
+                  "check": {
+                    "agent": "wren",
+                    "action": "drive",
+                    "target": "cart",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "performed": true,
+                  "state": {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": [
+                      "wren"
+                    ],
+                    "driver": "wren"
+                  },
+                  "facts": {
+                    "retract": [],
+                    "assert": [
+                      "vehicle_driver(cart, wren)."
+                    ]
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "vehicle_state_changed",
+                    "actorId": "wren",
+                    "vehicleId": "cart",
+                    "verb": "drive",
+                    "driver": "wren",
+                    "occupants": [
+                      "wren"
+                    ],
+                    "location": "ford_path"
+                  }
+                ],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "result": {
+                  "ok": true,
+                  "kind": "horse",
+                  "pace": {
+                    "walk": 2800,
+                    "run": 2500,
+                    "turn": 800,
+                    "strafe": 2240,
+                    "back": 1400
+                  },
+                  "label": "Horse",
+                  "events": [
+                    {
+                      "type": "vehicle_mounted",
+                      "actorId": "tam",
+                      "vehicleType": "horse"
+                    }
+                  ]
+                },
+                "delta": {
+                  "retract": [],
+                  "assert": []
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "key": "traversal",
+                "block": {
+                  "planner": {
+                    "actors": [
+                      {
+                        "id": "wren",
+                        "location": "ford_path",
+                        "modes": [
+                          "walk",
+                          "ride"
+                        ],
+                        "lent": {
+                          "ride": [
+                            "vehicle:cart"
+                          ]
+                        }
+                      }
+                    ],
+                    "blocked": []
+                  },
+                  "vehicles": {
+                    "vehicles": [
+                      {
+                        "id": "cart",
+                        "location": "ford_path",
+                        "occupants": [
+                          "wren"
+                        ],
+                        "driver": "wren"
+                      },
+                      {
+                        "id": "skiff",
+                        "location": "riverside",
+                        "occupants": [],
+                        "owner": "ferryman"
+                      }
+                    ]
+                  },
+                  "fastTravel": {
+                    "discovered": [],
+                    "journeys": 0
+                  },
+                  "riding": {
+                    "tam": "horse"
+                  }
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "state": {
+                  "id": "cart",
+                  "location": "ford_path",
+                  "occupants": [
+                    "wren"
+                  ],
+                  "driver": "wren"
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "wren",
+                    "location": "ford_path",
+                    "modes": [
+                      "walk",
+                      "ride"
+                    ],
+                    "lent": {
+                      "ride": [
+                        "vehicle:cart"
+                      ]
+                    }
+                  }
+                ],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": [
+                      "wren"
+                    ],
+                    "driver": "wren"
+                  },
+                  {
+                    "id": "skiff",
+                    "location": "riverside",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [],
+                "journeys": 0
+              },
+              "riding": {
+                "tam": "horse"
+              }
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "load"
+              },
+              {
+                "op": "stateOf",
+                "vehicle": "cart"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "dropped": [],
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "state": {
+                  "id": "cart",
+                  "location": "ford_path",
+                  "occupants": []
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "wren",
+                    "location": "ford_path",
+                    "modes": [
+                      "walk",
+                      "ride"
+                    ],
+                    "lent": {
+                      "ride": [
+                        "vehicle:cart"
+                      ]
+                    }
+                  }
+                ],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": []
+                  },
+                  {
+                    "id": "skiff",
+                    "location": "riverside",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [],
+                "journeys": 0
+              },
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "load",
+                "block": {
+                  "planner": {
+                    "actors": [
+                      {
+                        "id": "wren",
+                        "location": "ford_path",
+                        "modes": [
+                          "walk",
+                          "ride"
+                        ],
+                        "lent": {
+                          "ride": [
+                            "vehicle:cart"
+                          ]
+                        }
+                      }
+                    ],
+                    "blocked": []
+                  },
+                  "vehicles": null,
+                  "fastTravel": {
+                    "discovered": [],
+                    "journeys": 0
+                  },
+                  "riding": {
+                    "tam": "horse"
+                  }
+                }
+              },
+              {
+                "op": "stateOf",
+                "vehicle": "cart"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "dropped": [],
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "state": {
+                  "id": "cart",
+                  "location": "ford_path",
+                  "occupants": []
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "wren",
+                    "location": "ford_path",
+                    "modes": [
+                      "walk",
+                      "ride"
+                    ],
+                    "lent": {
+                      "ride": [
+                        "vehicle:cart"
+                      ]
+                    }
+                  }
+                ],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": []
+                  },
+                  {
+                    "id": "skiff",
+                    "location": "riverside",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [],
+                "journeys": 0
+              },
+              "riding": {
+                "tam": "horse"
+              }
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "load",
+                "block": {
+                  "planner": {
+                    "actors": [
+                      {
+                        "id": "wren",
+                        "location": "ford_path",
+                        "modes": [
+                          "walk",
+                          "ride"
+                        ],
+                        "lent": {
+                          "ride": [
+                            "vehicle:cart"
+                          ]
+                        }
+                      }
+                    ],
+                    "blocked": []
+                  },
+                  "vehicles": {
+                    "vehicles": [
+                      {
+                        "id": "cart",
+                        "location": "ford_path",
+                        "occupants": [
+                          "wren"
+                        ],
+                        "driver": "wren"
+                      },
+                      {
+                        "id": "skiff",
+                        "location": "riverside",
+                        "occupants": [],
+                        "owner": "ferryman"
+                      }
+                    ]
+                  },
+                  "fastTravel": {
+                    "discovered": [],
+                    "journeys": 0
+                  },
+                  "riding": {
+                    "tam": "horse"
+                  }
+                }
+              },
+              {
+                "op": "stateOf",
+                "vehicle": "cart"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "dropped": [],
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "state": {
+                  "id": "cart",
+                  "location": "ford_path",
+                  "occupants": [
+                    "wren"
+                  ],
+                  "driver": "wren"
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "wren",
+                    "location": "ford_path",
+                    "modes": [
+                      "walk",
+                      "ride"
+                    ],
+                    "lent": {
+                      "ride": [
+                        "vehicle:cart"
+                      ]
+                    }
+                  }
+                ],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "cart",
+                    "location": "ford_path",
+                    "occupants": [
+                      "wren"
+                    ],
+                    "driver": "wren"
+                  },
+                  {
+                    "id": "skiff",
+                    "location": "riverside",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [],
+                "journeys": 0
+              },
+              "riding": {
+                "tam": "horse"
+              }
+            }
+          }
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "disposed": true
+          }
+        }
+      ]
+    }
+  ]
+}

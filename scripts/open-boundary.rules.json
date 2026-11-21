@@ -948,6 +948,15 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/props/vehicle-placement",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the props.vehicle.contract, .park and .streetProbes rows (parkVehicle, vehicleStreetProbes, the VEHICLE_PARK_* constants, VEHICLE_PARK_TIERS, VEHICLE_PARKING_REFUSALS and VEHICLE_PARKING_DEVIATIONS) (core's world-vehicle parking rule; PL.native-vehicle-rows, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-vehicle-rows (Features Gauntlet PL.native-vehicle-rows)",
+      "reviewedAt": "2026-11-20"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/editor/binding/archetypes",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the genrePieces.deriveArchetype, .collect and .stamp rows (the binding walk's genre piece leg: deriveGenrePieceArchetype, and collectPlaceableEntities and stampWorldArchetypes over a world holding only entities.genrePieces; PL.native-genre-rows slice 4, rulings U128, U115, U103 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

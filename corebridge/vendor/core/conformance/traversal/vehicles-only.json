@@ -1,0 +1,1062 @@
+{
+  "area": "traversal",
+  "file": "traversal/vehicles-only",
+  "description": "traversal-vehicles in a game that runs the vehicles pack without traversal (PL.core-vehicle-rules, U106(3); owned by packs/vehicles): a VehicleRegistry with no planner and the personal vehicles on a recording bus. save writes no block (traversal owns extensions.traversal and does not run): {block: null}. load reads none, even a block the step states (one a file still carries): loadVehicleLayers(registry, null) (src/traversal/traversal-save.ts) puts every world vehicle back at its authored place, owner and empty, and every rider on foot, with no events. The same rule the save contract states for a save with no block (docs/village-state-save.md §8). The intent and riders steps answer the rider intent as in session.json (PL.core-ride-intent), so after such a load nobody is drawn riding.",
+  "catalog": [
+    "traversal-vehicles"
+  ],
+  "ops": [
+    "run"
+  ],
+  "steps": {
+    "run": [
+      "board",
+      "drive",
+      "disembark",
+      "mount",
+      "dismount",
+      "cycle",
+      "save",
+      "load",
+      "intent",
+      "riders"
+    ]
+  },
+  "runner": "src/traversal/systems-corpus.ts (runTraversalSystemsOp). Compare exactly, object key sets included; an unknown op or step is an error.",
+  "regenerate": "npm run traversal-systems-corpus; npm run traversal-systems-corpus:check fails on any difference.",
+  "cases": [
+    {
+      "name": "a-load-without-traversal-puts-every-world-vehicle-back-and-every-rider-on-foot",
+      "op": "run",
+      "note": "PL.core-vehicle-rules (U106(3); the Unreal P9e critic's m5). Wren takes the hay cart's reins, the ferryman boards his skiff, Mira rides a horse; F5 writes no traversal block (traversal owns it and does not run), so F9 loads none: the cart and the skiff stand at their authored places with nobody aboard, Mira is on foot, and the load raises no event. Unreal's interim left every rider on what they rode before the load.",
+      "input": {
+        "vehicles": [
+          {
+            "id": "skiff",
+            "name": "The ferryman’s skiff",
+            "mode": "boat",
+            "owner": "ferryman",
+            "location": "riverside_camp",
+            "seats": 2
+          },
+          {
+            "id": "cart",
+            "name": "A hay cart",
+            "mode": "ride",
+            "location": "ford_path",
+            "seats": 2
+          }
+        ],
+        "steps": [
+          {
+            "do": "board",
+            "actor": "wren",
+            "vehicle": "cart"
+          },
+          {
+            "do": "drive",
+            "actor": "wren",
+            "vehicle": "cart"
+          },
+          {
+            "do": "board",
+            "actor": "ferryman",
+            "vehicle": "skiff"
+          },
+          {
+            "do": "mount",
+            "actor": "mira",
+            "kind": "horse"
+          },
+          {
+            "do": "save"
+          },
+          {
+            "do": "load"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "board",
+          "report": {
+            "actor": "wren",
+            "vehicle": "cart",
+            "verb": "board",
+            "action": "board",
+            "permitted": true,
+            "check": {
+              "agent": "wren",
+              "action": "board",
+              "target": "cart",
+              "permitted": true,
+              "breached": []
+            },
+            "performed": true,
+            "state": {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ]
+            },
+            "facts": {
+              "retract": [],
+              "assert": [
+                "vehicle_occupant(cart, wren)."
+              ]
+            },
+            "applied": false
+          },
+          "aboard": "cart",
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ]
+            },
+            {
+              "id": "skiff",
+              "location": "riverside_camp",
+              "owner": "ferryman",
+              "occupants": []
+            }
+          ],
+          "events": [
+            {
+              "type": "vehicle_state_changed",
+              "actorId": "wren",
+              "vehicleId": "cart",
+              "verb": "board",
+              "driver": null,
+              "occupants": [
+                "wren"
+              ],
+              "location": "ford_path"
+            },
+            {
+              "type": "vehicle_mounted",
+              "vehicleType": "cart",
+              "actorId": "wren"
+            }
+          ]
+        },
+        {
+          "do": "drive",
+          "report": {
+            "actor": "wren",
+            "vehicle": "cart",
+            "verb": "drive",
+            "action": "drive",
+            "grants": "ride",
+            "permitted": true,
+            "check": {
+              "agent": "wren",
+              "action": "drive",
+              "target": "cart",
+              "permitted": true,
+              "breached": []
+            },
+            "performed": true,
+            "state": {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ],
+              "driver": "wren"
+            },
+            "facts": {
+              "retract": [],
+              "assert": [
+                "vehicle_driver(cart, wren)."
+              ]
+            },
+            "applied": false
+          },
+          "aboard": "cart",
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ],
+              "driver": "wren"
+            },
+            {
+              "id": "skiff",
+              "location": "riverside_camp",
+              "owner": "ferryman",
+              "occupants": []
+            }
+          ],
+          "events": [
+            {
+              "type": "vehicle_state_changed",
+              "actorId": "wren",
+              "vehicleId": "cart",
+              "verb": "drive",
+              "driver": "wren",
+              "occupants": [
+                "wren"
+              ],
+              "location": "ford_path"
+            }
+          ]
+        },
+        {
+          "do": "board",
+          "report": {
+            "actor": "ferryman",
+            "vehicle": "skiff",
+            "verb": "board",
+            "action": "board",
+            "permitted": true,
+            "check": {
+              "agent": "ferryman",
+              "action": "board",
+              "target": "skiff",
+              "permitted": true,
+              "breached": []
+            },
+            "performed": true,
+            "state": {
+              "id": "skiff",
+              "location": "riverside_camp",
+              "owner": "ferryman",
+              "occupants": [
+                "ferryman"
+              ]
+            },
+            "facts": {
+              "retract": [],
+              "assert": [
+                "vehicle_occupant(skiff, ferryman)."
+              ]
+            },
+            "applied": false
+          },
+          "aboard": "skiff",
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ],
+              "driver": "wren"
+            },
+            {
+              "id": "skiff",
+              "location": "riverside_camp",
+              "owner": "ferryman",
+              "occupants": [
+                "ferryman"
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": "vehicle_state_changed",
+              "actorId": "ferryman",
+              "vehicleId": "skiff",
+              "verb": "board",
+              "driver": null,
+              "occupants": [
+                "ferryman"
+              ],
+              "location": "riverside_camp"
+            },
+            {
+              "type": "vehicle_mounted",
+              "vehicleType": "skiff",
+              "actorId": "ferryman"
+            }
+          ]
+        },
+        {
+          "do": "mount",
+          "ok": true,
+          "kind": "horse",
+          "pace": {
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "strafe": 2400,
+            "back": 1500
+          },
+          "label": "Horse",
+          "mountEvents": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "mira",
+              "vehicleType": "horse"
+            }
+          ],
+          "events": []
+        },
+        {
+          "do": "save",
+          "block": null
+        },
+        {
+          "do": "load",
+          "dropped": [],
+          "vehicles": {
+            "vehicles": [
+              {
+                "id": "cart",
+                "location": "ford_path",
+                "occupants": []
+              },
+              {
+                "id": "skiff",
+                "location": "riverside_camp",
+                "owner": "ferryman",
+                "occupants": []
+              }
+            ]
+          },
+          "riding": {},
+          "events": []
+        }
+      ]
+    },
+    {
+      "name": "a-load-without-traversal-reads-no-block-even-one-the-file-still-carries",
+      "op": "run",
+      "note": "A save file written while traversal ran still carries extensions.traversal (a game state with no traversal carries the stored block untouched). A game that runs vehicles alone does not read it: the load is the same as with no block.",
+      "input": {
+        "vehicles": [
+          {
+            "id": "skiff",
+            "name": "The ferryman’s skiff",
+            "mode": "boat",
+            "owner": "ferryman",
+            "location": "riverside_camp",
+            "seats": 2
+          },
+          {
+            "id": "cart",
+            "name": "A hay cart",
+            "mode": "ride",
+            "location": "ford_path",
+            "seats": 2
+          }
+        ],
+        "steps": [
+          {
+            "do": "board",
+            "actor": "wren",
+            "vehicle": "cart"
+          },
+          {
+            "do": "cycle",
+            "actor": "mira"
+          },
+          {
+            "do": "load",
+            "block": {
+              "planner": null,
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "skiff",
+                    "location": "far_bank",
+                    "owner": "ferryman",
+                    "occupants": [
+                      "wren"
+                    ],
+                    "driver": "wren"
+                  }
+                ]
+              },
+              "fastTravel": null,
+              "riding": {
+                "mira": "horse"
+              }
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "board",
+          "report": {
+            "actor": "wren",
+            "vehicle": "cart",
+            "verb": "board",
+            "action": "board",
+            "permitted": true,
+            "check": {
+              "agent": "wren",
+              "action": "board",
+              "target": "cart",
+              "permitted": true,
+              "breached": []
+            },
+            "performed": true,
+            "state": {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ]
+            },
+            "facts": {
+              "retract": [],
+              "assert": [
+                "vehicle_occupant(cart, wren)."
+              ]
+            },
+            "applied": false
+          },
+          "aboard": "cart",
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ]
+            },
+            {
+              "id": "skiff",
+              "location": "riverside_camp",
+              "owner": "ferryman",
+              "occupants": []
+            }
+          ],
+          "events": [
+            {
+              "type": "vehicle_state_changed",
+              "actorId": "wren",
+              "vehicleId": "cart",
+              "verb": "board",
+              "driver": null,
+              "occupants": [
+                "wren"
+              ],
+              "location": "ford_path"
+            },
+            {
+              "type": "vehicle_mounted",
+              "vehicleType": "cart",
+              "actorId": "wren"
+            }
+          ]
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": "bicycle",
+          "pace": {
+            "walk": 2000,
+            "run": 1800,
+            "turn": 1200,
+            "strafe": 1600,
+            "back": 1000
+          },
+          "label": "Bicycle",
+          "mountEvents": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "mira",
+              "vehicleType": "bicycle"
+            }
+          ],
+          "events": []
+        },
+        {
+          "do": "load",
+          "dropped": [],
+          "vehicles": {
+            "vehicles": [
+              {
+                "id": "cart",
+                "location": "ford_path",
+                "occupants": []
+              },
+              {
+                "id": "skiff",
+                "location": "riverside_camp",
+                "owner": "ferryman",
+                "occupants": []
+              }
+            ]
+          },
+          "riding": {},
+          "events": []
+        }
+      ]
+    },
+    {
+      "name": "without-traversal-the-registry-and-the-personal-vehicles-still-decide-and-raise-their-events",
+      "op": "run",
+      "note": "Who is aboard, who drives and who rides which kind are still decided, with vehicle_state_changed and the mount events; no planner takes the mode a vehicle lends. Aboard the cart nobody may get on a horse (in_vehicle); got off, the cycle goes on foot to bicycle to horse, and getting off the horse puts the rider on foot.",
+      "input": {
+        "vehicles": [
+          {
+            "id": "skiff",
+            "name": "The ferryman’s skiff",
+            "mode": "boat",
+            "owner": "ferryman",
+            "location": "riverside_camp",
+            "seats": 2
+          },
+          {
+            "id": "cart",
+            "name": "A hay cart",
+            "mode": "ride",
+            "location": "ford_path",
+            "seats": 2
+          }
+        ],
+        "steps": [
+          {
+            "do": "board",
+            "actor": "wren",
+            "vehicle": "cart"
+          },
+          {
+            "do": "mount",
+            "actor": "wren",
+            "kind": "horse"
+          },
+          {
+            "do": "disembark",
+            "actor": "wren",
+            "vehicle": "cart"
+          },
+          {
+            "do": "cycle",
+            "actor": "wren"
+          },
+          {
+            "do": "cycle",
+            "actor": "wren"
+          },
+          {
+            "do": "dismount",
+            "actor": "wren"
+          },
+          {
+            "do": "save"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "board",
+          "report": {
+            "actor": "wren",
+            "vehicle": "cart",
+            "verb": "board",
+            "action": "board",
+            "permitted": true,
+            "check": {
+              "agent": "wren",
+              "action": "board",
+              "target": "cart",
+              "permitted": true,
+              "breached": []
+            },
+            "performed": true,
+            "state": {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ]
+            },
+            "facts": {
+              "retract": [],
+              "assert": [
+                "vehicle_occupant(cart, wren)."
+              ]
+            },
+            "applied": false
+          },
+          "aboard": "cart",
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ]
+            },
+            {
+              "id": "skiff",
+              "location": "riverside_camp",
+              "owner": "ferryman",
+              "occupants": []
+            }
+          ],
+          "events": [
+            {
+              "type": "vehicle_state_changed",
+              "actorId": "wren",
+              "vehicleId": "cart",
+              "verb": "board",
+              "driver": null,
+              "occupants": [
+                "wren"
+              ],
+              "location": "ford_path"
+            },
+            {
+              "type": "vehicle_mounted",
+              "vehicleType": "cart",
+              "actorId": "wren"
+            }
+          ]
+        },
+        {
+          "do": "mount",
+          "ok": false,
+          "refusal": "in_vehicle",
+          "detail": "cart",
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "mountEvents": [],
+          "events": []
+        },
+        {
+          "do": "disembark",
+          "report": {
+            "actor": "wren",
+            "vehicle": "cart",
+            "verb": "disembark",
+            "action": "disembark",
+            "permitted": true,
+            "check": {
+              "agent": "wren",
+              "action": "disembark",
+              "target": "cart",
+              "permitted": true,
+              "breached": []
+            },
+            "performed": true,
+            "state": {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": []
+            },
+            "facts": {
+              "retract": [
+                "vehicle_occupant(cart, wren)."
+              ],
+              "assert": []
+            },
+            "applied": false
+          },
+          "aboard": null,
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": []
+            },
+            {
+              "id": "skiff",
+              "location": "riverside_camp",
+              "owner": "ferryman",
+              "occupants": []
+            }
+          ],
+          "events": [
+            {
+              "type": "vehicle_state_changed",
+              "actorId": "wren",
+              "vehicleId": "cart",
+              "verb": "disembark",
+              "driver": null,
+              "occupants": [],
+              "location": "ford_path"
+            },
+            {
+              "type": "vehicle_dismounted",
+              "vehicleType": "cart",
+              "actorId": "wren"
+            }
+          ]
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": "bicycle",
+          "pace": {
+            "walk": 2000,
+            "run": 1800,
+            "turn": 1200,
+            "strafe": 1600,
+            "back": 1000
+          },
+          "label": "Bicycle",
+          "mountEvents": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "wren",
+              "vehicleType": "bicycle"
+            }
+          ],
+          "events": []
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": "horse",
+          "pace": {
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "strafe": 2400,
+            "back": 1500
+          },
+          "label": "Horse",
+          "mountEvents": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "wren",
+              "vehicleType": "horse"
+            }
+          ],
+          "events": []
+        },
+        {
+          "do": "dismount",
+          "ok": true,
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "mountEvents": [
+            {
+              "type": "vehicle_dismounted",
+              "actorId": "wren",
+              "vehicleType": "horse"
+            }
+          ],
+          "events": []
+        },
+        {
+          "do": "save",
+          "block": null
+        }
+      ]
+    },
+    {
+      "name": "without-traversal-riders-are-drawn-riding-and-a-load-puts-every-body-back-on-its-own-intent",
+      "op": "run",
+      "note": "PL.core-ride-intent with PL.core-vehicle-rules' load: wren drives the cart and mira rides a horse, so both are drawn `ride` and the cart carries wren. F9 in a game without traversal reads no block, so the cart is parked and empty and mira is on foot: nobody rides, and each body is drawn with its own intent.",
+      "input": {
+        "vehicles": [
+          {
+            "id": "skiff",
+            "name": "The ferryman’s skiff",
+            "mode": "boat",
+            "owner": "ferryman",
+            "location": "riverside_camp",
+            "seats": 2
+          },
+          {
+            "id": "cart",
+            "name": "A hay cart",
+            "mode": "ride",
+            "location": "ford_path",
+            "seats": 2
+          }
+        ],
+        "steps": [
+          {
+            "do": "board",
+            "actor": "wren",
+            "vehicle": "cart"
+          },
+          {
+            "do": "drive",
+            "actor": "wren",
+            "vehicle": "cart"
+          },
+          {
+            "do": "mount",
+            "actor": "mira",
+            "kind": "horse"
+          },
+          {
+            "do": "intent",
+            "actor": "wren",
+            "prior": "walk"
+          },
+          {
+            "do": "intent",
+            "actor": "mira",
+            "prior": "walk"
+          },
+          {
+            "do": "riders",
+            "vehicle": "cart"
+          },
+          {
+            "do": "save"
+          },
+          {
+            "do": "load"
+          },
+          {
+            "do": "intent",
+            "actor": "wren",
+            "prior": "walk"
+          },
+          {
+            "do": "intent",
+            "actor": "mira",
+            "prior": "walk"
+          },
+          {
+            "do": "riders",
+            "vehicle": "cart"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "board",
+          "report": {
+            "actor": "wren",
+            "vehicle": "cart",
+            "verb": "board",
+            "action": "board",
+            "permitted": true,
+            "check": {
+              "agent": "wren",
+              "action": "board",
+              "target": "cart",
+              "permitted": true,
+              "breached": []
+            },
+            "performed": true,
+            "state": {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ]
+            },
+            "facts": {
+              "retract": [],
+              "assert": [
+                "vehicle_occupant(cart, wren)."
+              ]
+            },
+            "applied": false
+          },
+          "aboard": "cart",
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ]
+            },
+            {
+              "id": "skiff",
+              "location": "riverside_camp",
+              "owner": "ferryman",
+              "occupants": []
+            }
+          ],
+          "events": [
+            {
+              "type": "vehicle_state_changed",
+              "actorId": "wren",
+              "vehicleId": "cart",
+              "verb": "board",
+              "driver": null,
+              "occupants": [
+                "wren"
+              ],
+              "location": "ford_path"
+            },
+            {
+              "type": "vehicle_mounted",
+              "vehicleType": "cart",
+              "actorId": "wren"
+            }
+          ]
+        },
+        {
+          "do": "drive",
+          "report": {
+            "actor": "wren",
+            "vehicle": "cart",
+            "verb": "drive",
+            "action": "drive",
+            "grants": "ride",
+            "permitted": true,
+            "check": {
+              "agent": "wren",
+              "action": "drive",
+              "target": "cart",
+              "permitted": true,
+              "breached": []
+            },
+            "performed": true,
+            "state": {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ],
+              "driver": "wren"
+            },
+            "facts": {
+              "retract": [],
+              "assert": [
+                "vehicle_driver(cart, wren)."
+              ]
+            },
+            "applied": false
+          },
+          "aboard": "cart",
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ],
+              "driver": "wren"
+            },
+            {
+              "id": "skiff",
+              "location": "riverside_camp",
+              "owner": "ferryman",
+              "occupants": []
+            }
+          ],
+          "events": [
+            {
+              "type": "vehicle_state_changed",
+              "actorId": "wren",
+              "vehicleId": "cart",
+              "verb": "drive",
+              "driver": "wren",
+              "occupants": [
+                "wren"
+              ],
+              "location": "ford_path"
+            }
+          ]
+        },
+        {
+          "do": "mount",
+          "ok": true,
+          "kind": "horse",
+          "pace": {
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "strafe": 2400,
+            "back": 1500
+          },
+          "label": "Horse",
+          "mountEvents": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "mira",
+              "vehicleType": "horse"
+            }
+          ],
+          "events": []
+        },
+        {
+          "do": "intent",
+          "actor": "wren",
+          "kind": null,
+          "aboard": "cart",
+          "rider": "ride",
+          "body": "ride"
+        },
+        {
+          "do": "intent",
+          "actor": "mira",
+          "kind": "horse",
+          "aboard": null,
+          "rider": "ride",
+          "body": "ride"
+        },
+        {
+          "do": "riders",
+          "vehicle": "cart",
+          "riders": {
+            "wren": "ride"
+          }
+        },
+        {
+          "do": "save",
+          "block": null
+        },
+        {
+          "do": "load",
+          "dropped": [],
+          "vehicles": {
+            "vehicles": [
+              {
+                "id": "cart",
+                "location": "ford_path",
+                "occupants": []
+              },
+              {
+                "id": "skiff",
+                "location": "riverside_camp",
+                "owner": "ferryman",
+                "occupants": []
+              }
+            ]
+          },
+          "riding": {},
+          "events": []
+        },
+        {
+          "do": "intent",
+          "actor": "wren",
+          "kind": null,
+          "aboard": null,
+          "rider": null,
+          "body": "walk"
+        },
+        {
+          "do": "intent",
+          "actor": "mira",
+          "kind": null,
+          "aboard": null,
+          "rider": null,
+          "body": "walk"
+        },
+        {
+          "do": "riders",
+          "vehicle": "cart",
+          "riders": {}
+        }
+      ]
+    }
+  ]
+}

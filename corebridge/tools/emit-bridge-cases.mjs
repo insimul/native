@@ -381,6 +381,89 @@ function passBy(root, coreCommit) {
 	);
 }
 
+// ── world-vehicle parking: conformance/props/vehicle-placement.json (vehicle-placement.test.ts) ──
+//
+// Core's reference runner is src/props/vehicle-placement-corpus.ts (`runVehiclePlacementOp`):
+// each op is ONE core call, and each becomes ONE call of the props.vehicle.* row over that
+// function (PL.native-vehicle-rows), the case's whole input as its args and its whole answer
+// as its expectation:
+//
+//   probes  props.vehicle.streetProbes  { at, radiusM }          -> { points }
+//   park    props.vehicle.park          the VehicleParkingInput  -> the VehicleParking
+//
+// Core's runner compares numbers within the file's `tolerance` (1e-6); the bridge's matcher
+// compares them as doubles, exactly, which both legs meet (the rows run core's own code). One
+// more case holds props.vehicle.contract to the corpus's contract: the constants (each key's
+// `value`), the refusals, the tiers and the deviations; the export names it also states are
+// pinned by the hand cases. An op this map does not know fails the emit.
+
+/**
+ * Library-version answers (corebridge/tests/README.md): the members of a case's answer where this library's QuickJS
+ * answers otherwise than the V8 core's corpus was written with, within the corpus's `tolerance`. Core's runner compares
+ * within that tolerance, and so does tests/props_vehicle_placement_corpus.cpp; the bridge's matcher compares as doubles,
+ * so such a step is declared: `expect` is the row's answer, `libraryVersion.v8` the corpus's. Measured at the 45409ed pin:
+ * `Math.hypot(7, 1.5)` is 7.158910531638177 on QuickJS (the correctly rounded √51.25) and 7.158910531638176 on V8, one ulp
+ * apart. core_vendor holds each declaration to the corpus (v8 the case's answer exactly, expect within the tolerance).
+ */
+const VEHICLE_PLACEMENT_QUICKJS = {
+	'park: a ring point off the street moves to the first street point within 1.5 m (here 1.5 m toward +z)': { distanceM: 7.158910531638177 },
+};
+
+/** The row each vehicle-placement op calls (vehicle-placement-corpus.ts's runVehiclePlacementOp, through the rows). */
+const VEHICLE_PLACEMENT_ROWS = {
+	probes: 'props.vehicle.streetProbes',
+	park: 'props.vehicle.park',
+};
+
+function vehiclePlacement(root, coreCommit) {
+	const r = reader(root);
+	const file = r.json('conformance/props/vehicle-placement.json');
+	if (file.area !== 'props-vehicle-placement') throw new Error('emit-bridge-cases: vehicle-placement.json is not the vehicle-placement corpus');
+	const cases = [
+		{
+			name: 'vehicle-placement: the contract the props.vehicle.contract row states',
+			steps: [
+				{
+					call: 'props.vehicle.contract',
+					expect: {
+						constants: Object.fromEntries(Object.entries(file.contract.constants).map(([k, v]) => [k, v.value])),
+						names: { $type: 'object' },
+						refusals: file.contract.refusals,
+						tiers: file.contract.tiers,
+						deviations: file.contract.deviations,
+					},
+				},
+			],
+		},
+	];
+	for (const c of file.cases) {
+		const call = VEHICLE_PLACEMENT_ROWS[c.op];
+		if (!call) throw new Error(`emit-bridge-cases: vehicle-placement.json op ${c.op} has no transcription (case "${c.name}")`);
+		const quickjs = VEHICLE_PLACEMENT_QUICKJS[c.name];
+		const step = quickjs
+			? {
+					call,
+					args: c.input,
+					expect: { ...c.expected, ...quickjs },
+					libraryVersion: {
+						library: 'QuickJS 2025-04-26 Math.hypot (correctly rounded), against V8 Math.hypot',
+						v8: c.expected,
+						why: `the corpus's answer was written on V8, whose Math.hypot is one ulp from QuickJS's here (${Object.keys(quickjs).join(', ')}); core's runner compares within the file's tolerance ${file.tolerance}, which both meet`,
+					},
+				}
+			: { call, args: c.input, expect: c.expected };
+		cases.push({ name: `vehicle-placement ${c.op}: ${c.name}`, steps: [step] });
+	}
+	return caseFile(
+		'props-vehicle-placement',
+		"core's world-vehicle parking corpus (conformance/props/vehicle-placement.json, PL.core-vehicle-rules) through the props.vehicle.* rows, " +
+			"each op one call of its row, as core's reference runner (props/vehicle-placement-corpus.ts) makes one core call.",
+		coreCommit,
+		r.files,
+		cases,
+	);
+}
+
 // ── ui: conformance/ui/ (dialogue-menu-save-corpus.test.ts, quest-trade-corpus.test.ts, ui-corpus.test.ts)
 
 function pauseMenu(root, coreCommit) {
@@ -2355,6 +2438,7 @@ export function emitBridgeCases(root, coreCommit) {
 		'core-saves.json': saves(root, coreCommit),
 		'core-saves-village.json': villageSave(root, coreCommit),
 		'core-villagers-pass-by.json': passBy(root, coreCommit),
+		'core-props-vehicle-placement.json': vehiclePlacement(root, coreCommit),
 		'core-quests.json': quests(root, coreCommit),
 		'core-ui-pause-menu.json': pauseMenu(root, coreCommit),
 		'core-ui-quest-journal.json': questJournal(root, coreCommit),

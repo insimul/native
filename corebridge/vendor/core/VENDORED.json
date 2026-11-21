@@ -179,6 +179,7 @@
     "src/props/interior-save.ts",
     "src/props/notice-board.ts",
     "src/props/pickup-placement.ts",
+    "src/props/vehicle-placement.ts",
     "src/puzzle/puzzle-predicates.ts",
     "src/puzzle/puzzle-save.ts",
     "src/puzzle/puzzle.ts",
@@ -299,6 +300,7 @@
     "conformance/props/interactables.json",
     "conformance/props/notice-board.json",
     "conformance/props/pickup-placement.json",
+    "conformance/props/vehicle-placement.json",
     "conformance/ui/inventory-cases.json"
   ],
   "titleCorpus": [
@@ -323,6 +325,7 @@
     "conformance/traversal/mounts.json",
     "conformance/traversal/save.json",
     "conformance/traversal/session.json",
+    "conformance/traversal/vehicles-only.json",
     "conformance/traversal/vehicles.json"
   ],
   "buildCorpus": {
@@ -372,11 +375,11 @@
   "passByCorpus": [
     "conformance/villagers/pass-by.json"
   ],
-  "bundleBytes": 2717147,
-  "bundleSha256": "75d53525b84481e1513ed3540090b5c79be9f66189b48f9991fecf67fc08439f",
+  "bundleBytes": 2734766,
+  "bundleSha256": "2d4f248f362dfc1a0deef3d171d0ea0206cb685fb62957a2afbdb266829399de",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "75d53525b84481e1513ed3540090b5c79be9f66189b48f9991fecf67fc08439f",
-    "vendor/core/insimul_core_bundle.c": "13835a777abdc4704f0010258e3e12ee8078a0e23399f819ca0627020c0b91a6",
+    "vendor/core/insimul-core-bundle.js": "2d4f248f362dfc1a0deef3d171d0ea0206cb685fb62957a2afbdb266829399de",
+    "vendor/core/insimul_core_bundle.c": "8428ac3d5d4e679bd5bf737c3b5c4e9774f655a362637a47a8961b327131683f",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genre-genre-pieces-build-plan.json": "60388e9cb5652085356059a515382be7ba5d98dd172677c025136c4f640d06ca",
     "vendor/core/cases/core-genre-genre-pieces-kinds.json": "07082aa01cf17b5ecf6154cbb738842e344c40fd5a6f256d3ca81d078f281c83",
@@ -405,6 +408,7 @@
     "vendor/core/cases/core-language-save.json": "71b1caaa69d9053ce4e2813325b24cf207a565856fcc8cf0ce06b344fe51e57c",
     "vendor/core/cases/core-language-writing.json": "80d422d9917ece1327f0a8e8d5f5791b6635037166747ea77daa18438f3e5465",
     "vendor/core/cases/core-modules-activation.json": "57ab7da8e45f717881fd4f26d74c8b84842098ebaff6bf6ae760165ba1422764",
+    "vendor/core/cases/core-props-vehicle-placement.json": "d299c8edf7ab923966a89962508ff9badf6b1644f0b6c04a27d758dd973a4fe3",
     "vendor/core/cases/core-quests.json": "26e8e74f0eacfdeaa316ef1c8776668ebbd60dc74277eb07543ba1a29aa24b68",
     "vendor/core/cases/core-saves-village.json": "a1b3fe5d7b26dc21bb7b987864c8f6f314802a7304510d141e161d000f6e79bb",
     "vendor/core/cases/core-saves.json": "f3fd33fd1faa443e4b864f6c2275930ccc3b65695bfc78c3652a65b95f9bae17",
@@ -470,6 +474,7 @@
     "vendor/core/conformance/props/interactables.json": "6e41f6794ef577476956912ceed9b3c83c2226139fd5193afebd9727f33735b3",
     "vendor/core/conformance/props/notice-board.json": "d6c87de5c50670b0b2b6c3a1c0e1a469d98583be4e49fe3560e918034c6fce59",
     "vendor/core/conformance/props/pickup-placement.json": "2c47865da4ac008ac24fbe70024b47e3656c41ab75e08bda8f7c8e7c0be70048",
+    "vendor/core/conformance/props/vehicle-placement.json": "fa07f7aed13d7cb9e3cdb24d78850114814a94614f75e73f9a4ada1fea0d1384",
     "vendor/core/conformance/ui/inventory-cases.json": "042bf4c0ead5a6b115843756f4665507705597a950d0d8449e6485d12cbd8fb9",
     "vendor/core/conformance/quests/tutorial.json": "a54f55f8ab239e16cc1826d8226afa7355e8c692ee1de5bc2ca259c9a28567b9",
     "vendor/core/conformance/ui/title-flow.json": "741b49ea56cd15341c0333708efd8648c761f2ae4050a139fc85ee8cf943c494",
@@ -484,6 +489,7 @@
     "vendor/core/conformance/traversal/mounts.json": "74bee32b7cf9b3e54ef9556d50d9a84e0e0e2294cc5fa0b1a6a65a6fafa6a5a9",
     "vendor/core/conformance/traversal/save.json": "b2ba139b9522758e2672e7791ab014eded202780e46c05692ab23920fc7ec98e",
     "vendor/core/conformance/traversal/session.json": "b699da44a005c3578420aaa3b585ec179b14c1b1d608a5aea50b7ccc90c0690f",
+    "vendor/core/conformance/traversal/vehicles-only.json": "b6f171c02788b8681e2e2b4c4a103c1f223529be47d92826327d6732ea066c45",
     "vendor/core/conformance/traversal/vehicles.json": "1b03a951b6249a089ba2f09e6109cadbcdd79eb030b8871f114369bc04940b92",
     "vendor/core/conformance/headless-build/headless.json": "8d206e42c3efdaea41c373e89daa804b85a6879eea33456818cd9a3e07fed5b9",
     "vendor/core/conformance/progression/gamification.json": "aa344dcc6edee5bb5738a454c2dfbfebc1b90f25e0cb0ec42378df9733abb476",
@@ -522,13 +528,13 @@
     "vendor/core/conformance/strategy/run.json": "fa4765abfbe38e68a0750f20d40e959a1c0d9c82c6fba18d9f453b11e353ef87",
     "vendor/core/conformance/strategy/save.json": "f093109d3f5173c2b9fd0666056bb03a8f1105ef987f0570be382da5d5a68065",
     "vendor/core/conformance/villagers/pass-by.json": "194463874417691c766a6d3a85d91ce3a347396b4793013518906c32219454af",
-    "js/entry.js": "31d9d6e4a6406813dc98b17d0c039bd5b526e5248fc9718c81a6306cdafc8e99",
+    "js/entry.js": "a19e9a4493eefa441153c37bde8a51c11bcd90c9bb18be9ae719e6a3dc2564c8",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
-    "tools/emit-bridge-cases.mjs": "44237b255a346d16c8d1f1eb9460b30166798d0c1e626dd16956b5218bdd877a",
-    "core-pin.json": "232fae6c34a5505136e1563d62d90380aedbb3a7203e684ddfd74a012adeaccb"
+    "tools/emit-bridge-cases.mjs": "e4ab0986b7ea52e5d57279e63a785333c4b9e18b86c5a0ab70aa8a01cc82be1e",
+    "core-pin.json": "3a85b31c154623f5fb3957c1c2cc443564218bbb20f9ca8a9c353c64eb6f7570"
   }
 }

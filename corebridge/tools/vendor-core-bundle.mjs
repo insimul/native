@@ -213,7 +213,10 @@ const SAVES_CORPUS_FILES = [
 // pickup-placement.json (PL.pickup-placement) joined the set with its
 // `props.pickups.*` rows (PL.native-pickup-settle, U91(2)), and interactables.json
 // (PL.examine-props) with its `props.interactables.*` rows
-// (PL.native-interact-target, U94(3)).
+// (PL.native-interact-target, U94(3)), and vehicle-placement.json (PL.core-vehicle-rules) with
+// its `props.vehicle.*` rows (PL.native-vehicle-rows, U128, U115), driven by
+// tests/props_vehicle_placement_corpus.cpp and transcribed by emit-bridge-cases.mjs into
+// cases/core-props-vehicle-placement.json.
 const PROPS_CORPUS_FILES = [
   'conformance/props/containers.json',
   'conformance/props/documents.json',
@@ -221,6 +224,7 @@ const PROPS_CORPUS_FILES = [
   'conformance/props/interactables.json',
   'conformance/props/notice-board.json',
   'conformance/props/pickup-placement.json',
+  'conformance/props/vehicle-placement.json',
   'conformance/ui/inventory-cases.json',
 ];
 
@@ -256,8 +260,11 @@ const SURVIVAL_CORPUS_FILES = ['conformance/survival/hud.json', 'conformance/sur
 // tests/traversal_corpus.cpp: slice 1's kernels (the planner's affordances and routes,
 // the vehicle verbs, fast travel and ground seating) and slice 2's stateful layers
 // (session.json: the planner, registry and director wired together; mounts.json: the
-// personal vehicles; save.json: the save block). `conformance/traversal/` is this set's
-// alone, so a file an earlier pin left there is seen, hashed and removed by the next write.
+// personal vehicles; save.json: the save block). vehicles-only.json (core's
+// PL.core-vehicle-rules: a game that runs the vehicles pack without traversal) joined with
+// PL.native-vehicle-rows, driven through a session created with `runsTraversal: false`.
+// `conformance/traversal/` is this set's alone, so a file an earlier pin left there is seen,
+// hashed and removed by the next write.
 const TRAVERSAL_CORPUS_FILES = [
   'conformance/traversal/affordances.json',
   'conformance/traversal/fast-travel.json',
@@ -265,6 +272,7 @@ const TRAVERSAL_CORPUS_FILES = [
   'conformance/traversal/mounts.json',
   'conformance/traversal/save.json',
   'conformance/traversal/session.json',
+  'conformance/traversal/vehicles-only.json',
   'conformance/traversal/vehicles.json',
 ];
 
@@ -601,6 +609,128 @@ function passByTranscriptionNegative() {
   }
   console.log(`vendor-core-bundle: pass-by transcription negative — ${named} of ${perturbations.length} perturbed transcription(s) named`);
   if (named !== perturbations.length) fail('the pass-by transcription guard missed a perturbation');
+}
+
+// The vehicle-placement transcription (PL.native-vehicle-rows): cases/core-props-vehicle-placement.json
+// must carry one case per case of the vendored conformance/props/vehicle-placement.json, by name
+// (`vehicle-placement <op>: <name>`), each ONE call of the row core's runner's op calls
+// (src/props/vehicle-placement-corpus.ts, runVehiclePlacementOp: probes -> vehicleStreetProbes,
+// park -> parkVehicle) with the case's whole input as its args and the case's whole answer as its
+// expectation (no matcher operator anywhere), and the contract case holding props.vehicle.contract's
+// constants, refusals, tiers and deviations to the corpus's contract. A self-consistent re-vendor
+// with an emitter that dropped, renamed or weakened a case would otherwise pass `--check --core`.
+const VEHICLE_PLACEMENT_CASES = 'core-props-vehicle-placement.json';
+const VEHICLE_PLACEMENT_ROW = {
+  probes: 'props.vehicle.streetProbes',
+  park: 'props.vehicle.park',
+};
+const VEHICLE_PLACEMENT_CONTRACT_CASE = 'vehicle-placement: the contract the props.vehicle.contract row states';
+function vehiclePlacementTranscriptionProblems(doc = JSON.parse(fs.readFileSync(path.join(CASES_DIR, VEHICLE_PLACEMENT_CASES), 'utf8'))) {
+  const file = JSON.parse(fs.readFileSync(path.join(OUT_DIR, 'conformance/props/vehicle-placement.json'), 'utf8'));
+  const byName = new Map(doc.cases.map((c) => [c.name, c]));
+  const missing = [];
+  const wrong = [];
+  const declared = [];
+  for (const c of file.cases) {
+    const t = byName.get(`vehicle-placement ${c.op}: ${c.name}`);
+    if (!t) {
+      missing.push(c.name);
+      continue;
+    }
+    const steps = t.steps ?? [];
+    // A declared library-version answer (corebridge/tests/README.md): V8's answer is the corpus's exactly, and the
+    // row's differs from it only in numbers, each within the corpus's tolerance (core's runner's own comparison).
+    const lv = steps[0]?.libraryVersion;
+    const declaredOk =
+      lv !== undefined &&
+      typeof lv?.library === 'string' &&
+      typeof lv?.why === 'string' &&
+      canonJson(lv.v8) === canonJson(c.expected) &&
+      canonJson(steps[0].expect) !== canonJson(c.expected) &&
+      withinTolerance(steps[0].expect, c.expected, file.tolerance);
+    const ok =
+      steps.length === 1 &&
+      t.legs === undefined &&
+      steps[0].call === VEHICLE_PLACEMENT_ROW[c.op] &&
+      canonJson(steps[0].args) === canonJson(c.input) &&
+      (lv === undefined
+        ? canonJson(steps[0].expect) === canonJson(c.expected) && Object.keys(steps[0]).sort().join(',') === 'args,call,expect'
+        : declaredOk && Object.keys(steps[0]).sort().join(',') === 'args,call,expect,libraryVersion');
+    if (!ok) wrong.push(c.name);
+    if (lv !== undefined) declared.push(c.name);
+  }
+  const problems = [];
+  if (missing.length) problems.push(`${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
+  if (wrong.length) problems.push(`${wrong.length} case(s) not transcribed as core's runner calls and answers their op, first: ${wrong[0]}`);
+  const contract = byName.get(VEHICLE_PLACEMENT_CONTRACT_CASE)?.steps ?? [];
+  const want = {
+    constants: Object.fromEntries(Object.entries(file.contract.constants).map(([k, v]) => [k, v.value])),
+    names: { $type: 'object' },
+    refusals: file.contract.refusals,
+    tiers: file.contract.tiers,
+    deviations: file.contract.deviations,
+  };
+  if (contract.length !== 1 || contract[0].call !== 'props.vehicle.contract' || canonJson(contract[0].expect) !== canonJson(want)) {
+    problems.push("the contract case does not hold props.vehicle.contract to the corpus's constants, refusals, tiers and deviations");
+  }
+  if (byName.size !== file.cases.length + 1 || doc.cases.length !== byName.size) {
+    problems.push(`it carries ${doc.cases.length} case(s), not the corpus's ${file.cases.length} and the contract case`);
+  }
+  return { problems, count: file.cases.length, declared };
+}
+
+/** `a` and `b` the same JSON but for numbers, each within `tol` (core's compareVillageState), key sets included. */
+function withinTolerance(a, b, tol) {
+  if (typeof a === 'number' && typeof b === 'number') return Math.abs(a - b) <= tol;
+  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return a === b;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  const ka = Object.keys(a).sort();
+  const kb = Object.keys(b).sort();
+  return ka.join('\u0000') === kb.join('\u0000') && ka.every((k) => withinTolerance(a[k], b[k], tol));
+}
+
+/** The vehicle-placement guard's negative control: each perturbation of the transcription must be named. */
+function vehiclePlacementTranscriptionNegative() {
+  const read = () => JSON.parse(fs.readFileSync(path.join(CASES_DIR, VEHICLE_PLACEMENT_CASES), 'utf8'));
+  const first = (d, op) => d.cases.find((c) => c.name.startsWith(`vehicle-placement ${op}: `));
+  const contractOf = (d) => d.cases.find((c) => c.name === VEHICLE_PLACEMENT_CONTRACT_CASE).steps[0].expect;
+  const perturbations = [
+    ['a dropped case', (d) => d.cases.splice(5, 1), 'corpus case(s) not transcribed'],
+    ['a case no corpus case names', (d) => d.cases.push({ ...first(d, 'park'), name: 'vehicle-placement park: invented' }), 'case(s), not the corpus'],
+    ['a call changed (a park answered by the probes row)', (d) => { first(d, 'park').steps[0].call = 'props.vehicle.streetProbes'; }, "not transcribed as core's runner"],
+    ["an argument dropped (a park's streets)", (d) => {
+      delete d.cases.find((c) => c.steps[0].call === 'props.vehicle.park' && 'streets' in c.steps[0].args).steps[0].args.streets;
+    }, "not transcribed as core's runner"],
+    ['an answer weakened to a subset (a park without its misses)', (d) => {
+      const st = d.cases.find((c) => c.steps[0].expect?.ok === true).steps[0];
+      st.expect = { $subset: { ok: st.expect.ok, at: st.expect.at } };
+    }, "not transcribed as core's runner"],
+    ['an answer number changed (a probe point)', (d) => { first(d, 'probes').steps[0].expect.points[1].x += 1e-3; }, "not transcribed as core's runner"],
+    ['a refusal code changed', (d) => {
+      d.cases.find((c) => c.steps[0].expect?.code === 'bad-place').steps[0].expect.code = 'no-open-spot';
+    }, "not transcribed as core's runner"],
+    ['a case put on one leg only', (d) => { Object.assign(first(d, 'park'), { legs: ['c'], why: 'perturbed' }); }, "not transcribed as core's runner"],
+    ['a contract constant dropped', (d) => { delete contractOf(d).constants.reachM; }, 'the contract case'],
+    ['the deviations weakened', (d) => { contractOf(d).deviations = { $type: 'array' }; }, 'the contract case'],
+    ['a tier reworded', (d) => { contractOf(d).tiers['3'] += '!'; }, 'the contract case'],
+    ['a declared answer outside the corpus tolerance', (d) => {
+      d.cases.find((c) => c.steps[0].libraryVersion).steps[0].expect.distanceM += 1e-3;
+    }, "not transcribed as core's runner"],
+    ["a declaration whose V8 answer is not the corpus's", (d) => {
+      d.cases.find((c) => c.steps[0].libraryVersion).steps[0].libraryVersion.v8.tier = 2;
+    }, "not transcribed as core's runner"],
+  ];
+  let named = 0;
+  for (const [what, perturb, want] of perturbations) {
+    const doc = read();
+    perturb(doc);
+    const { problems } = vehiclePlacementTranscriptionProblems(doc);
+    const hit = problems.find((p) => p.includes(want));
+    console.log(`  ${hit ? 'named' : 'MISSED'}: ${what} -> ${(hit ?? problems.join('; ')) || 'no problem'}`);
+    if (hit) named++;
+  }
+  console.log(`vendor-core-bundle: vehicle-placement transcription negative — ${named} of ${perturbations.length} perturbed transcription(s) named`);
+  if (named !== perturbations.length) fail('the vehicle-placement transcription guard missed a perturbation');
 }
 
 // The language transcriptions (PL.native-language-rows): each vendored
@@ -2747,6 +2877,15 @@ async function check(coreDir) {
     `vendor-core-bundle: villager pass-by — cases/${PASS_BY_CASES} transcribes all ${passByGuard.count} case(s) of ` +
       "conformance/villagers/pass-by.json, by name, each one call of its op's row with the case's whole input and answer, and its contract",
   );
+  const vehicleGuard = vehiclePlacementTranscriptionProblems();
+  if (vehicleGuard.problems.length) {
+    fail(`cases/${VEHICLE_PLACEMENT_CASES} does not transcribe vendor/core/conformance/props/vehicle-placement.json: ${vehicleGuard.problems.join('; ')}`);
+  }
+  console.log(
+    `vendor-core-bundle: world-vehicle parking — cases/${VEHICLE_PLACEMENT_CASES} transcribes all ${vehicleGuard.count} case(s) of ` +
+      "conformance/props/vehicle-placement.json, by name, each one call of its op's row with the case's whole input and answer, and its contract " +
+      `(${vehicleGuard.declared.length} declared library-version answer(s), each within the corpus's tolerance)`,
+  );
   const genreGuard = genreTranscriptionProblems();
   if (genreGuard.problems.length) fail(`the genre transcription does not hold the vendored genre systems corpora: ${genreGuard.problems.join('; ')}`);
   console.log(
@@ -2964,6 +3103,8 @@ if (args.includes('--check-language-transcription-negative')) {
   languageTranscriptionNegative();
 } else if (args.includes('--check-pass-by-transcription-negative')) {
   passByTranscriptionNegative();
+} else if (args.includes('--check-vehicle-placement-transcription-negative')) {
+  vehiclePlacementTranscriptionNegative();
 } else if (args.includes('--check-genre-transcription-negative')) {
   genreTranscriptionNegative();
 } else if (argValue('--check-extension-keys')) {

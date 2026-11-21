@@ -378,6 +378,9 @@
        "props.pickups.settle",
        "props.reader.apply",
        "props.reader.create",
+       "props.vehicle.contract",
+       "props.vehicle.park",
+       "props.vehicle.streetProbes",
        "puzzle.answerKey",
        "puzzle.choices",
        "puzzle.contract",
@@ -644,7 +647,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 610}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 613}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -690,7 +693,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 610}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 613}}}}
    ]
   },
   {
