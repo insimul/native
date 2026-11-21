@@ -441,6 +441,31 @@ target_compile_definitions(insimul_conformance PRIVATE
   INSIMUL_CONFORMANCE_DEFAULT_DIR="${INSIMUL_CONFORMANCE_DEFAULT_DIR}")
 add_test(NAME conformance COMMAND insimul_conformance)
 
+# prolog_mirror_digest (PL.native-prolog-mirror-full, U120(9)): the vendored
+# corpus's BYTES, which no leg grades (a stale pack-agreement.json whose answers
+# had not changed stayed green on all three, self-sweep M22). It holds
+# conformance/prolog/ to conformance/PROLOG_MIRROR.json — the sha256 of core's
+# bytes at corebridge/core-pin.json's coreCommit for every mirrored file, and every
+# core file not mirrored yet — and refuses an extra, missing, renamed or changed
+# file and a record taken at another commit than the pin. With INSIMUL_CORE_DIR set
+# (a git checkout of @insimul/core) it also holds the record itself to core's git
+# objects at the pin. Plain cmake -P: no node, no skip. Its negative control
+# perturbs a copy six ways (eight with INSIMUL_CORE_DIR) and passes only when every
+# perturbation is refused for its own named reason.
+set(INSIMUL_PROLOG_MIRROR_ARGS
+  -DMIRROR_DIR=${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog
+  -DMANIFEST=${CMAKE_CURRENT_SOURCE_DIR}/conformance/PROLOG_MIRROR.json
+  -DPIN=${CMAKE_CURRENT_SOURCE_DIR}/corebridge/core-pin.json
+  -DWORK_DIR=${CMAKE_CURRENT_BINARY_DIR}/prolog-mirror-digest)
+add_test(NAME prolog_mirror_digest COMMAND ${CMAKE_COMMAND} ${INSIMUL_PROLOG_MIRROR_ARGS}
+  -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/prolog_mirror_digest.cmake)
+set_tests_properties(prolog_mirror_digest PROPERTIES
+  PASS_REGULAR_EXPRESSION "prolog_mirror_digest: [1-9][0-9]* mirrored file[(]s[)] [^\n]*\nprolog_mirror_digest: PASS")
+add_test(NAME prolog_mirror_digest_negative COMMAND ${CMAKE_COMMAND} ${INSIMUL_PROLOG_MIRROR_ARGS}
+  -DMODE=negative -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/prolog_mirror_digest.cmake)
+set_tests_properties(prolog_mirror_digest_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "prolog_mirror_digest --negative: [68] of [68] perturbation[(]s[)] refused for their named reason\nprolog_mirror_digest --negative: PASS")
+
 # Snapshot/restore (US-LI4). The `snapshot` ctest is a pure consumer of insimul.h;
 # its golden fixture (an exact snapshot image) is baked as an absolute path so the
 # test finds it regardless of the ctest working directory.
