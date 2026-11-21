@@ -116,6 +116,23 @@ insimul_engine *insimul_engine_open(void)
         free(e);
         return NULL;
     }
+    /* The pinned engine's runtime optimiser is OFF for every KB
+     * (PL.native-kb-instantiation-error). Its frame recovery (trimming a
+     * clause's frame on exit when no newer choice point is left) loses
+     * bindings on this tree's KBs, every clause of which the bootstrap loads
+     * with assertz/1: after a goal that backtracks through an asserted rule
+     * whose body holds an if-then-else, variables bound BEFORE that goal read
+     * as unbound again. A host query then lost its own variable_names list
+     * and raised instantiation_error(list) from the result writer, outside
+     * its catch, which the engine printed to stdout; and the answer came back
+     * as one binding set with no bindings.
+     * corebridge/tests/prolog-engine/frame-bindings.json replays the smallest
+     * such program found and the strategy turn that found it. The optimiser
+     * only reclaims and reuses frames, so switching it off changes no correct
+     * answer (it costs frames held during deep recursion; CLAUDE.md, "Trealla
+     * gotchas"). The bootstrap above was consulted with it on, so its own
+     * compiled clauses are as before. set_opt() is in trealla.h (public API). */
+    set_opt(e->pl, 0);
     return e;
 }
 

@@ -1,0 +1,200 @@
+{
+ "area": "src/engine_trealla.c — the engine port's runtime optimiser, seen through core's PrologEngine seam (corebridge/js/host-prolog-engine.js) over libinsimul",
+ "description": "PL.native-kb-instantiation-error. Same format and driver as incremental.json (expect, cost, probes, oracle comparison). The pinned engine's frame recovery, on, unbound variables that were bound BEFORE a goal which backtracks through an asserted rule holding an if-then-else; every clause here is asserted (the bootstrap loads programs with assertz/1). A host query then lost its own variable_names list: the bootstrap's result writer raised instantiation_error(list) outside its catch, the engine printed `   true  error(instantiation_error,list).` to stdout, and the answer was one binding set with no bindings. The first case is the smallest program that shows it; the second is the strategy turn that found it (core's strategy/run case 'an authored farm price ...': the hand at brook_pottery cannot be fed), with its fact writes kept on the incremental path. tests/prolog_engine_cases.c also fails a file during which the library wrote anything to stdout.",
+ "cases": [
+  {
+   "name": "the smallest program found: after the first answer of a goal that backtracks through asserted rules with an if-then-else, the next answer keeps its bindings",
+   "probes": [
+    "net(p, R, N)"
+   ],
+   "steps": [
+    {
+     "op": "consult",
+     "program": "b(x).\nfac(p).\nholds(p,pot).\nincome(A,B,C):-fac(A),res(B),findall(D,(holds(A,E),out(E,B,D)),F),sum(F,C).\nlen([],0).\nlen([_|B],C):-len(B,D),C is D+1.\nnet(A,B,C):-income(A,B,D),upkeep(A,B,E),C is D-E.\nout(A,_,_):-trading(A).\nres(coin).\nres(food).\nstock(p,coin,32).\nstock_of(A,B,C):-nonvar(A),res(B),(stock(A,B,D)->C=D;C=0).\nsum([],0).\ntrading(A):-b(A), \\+oob(A).\nupkeep(A,B,C):-fac(A),res(B),findall(D,(holds(A,E),worker(E,D)),F),len(F,G),(wup(B,H)->true;H=0),C is G*H.\nworker(pot,iris).\nwup(food,1).",
+     "expect": {
+      "success": true
+     },
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "query",
+     "goal": "net(p, R, N), stock_of(p, R, E)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "R": "coin",
+        "N": 0,
+        "E": 32
+       },
+       {
+        "R": "food",
+        "N": -1,
+        "E": 0
+       }
+      ]
+     }
+    },
+    {
+     "op": "query",
+     "goal": "X = keep, findall(R-E, (net(p, R, N), stock_of(p, R, E)), L), length(L, K)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": "keep",
+        "R": null,
+        "E": null,
+        "N": null,
+        "L": ".",
+        "K": 2
+       }
+      ]
+     }
+    },
+    {
+     "op": "destroy"
+    }
+   ]
+  },
+  {
+   "name": "a strategy turn whose hand cannot be fed: the shortfall answers in full after incremental writes, and the hand goes home incrementally",
+   "probes": [
+    "strategy_net(player, R, N)",
+    "strategy_shortfall(player, R, S)"
+   ],
+   "steps": [
+    {
+     "op": "consult",
+     "program": ":- dynamic(strategy_resource/1).\n:- dynamic(strategy_trade_output/3).\n:- dynamic(strategy_worker_upkeep/2).\n:- dynamic(strategy_faction/1).\n:- dynamic(strategy_holds/2).\n:- dynamic(strategy_stock/3).\n:- dynamic(strategy_worker/2).\n:- dynamic(business/1).\n:- dynamic(business_type/2).\n:- dynamic(business_out_of_business/1).\nstrategy_sum([], 0).\nstrategy_sum([X | T], S) :- strategy_sum(T, S0), S is S0 + X.\nstrategy_length([], 0).\nstrategy_length([_ | T], N) :- strategy_length(T, N0), N is N0 + 1.\nstrategy_trading(B) :- business(B), \\+ business_out_of_business(B).\nstrategy_stock_of(F, Res, Amount) :- nonvar(F), strategy_resource(Res), ( strategy_stock(F, Res, A0) -> Amount = A0 ; Amount = 0 ).\nstrategy_hands(B, Hands) :- findall(W, strategy_worker(B, W), Ws), strategy_length(Ws, N), Hands is N + 1.\nstrategy_output(B, Res, Amount) :- strategy_trading(B), business_type(B, T), strategy_trade_output(T, Res, Per), strategy_hands(B, Hands), Amount is Per * Hands.\nstrategy_income(F, Res, Total) :- strategy_faction(F), strategy_resource(Res), findall(A, (strategy_holds(F, B), strategy_output(B, Res, A)), As), strategy_sum(As, Total).\nstrategy_upkeep(F, Res, Total) :- strategy_faction(F), strategy_resource(Res), findall(W, (strategy_holds(F, B), strategy_worker(B, W)), Ws), strategy_length(Ws, N), ( strategy_worker_upkeep(Res, Per) -> true ; Per = 0 ), Total is N * Per.\nstrategy_net(F, Res, Net) :- strategy_income(F, Res, In), strategy_upkeep(F, Res, Out), Net is In - Out.\nstrategy_shortfall(F, Res, Short) :- strategy_net(F, Res, Net), strategy_stock_of(F, Res, Have), Short is 0 - (Have + Net), Short > 0.",
+     "expect": {
+      "success": true
+     },
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "assertFacts",
+     "facts": [
+      "strategy_resource(coin)",
+      "strategy_resource(food)",
+      "strategy_resource(goods)",
+      "strategy_trade_output(pottery, goods, 3)",
+      "strategy_trade_output(farm, food, 3)",
+      "strategy_worker_upkeep(food, 1)",
+      "strategy_faction(player)",
+      "strategy_faction(dell_potter)",
+      "business(brook_pottery)",
+      "business(brook_farm)",
+      "business(old_tavern)",
+      "business_out_of_business(old_tavern)",
+      "business_type(brook_pottery, pottery)",
+      "business_type(brook_farm, farm)",
+      "strategy_holds(dell_potter, brook_pottery)",
+      "strategy_stock(player, coin, 40)"
+     ],
+     "expect": true
+    },
+    {
+     "op": "retractFact",
+     "fact": "strategy_holds(dell_potter, brook_pottery)",
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 400
+     }
+    },
+    {
+     "op": "retractFact",
+     "fact": "strategy_stock(player, coin, 40)",
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 400
+     }
+    },
+    {
+     "op": "assertFacts",
+     "facts": [
+      "strategy_holds(player, brook_pottery)",
+      "strategy_stock(player, coin, 32)"
+     ],
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 128
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "strategy_worker(brook_pottery, iris)",
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 64
+     }
+    },
+    {
+     "op": "query",
+     "goal": "strategy_shortfall(player, R, S)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "R": "food",
+        "S": 1
+       }
+      ]
+     }
+    },
+    {
+     "op": "query",
+     "goal": "strategy_net(player, R, N), strategy_stock_of(player, R, E)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "R": "coin",
+        "N": 0,
+        "E": 32
+       },
+       {
+        "R": "food",
+        "N": -1,
+        "E": 0
+       },
+       {
+        "R": "goods",
+        "N": 6,
+        "E": 0
+       }
+      ]
+     }
+    },
+    {
+     "op": "retractFact",
+     "fact": "strategy_worker(brook_pottery, iris)",
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 400
+     }
+    },
+    {
+     "op": "query",
+     "goal": "strategy_shortfall(player, R, S)",
+     "expect": {
+      "success": true,
+      "bindings": []
+     }
+    },
+    {
+     "op": "destroy"
+    }
+   ]
+  }
+ ]
+}
