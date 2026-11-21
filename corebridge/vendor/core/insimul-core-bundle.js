@@ -22040,7 +22040,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function planBuild(request, context = {}) {
     const refusals = [];
     const notes = [];
-    const refuse3 = (code, field, detail) => refusals.push({ code, field, detail });
+    const refuse4 = (code, field, detail) => refusals.push({ code, field, detail });
     const note = (code, field, detail) => notes.push({ code, field, detail });
     const done = (plan2) => {
       refusals.sort(order(BUILD_REFUSAL_CODES));
@@ -22048,7 +22048,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       return refusals.length > 0 ? { ok: false, refusals, notes, plan: null } : { ok: true, refusals, notes, plan: plan2 };
     };
     for (const field of findSecrets(request)) {
-      refuse3("secret-in-request", field, "The build request carries a password, token or database address. Remove it: a build never needs one.");
+      refuse4("secret-in-request", field, "The build request carries a password, token or database address. Remove it: a build never needs one.");
     }
     const parsed = buildRequestSchema.safeParse(request);
     if (!parsed.success) {
@@ -22058,10 +22058,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         const key = field ?? "\0";
         if (seen.has(key)) continue;
         seen.add(key);
-        refuse3("invalid-request", field, `The build request is not one Insimul can read: ${shapeMessage(issue.message)}.`);
+        refuse4("invalid-request", field, `The build request is not one Insimul can read: ${shapeMessage(issue.message)}.`);
       }
       if (recipePairBroken(request) && !seen.has("recipe.sha256")) {
-        refuse3("invalid-request", "recipe.sha256", "The build request is not one Insimul can read: a recipe file comes with its sha256, and a sha256 only with a file.");
+        refuse4("invalid-request", "recipe.sha256", "The build request is not one Insimul can read: a recipe file comes with its sha256, and a sha256 only with a file.");
       }
       return done(null);
     }
@@ -22077,23 +22077,23 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     for (const [field, p] of paths) {
       if (projectPathProblem(p) !== null) {
         pathsOk = false;
-        refuse3("path-outside-project", field, "Every file a build reads or writes must be inside the project.");
+        refuse4("path-outside-project", field, "Every file a build reads or writes must be inside the project.");
       }
     }
     if (pathsOk) {
       for (const [field, p] of paths) {
         if (field !== "target.outDir" && isInsideDirFolded(p, r.target.outDir)) {
-          refuse3("out-dir-holds-inputs", field, "The build folder holds a file the build reads. Choose a build folder of its own.");
+          refuse4("out-dir-holds-inputs", field, "The build folder holds a file the build reads. Choose a build folder of its own.");
         }
       }
       if (BUILD_ENGINE_RESERVED_DIRS[r.engine].some((d) => isInsideDirFolded(r.target.outDir, d))) {
-        refuse3("out-dir-reserved", "target.outDir", `The build folder is one ${ENGINE_NAMES[r.engine]} keeps the project in. Choose a build folder of its own.`);
+        refuse4("out-dir-reserved", "target.outDir", `The build folder is one ${ENGINE_NAMES[r.engine]} keeps the project in. Choose a build folder of its own.`);
       }
     }
     if (!BUILD_ENGINE_PLATFORMS[r.engine].includes(platform)) {
-      refuse3("target-unsupported", "target.platform", unsupportedSentence(r.engine, platform));
+      refuse4("target-unsupported", "target.platform", unsupportedSentence(r.engine, platform));
     } else if (platform !== "web" && platform !== r.host.os && !BUILD_CROSS_DESKTOP_ENGINES.includes(r.engine)) {
-      refuse3(
+      refuse4(
         "target-not-on-host",
         "target.platform",
         `${ENGINE_NAMES[r.engine]} builds a desktop game only for the computer it runs on (${BUILD_PLATFORM_LABELS[r.host.os]}).`
@@ -22101,11 +22101,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     const recipe = r.recipe === null ? null : { id: r.recipe.id, bound: r.recipe.file === void 0 };
     if (r.recipe !== null && r.recipe.file === void 0 && !RECIPE_IDS.includes(r.recipe.id)) {
-      refuse3("unknown-recipe", "recipe.id", "That recipe is not one Insimul knows. Choose a recipe, or give its recipe file.");
+      refuse4("unknown-recipe", "recipe.id", "That recipe is not one Insimul knows. Choose a recipe, or give its recipe file.");
     }
     const seenPacks = /* @__PURE__ */ new Set();
     r.packs.enabled.forEach((id4, i) => {
-      if (seenPacks.has(id4)) refuse3("duplicate-pack", `packs.enabled.${i}`, "A system is listed twice. List each system once.");
+      if (seenPacks.has(id4)) refuse4("duplicate-pack", `packs.enabled.${i}`, "A system is listed twice. List each system once.");
       seenPacks.add(id4);
     });
     if (context.lock === void 0) {
@@ -22113,14 +22113,14 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     } else {
       const lock = systemPacksLockSchema.safeParse(context.lock);
       if (!lock.success) {
-        refuse3("lock-invalid", "packs.lock.file", "The project's systems file is damaged. Update the systems to rewrite it.");
+        refuse4("lock-invalid", "packs.lock.file", "The project's systems file is damaged. Update the systems to rewrite it.");
       } else {
         if (lock.data.plugin.engine !== r.engine) {
-          refuse3("lock-engine-mismatch", "packs.lock.file", `The project's systems file was written for another engine, not ${ENGINE_NAMES[r.engine]}.`);
+          refuse4("lock-engine-mismatch", "packs.lock.file", `The project's systems file was written for another engine, not ${ENGINE_NAMES[r.engine]}.`);
         }
         r.packs.enabled.forEach((id4, i) => {
           if (!Object.prototype.hasOwnProperty.call(lock.data.packs, id4)) {
-            refuse3("pack-not-locked", `packs.enabled.${i}`, "A system the build runs is not installed in this project. Install it, or leave it out.");
+            refuse4("pack-not-locked", `packs.enabled.${i}`, "A system the build runs is not installed in this project. Install it, or leave it out.");
           }
         });
         for (const id4 of [...new Set(r.packs.enabled)].sort()) {
@@ -22146,12 +22146,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     } else {
       for (const input of inputs) {
         const got = Object.prototype.hasOwnProperty.call(context.files, input.path) ? context.files[input.path] : void 0;
-        if (got === void 0) refuse3("input-missing", fieldOf[input.role], `The ${input.role === "lock" ? "systems" : input.role} file the build reads is missing.`);
-        else if (got !== input.sha256) refuse3("input-changed", fieldOf[input.role], `The ${input.role === "lock" ? "systems" : input.role} file changed after the build was asked for. Ask again.`);
+        if (got === void 0) refuse4("input-missing", fieldOf[input.role], `The ${input.role === "lock" ? "systems" : input.role} file the build reads is missing.`);
+        else if (got !== input.sha256) refuse4("input-changed", fieldOf[input.role], `The ${input.role === "lock" ? "systems" : input.role} file changed after the build was asked for. Ask again.`);
       }
     }
     if (r.world.predicateSchemaHash !== void 0 && context.predicateSchemaHash !== void 0 && r.world.predicateSchemaHash !== context.predicateSchemaHash) {
-      refuse3("predicate-schema-mismatch", "world.predicateSchemaHash", "The world was exported for another version of Insimul's rules. Export the world again, or update the plugin.");
+      refuse4("predicate-schema-mismatch", "world.predicateSchemaHash", "The world was exported for another version of Insimul's rules. Export the world again, or update the plugin.");
     }
     return done({
       requestId: r.requestId,
@@ -47357,6 +47357,305 @@ Return JSON format:
     };
   }
 
+  // @insimul/core/src/editor/operations.ts
+  var V1_OPERATIONS = {
+    healthCheck: {
+      operationId: "healthCheck",
+      legacyId: "healthCheck",
+      method: "GET",
+      path: "/health",
+      verdict: "served"
+    },
+    listWorlds: {
+      operationId: "listWorlds",
+      legacyId: "listWorlds",
+      method: "GET",
+      path: "/api/v1/worlds",
+      verdict: "served"
+    },
+    getWorld: {
+      operationId: "getWorld",
+      legacyId: "getWorldDetail",
+      method: "GET",
+      path: "/api/v1/worlds/{worldId}",
+      verdict: "served"
+    },
+    importWorld: {
+      operationId: "importWorld",
+      legacyId: "importWorld",
+      method: "POST",
+      path: "/api/v1/worlds/{worldId}/import",
+      verdict: "served"
+    },
+    downloadWorldIR: {
+      operationId: "downloadWorldIR",
+      legacyId: null,
+      method: "GET",
+      path: "/api/v1/worlds/{worldId}/export/ir",
+      verdict: "served"
+    },
+    createWorld: {
+      operationId: "createWorld",
+      legacyId: null,
+      method: "POST",
+      path: "/api/v1/worlds",
+      verdict: "served"
+    },
+    startWorldGeneration: {
+      operationId: "startWorldGeneration",
+      legacyId: "startGenerationJob",
+      method: "POST",
+      path: "/api/v1/worlds/{worldId}/generate",
+      verdict: "served"
+    },
+    getGenerationProgress: {
+      operationId: "getGenerationProgress",
+      legacyId: null,
+      method: "GET",
+      path: "/api/v1/generation/progress/{taskId}",
+      verdict: "served"
+    },
+    getGenerationJob: {
+      operationId: "getGenerationJob",
+      legacyId: "getGenerationJob",
+      method: "GET",
+      path: "/api/v1/generation-jobs/{jobId}",
+      verdict: "served"
+    },
+    streamGenerationJob: {
+      operationId: "streamGenerationJob",
+      legacyId: "streamGenerationJob",
+      method: "GET",
+      path: "/api/v1/generation-jobs/{jobId}/events",
+      verdict: "served"
+    },
+    cancelGenerationJob: {
+      operationId: "cancelGenerationJob",
+      legacyId: null,
+      method: "POST",
+      path: "/api/v1/generation-jobs/{jobId}/cancel",
+      verdict: "served"
+    },
+    streamConversationTurn: {
+      operationId: "streamConversationTurn",
+      legacyId: "streamConversation",
+      method: "POST",
+      path: "/api/v1/conversation/stream",
+      verdict: "descriptive-unserved"
+    },
+    endConversation: {
+      operationId: "endConversation",
+      legacyId: "endConversation",
+      method: "POST",
+      path: "/api/v1/conversation/end",
+      verdict: "descriptive-unserved"
+    },
+    listAssetLibraries: {
+      operationId: "listAssetLibraries",
+      legacyId: null,
+      method: "GET",
+      path: "/api/v1/asset-libraries",
+      verdict: "served"
+    },
+    getAssetLibrary: {
+      operationId: "getAssetLibrary",
+      legacyId: null,
+      method: "GET",
+      path: "/api/v1/asset-libraries/{assetLibraryId}",
+      verdict: "served"
+    },
+    putAssetLibrary: {
+      operationId: "putAssetLibrary",
+      legacyId: "publishAssetLibrary",
+      method: "PUT",
+      path: "/api/v1/asset-libraries/{assetLibraryId}",
+      verdict: "served"
+    },
+    deleteAssetLibrary: {
+      operationId: "deleteAssetLibrary",
+      legacyId: null,
+      method: "DELETE",
+      path: "/api/v1/asset-libraries/{assetLibraryId}",
+      verdict: "served"
+    },
+    // PL.core-dock-operations-register: the four rows engine editor docks were
+    // already calling through operations declared at the call site
+    // (`./dock-operations` builds their requests).
+    getWorldIRSummary: {
+      operationId: "getWorldIRSummary",
+      legacyId: null,
+      method: "GET",
+      path: "/api/v1/worlds/{worldId}/export/ir/summary",
+      verdict: "served"
+    },
+    rereadReferenceTexts: {
+      operationId: "rereadReferenceTexts",
+      legacyId: null,
+      method: "POST",
+      path: "/api/v1/worlds/{worldId}/reference-texts/reread",
+      verdict: "served"
+    },
+    mintPlayGrant: {
+      operationId: "mintPlayGrant",
+      legacyId: null,
+      method: "POST",
+      path: "/api/v1/worlds/{worldId}/play-grants",
+      verdict: "served"
+    },
+    getEntityNeighbourhood: {
+      operationId: "getEntityNeighbourhood",
+      legacyId: null,
+      method: "GET",
+      path: "/api/v1/worlds/{worldId}/neighbourhood",
+      verdict: "served"
+    }
+  };
+  function resolveOperation(operationId) {
+    return Object.prototype.hasOwnProperty.call(V1_OPERATIONS, operationId) ? V1_OPERATIONS[operationId] : null;
+  }
+  function pathParameters(path) {
+    return [...path.matchAll(/\{([^}]+)\}/g)].map((match) => match[1]);
+  }
+  function expandPath(path, params = {}) {
+    const expected = pathParameters(path);
+    for (const name of expected) {
+      if (!Object.prototype.hasOwnProperty.call(params, name)) {
+        throw new Error(`expandPath: ${path} needs a value for {${name}}`);
+      }
+    }
+    for (const name of Object.keys(params)) {
+      if (!expected.includes(name)) {
+        throw new Error(
+          `expandPath: ${path} has no {${name}} to fill${expected.length > 0 ? ` (it names ${expected.map((p) => `{${p}}`).join(", ")})` : ""}`
+        );
+      }
+    }
+    return path.replace(/\{([^}]+)\}/g, (_match, name) => encodeURIComponent(params[name]));
+  }
+
+  // @insimul/core/src/editor/dock-operations.ts
+  var DOCK_OPERATION_IDS = [
+    "getWorldIRSummary",
+    "rereadReferenceTexts",
+    "mintPlayGrant",
+    "getEntityNeighbourhood"
+  ];
+  var DOCK_OPERATION_RULES = {
+    getWorldIRSummary: {
+      query: [{ name: "engine", required: false, enum: ["babylon", "unreal", "unity", "godot"] }],
+      body: "none",
+      bodyMembers: {}
+    },
+    rereadReferenceTexts: { query: [], body: "none", bodyMembers: {} },
+    mintPlayGrant: { query: [], body: "optional-object", bodyMembers: { ttlSeconds: "integer" } },
+    getEntityNeighbourhood: {
+      query: [{ name: "address", required: true, enum: null }],
+      body: "none",
+      bodyMembers: {}
+    }
+  };
+  var isDockOperationId = (value) => typeof value === "string" && DOCK_OPERATION_IDS.includes(value);
+  var refuse2 = (code, message, received) => ({
+    ok: false,
+    error: { code, message, received }
+  });
+  var isPlainObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+  function describeValue(value) {
+    if (Array.isArray(value)) return `a JSON array of ${value.length} item(s)`;
+    if (value === null) return "null";
+    if (typeof value === "object") return `an object with ${Object.keys(value).map((k) => JSON.stringify(k)).join(", ")}`;
+    return `the ${typeof value} ${JSON.stringify(value)}`;
+  }
+  function dockOperationRequest(operationId, input) {
+    if (!isDockOperationId(operationId)) {
+      throw new Error(`dockOperationRequest: ${String(operationId)} is not one of ${DOCK_OPERATION_IDS.join(", ")}`);
+    }
+    const operation = resolveOperation(operationId);
+    if (operation === null) {
+      throw new Error(`${operationId} is not in the operation table`);
+    }
+    const rule2 = DOCK_OPERATION_RULES[operationId];
+    if (typeof input.worldId !== "string" || input.worldId === "") {
+      return refuse2(
+        "missing-path-parameter",
+        `${operationId} addresses one world: ${operation.path} needs a worldId`,
+        input.worldId === "" ? "an empty worldId" : "no worldId"
+      );
+    }
+    const asked = input.query ?? {};
+    for (const name of Object.keys(asked)) {
+      if (!rule2.query.some((q) => q.name === name)) {
+        return refuse2(
+          "unknown-query-parameter",
+          `${operationId}'s published row names ${rule2.query.length > 0 ? rule2.query.map((q) => q.name).join(", ") : "no query parameter"}; the contract declares nothing else`,
+          `the query parameter ${JSON.stringify(name)}`
+        );
+      }
+    }
+    const query = {};
+    for (const q of rule2.query) {
+      const value = asked[q.name];
+      if (value === void 0 || value === "") {
+        if (q.required) {
+          return refuse2(
+            "missing-query-parameter",
+            `${operationId} requires the query parameter ${q.name}`,
+            value === "" ? `an empty ${q.name}` : `no ${q.name}`
+          );
+        }
+        continue;
+      }
+      if (q.enum !== null && !q.enum.includes(value)) {
+        return refuse2(
+          "query-value-not-allowed",
+          `${operationId}'s ${q.name} is one of ${q.enum.join(", ")}; the server answers anything else with a 400`,
+          `${q.name} ${JSON.stringify(value)}, which the contract does not name`
+        );
+      }
+      query[q.name] = value;
+    }
+    let body2 = null;
+    const given = input.body;
+    const empty = given === void 0 || given === null || isPlainObject(given) && Object.keys(given).length === 0;
+    if (!empty) {
+      if (rule2.body === "none") {
+        return refuse2(
+          "unexpected-body",
+          `${operationId} takes no request body: the contract declares none, and the dock sends no content through it`,
+          describeValue(given)
+        );
+      }
+      if (!isPlainObject(given)) {
+        return refuse2("body-not-object", `${operationId}'s body is a JSON object or nothing (the server answers 400)`, describeValue(given));
+      }
+      for (const [name, value] of Object.entries(given)) {
+        const type = rule2.bodyMembers[name];
+        if (type === void 0) {
+          return refuse2(
+            "unknown-body-member",
+            `${operationId}'s body carries ${Object.keys(rule2.bodyMembers).join(", ")} and nothing else`,
+            `the body member ${JSON.stringify(name)}`
+          );
+        }
+        if (type === "integer" && !(typeof value === "number" && Number.isInteger(value))) {
+          return refuse2("invalid-body-member", `${operationId}'s ${name} is an integer`, `${name} ${describeValue(value)}`);
+        }
+      }
+      body2 = { ...given };
+    }
+    return {
+      ok: true,
+      request: {
+        operationId,
+        method: operation.method,
+        path: expandPath(operation.path, { worldId: input.worldId }),
+        query,
+        body: body2,
+        verdict: operation.verdict
+      }
+    };
+  }
+
   // @insimul/core/src/system-packs/composer.ts
   var WORLD_DEFAULT_VARIANT = "world-default";
   function preset(p) {
@@ -47544,7 +47843,7 @@ Return JSON format:
     if (request === null || typeof request !== "object") throw new CompositionError("invalid-request", "a request is an object");
     const refusals = [];
     const notes = [];
-    const refuse3 = (code, pack, detail) => {
+    const refuse4 = (code, pack, detail) => {
       refusals.push({ code, pack, detail });
     };
     const rows = new Map(catalog.index.packs.map((p) => [p.id, p]));
@@ -47591,12 +47890,12 @@ Return JSON format:
     for (const id4 of Object.keys(game).sort((a, b) => (order2.get(a) ?? 1e9) - (order2.get(b) ?? 1e9) || a.localeCompare(b))) {
       const g = game[id4] ?? {};
       if (!known.has(id4)) {
-        refuse3("unknown-pack", id4, `the pack index has no pack '${id4}'`);
+        refuse4("unknown-pack", id4, `the pack index has no pack '${id4}'`);
         continue;
       }
       const presetHas = source.has(id4);
       if (g.enabled === false) {
-        if (source.get(id4) === "always-on") refuse3("always-on", id4, `'${id4}' is always on and cannot be switched off`);
+        if (source.get(id4) === "always-on") refuse4("always-on", id4, `'${id4}' is always on and cannot be switched off`);
         else if (presetHas) disabled.add(id4);
       } else if (g.enabled === true && !presetHas) {
         source.set(id4, "game");
@@ -47632,14 +47931,14 @@ Return JSON format:
       const id4 = queue.shift();
       for (const dep of requiresOf(id4)) {
         if (!known.has(dep)) {
-          refuse3("unknown-pack", id4, `'${id4}' requires '${dep}', which the pack index does not list`);
+          refuse4("unknown-pack", id4, `'${id4}' requires '${dep}', which the pack index does not list`);
           continue;
         }
         if (!requiredBy.has(dep)) requiredBy.set(dep, /* @__PURE__ */ new Set());
         requiredBy.get(dep)?.add(id4);
         if (!installed.has(dep)) {
           if (disabled.has(dep)) {
-            refuse3("required-by", dep, `'${dep}' cannot be switched off: '${id4}' requires it`);
+            refuse4("required-by", dep, `'${dep}' cannot be switched off: '${id4}' requires it`);
             disabled.delete(dep);
           } else source.set(dep, source.get(dep) ?? "dependency");
           installed.add(dep);
@@ -47650,7 +47949,7 @@ Return JSON format:
     let changes = 0;
     for (const id4 of [.../* @__PURE__ */ new Set([...switchedOn, ...disabled, ...retuned])].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) {
       if (switchedOn.has(id4) || disabled.has(id4) || installed.has(id4)) changes += 1;
-      else refuse3("not-installed", id4, `'${id4}' is not installed, so its variant, style and parameters do nothing; switch it on first`);
+      else refuse4("not-installed", id4, `'${id4}' is not installed, so its variant, style and parameters do nothing; switch it on first`);
     }
     const sorted = [];
     const placed2 = /* @__PURE__ */ new Set();
@@ -52858,25 +53157,25 @@ Return JSON format:
   ];
 
   // corebridge/js/entry.js
-  function refuse2(method, message) {
+  function refuse3(method, message) {
     return new Error(`insimulcore: ${method}: ${message}`);
   }
   function needObject(method, value, name) {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
-      throw refuse2(method, `\`${name}\` must be a JSON object`);
+      throw refuse3(method, `\`${name}\` must be a JSON object`);
     }
     return value;
   }
   function needArray(method, value, name) {
-    if (!Array.isArray(value)) throw refuse2(method, `\`${name}\` must be an array`);
+    if (!Array.isArray(value)) throw refuse3(method, `\`${name}\` must be an array`);
     return value;
   }
   function needString(method, value, name) {
-    if (typeof value !== "string") throw refuse2(method, `\`${name}\` must be a string`);
+    if (typeof value !== "string") throw refuse3(method, `\`${name}\` must be a string`);
     return value;
   }
   function needNumber(method, value, name) {
-    if (typeof value !== "number" || !Number.isFinite(value)) throw refuse2(method, `\`${name}\` must be a finite number`);
+    if (typeof value !== "number" || !Number.isFinite(value)) throw refuse3(method, `\`${name}\` must be a finite number`);
     return value;
   }
   function optNumber(method, value, name) {
@@ -52884,7 +53183,7 @@ Return JSON format:
   }
   function oneOf(method, value, allowed, name) {
     if (!allowed.includes(value)) {
-      throw refuse2(method, `\`${name}\` must be one of ${allowed.join(", ")} (got ${JSON.stringify(value)})`);
+      throw refuse3(method, `\`${name}\` must be one of ${allowed.join(", ")} (got ${JSON.stringify(value)})`);
     }
     return value;
   }
@@ -52982,7 +53281,7 @@ Return JSON format:
       disk_changed: ({ model }, op) => plain(model.diskChanged(op.slots === void 0 || op.slots === null ? null : slotListOf(m, op.slots))),
       finished: ({ model }, op) => {
         const { op: _name, ...result2 } = op;
-        if (typeof result2.ok !== "boolean") throw refuse2(m, "`ok` must be a boolean");
+        if (typeof result2.ok !== "boolean") throw refuse3(m, "`ok` must be a boolean");
         optStringField(m, result2, "savedAt");
         optStringField(m, result2, "outcome");
         if (result2.summary !== void 0 && result2.summary !== null) needObject(m, result2.summary, "summary");
@@ -52994,10 +53293,10 @@ Return JSON format:
   var SAVE_INDICATOR_FIELDS = ["state", "kind", "detail", "slot", "ageSec"];
   function saveKindOrNull(method, value, name) {
     if (value === null || SAVE_KINDS.includes(value)) return value;
-    throw refuse2(method, `\`${name}\` must be one of ${SAVE_KINDS.join(", ")} or null (got ${JSON.stringify(value ?? null)})`);
+    throw refuse3(method, `\`${name}\` must be one of ${SAVE_KINDS.join(", ")} or null (got ${JSON.stringify(value ?? null)})`);
   }
   function showIndicatorOf(method, fields) {
-    if (fields.state === void 0) throw refuse2(method, "`state` is required (one of core's SAVE_INDICATOR_STATES)");
+    if (fields.state === void 0) throw refuse3(method, "`state` is required (one of core's SAVE_INDICATOR_STATES)");
     const state = oneOf(method, fields.state, SAVE_INDICATOR_STATES, "state");
     const kind = saveKindOrNull(method, fields.kind === void 0 ? null : fields.kind, "kind");
     const detail = fields.detail === void 0 || fields.detail === null ? void 0 : needString(method, fields.detail, "detail");
@@ -53005,13 +53304,13 @@ Return JSON format:
     return showSaveIndicator(state, kind, detail, slot);
   }
   function saveIndicatorArg(method, value, name) {
-    if (value === void 0) throw refuse2(method, `\`${name}\` is required (core's SaveIndicator, as saves.indicator.show answered it)`);
+    if (value === void 0) throw refuse3(method, `\`${name}\` is required (core's SaveIndicator, as saves.indicator.show answered it)`);
     needObject(method, value, name);
     for (const k of Object.keys(value)) {
-      if (!SAVE_INDICATOR_FIELDS.includes(k)) throw refuse2(method, `\`${name}.${k}\` is not a field of core's SaveIndicator (${SAVE_INDICATOR_FIELDS.join(", ")})`);
+      if (!SAVE_INDICATOR_FIELDS.includes(k)) throw refuse3(method, `\`${name}.${k}\` is not a field of core's SaveIndicator (${SAVE_INDICATOR_FIELDS.join(", ")})`);
     }
     for (const k of SAVE_INDICATOR_FIELDS) {
-      if (!(k in value)) throw refuse2(method, `\`${name}.${k}\` is required (core's SaveIndicator has ${SAVE_INDICATOR_FIELDS.join(", ")})`);
+      if (!(k in value)) throw refuse3(method, `\`${name}.${k}\` is required (core's SaveIndicator has ${SAVE_INDICATOR_FIELDS.join(", ")})`);
     }
     oneOf(method, value.state, SAVE_INDICATOR_STATES, `${name}.state`);
     saveKindOrNull(method, value.kind, `${name}.kind`);
@@ -53021,8 +53320,28 @@ Return JSON format:
     return { state: value.state, kind: value.kind, detail: value.detail, slot: value.slot, ageSec: value.ageSec };
   }
   function indicatorSeconds(method, value) {
-    if (value === void 0) throw refuse2(method, "`dtSec` is required (seconds; null is a non-finite tick)");
+    if (value === void 0) throw refuse3(method, "`dtSec` is required (seconds; null is a non-finite tick)");
     return value === null ? Number.NaN : needNumber(method, value, "dtSec");
+  }
+  var DOCK_REQUEST_MEMBERS = ["operationId", "worldId", "query", "body"];
+  function dockRequestArgs(method, args) {
+    needObject(method, args, "args");
+    for (const k of Object.keys(args)) {
+      if (!DOCK_REQUEST_MEMBERS.includes(k)) {
+        throw refuse3(method, `\`args.${k}\` is not a member (${DOCK_REQUEST_MEMBERS.join(", ")}: the operation and core's DockOperationInput)`);
+      }
+    }
+    if (!hasOwn3(args, "operationId")) throw refuse3(method, "`args.operationId` is missing (one of core's DOCK_OPERATION_IDS)");
+    const operationId = oneOf(method, args.operationId, DOCK_OPERATION_IDS, "args.operationId");
+    const input = {};
+    if (hasOwn3(args, "worldId")) input.worldId = needString(method, args.worldId, "args.worldId");
+    if (hasOwn3(args, "query") && args.query !== null) {
+      needObject(method, args.query, "args.query");
+      for (const [k, v] of Object.entries(args.query)) needString(method, v, `args.query.${k}`);
+      input.query = args.query;
+    }
+    if (hasOwn3(args, "body")) input.body = args.body;
+    return { operationId, input };
   }
   function titleContract() {
     return plain({
@@ -53060,7 +53379,7 @@ Return JSON format:
   function tutorialProgressArg(method, value, name) {
     const read = readTutorialBlock(value);
     if (!read.ok) {
-      throw refuse2(
+      throw refuse3(
         method,
         `\`${name}\` is not a readable tutorial save block` + (read.keys.length ? ` (unreadable: ${read.keys.join(", ")})` : " (it must be a JSON object)")
       );
@@ -53073,7 +53392,7 @@ Return JSON format:
     try {
       linked = session(method, { session: s.saves }, "saves.slots");
     } catch (err) {
-      throw refuse2(method, `the linked \`savesSession\` ${s.saves} is not an open saves.slots session (${err.message.replace(/^insimulcore: [^:]+: /, "")})`);
+      throw refuse3(method, `the linked \`savesSession\` ${s.saves} is not an open saves.slots session (${err.message.replace(/^insimulcore: [^:]+: /, "")})`);
     }
     return { ...s.menu, session: linked.model.view() };
   }
@@ -53081,7 +53400,7 @@ Return JSON format:
     const changes = ["unbind", "rebind", "bind"].filter((k) => src[k] !== void 0 && src[k] !== null);
     if (src.bindings !== void 0 && src.bindings !== null) {
       if (changes.length) {
-        throw refuse2(method, `\`${name}.bindings\` is the whole table: state it or the changes (${changes.join(", ")}), not both`);
+        throw refuse3(method, `\`${name}.bindings\` is the whole table: state it or the changes (${changes.join(", ")}), not both`);
       }
       return needArray(method, src.bindings, `${name}.bindings`).map((b, i) => needObject(method, b, `${name}.bindings[${i}]`));
     }
@@ -53107,14 +53426,14 @@ Return JSON format:
   function sessionClockOf(method, value) {
     if (value === void 0 || value === null) return { manual: false, at: 0 };
     const ms = typeof value === "number" ? value : typeof value === "string" ? Date.parse(value) : Number.NaN;
-    if (!Number.isFinite(ms)) throw refuse2(method, "`now` must be an ISO date-time string or finite epoch milliseconds");
+    if (!Number.isFinite(ms)) throw refuse3(method, "`now` must be an ISO date-time string or finite epoch milliseconds");
     return { manual: true, at: ms };
   }
   function clockReader(io) {
     return () => io.manual ? io.at : Date.now();
   }
   function tickClock(method, io, op) {
-    if (!io.manual) throw refuse2(method, "`tick` moves a host clock: open the session with `now`");
+    if (!io.manual) throw refuse3(method, "`tick` moves a host clock: open the session with `now`");
     io.at += needNumber(method, op.ms, "ms");
     return null;
   }
@@ -53134,7 +53453,7 @@ Return JSON format:
   }
   function optBoolean(method, value, name) {
     if (value !== void 0 && value !== null && typeof value !== "boolean") {
-      throw refuse2(method, `\`${name}\` must be a boolean`);
+      throw refuse3(method, `\`${name}\` must be a boolean`);
     }
     return value;
   }
@@ -53431,7 +53750,7 @@ Return JSON format:
       needArray(method, probe, `probes[${i}]`).forEach((hit, j) => {
         needObject(method, hit, `probes[${i}][${j}]`);
         needNumber(method, hit.heightMm, `probes[${i}][${j}].heightMm`);
-        if (typeof hit.paved !== "boolean") throw refuse2(method, `\`probes[${i}][${j}].paved\` must be a boolean`);
+        if (typeof hit.paved !== "boolean") throw refuse3(method, `\`probes[${i}][${j}].paved\` must be a boolean`);
       });
     });
     return value;
@@ -53541,7 +53860,7 @@ Return JSON format:
   function probeTableArg(method, value, name) {
     needObject(method, value, name);
     for (const [link, passable] of Object.entries(value)) {
-      if (typeof passable !== "boolean") throw refuse2(method, `\`${name}.${link}\` must be a boolean`);
+      if (typeof passable !== "boolean") throw refuse3(method, `\`${name}.${link}\` must be a boolean`);
     }
     return value;
   }
@@ -53602,7 +53921,7 @@ Return JSON format:
   }
   function nowOf(method, value, name) {
     if (value !== void 0 && value !== null && typeof value !== "string" && typeof value !== "number") {
-      throw refuse2(method, `\`${name}\` must be an ISO date-time string or epoch milliseconds`);
+      throw refuse3(method, `\`${name}\` must be an ISO date-time string or epoch milliseconds`);
     }
     return value;
   }
@@ -53661,7 +53980,7 @@ Return JSON format:
       // STORED object; false when nothing is held under that id.
       equip_flag: ({ model }, op) => {
         const id4 = needString(m, op.item, "item");
-        if (typeof op.equipped !== "boolean") throw refuse2(m, "`equipped` must be a boolean");
+        if (typeof op.equipped !== "boolean") throw refuse3(m, "`equipped` must be a boolean");
         const item2 = model.getItem(id4);
         if (item2) item2.equipped = op.equipped;
         return !!item2;
@@ -53782,7 +54101,7 @@ Return JSON format:
     const read = readLanguageBlock({ book: value });
     if (!read.ok) {
       coded("invalid-input", () => {
-        throw refuse2(method, `\`${name}\` is not a book core's save reader reads: ${read.keys.map((k) => k.replace(/^book/, name)).join(", ")}`);
+        throw refuse3(method, `\`${name}\` is not a book core's save reader reads: ${read.keys.map((k) => k.replace(/^book/, name)).join(", ")}`);
       });
     }
     return read.value.book;
@@ -53840,7 +54159,7 @@ Return JSON format:
       needObject(method, value, name);
       for (const [k, d] of Object.entries(defaults)) {
         if (typeof value[k] !== typeof d || typeof d === "number" && !Number.isFinite(value[k])) {
-          throw refuse2(method, `\`${name}.${k}\` must be a ${typeof d} (core's tuning)`);
+          throw refuse3(method, `\`${name}.${k}\` must be a ${typeof d} (core's tuning)`);
         }
       }
       if ("kind" in defaults) oneOf(method, value.kind, ["vocabulary", "knowledge"], `${name}.kind`);
@@ -54145,7 +54464,7 @@ Return JSON format:
         }
         listeningQuestionsArg(method, q.questions, `${at}.questions`);
         for (const k of ["storyHeard", "evaluated"]) {
-          if (typeof q[k] !== "boolean") throw refuse2(method, `\`${at}.${k}\` must be a boolean`);
+          if (typeof q[k] !== "boolean") throw refuse3(method, `\`${at}.${k}\` must be a boolean`);
         }
         stringList(method, q.answers, `${at}.answers`);
         if (q.score !== null) needNumber(method, q.score, `${at}.score`);
@@ -54158,7 +54477,7 @@ Return JSON format:
     return value;
   }
   function needBoolean(method, value, name) {
-    if (typeof value !== "boolean") throw refuse2(method, `\`${name}\` must be a boolean`);
+    if (typeof value !== "boolean") throw refuse3(method, `\`${name}\` must be a boolean`);
     return value;
   }
   var QUEST_OBJECTIVE_STRINGS = ["id", "description", "target", "difficulty", "grammarFocus", "category"];
@@ -54221,7 +54540,7 @@ Return JSON format:
       const locks = value.objectiveLocks.length;
       const indexed = (x, at) => {
         needNumber(method, x.index, `${at}.index`);
-        if (!Number.isInteger(x.index) || x.index < 0 || x.index >= locks) throw refuse2(method, `\`${at}.index\` must name one of \`${name}.objectiveLocks\``);
+        if (!Number.isInteger(x.index) || x.index < 0 || x.index >= locks) throw refuse3(method, `\`${at}.index\` must name one of \`${name}.objectiveLocks\``);
         strs(x, at, ["type"]);
         nums(x, at, ["required", "current"]);
         bools(x, at, ["completed"]);
@@ -54324,12 +54643,12 @@ Return JSON format:
     for (const [key, check, how] of spec) {
       const where = `${name}.${key}`;
       if (!hasOwn3(value, key)) {
-        if (how === REQ || how === REQ_NULL) throw refuse2(method, `\`${where}\` is missing`);
+        if (how === REQ || how === REQ_NULL) throw refuse3(method, `\`${where}\` is missing`);
         continue;
       }
       if (value[key] === null) {
         if (how === REQ_NULL || how === OPT_NULL) continue;
-        throw refuse2(method, `\`${where}\` must not be null`);
+        throw refuse3(method, `\`${where}\` must not be null`);
       }
       check(method, value[key], where);
     }
@@ -54426,7 +54745,7 @@ Return JSON format:
     ["notes", tList(tStr), REQ]
   ];
   function puzzleAttemptArg(method, value, name) {
-    if (needArray(method, value, name).length !== 2) throw refuse2(method, `\`${name}\` must be a [riddle, count] pair`);
+    if (needArray(method, value, name).length !== 2) throw refuse3(method, `\`${name}\` must be a [riddle, count] pair`);
     needString(method, value[0], `${name}[0]`);
     needNumber(method, value[1], `${name}[1]`);
   }
@@ -54529,7 +54848,7 @@ Return JSON format:
     ["notes", tList(tStr), REQ]
   ];
   function platformerClearArg(method, value, name) {
-    if (needArray(method, value, name).length !== 2) throw refuse2(method, `\`${name}\` must be a [level, stars] pair`);
+    if (needArray(method, value, name).length !== 2) throw refuse3(method, `\`${name}\` must be a [level, stars] pair`);
     needString(method, value[0], `${name}[0]`);
     needNumber(method, value[1], `${name}[1]`);
   }
@@ -54560,7 +54879,7 @@ Return JSON format:
     const options = {};
     for (const k of keys) {
       if (!hasOwn3(args, k)) continue;
-      if (args[k] === null) throw refuse2(method, `\`${k}\` must not be null`);
+      if (args[k] === null) throw refuse3(method, `\`${k}\` must not be null`);
       checks[k](method, args[k], k);
       options[k] = args[k];
     }
@@ -54573,7 +54892,7 @@ Return JSON format:
     });
   }
   var tTuple = (shape, ...checks) => (m, v, n) => {
-    if (needArray(m, v, n).length !== checks.length) throw refuse2(m, `\`${n}\` must be a ${shape}`);
+    if (needArray(m, v, n).length !== checks.length) throw refuse3(m, `\`${n}\` must be a ${shape}`);
     checks.forEach((check, k) => check(m, v[k], `${n}[${k}]`));
   };
   var STRATEGY_AMOUNTS = tRecord(tNum);
@@ -54763,7 +55082,7 @@ Return JSON format:
   ];
   var tReplayPath = (m, v, n) => {
     tList(tGround)(m, v, n);
-    if (v.length === 0) throw refuse2(m, `\`${n}\` is empty: core's replay walks to its first point`);
+    if (v.length === 0) throw refuse3(m, `\`${n}\` is empty: core's replay walks to its first point`);
   };
   var PASS_BY_SCENE = [
     ["dt", tNum, OPT],
@@ -54831,7 +55150,7 @@ Return JSON format:
   var VEHICLE_POINT = [["x", tNum, REQ], ["z", tNum, REQ]];
   function vehicleParkingInputOf(method, args) {
     if (args.streets !== void 0) {
-      if (args.streets === null) throw refuse2(method, "`streets` must not be null: absent is the street everywhere, [] nowhere");
+      if (args.streets === null) throw refuse3(method, "`streets` must not be null: absent is the street everywhere, [] nowhere");
       needArray(method, args.streets, "streets");
     }
     for (const key of ["buildings", "statics", "slots", "interactables"]) optArrayValue(method, args[key], key);
@@ -55253,7 +55572,7 @@ Return JSON format:
       const read = readConversationRecords(args.records);
       if (!read.ok) {
         coded("invalid-input", () => {
-          throw refuse2(m, `\`records\` cannot be read: ${read.keys.length ? read.keys.join(", ") : "not a list"}`);
+          throw refuse3(m, `\`records\` cannot be read: ${read.keys.length ? read.keys.join(", ") : "not a list"}`);
         });
       }
       return { rows: plain(conversationRowsOf(args.stored, read.value)) };
@@ -55388,7 +55707,7 @@ Return JSON format:
       coded("invalid-input", () => needObject(m, args.row, "row"));
       const read = readLanguageBlock({ book: { words: [args.row] } });
       if (!read.ok) coded("invalid-input", () => {
-        throw refuse2(m, `\`row\` is not a word row core's save reader reads`);
+        throw refuse3(m, `\`row\` is not a word row core's save reader reads`);
       });
       return { view: plain(wordView(read.value.book.words[0])) };
     },
@@ -55517,7 +55836,7 @@ Return JSON format:
       const read = readLanguageBlock(args.block);
       if (!read.ok || read.value === null) {
         coded("invalid-input", () => {
-          throw refuse2(m, `\`block\` cannot be read: ${!read.ok ? read.keys.length ? read.keys.join(", ") : "not an object" : "no block"}`);
+          throw refuse3(m, `\`block\` cannot be read: ${!read.ok ? read.keys.length ? read.keys.join(", ") : "not an object" : "no block"}`);
         });
       }
       return { block: plain(languageBlockOf(read.value)) };
@@ -56170,7 +56489,7 @@ Return JSON format:
       const m = "language.objects.examine";
       const [objects, at, options] = coded("invalid-input", () => {
         const opts = needObject(m, args.options, "options");
-        if (typeof opts.languageWorld !== "boolean") throw refuse2(m, "`options.languageWorld` must be a boolean");
+        if (typeof opts.languageWorld !== "boolean") throw refuse3(m, "`options.languageWorld` must be a boolean");
         needString(m, opts.targetLanguage, "options.targetLanguage");
         needNumber(m, opts.fluency, "options.fluency");
         optNumber(m, opts.range, "options.range");
@@ -56234,7 +56553,7 @@ Return JSON format:
       const m = "language.listening.grade";
       const state = listeningStateArg(m, args.state);
       const [questId, score] = coded("invalid-input", () => {
-        if (args.score !== null && (typeof args.score !== "number" || !Number.isFinite(args.score))) throw refuse2(m, "`score` must be a finite number or null");
+        if (args.score !== null && (typeof args.score !== "number" || !Number.isFinite(args.score))) throw refuse3(m, "`score` must be a finite number or null");
         return [needString(m, args.questId, "questId"), args.score];
       });
       return plain(gradeListening(state, questId, score));
@@ -56432,7 +56751,7 @@ Return JSON format:
         for (const [k, w2] of Object.entries(s)) genreWorldArg(m, w2, `slices.${k}`);
         const named = (v, where) => {
           needString(m, v, where);
-          if (!hasOwn3(s, v)) throw refuse2(m, `\`${where}\` names no slice of \`slices\` (got ${JSON.stringify(v)})`);
+          if (!hasOwn3(s, v)) throw refuse3(m, `\`${where}\` names no slice of \`slices\` (got ${JSON.stringify(v)})`);
         };
         const w = args.world;
         if (typeof w === "string") named(w, "world");
@@ -56552,7 +56871,7 @@ Return JSON format:
         if (input.kb !== void 0) {
           const consulted = await engine.consult(input.kb);
           if (!consulted.success) {
-            const err = refuse2(m, `the KB refused \`kb\`: ${consulted.error}`);
+            const err = refuse3(m, `the KB refused \`kb\`: ${consulted.error}`);
             err.code = "invalid-input";
             throw err;
           }
@@ -56800,7 +57119,7 @@ Return JSON format:
         if (input.kb !== void 0) {
           const consulted = await engine.consult(input.kb);
           if (!consulted.success) {
-            const err = refuse2(m, `the KB refused \`kb\`: ${consulted.error}`);
+            const err = refuse3(m, `the KB refused \`kb\`: ${consulted.error}`);
             err.code = "invalid-input";
             throw err;
           }
@@ -56820,8 +57139,8 @@ Return JSON format:
       const [probe, stuck] = coded("invalid-input", () => {
         const p = optionalArg(args.probe, (v) => probeTableArg(m, v, "probe"));
         const k = optionalArg(args.stuck, (v) => stuckTableArg(m, v, "stuck"));
-        if (p !== void 0 && s.hosts.probe === null) throw refuse2(m, "`probe`: the director was created with no probe");
-        if (k !== void 0 && s.hosts.stuck === null) throw refuse2(m, "`stuck`: the director was created with no locomotion host");
+        if (p !== void 0 && s.hosts.probe === null) throw refuse3(m, "`probe`: the director was created with no probe");
+        if (k !== void 0 && s.hosts.stuck === null) throw refuse3(m, "`stuck`: the director was created with no locomotion host");
         return [p, k];
       });
       if (probe !== void 0) s.hosts.probe = probe;
@@ -57020,7 +57339,7 @@ Return JSON format:
         if (input.kb !== void 0) {
           const consulted = await engine.consult(input.kb);
           if (!consulted.success) {
-            const err = refuse2(m, `the KB refused \`kb\`: ${consulted.error}`);
+            const err = refuse3(m, `the KB refused \`kb\`: ${consulted.error}`);
             err.code = "invalid-input";
             throw err;
           }
@@ -57365,7 +57684,7 @@ Return JSON format:
       const m = "passBy.planRound";
       const radii = coded("invalid-input", () => {
         for (const k of ["here", "next", "player"]) {
-          if (!hasOwn3(args, k)) throw refuse2(m, `\`args.${k}\` is missing`);
+          if (!hasOwn3(args, k)) throw refuse3(m, `\`args.${k}\` is missing`);
           tGround(m, args[k], `args.${k}`);
         }
         return [passByRadiusArg(m, args, "villagerRadius"), passByRadiusArg(m, args, "playerRadius")];
@@ -57630,6 +57949,41 @@ Return JSON format:
         }
       });
       return { results, indicator: plain(s.ind), view: plain(saveIndicatorView(s.ind)) };
+    },
+    // ── the dock-operations register (PL.native-dock-operations-rows; U132, U113) ──
+    // Core's `editor/dock-operations` (PL.core-dock-operations-register): the four
+    // operations engine editor docks call, what a request for each may carry, and the
+    // request a dock sends or core's refusal to build one. `conformance/
+    // editor-operations/{get-world-ir-summary,reread-reference-texts,mint-play-grant,
+    // get-entity-neighbourhood}.json` are the corpus: each `requestCases` entry's
+    // `input` is this row's args (with the file's `operationId`), its `expect` the
+    // answer. Stateless and transport-free: how the query string is escaped and the
+    // body serialized is the client's (core leaves both to it).
+    /** `editor.dockOperations.ids {}` → `{ ids }` — core's `DOCK_OPERATION_IDS`, in the register's order. */
+    "editor.dockOperations.ids": () => ({ ids: plain(DOCK_OPERATION_IDS) }),
+    /**
+     * `editor.dockOperations.rules {}` → `{ rules }` — core's `DOCK_OPERATION_RULES`,
+     * keyed by operation id: `{ query: [{ name, required, enum }], body: 'none' |
+     * 'optional-object', bodyMembers: { <name>: 'integer' } }` (`enum` null when any
+     * string is allowed). What each corpus file's published `row` states as its
+     * `queryParameters`, `body` and `bodyMembers`.
+     */
+    "editor.dockOperations.rules": () => ({ rules: plain(DOCK_OPERATION_RULES) }),
+    /**
+     * `editor.dockOperations.request { operationId, worldId?, query?, body? }` → core's
+     * `dockOperationRequest(operationId, { worldId, query, body })`, whole: `{ ok: true,
+     * request: { operationId, method, path, query, body, verdict } }` (`path` expanded,
+     * the world id percent-encoded; `body` the JSON value to send, or null for none) or
+     * `{ ok: false, error: { code, message, received } }`, core's refusal as a VALUE
+     * (`missing-path-parameter`, `missing-query-parameter`, `unknown-query-parameter`,
+     * `query-value-not-allowed`, `unexpected-body`, `body-not-object`,
+     * `unknown-body-member`, `invalid-body-member`). An absent body, null and `{}` are
+     * all no body. `[invalid-input]` only for what core's types exclude.
+     */
+    "editor.dockOperations.request": (args) => {
+      const m = "editor.dockOperations.request";
+      const { operationId, input } = coded("invalid-input", () => dockRequestArgs(m, args));
+      return plain(dockOperationRequest(operationId, input));
     },
     /**
      * `ui.titleFlow.contract {}` → `{ 'ui-title-flow': {…} }` — the data tables
@@ -58688,7 +59042,7 @@ Return JSON format:
       const results = await applyOps(m, s, args, {
         update: ({ clock }, op) => {
           const ms = needNumber(m, op.deltaMs, "deltaMs");
-          if (ms < 0) throw refuse2(m, "`deltaMs` must not be negative");
+          if (ms < 0) throw refuse3(m, "`deltaMs` must not be negative");
           return clock.update(ms);
         },
         advanceHours: ({ clock }, op) => clock.advanceHours(needNumber(m, op.hours, "hours")),
@@ -59382,7 +59736,7 @@ Return JSON format:
     /** `traversal.fastTravel.discovery { location, known }` → `{ delta }` — core's `discoveryDelta`: `location_discovered/1` asserted unless already `known`. */
     "traversal.fastTravel.discovery": (args) => {
       coded("invalid-input", () => {
-        if (typeof args.known !== "boolean") throw refuse2("traversal.fastTravel.discovery", "`known` must be a boolean");
+        if (typeof args.known !== "boolean") throw refuse3("traversal.fastTravel.discovery", "`known` must be a boolean");
       });
       return { delta: plain(discoveryDelta(args.location, args.known)) };
     },
@@ -59645,7 +59999,7 @@ Return JSON format:
         const input2 = coded("invalid-input", () => {
           for (const key of ["links", "tuning", "fastTravel", "seed", "stamina", "probe", "locomotion"]) {
             if (args[key] !== void 0 && args[key] !== null) {
-              throw refuse2(m, `\`${key}\` configures traversal, which a session with \`runsTraversal: false\` does not run`);
+              throw refuse3(m, `\`${key}\` configures traversal, which a session with \`runsTraversal: false\` does not run`);
             }
           }
           return {
@@ -59856,8 +60210,8 @@ Return JSON format:
           const [probe, stuck] = coded("invalid-input", () => {
             const p = optionalArg(op.probe, (v) => probeTableArg(m, v, "probe"));
             const k = optionalArg(op.stuck, (v) => stuckTableArg(m, v, "stuck"));
-            if (p !== void 0 && st.hosts.probe === null) throw refuse2(m, "`probe`: the session was created with no probe");
-            if (k !== void 0 && st.hosts.stuck === null) throw refuse2(m, "`stuck`: the session was created with no locomotion host");
+            if (p !== void 0 && st.hosts.probe === null) throw refuse3(m, "`probe`: the session was created with no probe");
+            if (k !== void 0 && st.hosts.stuck === null) throw refuse3(m, "`stuck`: the session was created with no locomotion host");
             return [p, k];
           });
           if (probe !== void 0) st.hosts.probe = probe;
@@ -59993,7 +60347,7 @@ Return JSON format:
       const [result2, hide] = coded("invalid-input", () => [
         buildResultLineArg(m, args.result),
         optionalArg(args.hideDetails, (v) => {
-          if (typeof v !== "boolean") throw refuse2(m, "`hideDetails` must be a boolean");
+          if (typeof v !== "boolean") throw refuse3(m, "`hideDetails` must be a boolean");
           return v;
         })
       ]);
@@ -60021,7 +60375,7 @@ Return JSON format:
      */
     "build.findSecrets": (args) => {
       coded("invalid-input", () => {
-        if (args.value === void 0) throw refuse2("build.findSecrets", "`value` must be sent (any JSON)");
+        if (args.value === void 0) throw refuse3("build.findSecrets", "`value` must be sent (any JSON)");
       });
       return { fields: findSecrets(args.value) };
     },
@@ -60525,7 +60879,7 @@ Return JSON format:
         const consulted = await engine.consult(input.kb);
         if (!consulted.success) {
           engine.destroy();
-          const err = refuse2(m, `the KB refused \`kb\`: ${consulted.error}`);
+          const err = refuse3(m, `the KB refused \`kb\`: ${consulted.error}`);
           err.code = "invalid-input";
           throw err;
         }
@@ -60707,7 +61061,7 @@ Return JSON format:
       try {
         kb = await SkillKbSession.open(world2);
       } catch (e) {
-        const err = refuse2(m, String(e && e.message ? e.message : e));
+        const err = refuse3(m, String(e && e.message ? e.message : e));
         err.code = "invalid-input";
         throw err;
       }

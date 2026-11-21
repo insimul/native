@@ -1,0 +1,139 @@
+{
+  "corpus": "editor-operations",
+  "caseFormat": 1,
+  "operationId": "rereadReferenceTexts",
+  "description": "PL.core-dock-operations-register. POST /api/v1/worlds/{worldId}/reference-texts/reread: re-read a finished world's reference texts (Create World, Unreal). 202 with a taskId polled through getGenerationProgress. requestCases: what a dock asks for (input: worldId, query parameters by name, a parsed JSON body) -> the request it must send (method, the expanded path, query, body: the JSON value to send or null for none), or the refusal (code, received) with no request at all. An absent body, null and {} all mean no body. row: the published openapi/operations.json row this file is about (method, path, pathParameters, queryParameters, auth, verdict) plus what a request may carry (body, bodyMembers) and whether contentWriteFindings admits it, with the reason; a test holds row to the stamped table and to the vendored contract. cases: no response cases yet (the docks' readers of these answers are the engines' own; none is in core). Reference: src/editor/dock-operations.ts dockOperationRequest, run by src/editor/__tests__/dock-operations.test.ts.",
+  "row": {
+    "method": "POST",
+    "path": "/api/v1/worlds/{worldId}/reference-texts/reread",
+    "pathParameters": [
+      "worldId"
+    ],
+    "queryParameters": [],
+    "auth": "required",
+    "verdict": "served",
+    "body": "none",
+    "bodyMembers": {},
+    "contentWrite": {
+      "admitted": true,
+      "why": "Admitted by decision (PL.core-dock-operations-register): a POST not named as a write and on no entity collection, and not a content write in the guard's sense. It is a generation kick-off like startWorldGeneration: the contract declares no request body, so the dock sends no content; the server re-runs the pipelines job reread-texts on the world as it stands, and what lands is the generator's reading of the world's own reference texts. A body with anything in it is refused (unexpected-body), which is the condition of the admission."
+    },
+    "source": {
+      "kind": "contract-schema",
+      "schema": "paths./api/v1/worlds/{worldId}/reference-texts/reread.post",
+      "note": "method, path and auth as projected onto the rereadReferenceTexts row of openapi/operations.json; no requestBody in the contract; served per server SERVED_OPERATIONS at 75e91a5a (delegated to the pipelines job reread-texts)"
+    }
+  },
+  "requestCases": [
+    {
+      "name": "reread-sends-no-body",
+      "kind": "accept",
+      "why": "The re-read takes the world from the path and nothing else.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/reference-texts/reread.post",
+        "note": "the re-read route: x-status native, bearer auth, and no requestBody declared; 202 GenerationKickoff"
+      },
+      "input": {
+        "worldId": "w1"
+      },
+      "expect": {
+        "outcome": "ok",
+        "request": {
+          "method": "POST",
+          "path": "/api/v1/worlds/w1/reference-texts/reread",
+          "query": {},
+          "body": null
+        }
+      }
+    },
+    {
+      "name": "an-empty-object-is-no-body",
+      "kind": "accept",
+      "why": "Unreal's Create World sends {} today; it carries nothing the server reads, so it is the same request as no body.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/reference-texts/reread.post",
+        "note": "the re-read route: x-status native, bearer auth, and no requestBody declared; 202 GenerationKickoff"
+      },
+      "input": {
+        "worldId": "w1",
+        "body": {}
+      },
+      "expect": {
+        "outcome": "ok",
+        "request": {
+          "method": "POST",
+          "path": "/api/v1/worlds/w1/reference-texts/reread",
+          "query": {},
+          "body": null
+        }
+      }
+    },
+    {
+      "name": "content-in-the-body",
+      "kind": "refuse",
+      "why": "The dock chooses no content: what lands is the generator's reading of the world's own texts. A body carrying values would be the content write contentWriteFindings admits this POST on the understanding it is not.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/reference-texts/reread.post",
+        "note": "the re-read route: x-status native, bearer auth, and no requestBody declared; 202 GenerationKickoff"
+      },
+      "input": {
+        "worldId": "w1",
+        "body": {
+          "truths": [
+            {
+              "name": "Ada"
+            }
+          ]
+        }
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "unexpected-body",
+        "received": "an object with \"truths\""
+      }
+    },
+    {
+      "name": "no-world",
+      "kind": "refuse",
+      "why": "The re-read addresses one world.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/reference-texts/reread.post",
+        "note": "the re-read route: x-status native, bearer auth, and no requestBody declared; 202 GenerationKickoff"
+      },
+      "input": {
+        "worldId": ""
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "missing-path-parameter",
+        "received": "an empty worldId"
+      }
+    },
+    {
+      "name": "no-query-parameter",
+      "kind": "refuse",
+      "why": "The contract declares no query parameter on the re-read.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/reference-texts/reread.post",
+        "note": "the re-read route: x-status native, bearer auth, and no requestBody declared; 202 GenerationKickoff"
+      },
+      "input": {
+        "worldId": "w1",
+        "query": {
+          "force": "true"
+        }
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "unknown-query-parameter",
+        "received": "the query parameter \"force\""
+      }
+    }
+  ],
+  "cases": []
+}

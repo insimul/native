@@ -765,6 +765,30 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `conformance/villagers/pass-by.json` from core at this library's pin and drive each
   case as `tests/villagers_pass_by_corpus.cpp` does: ONE row call per case, the case's
   `input` as the args, compared by the corpus's `tolerance`.
+- **Dock operations (Unreal's `NX.unreal.retire-dock-operations-copy`, after
+  PL.native-dock-operations-rows; U132, U113, U107(2)).** Core's request builder for the
+  four operations editor docks call is the `editor.dockOperations.*` rows (`README.md`,
+  "The dock-operations rows"). The retirement row binds them in place of the interim copy
+  on unreal main (`7ff96080`, read only): `Source/InsimulEditor/Portable/InsimulDockOperations.{h,cpp}`,
+  which `Private/Connect/InsimulDockCalls.cpp` calls through `SendDockOperation`, and whose
+  corpus runner is `Source/InsimulEditor/Tests/test_editor_operations_corpus.cpp`
+  (`RunRequestCases`, `CheckRow`). Every function of the copy maps to a row or stays
+  transport:
+
+  | Unreal's interim copy (`insimul`, `InsimulDockOperations.h`) | Row |
+  |---|---|
+  | `DockOperationIds`, `IsDockOperationId` | `editor.dockOperations.ids {}` → `{ ids }` (the four, in the register's order) |
+  | `FDockQueryRule`, `FDockOperationRule`, `DockOperationRuleFor` (what `CheckRow` holds each file's `row` to) | `editor.dockOperations.rules {}` → `{ rules: { <id>: { query: [{ name, required, enum }], body, bodyMembers } } }` (`enum` null where the copy has `bHasEnum` false; `bodyMembers` an object where the copy keeps pairs) |
+  | `FDockOperationInput`, `FDockOperationRequest`, `FDockOperationRefusal`, `FDockOperationResult`, `DockOperationRequest`, `DescribeDockValue` | `editor.dockOperations.request { operationId, worldId?, query?, body? }` → `{ ok: true, request: { operationId, method, path, query, body, verdict } }` or `{ ok: false, error: { code, message, received } }`. `bHasWorldId` false is `worldId` left out (core: "no worldId"); `Query` is an object (a name given twice keeps its last value, as the copy's `AskedQuery` does); `Body` nullptr is `body` left out. The request's `query` is an object in the row's parameter order; `body` null is none. `Broken` (core throws: an id that is not one of the four) is the row's `[invalid-input]` error |
+  | `DockRequestTarget` (the path plus `?name=value&…`, encodeURIComponent on both), `DockRequestBody` (canonical JSON of the body) | no row: core leaves the query string and the body's serialization to the client, so they stay the binding's transport, around the request row's answer |
+  | `SendDockOperation` (build, then send through the session's authenticated path only when built) | engine-side: the binding calls the request row, and sends only on `ok: true` |
+
+  Re-vendor `conformance/editor-operations/` from core at this library's pin and drive each
+  request case as `tests/editor_dock_operations_corpus.cpp` does: ONE
+  `editor.dockOperations.request` call per case with the file's `operationId` and the
+  case's `input` members as the args; an `ok` expectation compares method, path, query and
+  body exactly, an `error` one the code and `received`. The four files' `cases` are empty,
+  so the copy's response comparator is not involved.
 - **World-vehicle parking, and what a load does to the vehicles (Unreal's
   `P9e.unreal.retire-vehicle-rules-copy`, after PL.native-vehicle-rows; U115, U128,
   U106(3)/(4), U107(2)).** Core's parking rule is the `props.vehicle.*` rows (`README.md`,

@@ -65,7 +65,12 @@
 // U95(5)): `conformance/camera/movement.json`; tests/props_corpus.cpp drives it
 // through the `camera.movement.*` rows. So is core's ground reading corpus
 // (PL.native-ground-row, U97(3)): `conformance/audio/ground.json`, driven by the
-// same runner through the `audio.ground.*` rows.
+// same runner through the `audio.ground.*` rows. Core's four dock-operation row
+// files `conformance/editor-operations/{get-world-ir-summary,reread-reference-texts,
+// mint-play-grant,get-entity-neighbourhood}.json` and the area's MANIFEST.json are
+// copied the same way as their own set (PL.native-dock-operations-rows, U132);
+// tests/editor_dock_operations_corpus.cpp holds them to that manifest and replays
+// their request cases through the `editor.dockOperations.*` rows.
 //
 // TWO MODES:
 //
@@ -378,6 +383,21 @@ const GENRE_SYSTEMS_CORPUS_FILES = [
 // transcribes it into cases/core-villagers-pass-by.json. `conformance/villagers/` is this
 // set's alone, so a file an earlier pin left there is seen, hashed and removed.
 const PASS_BY_CORPUS_FILES = ['conformance/villagers/pass-by.json'];
+
+// core's dock-operations request corpora (PL.native-dock-operations-rows, U132; core's
+// PL.core-dock-operations-register, U113): the four row files whose `requestCases` the
+// editor.dockOperations.* rows answer, and the area's MANIFEST.json (each file's sha256 and
+// case counts, which tests/editor_dock_operations_corpus.cpp holds the copies to). Copied
+// verbatim the same way. Only these five: the area's other files are response corpora no
+// row here answers. `conformance/editor-operations/` is this set's alone, so a file an
+// earlier pin left there is seen, hashed and removed.
+const EDITOR_OPERATIONS_CORPUS_FILES = [
+  'conformance/editor-operations/MANIFEST.json',
+  'conformance/editor-operations/get-entity-neighbourhood.json',
+  'conformance/editor-operations/get-world-ir-summary.json',
+  'conformance/editor-operations/mint-play-grant.json',
+  'conformance/editor-operations/reread-reference-texts.json',
+];
 
 // Core modules the bundle must NOT carry (PL.native-interact-target, U94(2)/(3)): core's
 // village-state comparator. No row needs it; it came in only through a corpus RUNNER
@@ -2153,6 +2173,16 @@ function passByFilesAtPin(src) {
   return filesAtPin(src, PASS_BY_CORPUS_FILES, 'the passBy.* rows');
 }
 
+/** The vendored dock-operations request corpora on disk: the camera set's rule (no other set copies into `conformance/editor-operations/`). */
+function editorOperationsFilesOnDisk() {
+  return ownDirFilesOnDisk(EDITOR_OPERATIONS_CORPUS_FILES);
+}
+
+/** core's dock-operations request corpora and their MANIFEST.json at the pin, as { 'vendor/core/<path>': Buffer }. */
+function editorOperationsFilesAtPin(src) {
+  return filesAtPin(src, EDITOR_OPERATIONS_CORPUS_FILES, 'the editor.dockOperations.* rows');
+}
+
 /** The vendored headless build corpus on disk: the camera set's rule (no other set copies into `conformance/build/`). */
 function buildFilesOnDisk() {
   return ownDirFilesOnDisk(BUILD_CORPUS_FILES);
@@ -2598,6 +2628,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The dock-operations request corpora and their manifest: the same exact-set replacement (only the listed files).
+    const editorOperations = editorOperationsFilesAtPin(src);
+    for (const rel of editorOperationsFilesOnDisk()) if (!(rel in editorOperations)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(editorOperations)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     const js = fs.readFileSync(BUNDLE_JS, 'utf8');
     const manifest = {
       description:
@@ -2627,6 +2665,7 @@ async function write(coreDir) {
       languageCorpus: LANGUAGE_CORPUS_FILES,
       genreSystemsCorpus: GENRE_SYSTEMS_CORPUS_FILES,
       passByCorpus: PASS_BY_CORPUS_FILES,
+      editorOperationsCorpus: EDITOR_OPERATIONS_CORPUS_FILES,
       bundleBytes: Buffer.byteLength(js, 'utf8'),
       bundleSha256: sha256(js),
     };
@@ -2652,6 +2691,7 @@ async function write(coreDir) {
       ...languageFilesOnDisk(),
       ...genreFilesOnDisk(),
       ...passByFilesOnDisk(),
+      ...editorOperationsFilesOnDisk(),
       ...ADAPTER_MODULES,
       ...TOOL_INPUTS,
     ]);
@@ -2675,6 +2715,7 @@ async function write(coreDir) {
     console.log(`  language corpus files (${Object.keys(language).length}), copied unchanged`);
     console.log(`  genre systems corpus files and world slice (${Object.keys(genre).length}), copied unchanged`);
     console.log(`  villager pass-by corpus files (${Object.keys(passBy).length}), copied unchanged`);
+    console.log(`  dock-operations request corpus files and their manifest (${Object.keys(editorOperations).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -2771,6 +2812,10 @@ async function check(coreDir) {
   for (const rel of PASS_BY_CORPUS_FILES) {
     if (!passByFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the villager pass-by corpus gate would run nothing`);
   }
+  const editorOperationsFiles = editorOperationsFilesOnDisk();
+  for (const rel of EDITOR_OPERATIONS_CORPUS_FILES) {
+    if (!editorOperationsFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the dock-operations corpus gate would run nothing`);
+  }
   // conformance/ui/ is shared by the P9a, P6 and P8 sets: a file belongs to exactly one.
   const claimedTwice = propsFiles.filter((rel) => p9aFiles.includes(rel));
   if (claimedTwice.length) fail(`${claimedTwice.join(', ')} is listed as both a P9a and a P6 corpus file`);
@@ -2794,6 +2839,7 @@ async function check(coreDir) {
     ...languageFiles,
     ...genreFiles,
     ...passByFiles,
+    ...editorOperationsFiles,
     ...ADAPTER_MODULES,
     ...TOOL_INPUTS,
   ];
@@ -2843,6 +2889,7 @@ async function check(coreDir) {
       `${traversalFiles.length} traversal, ${buildFiles.length} headless build, ${progressionFiles.length} progression/skill and ` +
       `${languageFiles.length} language corpus file(s), ${genreFiles.length} genre systems corpus file(s) (the world slice among them), ` +
       `${passByFiles.length} villager pass-by corpus file(s), ` +
+      `${editorOperationsFiles.length} dock-operations corpus file(s) (its MANIFEST.json among them), ` +
       `core ${manifest.coreCommit}, ` +
       `esbuild ${manifest.esbuild})`,
   );
@@ -3076,6 +3123,16 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
+      const editorOperationsAtPin = editorOperationsFilesAtPin(src);
+      const wantEditorOperations = Object.keys(editorOperationsAtPin).sort();
+      if (JSON.stringify(wantEditorOperations) !== JSON.stringify(editorOperationsFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s dock-operations corpus is ${wantEditorOperations.join(', ')} but vendor/core/ holds ${editorOperationsFiles.join(', ')}`);
+      }
+      for (const rel of wantEditorOperations) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(editorOperationsAtPin[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       const keysAtPin = await checkExtensionKeys(js, SAVE_RULES_CASES_DIR, src.root);
       console.log(
         `vendor-core-bundle: core ${pin.coreCommit}'s src/save-extensions.ts registers the same ${keysAtPin.count} ` +
@@ -3090,7 +3147,8 @@ async function check(coreDir) {
           `corpus file(s), all ${wantSurvival.length} survival corpus file(s), all ${wantTraversal.length} traversal ` +
           `corpus file(s), all ${wantBuild.length} headless build corpus file(s), all ${wantProgression.length} progression/skill ` +
           `corpus file(s), all ${wantLanguage.length} language corpus file(s), all ${wantGenre.length} genre systems corpus ` +
-          `file(s) (the world slice among them) and all ${wantPassBy.length} villager pass-by corpus file(s) byte for byte`,
+          `file(s) (the world slice among them), all ${wantPassBy.length} villager pass-by corpus file(s) and all ` +
+          `${wantEditorOperations.length} dock-operations corpus file(s) byte for byte`,
       );
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });

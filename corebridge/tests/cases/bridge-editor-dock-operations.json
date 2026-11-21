@@ -1,0 +1,922 @@
+{
+ "area": "editor-dock-operations",
+ "description": "Hand cases for the editor.dockOperations.* rows (PL.native-dock-operations-rows, U132; core's editor/dock-operations, PL.core-dock-operations-register): what core's four row files in conformance/editor-operations/ leave unpinned — the ids and rules rows whole, the request row's whole answer (operationId and verdict beside the method, path, query and body the corpus compares), every engine value, an empty optional query value, a null query, escaping on a POST, the mint's member at its edges, {} / null / absent as no body on all four operations, core's refusal order (world, then query, then body) and every refusal code as a value, and the [invalid-input] boundary of every member core's DockOperationInput declares. Every row answer is computed by core's own exports at the pin (gen-bridge-dock-operations-cases.mts in the item's loop record); the error strings are the row's own boundary messages.",
+ "cases": [
+  {
+   "name": "editor.dockOperations.ids and .rules: core's DOCK_OPERATION_IDS in the register's order and DOCK_OPERATION_RULES whole",
+   "steps": [
+    {
+     "call": "editor.dockOperations.ids",
+     "args": {},
+     "expect": {
+      "ids": [
+       "getWorldIRSummary",
+       "rereadReferenceTexts",
+       "mintPlayGrant",
+       "getEntityNeighbourhood"
+      ]
+     }
+    },
+    {
+     "call": "editor.dockOperations.rules",
+     "args": {},
+     "expect": {
+      "rules": {
+       "getWorldIRSummary": {
+        "query": [
+         {
+          "name": "engine",
+          "required": false,
+          "enum": [
+           "babylon",
+           "unreal",
+           "unity",
+           "godot"
+          ]
+         }
+        ],
+        "body": "none",
+        "bodyMembers": {}
+       },
+       "rereadReferenceTexts": {
+        "query": [],
+        "body": "none",
+        "bodyMembers": {}
+       },
+       "mintPlayGrant": {
+        "query": [],
+        "body": "optional-object",
+        "bodyMembers": {
+         "ttlSeconds": "integer"
+        }
+       },
+       "getEntityNeighbourhood": {
+        "query": [
+         {
+          "name": "address",
+          "required": true,
+          "enum": null
+         }
+        ],
+        "body": "none",
+        "bodyMembers": {}
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "editor.dockOperations.request: core's request whole (operationId and verdict beside method, path, query, body) for what the corpus leaves open",
+   "steps": [
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "query": {
+       "engine": "babylon"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "getWorldIRSummary",
+       "method": "GET",
+       "path": "/api/v1/worlds/w1/export/ir/summary",
+       "query": {
+        "engine": "babylon"
+       },
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "query": {
+       "engine": "unreal"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "getWorldIRSummary",
+       "method": "GET",
+       "path": "/api/v1/worlds/w1/export/ir/summary",
+       "query": {
+        "engine": "unreal"
+       },
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "query": {
+       "engine": "unity"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "getWorldIRSummary",
+       "method": "GET",
+       "path": "/api/v1/worlds/w1/export/ir/summary",
+       "query": {
+        "engine": "unity"
+       },
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "query": {
+       "engine": "godot"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "getWorldIRSummary",
+       "method": "GET",
+       "path": "/api/v1/worlds/w1/export/ir/summary",
+       "query": {
+        "engine": "godot"
+       },
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "query": {
+       "engine": ""
+      }
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "getWorldIRSummary",
+       "method": "GET",
+       "path": "/api/v1/worlds/w1/export/ir/summary",
+       "query": {},
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "query": null
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "getWorldIRSummary",
+       "method": "GET",
+       "path": "/api/v1/worlds/w1/export/ir/summary",
+       "query": {},
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "rereadReferenceTexts",
+      "worldId": "a/b?c#d"
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "rereadReferenceTexts",
+       "method": "POST",
+       "path": "/api/v1/worlds/a%2Fb%3Fc%23d/reference-texts/reread",
+       "query": {},
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "body": {
+       "ttlSeconds": 0
+      }
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "mintPlayGrant",
+       "method": "POST",
+       "path": "/api/v1/worlds/w1/play-grants",
+       "query": {},
+       "body": {
+        "ttlSeconds": 0
+       },
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "body": {
+       "ttlSeconds": -5
+      }
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "mintPlayGrant",
+       "method": "POST",
+       "path": "/api/v1/worlds/w1/play-grants",
+       "query": {},
+       "body": {
+        "ttlSeconds": -5
+       },
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "body": {
+       "ttlSeconds": 2592000
+      }
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "mintPlayGrant",
+       "method": "POST",
+       "path": "/api/v1/worlds/w1/play-grants",
+       "query": {},
+       "body": {
+        "ttlSeconds": 2592000
+       },
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getEntityNeighbourhood",
+      "worldId": "w-millbrook",
+      "query": {
+       "address": "insimul:world:w-millbrook:ent:bld-00"
+      }
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "getEntityNeighbourhood",
+       "method": "GET",
+       "path": "/api/v1/worlds/w-millbrook/neighbourhood",
+       "query": {
+        "address": "insimul:world:w-millbrook:ent:bld-00"
+       },
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "editor.dockOperations.request: {} is no body, and so are an absent body and null, on all four",
+   "steps": [
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "body": {}
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "getWorldIRSummary",
+       "method": "GET",
+       "path": "/api/v1/worlds/w1/export/ir/summary",
+       "query": {},
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "body": null
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "getWorldIRSummary",
+       "method": "GET",
+       "path": "/api/v1/worlds/w1/export/ir/summary",
+       "query": {},
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "rereadReferenceTexts",
+      "worldId": "w1",
+      "body": {}
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "rereadReferenceTexts",
+       "method": "POST",
+       "path": "/api/v1/worlds/w1/reference-texts/reread",
+       "query": {},
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "rereadReferenceTexts",
+      "worldId": "w1",
+      "body": null
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "rereadReferenceTexts",
+       "method": "POST",
+       "path": "/api/v1/worlds/w1/reference-texts/reread",
+       "query": {},
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "body": {}
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "mintPlayGrant",
+       "method": "POST",
+       "path": "/api/v1/worlds/w1/play-grants",
+       "query": {},
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "body": null
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "mintPlayGrant",
+       "method": "POST",
+       "path": "/api/v1/worlds/w1/play-grants",
+       "query": {},
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1"
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "mintPlayGrant",
+       "method": "POST",
+       "path": "/api/v1/worlds/w1/play-grants",
+       "query": {},
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getEntityNeighbourhood",
+      "worldId": "w1",
+      "query": {
+       "address": "a"
+      },
+      "body": {}
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "getEntityNeighbourhood",
+       "method": "GET",
+       "path": "/api/v1/worlds/w1/neighbourhood",
+       "query": {
+        "address": "a"
+       },
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getEntityNeighbourhood",
+      "worldId": "w1",
+      "query": {
+       "address": "a"
+      },
+      "body": null
+     },
+     "expect": {
+      "ok": true,
+      "request": {
+       "operationId": "getEntityNeighbourhood",
+       "method": "GET",
+       "path": "/api/v1/worlds/w1/neighbourhood",
+       "query": {
+        "address": "a"
+       },
+       "body": null,
+       "verdict": "served"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "editor.dockOperations.request: core's refusals are VALUES, each code with its message and received, in core's order",
+   "steps": [
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant"
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "missing-path-parameter",
+       "message": "mintPlayGrant addresses one world: /api/v1/worlds/{worldId}/play-grants needs a worldId",
+       "received": "no worldId"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "rereadReferenceTexts",
+      "worldId": ""
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "missing-path-parameter",
+       "message": "rereadReferenceTexts addresses one world: /api/v1/worlds/{worldId}/reference-texts/reread needs a worldId",
+       "received": "an empty worldId"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getEntityNeighbourhood",
+      "worldId": "",
+      "query": {
+       "maxEdges": "5"
+      },
+      "body": [
+       1
+      ]
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "missing-path-parameter",
+       "message": "getEntityNeighbourhood addresses one world: /api/v1/worlds/{worldId}/neighbourhood needs a worldId",
+       "received": "an empty worldId"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getEntityNeighbourhood",
+      "worldId": "w1",
+      "query": {
+       "maxEdges": "5"
+      },
+      "body": [
+       1
+      ]
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "unknown-query-parameter",
+       "message": "getEntityNeighbourhood's published row names address; the contract declares nothing else",
+       "received": "the query parameter \"maxEdges\""
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getEntityNeighbourhood",
+      "worldId": "w1"
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "missing-query-parameter",
+       "message": "getEntityNeighbourhood requires the query parameter address",
+       "received": "no address"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getEntityNeighbourhood",
+      "worldId": "w1",
+      "query": {
+       "address": ""
+      }
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "missing-query-parameter",
+       "message": "getEntityNeighbourhood requires the query parameter address",
+       "received": "an empty address"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "query": {
+       "engine": "Unreal"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "query-value-not-allowed",
+       "message": "getWorldIRSummary's engine is one of babylon, unreal, unity, godot; the server answers anything else with a 400",
+       "received": "engine \"Unreal\", which the contract does not name"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "query": {
+       "address": "x"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "unknown-query-parameter",
+       "message": "getWorldIRSummary's published row names engine; the contract declares nothing else",
+       "received": "the query parameter \"address\""
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "body": []
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "unexpected-body",
+       "message": "getWorldIRSummary takes no request body: the contract declares none, and the dock sends no content through it",
+       "received": "a JSON array of 0 item(s)"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "body": "x"
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "unexpected-body",
+       "message": "getWorldIRSummary takes no request body: the contract declares none, and the dock sends no content through it",
+       "received": "the string \"x\""
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "body": true
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "unexpected-body",
+       "message": "getWorldIRSummary takes no request body: the contract declares none, and the dock sends no content through it",
+       "received": "the boolean true"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "rereadReferenceTexts",
+      "worldId": "w1",
+      "body": {
+       "a": 1,
+       "b": 2
+      }
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "unexpected-body",
+       "message": "rereadReferenceTexts takes no request body: the contract declares none, and the dock sends no content through it",
+       "received": "an object with \"a\", \"b\""
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "body": [
+       {
+        "ttlSeconds": 60
+       }
+      ]
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "body-not-object",
+       "message": "mintPlayGrant's body is a JSON object or nothing (the server answers 400)",
+       "received": "a JSON array of 1 item(s)"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "body": 7
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "body-not-object",
+       "message": "mintPlayGrant's body is a JSON object or nothing (the server answers 400)",
+       "received": "the number 7"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "body": {
+       "scope": "all"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "unknown-body-member",
+       "message": "mintPlayGrant's body carries ttlSeconds and nothing else",
+       "received": "the body member \"scope\""
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "body": {
+       "ttlSeconds": 1.5
+      }
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "invalid-body-member",
+       "message": "mintPlayGrant's ttlSeconds is an integer",
+       "received": "ttlSeconds the number 1.5"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "body": {
+       "ttlSeconds": null
+      }
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "invalid-body-member",
+       "message": "mintPlayGrant's ttlSeconds is an integer",
+       "received": "ttlSeconds null"
+      }
+     }
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "body": {
+       "ttlSeconds": [
+        60
+       ]
+      }
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "invalid-body-member",
+       "message": "mintPlayGrant's ttlSeconds is an integer",
+       "received": "ttlSeconds a JSON array of 1 item(s)"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "editor.dockOperations.request: [invalid-input] only for what core's types exclude",
+   "steps": [
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "worldId": "w1"
+     },
+     "expectError": "[invalid-input] insimulcore: editor.dockOperations.request: `args.operationId` is missing (one of core's DOCK_OPERATION_IDS)"
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "listWorlds",
+      "worldId": "w1"
+     },
+     "expectError": "[invalid-input] insimulcore: editor.dockOperations.request: `args.operationId` must be one of getWorldIRSummary, rereadReferenceTexts, mintPlayGrant, getEntityNeighbourhood (got \"listWorlds\")"
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": null,
+      "worldId": "w1"
+     },
+     "expectError": "[invalid-input] insimulcore: editor.dockOperations.request: `args.operationId` must be one of getWorldIRSummary, rereadReferenceTexts, mintPlayGrant, getEntityNeighbourhood (got null)"
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": 5
+     },
+     "expectError": "[invalid-input] insimulcore: editor.dockOperations.request: `args.worldId` must be a string"
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": null
+     },
+     "expectError": "[invalid-input] insimulcore: editor.dockOperations.request: `args.worldId` must be a string"
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "query": []
+     },
+     "expectError": "[invalid-input] insimulcore: editor.dockOperations.request: `args.query` must be a JSON object"
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "query": "engine=unreal"
+     },
+     "expectError": "[invalid-input] insimulcore: editor.dockOperations.request: `args.query` must be a JSON object"
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getWorldIRSummary",
+      "worldId": "w1",
+      "query": {
+       "engine": 1
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: editor.dockOperations.request: `args.query.engine` must be a string"
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "getEntityNeighbourhood",
+      "worldId": "w1",
+      "query": {
+       "address": null
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: editor.dockOperations.request: `args.query.address` must be a string"
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "args": {
+      "operationId": "mintPlayGrant",
+      "worldId": "w1",
+      "bdy": {}
+     },
+     "expectError": "[invalid-input] insimulcore: editor.dockOperations.request: `args.bdy` is not a member (operationId, worldId, query, body: the operation and core's DockOperationInput)"
+    },
+    {
+     "call": "editor.dockOperations.request",
+     "argsText": "[]",
+     "expectError": "must be a JSON object"
+    }
+   ]
+  }
+ ]
+}

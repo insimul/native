@@ -957,6 +957,15 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/editor/dock-operations",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the editor.dockOperations.ids, .rules and .request rows (DOCK_OPERATION_IDS, DOCK_OPERATION_RULES and dockOperationRequest: the request a dock sends for the four operations engine editor docks call, or core's refusal; PL.native-dock-operations-rows, rulings U132 and U113), exactly as the passBy.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-dock-operations-rows (Features Gauntlet PL.native-dock-operations-rows)",
+      "reviewedAt": "2026-11-21"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/props/vehicle-placement",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the props.vehicle.contract, .park and .streetProbes rows (parkVehicle, vehicleStreetProbes, the VEHICLE_PARK_* constants, VEHICLE_PARK_TIERS, VEHICLE_PARKING_REFUSALS and VEHICLE_PARKING_DEVIATIONS) (core's world-vehicle parking rule; PL.native-vehicle-rows, rulings U128, U115 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

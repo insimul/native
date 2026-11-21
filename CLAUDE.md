@@ -603,7 +603,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival, traversal (vehicles-only among them), headless build, progression, village save, villager pass-by and world-vehicle parking ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival, traversal (vehicles-only among them), headless build, progression, village save, villager pass-by, world-vehicle parking and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -1012,6 +1012,27 @@
   `Portable/InsimulPassBy` is the interim copy these rows retire
   (`P4.unreal.retire-pass-by-copy`; `corebridge/ENGINE_BINDINGS.md` maps it function by
   function).
+- **The dock-operations rows (PL.native-dock-operations-rows, U132, U113, U128) run core's
+  four row files `conformance/editor-operations/{get-world-ir-summary,reread-reference-texts,
+  mint-play-grant,get-entity-neighbourhood}.json` and the area's `MANIFEST.json` UNCHANGED**,
+  copied as their own set (`EDITOR_OPERATIONS_CORPUS_FILES`; 27 request cases at 45409ed:
+  7 / 5 / 8 / 7) and driven by `tests/editor_dock_operations_corpus.cpp` as
+  `editor_dock_operations_corpus` (+ `_negative`): each file held to MANIFEST.json's sha256
+  and case counts (stale bytes are red there, not only in `core_vendor`), each published
+  `row` to `editor.dockOperations.rules`, and every request case ONE
+  `editor.dockOperations.request` call with the file's `operationId` and the case's `input`
+  (method, path, query, body exactly, or the refusal's code and `received`); all eight
+  refusal codes answered, `{}` as no body. Only those five files: the area's response
+  corpora are answered by no row here. The three rows are core's `DOCK_OPERATION_IDS`,
+  `DOCK_OPERATION_RULES` and `dockOperationRequest` (`editor/dock-operations`), STATELESS
+  and transport-free, a refusal a VALUE (`{ ok: false, error: { code, message, received } }`).
+  `[invalid-input]` is core's types only (an id not one of the four, which core throws on; a
+  non-string `worldId`; a `query` not an object of strings; an args member that is not
+  `operationId`, `worldId`, `query` or `body`), plus two readings: an absent `worldId` goes to
+  core ("no worldId") and a null `query` is no query (core's `input.query ?? {}`). The query
+  string's escaping and the body's serialization stay the client's. Unreal's
+  `Portable/InsimulDockOperations` is the interim copy these rows retire
+  (`NX.unreal.retire-dock-operations-copy`; `corebridge/ENGINE_BINDINGS.md` maps it).
 - **The world-vehicle parking rows (PL.native-vehicle-rows, U115, U128) run core's
   `conformance/props/vehicle-placement.json` UNCHANGED**, copied with the props set
   (`PROPS_CORPUS_FILES`; 26 cases at 45409ed: park 23, probes 3) and driven by

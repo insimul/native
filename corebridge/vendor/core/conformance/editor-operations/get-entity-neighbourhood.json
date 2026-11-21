@@ -1,0 +1,198 @@
+{
+  "corpus": "editor-operations",
+  "caseFormat": 1,
+  "operationId": "getEntityNeighbourhood",
+  "description": "PL.core-dock-operations-register. GET /api/v1/worlds/{worldId}/neighbourhood?address=<KINP>: what a world knows about one entity, core's narrative-neighbourhood projection (the Neighbourhood panel, Godot). The row publishes its required address parameter. An address the world cannot resolve is the server's 422 NeighbourhoodRefusal, by name; the dock does not classify it. requestCases: what a dock asks for (input: worldId, query parameters by name, a parsed JSON body) -> the request it must send (method, the expanded path, query, body: the JSON value to send or null for none), or the refusal (code, received) with no request at all. An absent body, null and {} all mean no body. row: the published openapi/operations.json row this file is about (method, path, pathParameters, queryParameters, auth, verdict) plus what a request may carry (body, bodyMembers) and whether contentWriteFindings admits it, with the reason; a test holds row to the stamped table and to the vendored contract. cases: no response cases yet (the docks' readers of these answers are the engines' own; none is in core). Reference: src/editor/dock-operations.ts dockOperationRequest, run by src/editor/__tests__/dock-operations.test.ts.",
+  "row": {
+    "method": "GET",
+    "path": "/api/v1/worlds/{worldId}/neighbourhood",
+    "pathParameters": [
+      "worldId"
+    ],
+    "queryParameters": [
+      {
+        "name": "address",
+        "required": true,
+        "type": "string",
+        "enum": null,
+        "default": null
+      }
+    ],
+    "auth": "optional",
+    "verdict": "served",
+    "body": "none",
+    "bodyMembers": {},
+    "contentWrite": {
+      "admitted": true,
+      "why": "A read: a GET, not named as a write and on no entity collection, so contentWriteFindings finds nothing, and it writes nothing."
+    },
+    "source": {
+      "kind": "contract-schema",
+      "schema": "paths./api/v1/worlds/{worldId}/neighbourhood.get",
+      "note": "method, path, the address query parameter and auth as projected onto the getEntityNeighbourhood row of openapi/operations.json; served per server SERVED_OPERATIONS at 75e91a5a"
+    }
+  },
+  "requestCases": [
+    {
+      "name": "address-named",
+      "kind": "accept",
+      "why": "The panel names the selected entity by its KINP address, minted by core's neighbourhoodAddress(worldId, entityId).",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/neighbourhood.get",
+        "note": "the neighbourhood read: x-status native, auth optional, the required address query parameter (the entity's KINP identifier; the contract's example is insimul:world:w-millbrook:ent:bld-00), and 'there is no request parameter that moves a policy knob'"
+      },
+      "input": {
+        "worldId": "w-millbrook",
+        "query": {
+          "address": "insimul:world:w-millbrook:ent:bld-00"
+        }
+      },
+      "expect": {
+        "outcome": "ok",
+        "request": {
+          "method": "GET",
+          "path": "/api/v1/worlds/w-millbrook/neighbourhood",
+          "query": {
+            "address": "insimul:world:w-millbrook:ent:bld-00"
+          },
+          "body": null
+        }
+      }
+    },
+    {
+      "name": "a-foreign-world-address-is-still-sent",
+      "kind": "accept",
+      "why": "Whether an address resolves is the projection's to say (the server answers 422 foreign-world, by name); a dock that pre-classified it would be a second guess at core's minting policy.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/neighbourhood.get",
+        "note": "the neighbourhood read: x-status native, auth optional, the required address query parameter (the entity's KINP identifier; the contract's example is insimul:world:w-millbrook:ent:bld-00), and 'there is no request parameter that moves a policy knob'"
+      },
+      "input": {
+        "worldId": "w-millbrook",
+        "query": {
+          "address": "insimul:world:w-other:ent:bld-00"
+        }
+      },
+      "expect": {
+        "outcome": "ok",
+        "request": {
+          "method": "GET",
+          "path": "/api/v1/worlds/w-millbrook/neighbourhood",
+          "query": {
+            "address": "insimul:world:w-other:ent:bld-00"
+          },
+          "body": null
+        }
+      }
+    },
+    {
+      "name": "no-address",
+      "kind": "refuse",
+      "why": "address is required: without it there is no entity to answer about.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/neighbourhood.get",
+        "note": "the neighbourhood read: x-status native, auth optional, the required address query parameter (the entity's KINP identifier; the contract's example is insimul:world:w-millbrook:ent:bld-00), and 'there is no request parameter that moves a policy knob'"
+      },
+      "input": {
+        "worldId": "w-millbrook"
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "missing-query-parameter",
+        "received": "no address"
+      }
+    },
+    {
+      "name": "an-empty-address",
+      "kind": "refuse",
+      "why": "An address= with nothing after it is the parameter being wrong, not absent; the server would answer about a blank.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/neighbourhood.get",
+        "note": "the neighbourhood read: x-status native, auth optional, the required address query parameter (the entity's KINP identifier; the contract's example is insimul:world:w-millbrook:ent:bld-00), and 'there is no request parameter that moves a policy knob'"
+      },
+      "input": {
+        "worldId": "w-millbrook",
+        "query": {
+          "address": ""
+        }
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "missing-query-parameter",
+        "received": "an empty address"
+      }
+    },
+    {
+      "name": "no-policy-knob",
+      "kind": "refuse",
+      "why": "The answer is produced under core's shipped NEIGHBOURHOOD_POLICY and no request parameter moves it.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/neighbourhood.get",
+        "note": "the neighbourhood read: x-status native, auth optional, the required address query parameter (the entity's KINP identifier; the contract's example is insimul:world:w-millbrook:ent:bld-00), and 'there is no request parameter that moves a policy knob'"
+      },
+      "input": {
+        "worldId": "w-millbrook",
+        "query": {
+          "address": "insimul:world:w-millbrook:ent:bld-00",
+          "maxEdges": "500"
+        }
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "unknown-query-parameter",
+        "received": "the query parameter \"maxEdges\""
+      }
+    },
+    {
+      "name": "a-get-carries-no-body",
+      "kind": "refuse",
+      "why": "A GET takes its arguments in the path and query.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/neighbourhood.get",
+        "note": "the neighbourhood read: x-status native, auth optional, the required address query parameter (the entity's KINP identifier; the contract's example is insimul:world:w-millbrook:ent:bld-00), and 'there is no request parameter that moves a policy knob'"
+      },
+      "input": {
+        "worldId": "w-millbrook",
+        "query": {
+          "address": "insimul:world:w-millbrook:ent:bld-00"
+        },
+        "body": {
+          "address": "insimul:world:w-millbrook:ent:bld-00"
+        }
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "unexpected-body",
+        "received": "an object with \"address\""
+      }
+    },
+    {
+      "name": "no-world",
+      "kind": "refuse",
+      "why": "The neighbourhood is of an entity in one world.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/neighbourhood.get",
+        "note": "the neighbourhood read: x-status native, auth optional, the required address query parameter (the entity's KINP identifier; the contract's example is insimul:world:w-millbrook:ent:bld-00), and 'there is no request parameter that moves a policy knob'"
+      },
+      "input": {
+        "worldId": "",
+        "query": {
+          "address": "insimul:world:w-millbrook:ent:bld-00"
+        }
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "missing-path-parameter",
+        "received": "an empty worldId"
+      }
+    }
+  ],
+  "cases": []
+}

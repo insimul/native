@@ -1,0 +1,195 @@
+{
+  "corpus": "editor-operations",
+  "caseFormat": 1,
+  "operationId": "getWorldIRSummary",
+  "description": "PL.core-dock-operations-register. GET /api/v1/worlds/{worldId}/export/ir/summary: a world's IR counts and sizes without the document, called by Unreal's served-worlds list and Create World's finished page. The row publishes its one query parameter, engine (optional). requestCases: what a dock asks for (input: worldId, query parameters by name, a parsed JSON body) -> the request it must send (method, the expanded path, query, body: the JSON value to send or null for none), or the refusal (code, received) with no request at all. An absent body, null and {} all mean no body. row: the published openapi/operations.json row this file is about (method, path, pathParameters, queryParameters, auth, verdict) plus what a request may carry (body, bodyMembers) and whether contentWriteFindings admits it, with the reason; a test holds row to the stamped table and to the vendored contract. cases: no response cases yet (the docks' readers of these answers are the engines' own; none is in core). Reference: src/editor/dock-operations.ts dockOperationRequest, run by src/editor/__tests__/dock-operations.test.ts.",
+  "row": {
+    "method": "GET",
+    "path": "/api/v1/worlds/{worldId}/export/ir/summary",
+    "pathParameters": [
+      "worldId"
+    ],
+    "queryParameters": [
+      {
+        "name": "engine",
+        "required": false,
+        "type": "string",
+        "enum": [
+          "babylon",
+          "unreal",
+          "unity",
+          "godot"
+        ],
+        "default": "babylon"
+      }
+    ],
+    "auth": "required",
+    "verdict": "served",
+    "body": "none",
+    "bodyMembers": {},
+    "contentWrite": {
+      "admitted": true,
+      "why": "A read: a GET, not named as a write and on no entity collection, so contentWriteFindings finds nothing, and it writes nothing."
+    },
+    "source": {
+      "kind": "contract-schema",
+      "schema": "paths./api/v1/worlds/{worldId}/export/ir/summary.get",
+      "note": "method, path, the engine query parameter and auth as projected onto the getWorldIRSummary row of openapi/operations.json; served per server SERVED_OPERATIONS at 75e91a5a"
+    }
+  },
+  "requestCases": [
+    {
+      "name": "summary-of-a-world",
+      "kind": "accept",
+      "why": "The call both Unreal docks make: the world in the path, nothing else.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/export/ir/summary.get",
+        "note": "the IR summary route, its EngineQuery parameter (engine: babylon, unreal, unity or godot; babylon by default) and no request body"
+      },
+      "input": {
+        "worldId": "w1"
+      },
+      "expect": {
+        "outcome": "ok",
+        "request": {
+          "method": "GET",
+          "path": "/api/v1/worlds/w1/export/ir/summary",
+          "query": {},
+          "body": null
+        }
+      }
+    },
+    {
+      "name": "engine-named",
+      "kind": "accept",
+      "why": "The optional engine parameter the row publishes is sent as asked.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/export/ir/summary.get",
+        "note": "the IR summary route, its EngineQuery parameter (engine: babylon, unreal, unity or godot; babylon by default) and no request body"
+      },
+      "input": {
+        "worldId": "w1",
+        "query": {
+          "engine": "unreal"
+        }
+      },
+      "expect": {
+        "outcome": "ok",
+        "request": {
+          "method": "GET",
+          "path": "/api/v1/worlds/w1/export/ir/summary",
+          "query": {
+            "engine": "unreal"
+          },
+          "body": null
+        }
+      }
+    },
+    {
+      "name": "world-id-is-percent-encoded",
+      "kind": "accept",
+      "why": "A world id is whatever the store returned; a slash or a space spliced in raw addresses another route.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/export/ir/summary.get",
+        "note": "the IR summary route, its EngineQuery parameter (engine: babylon, unreal, unity or godot; babylon by default) and no request body"
+      },
+      "input": {
+        "worldId": "w 1/x"
+      },
+      "expect": {
+        "outcome": "ok",
+        "request": {
+          "method": "GET",
+          "path": "/api/v1/worlds/w%201%2Fx/export/ir/summary",
+          "query": {},
+          "body": null
+        }
+      }
+    },
+    {
+      "name": "no-world",
+      "kind": "refuse",
+      "why": "There is no summary of no world; a request with an empty segment would address another route.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/export/ir/summary.get",
+        "note": "the IR summary route, its EngineQuery parameter (engine: babylon, unreal, unity or godot; babylon by default) and no request body"
+      },
+      "input": {
+        "worldId": ""
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "missing-path-parameter",
+        "received": "an empty worldId"
+      }
+    },
+    {
+      "name": "engine-not-in-the-enum",
+      "kind": "refuse",
+      "why": "The contract enumerates four engines; the server answers any other value with a 400, so none is sent.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/export/ir/summary.get",
+        "note": "the IR summary route, its EngineQuery parameter (engine: babylon, unreal, unity or godot; babylon by default) and no request body"
+      },
+      "input": {
+        "worldId": "w1",
+        "query": {
+          "engine": "cryengine"
+        }
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "query-value-not-allowed",
+        "received": "engine \"cryengine\", which the contract does not name"
+      }
+    },
+    {
+      "name": "consumer-is-not-a-summary-parameter",
+      "kind": "refuse",
+      "why": "consumer belongs to downloadWorldIR; the summary's row names engine only.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/export/ir/summary.get",
+        "note": "the IR summary route, its EngineQuery parameter (engine: babylon, unreal, unity or godot; babylon by default) and no request body"
+      },
+      "input": {
+        "worldId": "w1",
+        "query": {
+          "consumer": "engine-build-local"
+        }
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "unknown-query-parameter",
+        "received": "the query parameter \"consumer\""
+      }
+    },
+    {
+      "name": "a-get-carries-no-body",
+      "kind": "refuse",
+      "why": "A GET takes its arguments in the path and query; a body on it describes a request the server never reads.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/export/ir/summary.get",
+        "note": "the IR summary route, its EngineQuery parameter (engine: babylon, unreal, unity or godot; babylon by default) and no request body"
+      },
+      "input": {
+        "worldId": "w1",
+        "body": {
+          "engine": "unreal"
+        }
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "unexpected-body",
+        "received": "an object with \"engine\""
+      }
+    }
+  ],
+  "cases": []
+}

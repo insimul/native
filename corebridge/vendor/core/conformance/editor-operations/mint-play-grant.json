@@ -1,0 +1,203 @@
+{
+  "corpus": "editor-operations",
+  "caseFormat": 1,
+  "operationId": "mintPlayGrant",
+  "description": "PL.core-dock-operations-register. POST /api/v1/worlds/{worldId}/play-grants: mint the play grant a world's built game presents as x-insimul-play (World Browser's download, Godot). 201 PlayGrantIssued; the token is the game's, never logged or shown. requestCases: what a dock asks for (input: worldId, query parameters by name, a parsed JSON body) -> the request it must send (method, the expanded path, query, body: the JSON value to send or null for none), or the refusal (code, received) with no request at all. An absent body, null and {} all mean no body. row: the published openapi/operations.json row this file is about (method, path, pathParameters, queryParameters, auth, verdict) plus what a request may carry (body, bodyMembers) and whether contentWriteFindings admits it, with the reason; a test holds row to the stamped table and to the vendored contract. cases: no response cases yet (the docks' readers of these answers are the engines' own; none is in core). Reference: src/editor/dock-operations.ts dockOperationRequest, run by src/editor/__tests__/dock-operations.test.ts.",
+  "row": {
+    "method": "POST",
+    "path": "/api/v1/worlds/{worldId}/play-grants",
+    "pathParameters": [
+      "worldId"
+    ],
+    "queryParameters": [],
+    "auth": "required",
+    "verdict": "served",
+    "body": "optional-object",
+    "bodyMembers": {
+      "ttlSeconds": "integer"
+    },
+    "contentWrite": {
+      "admitted": true,
+      "why": "Admitted by decision (PL.core-dock-operations-register): a POST not named as a write and on no entity collection, and it writes no world content. It records a grant family (one play_grants document, no token stored) and answers a credential for the built game; its one body member is ttlSeconds. A body with any other member is refused (unknown-body-member), and one that is not an object (body-not-object)."
+    },
+    "source": {
+      "kind": "contract-schema",
+      "schema": "paths./api/v1/worlds/{worldId}/play-grants.post",
+      "note": "method, path and auth as projected onto the mintPlayGrant row of openapi/operations.json; the requestBody schema (type object, ttlSeconds integer) from the contract; served per server SERVED_OPERATIONS at 75e91a5a"
+    }
+  },
+  "requestCases": [
+    {
+      "name": "default-grant",
+      "kind": "accept",
+      "why": "No body mints the default 24 h grant.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/play-grants.post",
+        "note": "the mint: x-status native, bearer auth, an optional JSON-object body whose one property is ttlSeconds (integer); server coverage.md 'A tightening of mintPlayGrant': a body of [] or \"x\" is 400 Body must be a JSON object, an absent or empty body mints the default"
+      },
+      "input": {
+        "worldId": "w1"
+      },
+      "expect": {
+        "outcome": "ok",
+        "request": {
+          "method": "POST",
+          "path": "/api/v1/worlds/w1/play-grants",
+          "query": {},
+          "body": null
+        }
+      }
+    },
+    {
+      "name": "ttl-asked",
+      "kind": "accept",
+      "why": "The one member the contract declares is sent as asked; the server clamps it to 60..2592000.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/play-grants.post",
+        "note": "the mint: x-status native, bearer auth, an optional JSON-object body whose one property is ttlSeconds (integer); server coverage.md 'A tightening of mintPlayGrant': a body of [] or \"x\" is 400 Body must be a JSON object, an absent or empty body mints the default"
+      },
+      "input": {
+        "worldId": "w1",
+        "body": {
+          "ttlSeconds": 3600
+        }
+      },
+      "expect": {
+        "outcome": "ok",
+        "request": {
+          "method": "POST",
+          "path": "/api/v1/worlds/w1/play-grants",
+          "query": {},
+          "body": {
+            "ttlSeconds": 3600
+          }
+        }
+      }
+    },
+    {
+      "name": "an-empty-object-is-no-body",
+      "kind": "accept",
+      "why": "Godot's World Browser sends {} when no ttl is asked; the server reads an empty body as the default.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/play-grants.post",
+        "note": "the mint: x-status native, bearer auth, an optional JSON-object body whose one property is ttlSeconds (integer); server coverage.md 'A tightening of mintPlayGrant': a body of [] or \"x\" is 400 Body must be a JSON object, an absent or empty body mints the default"
+      },
+      "input": {
+        "worldId": "w1",
+        "body": {}
+      },
+      "expect": {
+        "outcome": "ok",
+        "request": {
+          "method": "POST",
+          "path": "/api/v1/worlds/w1/play-grants",
+          "query": {},
+          "body": null
+        }
+      }
+    },
+    {
+      "name": "array-body",
+      "kind": "refuse",
+      "why": "The server answers 400 Body must be a JSON object (it minted a default grant for [] before the tightening).",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/play-grants.post",
+        "note": "the mint: x-status native, bearer auth, an optional JSON-object body whose one property is ttlSeconds (integer); server coverage.md 'A tightening of mintPlayGrant': a body of [] or \"x\" is 400 Body must be a JSON object, an absent or empty body mints the default"
+      },
+      "input": {
+        "worldId": "w1",
+        "body": []
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "body-not-object",
+        "received": "a JSON array of 0 item(s)"
+      }
+    },
+    {
+      "name": "string-body",
+      "kind": "refuse",
+      "why": "The same 400 for a string body.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/play-grants.post",
+        "note": "the mint: x-status native, bearer auth, an optional JSON-object body whose one property is ttlSeconds (integer); server coverage.md 'A tightening of mintPlayGrant': a body of [] or \"x\" is 400 Body must be a JSON object, an absent or empty body mints the default"
+      },
+      "input": {
+        "worldId": "w1",
+        "body": "x"
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "body-not-object",
+        "received": "the string \"x\""
+      }
+    },
+    {
+      "name": "a-member-the-contract-does-not-declare",
+      "kind": "refuse",
+      "why": "The body carries ttlSeconds and nothing else: the mint is admitted as a write of no world content, and a member naming a world or a scope would be the dock choosing what the grant covers.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/play-grants.post",
+        "note": "the mint: x-status native, bearer auth, an optional JSON-object body whose one property is ttlSeconds (integer); server coverage.md 'A tightening of mintPlayGrant': a body of [] or \"x\" is 400 Body must be a JSON object, an absent or empty body mints the default"
+      },
+      "input": {
+        "worldId": "w1",
+        "body": {
+          "ttlSeconds": 60,
+          "worldId": "w2"
+        }
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "unknown-body-member",
+        "received": "the body member \"worldId\""
+      }
+    },
+    {
+      "name": "ttl-not-an-integer",
+      "kind": "refuse",
+      "why": "ttlSeconds is an integer in the contract.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/play-grants.post",
+        "note": "the mint: x-status native, bearer auth, an optional JSON-object body whose one property is ttlSeconds (integer); server coverage.md 'A tightening of mintPlayGrant': a body of [] or \"x\" is 400 Body must be a JSON object, an absent or empty body mints the default"
+      },
+      "input": {
+        "worldId": "w1",
+        "body": {
+          "ttlSeconds": "3600"
+        }
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "invalid-body-member",
+        "received": "ttlSeconds the string \"3600\""
+      }
+    },
+    {
+      "name": "no-world",
+      "kind": "refuse",
+      "why": "A grant is for one world.",
+      "source": {
+        "kind": "contract-schema",
+        "schema": "paths./api/v1/worlds/{worldId}/play-grants.post",
+        "note": "the mint: x-status native, bearer auth, an optional JSON-object body whose one property is ttlSeconds (integer); server coverage.md 'A tightening of mintPlayGrant': a body of [] or \"x\" is 400 Body must be a JSON object, an absent or empty body mints the default"
+      },
+      "input": {
+        "worldId": ""
+      },
+      "expect": {
+        "outcome": "error",
+        "code": "missing-path-parameter",
+        "received": "an empty worldId"
+      }
+    }
+  ],
+  "cases": []
+}

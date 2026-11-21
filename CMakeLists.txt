@@ -1337,6 +1337,34 @@ add_test(NAME villagers_pass_by_corpus_negative COMMAND insimulcore_villagers_pa
 set_tests_properties(villagers_pass_by_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\n.*villagers_pass_by_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nvillagers_pass_by_corpus --negative: PASS")
 
+# editor_dock_operations_corpus (PL.native-dock-operations-rows, rulings U132, U113, U128 and
+# U101(1)): core's request builder for the four operations engine editor docks call
+# (src/editor/dock-operations.ts: DOCK_OPERATION_IDS, DOCK_OPERATION_RULES, dockOperationRequest;
+# PL.core-dock-operations-register) as libinsimulcore's `editor.dockOperations.ids`, `.rules` and
+# `.request` rows, held to core's four row files conformance/editor-operations/
+# {get-world-ir-summary,reread-reference-texts,mint-play-grant,get-entity-neighbourhood}.json
+# (27 request cases at the 45409ed pin: 7 / 5 / 8 / 7) and the area's MANIFEST.json, COPIED byte
+# for byte as their own set (sha256 in VENDORED.json, checked by core_vendor; byte-compared with
+# core by `--check --core`). tests/editor_dock_operations_corpus.cpp holds each file to
+# MANIFEST.json's sha256 and case counts (stale bytes are red here too), each published `row` to
+# the rules row, and replays every request case as ONE request-row call, comparing method, path,
+# query and body exactly, or core's refusal code and `received`; it requires every refusal code
+# core states to be answered and {} to be no body, and proves on every start that its comparator,
+# perturbations and manifest check can fail and that the row refuses only what core's types
+# exclude. The regex demands every probe, all four files, every code and PASS.
+add_executable(insimulcore_editor_dock_operations_corpus tests/editor_dock_operations_corpus.cpp
+  tests/radiant/json_value.cpp tests/radiant/sha256.cpp)
+target_include_directories(insimulcore_editor_dock_operations_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_editor_dock_operations_corpus PRIVATE insimulcore)
+set(INSIMUL_EDITOR_OPERATIONS_CORPUS ${INSIMUL_PROPS_CORPUS}/editor-operations)
+add_test(NAME editor_dock_operations_corpus COMMAND insimulcore_editor_dock_operations_corpus ${INSIMUL_EDITOR_OPERATIONS_CORPUS})
+set_tests_properties(editor_dock_operations_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 13 of 13 probe[(]s[)] refused as core refuses[^\n]*\nmanifest: 4 of 4 file[(]s[)] match MANIFEST.json's sha256 and case counts\nrules: 4 of 4 published row[(]s[)] state the rule[^\n]*\n.*get-world-ir-summary.json [(]getWorldIRSummary[)]: [1-9][0-9]* request case[(]s[)] driven, 0 failed\n.*reread-reference-texts.json [(]rereadReferenceTexts[)]: [1-9][0-9]* request case[(]s[)] driven, 0 failed\n.*mint-play-grant.json [(]mintPlayGrant[)]: [1-9][0-9]* request case[(]s[)] driven, 0 failed\n.*get-entity-neighbourhood.json [(]getEntityNeighbourhood[)]: [1-9][0-9]* request case[(]s[)] driven, 0 failed\ncodes: 8 of 8 refusal code[(]s[)] core states answered by the corpus\nempty body: [1-9][0-9]* corpus case[(]s[)] and 4 of 4 probe[(]s[)] answer [{][}] as no body\neditor_dock_operations_corpus: 27 of 27 request case[(]s[)] driven through editor.dockOperations.request, 0 failed\neditor_dock_operations_corpus: PASS")
+# Its negative pass: every case's expectation perturbed (an ok case five ways, a refusal three), every one refused.
+add_test(NAME editor_dock_operations_corpus_negative COMMAND insimulcore_editor_dock_operations_corpus --negative ${INSIMUL_EDITOR_OPERATIONS_CORPUS})
+set_tests_properties(editor_dock_operations_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "manifest: 4 of 4 file[(]s[)] match[^\n]*\n.*editor_dock_operations_corpus --negative: 101 of 101 perturbation[(]s[)] refused over [1-9][0-9]* request case[(]s[)], 0 accepted, 0 failure[(]s[)]\neditor_dock_operations_corpus --negative: PASS")
+
 # props_vehicle_placement_corpus (PL.native-vehicle-rows, rulings U128, U115, U107, U106(3),
 # U49(3) and U36): core's world-vehicle parking rule (PL.core-vehicle-rules:
 # src/props/vehicle-placement.ts, parkVehicle and vehicleStreetProbes) as libinsimulcore's

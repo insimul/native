@@ -32,6 +32,7 @@
     "src/editor/binding/archetypes.ts",
     "src/editor/binding/geometry.ts",
     "src/editor/binding/roles.ts",
+    "src/editor/dock-operations.ts",
     "src/editor/layout/backdrop.ts",
     "src/editor/layout/building-fit.ts",
     "src/editor/layout/composition/corpus.ts",
@@ -52,6 +53,7 @@
     "src/editor/layout/pairing.ts",
     "src/editor/layout/plan-geometry.ts",
     "src/editor/layout/settle.ts",
+    "src/editor/operations.ts",
     "src/editor/scene/fit.ts",
     "src/feature-modules/genre-bundles.ts",
     "src/game-engine/action-matrix.ts",
@@ -375,11 +377,18 @@
   "passByCorpus": [
     "conformance/villagers/pass-by.json"
   ],
-  "bundleBytes": 2740262,
-  "bundleSha256": "125bdcc8fd2f5485bde3a559e29927729b85017ac6b1fdd45e135e908c40d440",
+  "editorOperationsCorpus": [
+    "conformance/editor-operations/MANIFEST.json",
+    "conformance/editor-operations/get-entity-neighbourhood.json",
+    "conformance/editor-operations/get-world-ir-summary.json",
+    "conformance/editor-operations/mint-play-grant.json",
+    "conformance/editor-operations/reread-reference-texts.json"
+  ],
+  "bundleBytes": 2753915,
+  "bundleSha256": "0db3e6f462716acaad58a2a9d674cf90c28b19c3974fb0ab755923dead9e13a5",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "125bdcc8fd2f5485bde3a559e29927729b85017ac6b1fdd45e135e908c40d440",
-    "vendor/core/insimul_core_bundle.c": "78045d2c94ad98a9b280c879978094145e122985564c6df75ac92233561b3c36",
+    "vendor/core/insimul-core-bundle.js": "0db3e6f462716acaad58a2a9d674cf90c28b19c3974fb0ab755923dead9e13a5",
+    "vendor/core/insimul_core_bundle.c": "b95e5a0caa8c23fe2913d895831ac0ae19928505652f75768f4c0f8108b4abcd",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genre-genre-pieces-build-plan.json": "60388e9cb5652085356059a515382be7ba5d98dd172677c025136c4f640d06ca",
     "vendor/core/cases/core-genre-genre-pieces-kinds.json": "07082aa01cf17b5ecf6154cbb738842e344c40fd5a6f256d3ca81d078f281c83",
@@ -528,13 +537,18 @@
     "vendor/core/conformance/strategy/run.json": "fa4765abfbe38e68a0750f20d40e959a1c0d9c82c6fba18d9f453b11e353ef87",
     "vendor/core/conformance/strategy/save.json": "f093109d3f5173c2b9fd0666056bb03a8f1105ef987f0570be382da5d5a68065",
     "vendor/core/conformance/villagers/pass-by.json": "194463874417691c766a6d3a85d91ce3a347396b4793013518906c32219454af",
-    "js/entry.js": "2f3fd8c9e645ec180394b8c4d61e4cc13ed08cd77ebfc1a4c0968bc348ab7580",
+    "vendor/core/conformance/editor-operations/MANIFEST.json": "1c395ce62a87c22dd86e0b0cf7e4d8698d2da2c8cf51313c5df4831640510835",
+    "vendor/core/conformance/editor-operations/get-entity-neighbourhood.json": "fc84678bfda7809efdb055e58a4c1b960e2048e6e76bea3ccf7a96084f6b46c2",
+    "vendor/core/conformance/editor-operations/get-world-ir-summary.json": "e782bd1a7d8cbd32fb95d07230fcaa70d4615cc43c67306d24ff66b11d927db0",
+    "vendor/core/conformance/editor-operations/mint-play-grant.json": "941cb0a5c749b6594d9bf53080dd68c8d913e1d95dbf72044d587c03513d196e",
+    "vendor/core/conformance/editor-operations/reread-reference-texts.json": "fb1d23e1a47b2df0be959d31f3cef619007fbc1ba15730f1e064a94d5cd305c1",
+    "js/entry.js": "b3b0cba928181046c2bc8875b0a03dc1c8c042ef128b4daf8c5c34db87837adc",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
     "tools/emit-bridge-cases.mjs": "e4ab0986b7ea52e5d57279e63a785333c4b9e18b86c5a0ab70aa8a01cc82be1e",
-    "core-pin.json": "3a85b31c154623f5fb3957c1c2cc443564218bbb20f9ca8a9c353c64eb6f7570"
+    "core-pin.json": "dc400cff1f599fc2c4e1cd6912767c49aca62e452fa28b19af0fe13fecc51df8"
   }
 }

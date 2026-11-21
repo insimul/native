@@ -1121,6 +1121,16 @@ import {
 } from '@insimul/core/pass-by/pass-by';
 import { replayPassBy } from '@insimul/core/pass-by/pass-by-replay';
 
+// ── the dock-operations register (PL.native-dock-operations-rows; U132, U113) ──
+// Core's request builder for the four operations engine editor docks call
+// (`getWorldIRSummary`, `rereadReferenceTexts`, `mintPlayGrant`,
+// `getEntityNeighbourhood`; PL.core-dock-operations-register): what a request
+// for each may carry, and the request itself or core's refusal to build one.
+// The `editor.dockOperations.*` rows call these and decide nothing, so an
+// engine drops its own copy (Unreal's interim `Portable/InsimulDockOperations`,
+// NX.unreal.retire-dock-operations-copy). Transport-free: no row sends anything.
+import { DOCK_OPERATION_IDS, DOCK_OPERATION_RULES, dockOperationRequest } from '@insimul/core/editor/dock-operations';
+
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
 // settings and activation, over the pack catalog the caller sends.
@@ -1395,6 +1405,46 @@ function saveIndicatorArg(method, value, name) {
 function indicatorSeconds(method, value) {
 	if (value === undefined) throw refuse(method, '`dtSec` is required (seconds; null is a non-finite tick)');
 	return value === null ? Number.NaN : needNumber(method, value, 'dtSec');
+}
+
+// ── the dock-operations register (PL.native-dock-operations-rows) ─────────────
+
+// The members of `editor.dockOperations.request`'s args: the operation, then core's
+// `DockOperationInput` (editor/dock-operations.ts) member for member.
+const DOCK_REQUEST_MEMBERS = ['operationId', 'worldId', 'query', 'body'];
+
+/**
+ * `editor.dockOperations.request`'s args as core's `dockOperationRequest(operationId,
+ * input)` takes them. Types only, nothing core decides:
+ *  - `operationId` is required and one of core's `DOCK_OPERATION_IDS` (core THROWS for
+ *    any other: a broken checkout, not an answer a dock shows);
+ *  - `worldId` is a string when given. Absent goes to core, which refuses it as
+ *    `missing-path-parameter` ("no worldId"); an empty string goes to core too ("an
+ *    empty worldId"). Null is not a string, and is refused here;
+ *  - `query` is an object of strings when given; absent or null is no query (core reads
+ *    `input.query ?? {}`). Which names and values are allowed is core's to say;
+ *  - `body` is any JSON value: core reads it (absent, null and `{}` are no body, and it
+ *    refuses the rest with its own codes);
+ *  - no other member (a misspelt `body` would otherwise send a different request).
+ */
+function dockRequestArgs(method, args) {
+	needObject(method, args, 'args');
+	for (const k of Object.keys(args)) {
+		if (!DOCK_REQUEST_MEMBERS.includes(k)) {
+			throw refuse(method, `\`args.${k}\` is not a member (${DOCK_REQUEST_MEMBERS.join(', ')}: the operation and core's DockOperationInput)`);
+		}
+	}
+	if (!hasOwn(args, 'operationId')) throw refuse(method, '`args.operationId` is missing (one of core\'s DOCK_OPERATION_IDS)');
+	const operationId = oneOf(method, args.operationId, DOCK_OPERATION_IDS, 'args.operationId');
+	const input = {};
+	if (hasOwn(args, 'worldId')) input.worldId = needString(method, args.worldId, 'args.worldId');
+	if (hasOwn(args, 'query') && args.query !== null) {
+		needObject(method, args.query, 'args.query');
+		for (const [k, v] of Object.entries(args.query)) needString(method, v, `args.query.${k}`);
+		input.query = args.query;
+	}
+	if (hasOwn(args, 'body')) input.body = args.body;
+	return { operationId, input };
 }
 
 // ── the title screen, the tutorial and the onboarding (P8; PL.native-title-rows) ──
@@ -7176,6 +7226,45 @@ const METHODS = {
 			},
 		});
 		return { results, indicator: plain(s.ind), view: plain(saveIndicatorView(s.ind)) };
+	},
+
+	// ── the dock-operations register (PL.native-dock-operations-rows; U132, U113) ──
+	// Core's `editor/dock-operations` (PL.core-dock-operations-register): the four
+	// operations engine editor docks call, what a request for each may carry, and the
+	// request a dock sends or core's refusal to build one. `conformance/
+	// editor-operations/{get-world-ir-summary,reread-reference-texts,mint-play-grant,
+	// get-entity-neighbourhood}.json` are the corpus: each `requestCases` entry's
+	// `input` is this row's args (with the file's `operationId`), its `expect` the
+	// answer. Stateless and transport-free: how the query string is escaped and the
+	// body serialized is the client's (core leaves both to it).
+
+	/** `editor.dockOperations.ids {}` → `{ ids }` — core's `DOCK_OPERATION_IDS`, in the register's order. */
+	'editor.dockOperations.ids': () => ({ ids: plain(DOCK_OPERATION_IDS) }),
+
+	/**
+	 * `editor.dockOperations.rules {}` → `{ rules }` — core's `DOCK_OPERATION_RULES`,
+	 * keyed by operation id: `{ query: [{ name, required, enum }], body: 'none' |
+	 * 'optional-object', bodyMembers: { <name>: 'integer' } }` (`enum` null when any
+	 * string is allowed). What each corpus file's published `row` states as its
+	 * `queryParameters`, `body` and `bodyMembers`.
+	 */
+	'editor.dockOperations.rules': () => ({ rules: plain(DOCK_OPERATION_RULES) }),
+
+	/**
+	 * `editor.dockOperations.request { operationId, worldId?, query?, body? }` → core's
+	 * `dockOperationRequest(operationId, { worldId, query, body })`, whole: `{ ok: true,
+	 * request: { operationId, method, path, query, body, verdict } }` (`path` expanded,
+	 * the world id percent-encoded; `body` the JSON value to send, or null for none) or
+	 * `{ ok: false, error: { code, message, received } }`, core's refusal as a VALUE
+	 * (`missing-path-parameter`, `missing-query-parameter`, `unknown-query-parameter`,
+	 * `query-value-not-allowed`, `unexpected-body`, `body-not-object`,
+	 * `unknown-body-member`, `invalid-body-member`). An absent body, null and `{}` are
+	 * all no body. `[invalid-input]` only for what core's types exclude.
+	 */
+	'editor.dockOperations.request': (args) => {
+		const m = 'editor.dockOperations.request';
+		const { operationId, input } = coded('invalid-input', () => dockRequestArgs(m, args));
+		return plain(dockOperationRequest(operationId, input));
 	},
 
 	/**

@@ -392,6 +392,9 @@ game; **meta** = about the bridge itself.
 | `saves.indicator.tick` | `{ indicator, dtSec }` (`dtSec` null: a non-finite tick) → the indicator | `ui/save-indicator-model` `advanceSaveIndicator` | P1 bare indicator |
 | `saves.indicator.view` | `{ indicator }` → `{ visible, state, label, detail, kind, opacity }` | `ui/save-indicator-model` `saveIndicatorView` | P1 bare indicator |
 | `saves.indicator.apply` | `{ indicator?, ops: show, tick }` → `{ results: [view after each op], indicator, view }` (`indicator` absent or null: core's hidden indicator) | the same three | P1 bare indicator |
+| `editor.dockOperations.ids` | `{}` → `{ ids }` — the four operations engine editor docks call, in the register's order | `editor/dock-operations` `DOCK_OPERATION_IDS` | dock operations (PL.native-dock-operations-rows; U132; core's PL.core-dock-operations-register) |
+| `editor.dockOperations.rules` | `{}` → `{ rules: { <id>: { query: [{ name, required, enum }], body: none \| optional-object, bodyMembers } } }` | `editor/dock-operations` `DOCK_OPERATION_RULES` | dock operations |
+| `editor.dockOperations.request` | `{ operationId, worldId?, query?, body? }` → `{ ok: true, request: { operationId, method, path, query, body, verdict } }` or core's refusal as a value `{ ok: false, error: { code, message, received } }` (absent, null and `{}` are no body) | `editor/dock-operations` `dockOperationRequest` | dock operations |
 | `props.contract` | `{}` → `{ <area>: { <table>: value } }` — the data tables each P6 corpus file's `contract` states (`props-containers`, `props-documents`, `props-notice-board`, `props-doors`, `ui-inventory`, `props-pickup-placement`, `props-interactables`) | `props/containers`, `props/documents`, `props/doors`, `props/notice-board`, `ui/inventory-model`, `props/pickup-placement`, `props/interactables` constants | P6 (PL.native-props-rows, U89(2); `props-pickup-placement` PL.native-pickup-settle, U91(2); `props-interactables` PL.native-interact-target, U94(3)) |
 | `props.containers.view` | `{ container, context?: { playerItemIds?, buildings?, now? } }` → `{ view }` | `props/containers` `containerView` | P6 |
 | `props.containers.unlock` | `{ container, context? }` → `{ result, container }` | `props/containers` `unlockContainer` | P6 |
@@ -2745,6 +2748,60 @@ beside the same scenes without it, where core's answers differ, and the `[invali
 boundary of every declared member), every expectation computed by core's own functions at
 the pin.
 
+### The dock-operations rows: what a dock may send for the four operations it calls (PL.native-dock-operations-rows)
+
+Core's request builder for the four operations engine editor docks call
+(`src/editor/dock-operations.ts`, PL.core-dock-operations-register: `getWorldIRSummary` and
+`rereadReferenceTexts`, which Unreal's served-worlds and Create World docks call, and
+`mintPlayGrant` and `getEntityNeighbourhood`, which Godot's World Browser and Neighbourhood
+panel call) is three rows (U132), so an engine binds them instead of keeping a copy
+(Unreal's interim `Portable/InsimulDockOperations`, which
+`NX.unreal.retire-dock-operations-copy` retires; `ENGINE_BINDINGS.md` maps it). Transport-free:
+no row sends anything.
+
+- **`editor.dockOperations.request`** builds the request (`dockOperationRequest`): the
+  method, the path with the world id percent-encoded, the query to send and the body (the
+  JSON value to serialize, or null for none), beside core's `operationId` and the table's
+  `verdict`. Or it refuses, as a VALUE: `missing-path-parameter`,
+  `missing-query-parameter`, `unknown-query-parameter`, `query-value-not-allowed`,
+  `unexpected-body`, `body-not-object`, `unknown-body-member` or `invalid-body-member`, with
+  core's `message` and the `received` clause naming what was asked for. Core checks the world,
+  then the query, then the body. An absent body, null and `{}` are all no body (Unreal's
+  re-read and Godot's mint send `{}` today).
+- **`editor.dockOperations.rules`** is what a request for each may carry
+  (`DOCK_OPERATION_RULES`): the query parameters each published row names (with the
+  contract's enumeration, or null), `body` `none` or `optional-object`, and the body members
+  with their JSON type. **`editor.dockOperations.ids`** names the four (`DOCK_OPERATION_IDS`).
+- **The rows add no rule.** `[invalid-input]` follows core's types only: an `operationId` that
+  is not one of the four (core throws for it), a `worldId` that is not a string, a `query`
+  that is not an object of strings, and an args member other than `operationId`, `worldId`,
+  `query` and `body`. Two readings: an absent `worldId` goes to core, which refuses it
+  (`missing-path-parameter`, "no worldId"), and a null `query` is no query, as core reads
+  `input.query ?? {}`. The body is any JSON value: core reads it.
+- How the query string is escaped and the body serialized is the client's, as core leaves
+  them (Unreal's copy escapes each name and value with encodeURIComponent and sends canonical
+  JSON; those two functions are transport and stay engine-side).
+
+Evidence: `editor_dock_operations_corpus` (`tests/editor_dock_operations_corpus.cpp`) holds
+core's four row files `conformance/editor-operations/{get-world-ir-summary,
+reread-reference-texts,mint-play-grant,get-entity-neighbourhood}.json` (27 request cases at
+45409ed: 7 / 5 / 8 / 7, 10 accepted and 17 refused) and the area's `MANIFEST.json`, copied
+byte for byte at the pin as their own set. Each file must hash to the sha256 MANIFEST.json
+records and hold the case counts it records, so stale vendored bytes are red here as well as
+in `core_vendor`. Each file's published `row` must state the rule `editor.dockOperations.rules`
+answers, and `editor.dockOperations.ids` must name the four files' operations. Every request
+case is one `editor.dockOperations.request` call with the file's `operationId` and the
+case's `input`: method, path, query and body compared exactly (key sets included), the
+`operationId` and the row's `verdict` beside them, or the refusal's code and `received`. All
+eight refusal codes must be answered by a case, `{}` must be no body (the corpus's two `{}`
+cases and a probe per operation), and the refusal probes show the boundary refuses only what
+core's types exclude. `editor_dock_operations_corpus_negative` perturbs every expectation
+(an ok case five ways, a refusal three: 101 perturbations), each of which must be refused.
+Hand cases: `tests/cases/bridge-editor-dock-operations.json` (the ids and rules rows whole,
+every engine value, an empty optional query value, a null query, escaping on a POST, the mint's
+member at its edges, `{}`/null/absent on all four, core's refusal order and every code, and the
+`[invalid-input]` boundary), every answer computed by core's own exports at the pin.
+
 ### The world-vehicle parking rows (PL.native-vehicle-rows)
 
 Where a world vehicle nobody drives stands by its place (core's PL.core-vehicle-rules,
@@ -2922,6 +2979,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `core_vendor_extension_keys_negative` | that extension-key check alone over `tests/save-extension-keys-negative/`: a dropped key, a reordered list, an unregistered key, a list loosened to any array and a dropped key inside `$subset`, each named, and the run failed |
 | `core_vendor_language_negative` | the language transcription guard alone, over fourteen in-memory perturbations of `cases/core-language-*.json` (a dropped case, a dropped call, a first call changed, an answer expected nowhere, a call that is no language row, an answer weakened to a subset, an NPC's mode at one band dropped; slice 3: an identification answer dropped, an examine weakened, a collection run's first call changed, a knowledge world's collected words expected nowhere, a listening chat dropped, a listening chat's quests not expected, a submitted composition weakened): passes only when the guard names all fourteen |
 | `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven whole (156 of 156 cases at 45409ed, 0 undriven): config, continue, rows and run through the `saves.slots.*` session rows, the 15 indicator cases through the bare `saves.indicator.*` rows (one call per step, then one `apply` batch); and a wrong config, run and indicator answer (the last on both legs) and an undrivable indicator case seen as wrong |
+| `editor_dock_operations_corpus`, `editor_dock_operations_corpus_negative` | core's four dock-operation row files (`conformance/editor-operations/`, 27 request cases at 45409ed) held to their MANIFEST.json (sha256 and case counts), each published `row` to `editor.dockOperations.rules`, every request case one `editor.dockOperations.request` call (method, path, query, body exactly, or the refusal's code and `received`), all eight refusal codes answered and `{}` as no body; and every expectation perturbed (101) and refused |
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (129 cases at 431c95b, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
 | `props_vehicle_placement_corpus`, `props_vehicle_placement_corpus_negative`, `props_vehicle_placement_corpus_numerics` | core's world-vehicle parking corpus (`conformance/props/vehicle-placement.json`, 26 cases at 45409ed: park 23, probes 3) driven whole through the `props.vehicle.*` rows by `tests/props_vehicle_placement_corpus.cpp`, one row call per case (0 undriven; `numerics` must name double precision; `props.vehicle.contract` held to the file's contract; refusal probes for `bad-place`, `no-open-spot`, `[invalid-input]`, an unknown op and row); the negative perturbs every case; the numerics control (`tests/props-negative/vehicle-placement-float.json`, a file naming single precision) must fail on that line |
