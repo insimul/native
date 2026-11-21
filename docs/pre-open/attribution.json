@@ -1,8 +1,8 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-native-vehicle-rows",
-    "gitHead": "0959b8ce98d03c5704a94b23b108768f61b481db"
+    "root": "native-native-indicator-row",
+    "gitHead": "faf16185ed6538620f3b9e989a63255adffb0aed"
   },
   "coverage": {
     "trackedFiles": 540,
