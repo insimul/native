@@ -1,18 +1,21 @@
 # three-leg conformance parity (native ⟷ wasm ⟷ Rust)
 
 **Status: no divergences.** The native build, the Emscripten/wasm32 build and the
-Rust wrapper produce **byte-identical** results on all **181** cases of the golden
+Rust wrapper produce **byte-identical** results on all **261** cases of the golden
 Prolog corpus — same pass/fail, same solution count, same solution *text* from
 `insimul_query_next()`, in the same order.
 
 | leg | command | result |
 |---|---|---|
-| native (C ABI) | `ctest --test-dir build -R conformance` | 12 files, 181 cases, 181 passed, 0 failed, 1 amended |
-| **Rust wrapper** | `cargo test --manifest-path rust/Cargo.toml` | 12 files, 181 cases, 181 passed, 0 failed, 1 amended |
-| **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 12 files, 181 cases, 181 passed, 0 failed, 1 amended |
-| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 181/181 records identical on all three |
+| native (C ABI) | `ctest --test-dir build -R conformance` | 15 files, 261 cases, 261 passed, 0 failed, 1 amended |
+| **Rust wrapper** | `cargo test --manifest-path rust/Cargo.toml` | 15 files, 261 cases, 261 passed, 0 failed, 1 amended |
+| **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 15 files, 261 cases, 261 passed, 0 failed, 1 amended |
+| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 261/261 records identical on all three |
 
-(181 since PL.native-bundle-core re-copied the mirror at core `d88b6f0`, and still 181
+(261 since PL.native-prolog-mirror-full slice 1 added core's `geo-map.json` (15),
+`mechanic-farming.json` (29) and `mechanic-strategy.json` (36) at the same pin, and the C
+and wasm legs began comparing `expected` as core's order rule says, an unordered multiset,
+as the Rust leg always had (U120(9)). Before that, 181 since PL.native-bundle-core re-copied the mirror at core `d88b6f0`, and still 181
 after PL.native-bundle-core-r2 re-copied the same 12 files at core `45409ed`, where only
 `pack-agreement.json`'s pack clauses moved; at d88b6f0 that sync added
 `quest-count-goals.json` and `pack-agreement.json`; 76 before. One case there,
@@ -36,7 +39,8 @@ the toolchain change did not perturb it.
 ## Why a diff, and not just "both legs are green"
 
 Two harnesses can both agree with `expected` and still disagree with each other
-— on the order of an `unordered` case, on error wording, or on number
+— on solution order (no leg's `expected` check looks at it: every leg compares
+an unordered multiset, as core says), on error wording, or on number
 formatting. So the gate is not "both passed". Both legs write one JSON-Lines
 record per case (`INSIMUL_CONFORMANCE_JSON=<path>`) holding the **raw** string
 `insimul_query_next()` returned, before any reparsing. The Rust leg reaches those

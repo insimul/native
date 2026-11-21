@@ -18,8 +18,10 @@ byte for byte. Three legs run the identical corpus:
 | **WebAssembly** | `tests/wasm_conformance.mjs` (the `wasm_conformance` ctest) | `scripts/build_wasm.sh` |
 
 All three print the same `files / cases / passed / failed / amended` summary — currently
-**12 files, 181 cases, 181 passed, 1 amended** at core 45409ed (76 cases before core d88b6f0's
-`quest-count-goals.json` and `pack-agreement.json` joined the mirror) — so a divergence between the C ABI and any
+**15 files, 261 cases, 261 passed, 1 amended** at core 45409ed (181 cases in 12 files before
+PL.native-prolog-mirror-full slice 1 added `geo-map.json`, `mechanic-farming.json` and
+`mechanic-strategy.json`; 76 before core d88b6f0's `quest-count-goals.json` and
+`pack-agreement.json` joined the mirror) — so a divergence between the C ABI and any
 binding shows up immediately as a differing count.
 
 ## The corpus format
@@ -37,8 +39,12 @@ Each corpus file (`conformance/prolog/*.json`) is a list of cases:
 
 For every case the harness creates a fresh KB, consults the `kb` clauses, runs `query`
 through the ABI, and compares the collected [binding sets](c-abi.md#binding-set-json-format)
-against `expected`. Solutions are matched **in order** by default (Prolog's solution order
-is canonical); a case may set `"unordered": true` to request a multiset comparison instead.
+against `expected` as an **unordered multiset**, as core's `conformance/README.md`
+("Order-independence") and core's own runner say: the same number of solutions, each matched
+once, in any order (U120(9)). Each leg checks its comparator against the same five probes
+before it grades anything. The order the legs enumerate in is still compared, across legs,
+by the parity diff below. The mirror's bytes are held to core's at the pin by the
+`prolog_mirror_digest` ctest (see [../conformance/VENDORED.md](../conformance/VENDORED.md)).
 
 The corpus also carries the identity layer used by the wider platform — entity atoms are
 CURIEs such as `'insimul:ent:<id>'` and world-scoped `'insimul:world:<w>:ent:<id>'`, and
@@ -77,7 +83,7 @@ scripts/conformance_parity.sh        # builds whatever leg is missing, then comp
 
 Because it compares the *raw* strings, it catches a divergence in solution order, error
 wording, or number formatting that each leg's own `expected` check would happily pass.
-Result today: **181/181 byte-identical**. The full record, and the non-vacuity gates each
+Result today: **261/261 byte-identical**. The full record, and the non-vacuity gates each
 verified by deliberately triggering them, live in
 [../conformance/WASM_PARITY.md](../conformance/WASM_PARITY.md).
 

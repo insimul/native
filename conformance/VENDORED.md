@@ -7,7 +7,60 @@
 `conformance/README.md` for the case format, the order-independence rule, and the
 "Amendments for the native harness" notes). Re-sync it with a plain copy of every
 `*.json` — never hand-write or hand-edit a case here, or the two engines stop
-testing the same thing. Last synced at core `45409ed` (PL.native-bundle-core-r2,
+testing the same thing.
+
+**The bytes are held, not only the answers.** `PROLOG_MIRROR.json` (beside this
+file, deliberately outside `prolog/` so no leg reads it as a corpus file) records
+the sha256 of core's bytes at `corebridge/core-pin.json`'s `coreCommit` for every
+mirrored file (`files`) and names every core file not mirrored yet (`notMirrored`).
+The ctest `prolog_mirror_digest` (`tests/prolog_mirror_digest.cmake`, plain
+`cmake -P`, no node and no skip) refuses an extra, missing, renamed or changed
+file and a record taken at any other commit than the pin; with `INSIMUL_CORE_DIR`
+pointing at a core checkout it also holds the record to core's git objects (core's
+`conformance/prolog/` at the pin must be exactly `files` + `notMirrored`, every
+mirrored file's sha256 its blob's). `prolog_mirror_digest_negative` perturbs a copy
+six ways (eight with `INSIMUL_CORE_DIR`) and passes only when each is refused for
+its own named reason. It exists because a stale `pack-agreement.json` whose answers
+had not changed stayed green on every leg (self-sweep M22). **Re-sync with the
+recorder, never a hand copy**: bump the pin, then
+
+```
+cmake -DMODE=record -DCORE_DIR=<core checkout> \
+  -DMIRROR_DIR=$PWD/conformance/prolog -DMANIFEST=$PWD/conformance/PROLOG_MIRROR.json \
+  -DPIN=$PWD/corebridge/core-pin.json [-DADD="new-file.json;…"] \
+  -P tests/prolog_mirror_digest.cmake
+```
+
+which copies core's blobs at the pin (never the mirror on disk, so a stale file
+cannot be recorded as current) for every file already mirrored plus `ADD`, and
+rewrites the record; then run the three legs and update the counts here.
+
+**Order rule.** Every leg compares `expected` as core says (`conformance/README.md`,
+"Order-independence"): an unordered multiset, as core's own runner
+(`sameSolutionSet`) does — the C leg (`tests/conformance.c`) and the wasm leg
+(`tests/wasm_conformance.mjs`) were order-sensitive unless a case said
+`"unordered": true` (a key core never states) and now compare as the Rust leg
+always did (U120(9)). Each leg checks its comparator against the same five probes
+before grading anything (C `order_rule_self_check`, wasm `orderRuleSelfCheck`,
+Rust `order_is_not_significant_but_multiplicity_is`). The order the legs enumerate
+in is still held, across legs, by `scripts/conformance_parity.sh`'s raw diff.
+
+**Slice 1 of PL.native-prolog-mirror-full** (2026-11-21, U120(9), U128, U131): at
+core `45409ed` (unchanged pin), three of core's files added unchanged —
+`geo-map.json` (15 cases, `region_at`), `mechanic-farming.json` (29, `plot_yields`)
+and `mechanic-strategy.json` (36, `strategy_can_claim`), the three predicates the
+order rule clears — and the 12 already here re-recorded from core's objects (all 12
+byte-identical to core at the pin). **15 files, 261 cases**, 261 passed, 1 amended
+on all three legs. **Still missing** (22 of core's 37, listed in
+`PROLOG_MIRROR.json`'s `notMirrored` and held there by the digest gate):
+`mechanic-puzzle.json` and `mechanic-platformer.json` (held for this row, see
+CLAUDE.md's genre rows), the other `mechanic-*` files (`business`, `combat`,
+`crafting`, `dialogue`, `equipment`, `fishing`, `gameplay-state`, `mining`,
+`perception`, `routine`, `skill`, `stamina`, `traversal`, `volition`, `weather`),
+`agent-ai.json`, `alive-negation.json`, `death-readers.json`, `placement.json` and
+`scaffold.json`. They are later slices of the same row.
+
+Before that, synced at core `45409ed` (PL.native-bundle-core-r2,
 2026-11-19, the commit `corebridge/core-pin.json` pins): every one of the 12 files the
 mirror holds re-copied as it stands, and only `pack-agreement.json` moved (core's
 PL.core-dead-readers, 55264c4 and 14d9387: the packs' `schedule/4` and funeral
@@ -37,6 +90,10 @@ Consumers here:
 
 - `tests/conformance.c` (ctest `conformance`) — the C ABI gate.
 - `rust/insimul/tests/conformance.rs` (`cargo test`) — the Rust wrapper gate.
+- `tests/wasm_conformance.mjs` (ctest `wasm_conformance` in `build-wasm/`) — the
+  wasm gate.
+- `tests/prolog_mirror_digest.cmake` (ctests `prolog_mirror_digest` and
+  `prolog_mirror_digest_negative`) — the digest gate over the bytes.
 
 Both resolve the corpus as: `INSIMUL_CONFORMANCE_DIR` (env, absolute) → this
 vendored directory → the monorepo sibling
