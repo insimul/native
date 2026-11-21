@@ -87,9 +87,11 @@ function amendReason(area, name) {
 
 /* ------------------------------------------------------------------ *
  * Comparison. Structural, key-order-insensitive for objects; numbers with a
- * small tolerance; solution ORDER is significant unless the case says
- * "unordered": true (Prolog's solution order is canonical). Same rules as the
- * C leg's jv_equal/solutions_match.
+ * small tolerance; `expected` is the complete solution set, compared as an
+ * UNORDERED MULTISET, as core's conformance/README.md ("Order-independence")
+ * and core's own runner (sameSolutionSet) say (U120(9)). Same rules as the C
+ * leg's jv_equal/solutions_match and the Rust leg's solutions_match; the order
+ * the legs enumerate in is held by scripts/conformance_parity.sh's raw diff.
  * ------------------------------------------------------------------ */
 function jsonEqual(a, b) {
   if (a === b) return true;
@@ -108,9 +110,8 @@ function jsonEqual(a, b) {
   return false;
 }
 
-function solutionsMatch(expected, actual, unordered) {
+function solutionsMatch(expected, actual) {
   if (expected.length !== actual.length) return false;
-  if (!unordered) return expected.every((e, i) => jsonEqual(e, actual[i]));
   const used = new Array(actual.length).fill(false);
   return expected.every((e) => {
     const k = actual.findIndex((a, i) => !used[i] && jsonEqual(e, a));
@@ -118,6 +119,30 @@ function solutionsMatch(expected, actual, unordered) {
     used[k] = true;
     return true;
   });
+}
+
+// The order rule's own check, run before any case (in lockstep with the C leg's
+// order_rule_self_check and the Rust leg's order_is_not_significant_but_
+// multiplicity_is): a reordered list must match; a wrong multiplicity, a missing
+// member or an extra one must not.
+function orderRuleSelfCheck() {
+  const a = { X: 'a' }, b = { X: 'b' }, c = { X: 'c' };
+  const probes = [
+    [[a, b], [b, a], true],
+    [[a, a], [a, b], false],
+    [[a, b], [a, a], false],
+    [[a], [a, a], false],
+    [[a, b], [c, a], false],
+  ];
+  let bad = 0;
+  probes.forEach(([e, act, want], i) => {
+    if (solutionsMatch(e, act) !== want) {
+      console.error(`conformance: order rule self-check ${i + 1}: expected ${JSON.stringify(e)} vs actual ` +
+        `${JSON.stringify(act)} should ${want ? 'MATCH (solution order is not significant)' : 'NOT match (multiplicity and membership are)'}`);
+      bad++;
+    }
+  });
+  return bad;
 }
 
 /* ------------------------------------------------------------------ *
@@ -175,6 +200,8 @@ if (!gluePath) {
 
 const dir = resolveCorpusDir(corpusFlag);
 console.log(`conformance corpus dir: ${dir}`);
+if (orderRuleSelfCheck() !== 0)
+  die("the solution comparator does not follow core's order rule — refusing to grade the corpus.");
 
 const dumpPath = process.env.INSIMUL_CONFORMANCE_JSON;
 const dumpRecords = [];
@@ -220,7 +247,6 @@ let pass = 0, fail = 0, cases = 0, amendedCount = 0;
 function runCase(area, c) {
   cases++;
   const name = typeof c.name === 'string' ? c.name : '?';
-  const unordered = c.unordered === true;
 
   if (typeof c.query !== 'string' || !Array.isArray(c.expected)) {
     console.log(`  [FAIL] ${area} / ${name} — malformed case (missing query/expected)`);
@@ -272,7 +298,7 @@ function runCase(area, c) {
     kb.destroy();
   }
 
-  const match = ok && solutionsMatch(c.expected, actual, unordered);
+  const match = ok && solutionsMatch(c.expected, actual);
   if (match) {
     console.log(`  [PASS] ${area} / ${name}`);
     pass++;
@@ -280,7 +306,7 @@ function runCase(area, c) {
     console.log(`  [FAIL] ${area} / ${name}`);
     if (!ok && why) console.log(`         query error: ${why}`);
     console.log(`         query:    ${query}`);
-    console.log(`         expected: ${JSON.stringify(c.expected)}${unordered ? '  (unordered)' : ''}`);
+    console.log(`         expected: ${JSON.stringify(c.expected)}  (unordered)`);
     console.log(`         actual:   ${JSON.stringify(actual)}`);
     fail++;
   }

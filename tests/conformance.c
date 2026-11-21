@@ -14,9 +14,15 @@
  * The corpus JSON shape (created by the core-extraction PRD):
  *   { "area": "...", "cases": [ { "name", "kb": [str,...], "query": str,
  *                                 "expected": [ {bindings}, ... ] }, ... ] }
- * Solutions are compared ORDER-SENSITIVELY by default (Prolog's solution order
- * is canonical), unless a case carries `"unordered": true`, in which case a
- * multiset comparison is used. Nothing is ever silently skipped: a missing or
+ * `expected` is the COMPLETE solution set, compared as an UNORDERED MULTISET:
+ * core's conformance/README.md ("Order-independence") states a conforming engine
+ * need not enumerate solutions in any particular order, only produce the same
+ * set, and core's own runner (src/conformance/prolog-corpus.ts, sameSolutionSet)
+ * judges every case that way. The Rust and wasm legs compare the same way
+ * (U120(9), PL.native-prolog-mirror-full). Solution ORDER is still held across
+ * the legs, by scripts/conformance_parity.sh's diff of the raw records below,
+ * so one leg enumerating differently from another is still red there. Nothing
+ * is ever silently skipped: a missing or
  * empty corpus directory, an unparseable file, or a case whose query errors is
  * a HARD FAILURE (non-zero exit), so the ctest gate cannot pass vacuously.
  *
@@ -405,16 +411,11 @@ static char *apply_amendments(const char *area, const char *name,
  * Corpus execution.
  * ------------------------------------------------------------------ */
 
-/* Compare an actual solution array against the expected array. When `unordered`
- * every expected element must have a distinct matching actual element; otherwise
- * elements are matched position-by-position. */
-static int solutions_match(jv *expected, jv **actual, int nactual, int unordered) {
+/* Compare an actual solution array against the expected array as an unordered
+ * multiset (core's order rule): the counts must be equal and every expected
+ * element must have a distinct matching actual element. */
+static int solutions_match(jv *expected, jv **actual, int nactual) {
     if (expected->n != nactual) return 0;
-    if (!unordered) {
-        for (int i = 0; i < nactual; i++)
-            if (!jv_equal(expected->items[i], actual[i])) return 0;
-        return 1;
-    }
     int *used = calloc(nactual, sizeof(int));
     for (int i = 0; i < expected->n; i++) {
         int found = 0;
@@ -425,6 +426,39 @@ static int solutions_match(jv *expected, jv **actual, int nactual, int unordered
     }
     free(used);
     return 1;
+}
+
+/* The order rule's own check, run before any case (in lockstep with the wasm
+ * leg's orderRuleSelfCheck and the Rust leg's order_is_not_significant_but_
+ * multiplicity_is): a reordered solution list must MATCH, and a list with the
+ * right count but the wrong multiplicity, a missing member or an extra one must
+ * NOT. A comparator that slid back to positional matching, or loosened to a set,
+ * stops the run here (exit 2) before it can grade a corpus. */
+static int order_rule_self_check(void) {
+    static const struct { const char *exp, *act; int want; } probes[] = {
+        { "[{\"X\":\"a\"},{\"X\":\"b\"}]", "[{\"X\":\"b\"},{\"X\":\"a\"}]", 1 },
+        { "[{\"X\":\"a\"},{\"X\":\"a\"}]", "[{\"X\":\"a\"},{\"X\":\"b\"}]", 0 },
+        { "[{\"X\":\"a\"},{\"X\":\"b\"}]", "[{\"X\":\"a\"},{\"X\":\"a\"}]", 0 },
+        { "[{\"X\":\"a\"}]",                 "[{\"X\":\"a\"},{\"X\":\"a\"}]", 0 },
+        { "[{\"X\":\"a\"},{\"X\":\"b\"}]", "[{\"X\":\"c\"},{\"X\":\"a\"}]", 0 },
+    };
+    int bad = 0;
+    for (size_t i = 0; i < sizeof probes / sizeof probes[0]; i++) {
+        int pe = 0, pa = 0;
+        jv *e = jparse(probes[i].exp, &pe);
+        jv *a = jparse(probes[i].act, &pa);
+        int got = (!pe && !pa) ? solutions_match(e, a->items, a->n) : -1;
+        if (got != probes[i].want) {
+            fprintf(stderr, "conformance: order rule self-check %zu: expected %s vs actual %s "
+                            "should %s\n", i + 1, probes[i].exp, probes[i].act,
+                    probes[i].want ? "MATCH (solution order is not significant)"
+                                   : "NOT match (multiplicity and membership are)");
+            bad++;
+        }
+        jv_free(e);
+        jv_free(a);
+    }
+    return bad;
 }
 
 /* Join a JV_ARR of strings into a single Prolog source string (newline-joined).
@@ -453,9 +487,7 @@ static int run_case(const char *area, jv *c) {
     jv *kb     = jv_get(c, "kb");
     jv *jquery = jv_get(c, "query");
     jv *exp    = jv_get(c, "expected");
-    jv *juo    = jv_get(c, "unordered");
     const char *name = (jname && jname->t == JV_STR) ? jname->str : "?";
-    int unordered = (juo && juo->t == JV_BOOL && juo->bval);
 
     if (!jquery || jquery->t != JV_STR || !exp || exp->t != JV_ARR) {
         printf("  [FAIL] %s / %s — malformed case (missing query/expected)\n", area, name);
@@ -516,7 +548,7 @@ static int run_case(const char *area, jv *c) {
         }
     }
 
-    int match = ok && solutions_match(exp, actual, nact, unordered);
+    int match = ok && solutions_match(exp, actual, nact);
 
     if (match) {
         printf("  [PASS] %s / %s\n", area, name);
@@ -527,7 +559,7 @@ static int run_case(const char *area, jv *c) {
         printf("         query:    %s\n", query);
         printf("         expected: ");
         jv_write(stdout, exp);
-        printf("%s\n", unordered ? "  (unordered)" : "");
+        printf("  (unordered)\n");
         printf("         actual:   [");
         for (int i = 0; i < nact; i++) { if (i) putchar(','); jv_write(stdout, actual[i]); }
         printf("]\n");
@@ -594,6 +626,12 @@ int main(void) {
     if (!dir || !*dir) dir = INSIMUL_CONFORMANCE_DEFAULT_DIR;
 
     printf("conformance corpus dir: %s\n", dir);
+
+    if (order_rule_self_check() != 0) {
+        fprintf(stderr, "conformance: the solution comparator does not follow core's "
+                        "order rule — refusing to grade the corpus.\n");
+        return 2;
+    }
 
     /* Cross-leg parity channel (see the file header). Failing to open the
      * requested dump is a hard error — a parity run that silently produced no

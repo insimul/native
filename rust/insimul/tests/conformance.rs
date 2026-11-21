@@ -563,6 +563,46 @@ fn wrong_expectation_fails_the_gate() {
     }
 }
 
+/// Core's order rule (its `conformance/README.md`, "Order-independence"; U120(9)):
+/// `expected` is an unordered MULTISET. A reordered solution list passes; the right
+/// count with the wrong multiplicity, a missing member or an extra one fails. In
+/// lockstep with the C leg's `order_rule_self_check` and the wasm leg's
+/// `orderRuleSelfCheck`, which run the same five probes before grading a corpus.
+#[test]
+fn order_is_not_significant_but_multiplicity_is() {
+    let scratch = |tag: usize, expected: &str| -> Vec<Case> {
+        let file = std::env::temp_dir().join(format!("insimul-conformance-order-{tag}.json"));
+        std::fs::write(
+            &file,
+            format!(
+                r#"{{ "area": "scratch", "cases": [
+                     {{ "name": "order", "kb": ["p(a).", "p(b)."],
+                        "query": "p(X)", "expected": {expected} }} ] }}"#
+            ),
+        )
+        .expect("scratch corpus file should be writable");
+        let cases = parse_file(&file);
+        let _ = std::fs::remove_file(&file);
+        cases
+    };
+    for (tag, expected, pass) in [
+        (0, r#"[{"X":"a"},{"X":"b"}]"#, true), // the engine's own order
+        (1, r#"[{"X":"b"},{"X":"a"}]"#, true), // reordered: order is not significant
+        (2, r#"[{"X":"a"},{"X":"a"}]"#, false), // right count, wrong multiplicity
+        (3, r#"[{"X":"b"},{"X":"b"}]"#, false), // the other member doubled
+        (4, r#"[{"X":"c"},{"X":"a"}]"#, false), // a member the engine never binds
+        (5, r#"[{"X":"b"},{"X":"a"},{"X":"a"}]"#, false), // one too many
+    ] {
+        let outcome = run_case(&scratch(tag, expected)[0]).0;
+        assert_eq!(
+            matches!(outcome, Outcome::Pass),
+            pass,
+            "expected `{expected}` must {} the gate",
+            if pass { "PASS" } else { "FAIL" }
+        );
+    }
+}
+
 /// A binding's numbers are compared as numbers, as the C and wasm legs compare
 /// them (`terms_match`): an `Int` and an integral `Float` of the same value agree,
 /// and nothing looser does — another value, a string of the digits, two different
