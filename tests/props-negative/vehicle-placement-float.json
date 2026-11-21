@@ -1,0 +1,10 @@
+{
+  "area": "props-vehicle-placement",
+  "description": "A deliberately wrong vehicle-placement corpus for the props_vehicle_placement_corpus_numerics ctest (PL.native-vehicle-rows): its numerics names single precision, so the run must fail on it. Its one case and its contract are core's (the case is core's 'probes: within 0 m, the point alone' at another point).",
+  "tolerance": 1e-6,
+  "numerics": "Runners compute in IEEE-754 single precision (float32).",
+  "contract": { "constants": { "snapStepM": { "value": 0.75, "source": "VD:1671 Ring * 75.0 cm" } } },
+  "cases": [
+    { "name": "probes: within 0 m, the point alone", "op": "probes", "input": { "at": { "x": 2, "z": 3 }, "radiusM": 0 }, "expected": { "points": [{ "x": 2, "z": 3 }] } }
+  ]
+}

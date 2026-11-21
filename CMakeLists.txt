@@ -1351,6 +1351,12 @@ set(INSIMUL_VEHICLE_PLACEMENT_CORPUS ${INSIMUL_PROPS_CORPUS}/props/vehicle-place
 add_test(NAME props_vehicle_placement_corpus COMMAND insimulcore_props_vehicle_placement_corpus ${INSIMUL_VEHICLE_PLACEMENT_CORPUS})
 set_tests_properties(props_vehicle_placement_corpus PROPERTIES
   PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\nnumerics: double precision, as the file states[^\n]*\ncontract: [1-9][0-9]* of [1-9][0-9]* constant[(]s[)] props.vehicle.contract states agree with the corpus's, each with its export name, and refusals, tiers and deviations agree\n.*props-vehicle-placement: driven probes [1-9][0-9]*, park [1-9][0-9]*. 0 undriven\nprops_vehicle_placement_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nprops_vehicle_placement_corpus: PASS")
+# Its numerics control: a file whose `numerics` names single precision (tests/props-negative/
+# vehicle-placement-float.json, one core case and one core constant) must fail the run on that line.
+add_test(NAME props_vehicle_placement_corpus_numerics COMMAND insimulcore_props_vehicle_placement_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/vehicle-placement-float.json)
+set_tests_properties(props_vehicle_placement_corpus_numerics PROPERTIES
+  PASS_REGULAR_EXPRESSION "\\[FAIL\\] numerics: the file states \"Runners compute in IEEE-754 single precision[^\n]*not double precision.*props_vehicle_placement_corpus: FAIL")
 # Its negative pass: every case's expectation perturbed (its last leaf) must be refused.
 add_test(NAME props_vehicle_placement_corpus_negative COMMAND insimulcore_props_vehicle_placement_corpus --negative ${INSIMUL_VEHICLE_PLACEMENT_CORPUS})
 set_tests_properties(props_vehicle_placement_corpus_negative PROPERTIES
