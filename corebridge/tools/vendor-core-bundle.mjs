@@ -43,7 +43,9 @@
 // `ui.rulesPanel` and `mechanics.run` rows. The save-slots corpus is copied the
 // same way (PL.native-catchup, P1.core-slots): `conformance/saves/slots.json` at
 // its core path under vendor/core/; tests/saves_slots_corpus.cpp drives it
-// through the `saves.slots.create` / `saves.slots.apply` session rows; beside it
+// through the `saves.slots.create` / `saves.slots.apply` session rows and its
+// indicator cases through the bare `saves.indicator.*` rows
+// (PL.native-indicator-row); beside it
 // `conformance/saves/tutorial-progress.json` (PL.native-tutorial-save), which
 // tests/title_corpus.cpp drives through the `ui.tutorial.*` and
 // `ui.onboarding.*` rows. The P6

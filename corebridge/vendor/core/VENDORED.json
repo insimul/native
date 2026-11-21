@@ -375,11 +375,11 @@
   "passByCorpus": [
     "conformance/villagers/pass-by.json"
   ],
-  "bundleBytes": 2734766,
-  "bundleSha256": "2d4f248f362dfc1a0deef3d171d0ea0206cb685fb62957a2afbdb266829399de",
+  "bundleBytes": 2740262,
+  "bundleSha256": "125bdcc8fd2f5485bde3a559e29927729b85017ac6b1fdd45e135e908c40d440",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "2d4f248f362dfc1a0deef3d171d0ea0206cb685fb62957a2afbdb266829399de",
-    "vendor/core/insimul_core_bundle.c": "8428ac3d5d4e679bd5bf737c3b5c4e9774f655a362637a47a8961b327131683f",
+    "vendor/core/insimul-core-bundle.js": "125bdcc8fd2f5485bde3a559e29927729b85017ac6b1fdd45e135e908c40d440",
+    "vendor/core/insimul_core_bundle.c": "78045d2c94ad98a9b280c879978094145e122985564c6df75ac92233561b3c36",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genre-genre-pieces-build-plan.json": "60388e9cb5652085356059a515382be7ba5d98dd172677c025136c4f640d06ca",
     "vendor/core/cases/core-genre-genre-pieces-kinds.json": "07082aa01cf17b5ecf6154cbb738842e344c40fd5a6f256d3ca81d078f281c83",
@@ -528,7 +528,7 @@
     "vendor/core/conformance/strategy/run.json": "fa4765abfbe38e68a0750f20d40e959a1c0d9c82c6fba18d9f453b11e353ef87",
     "vendor/core/conformance/strategy/save.json": "f093109d3f5173c2b9fd0666056bb03a8f1105ef987f0570be382da5d5a68065",
     "vendor/core/conformance/villagers/pass-by.json": "194463874417691c766a6d3a85d91ce3a347396b4793013518906c32219454af",
-    "js/entry.js": "a19e9a4493eefa441153c37bde8a51c11bcd90c9bb18be9ae719e6a3dc2564c8",
+    "js/entry.js": "2f3fd8c9e645ec180394b8c4d61e4cc13ed08cd77ebfc1a4c0968bc348ab7580",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",

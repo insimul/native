@@ -439,6 +439,10 @@
        "save.village.weather.restore",
        "save.village.weather.saveState",
        "save.village.write",
+       "saves.indicator.apply",
+       "saves.indicator.show",
+       "saves.indicator.tick",
+       "saves.indicator.view",
        "saves.slots.apply",
        "saves.slots.create",
        "session.dispose",
@@ -647,7 +651,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 613}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 617}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -693,7 +697,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 613}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 617}}}}
    ]
   },
   {

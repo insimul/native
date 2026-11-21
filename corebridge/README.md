@@ -388,6 +388,10 @@ game; **meta** = about the bridge itself.
 | `ui.loadRefusal` | `{ refusal }` → `{ outcome, message }`: every string `invalid_format` with its message; any other value `{ outcome: null, message: '' }` | `ui/save-slot-model` `slotOutcomeOfLoadRefusal`, `loadRefusalMessage` | P1 refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1), U126(2)) |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
 | `saves.slots.apply` | `{ session, ops: save, load, continue, delete, ask_delete, confirm_delete, cancel_delete, key, tick, finished, disk_changed }` → `{ results: [{ ok, refusal?, outcome?, effect, history?, disk? }], view }` | same | P1 slots |
+| `saves.indicator.show` | `{ state, kind?, detail?, slot? }` → the indicator `{ state, kind, detail, slot, ageSec }` (`state: "hidden"` is core's hidden indicator, where a host starts) | `ui/save-indicator-model` `showSaveIndicator` | P1 bare indicator (PL.native-indicator-row; U132(1)) |
+| `saves.indicator.tick` | `{ indicator, dtSec }` (`dtSec` null: a non-finite tick) → the indicator | `ui/save-indicator-model` `advanceSaveIndicator` | P1 bare indicator |
+| `saves.indicator.view` | `{ indicator }` → `{ visible, state, label, detail, kind, opacity }` | `ui/save-indicator-model` `saveIndicatorView` | P1 bare indicator |
+| `saves.indicator.apply` | `{ indicator?, ops: show, tick }` → `{ results: [view after each op], indicator, view }` (`indicator` absent or null: core's hidden indicator) | the same three | P1 bare indicator |
 | `props.contract` | `{}` → `{ <area>: { <table>: value } }` — the data tables each P6 corpus file's `contract` states (`props-containers`, `props-documents`, `props-notice-board`, `props-doors`, `ui-inventory`, `props-pickup-placement`, `props-interactables`) | `props/containers`, `props/documents`, `props/doors`, `props/notice-board`, `ui/inventory-model`, `props/pickup-placement`, `props/interactables` constants | P6 (PL.native-props-rows, U89(2); `props-pickup-placement` PL.native-pickup-settle, U91(2); `props-interactables` PL.native-interact-target, U94(3)) |
 | `props.containers.view` | `{ container, context?: { playerItemIds?, buildings?, now? } }` → `{ view }` | `props/containers` `containerView` | P6 |
 | `props.containers.unlock` | `{ container, context? }` → `{ result, container }` | `props/containers` `unlockContainer` | P6 |
@@ -1023,27 +1027,70 @@ or `delta` that is not a number, a `code` that is not a string, and a `finished`
 without a boolean `ok`. A slot index that is not a slot (`1.5`, `7`) goes to core,
 which answers `no_such_slot` on purpose.
 
-The evidence is core's corpus `conformance/saves/slots.json` (147 cases at
-72c658c; 130 at eff846a; 126 at ac229a7; 94 at fc88be9), copied byte for byte by `tools/vendor-core-bundle.mjs`
+The evidence is core's corpus `conformance/saves/slots.json` (156 cases at
+45409ed; 147 at 72c658c; 130 at eff846a; 126 at ac229a7; 94 at fc88be9), copied byte for byte by `tools/vendor-core-bundle.mjs`
 and hashed in `VENDORED.json`. `tests/saves_slots_corpus.cpp` (ctest
-`saves_slots_corpus`) drives it through the two rows from C: every `run` case as
+`saves_slots_corpus`) drives ALL of it from C: every `run` case as
 one create and one apply per step (so the view after every step is the session's
 own), every `config` case through create's `config`, every `continue` case
 through the view of a session with no quick slot (core's `continueSlot(slots,
 slotCount)` reads exactly `slotCount` slots), every `rows` case through create's
-view (a `busy` rows case with one pending save first) — 132 cases at 72c658c
-(config 28, continue 13, rows 10, run 81; 115 at eff846a). The 15
-`indicator` cases show any state, kind and detail on a bare indicator, which no
-session step does; the runner prints a measured reason for each (how many of its
-views the session itself showed in the run cases, and which it never reached).
-`saves_slots_corpus_negative` must see it fail one wrong config and one wrong run
-(`tests/saves-negative/`). The hand cases in `tests/cases/bridge-saves-slots.json`
-pin the rows' own contract (results in a batch, the effects, the errors).
+view (a `busy` rows case with one pending save first), and every `indicator`
+case through the bare indicator rows below — 156 of 156 at 45409ed (config 28,
+continue 13, indicator 15, rows 10, run 90; 0 undriven). Before
+PL.native-indicator-row the 15 `indicator` cases went undriven with a printed
+reason (132 of 147 at 72c658c); that exemption is gone, and an undrivable case of
+any op fails the run. `saves_slots_corpus_negative` must see it fail one wrong
+config, one wrong run, one wrong indicator case (on both of its legs) and one
+indicator case no row can drive (`tests/saves-negative/`). The hand cases in
+`tests/cases/bridge-saves-slots.json` pin the rows' own contract (results in a
+batch, the effects, the errors), the indicator rows' among them.
+
+**The bare indicator (PL.native-indicator-row; U132(1), U133(1)).** The 15
+`indicator` cases show any state, kind, detail and slot on an indicator no
+session holds — what a host draws when it shows the indicator itself. Core
+states that as three functions over plain data in `ui/save-indicator-model`
+(already bundled with the session, so no module and no pin move), and four rows
+call them and decide nothing. The host keeps the indicator, core's
+`SaveIndicator` `{ state, kind, detail, slot, ageSec }`, and passes it back:
+
+- **`saves.indicator.show { state, kind?, detail?, slot? }`** → the indicator
+  (`showSaveIndicator`). `state` is one of core's `SAVE_INDICATOR_STATES`;
+  `kind` one of core's `SaveKind` (`auto`, `quick`, `manual`) or null (absent is
+  null, as core's corpus runner reads it); `detail` a string (absent or null is
+  core's default `''`); `slot` a number or null. Any number goes to core, which
+  shows a slot state (the delete states, a manual slot's disk states) only with a
+  0-based integer slot, labelled "Slot N" with N = index + 1, and answers
+  `hidden` otherwise; a state that names no slot ignores one. `state: "hidden"`
+  answers core's hidden indicator, which is where a host starts.
+- **`saves.indicator.tick { indicator, dtSec }`** → the indicator
+  (`advanceSaveIndicator`): a result ages, an in-progress state (`saving`,
+  `loading`) does not, and a result is `hidden` once its age reaches hold + fade
+  (1 s + 2 s). `dtSec` null is a non-finite tick (JSON has no NaN), which core
+  answers by changing nothing, as it does 0 and a negative.
+- **`saves.indicator.view { indicator }`** → `{ visible, state, label, detail,
+  kind, opacity }` (`saveIndicatorView`): what the host draws.
+- **`saves.indicator.apply { indicator?, ops }`** → `{ results, indicator,
+  view }`: the same functions as a batch, ops `show { state, kind?, detail?,
+  slot? }` and `tick { dtSec }`; each result is the view after its op, `indicator`
+  the one to keep. `indicator` absent or null is core's hidden indicator.
+
+The runner drives each indicator case both ways: one `show` or `tick` call per
+step then a `view` (the host holding the indicator between calls), and the whole
+case as one `apply`, whose `indicator` must equal the per-step one; both are held
+to `expected.views` by the corpus's rule (opacity within the file's tolerance, so
+the bad-tick and fade cases count, and the delete states' "Slot N" exactly). What
+the rows refuse as errors is what core's types declare and JSON cannot hold: a
+missing `state`, `indicator` or `dtSec`; a `state` or `kind` core does not
+state; a `detail` that is not a string, a `slot` or `dtSec` that is not a number;
+an `indicator` that is not exactly core's five fields of their declared types.
 
 **Cost.** The rows bring three core modules, `save-slots`, `ui/save-indicator-model`
 and `game-engine/logic/KeyboardMap` (the slot model was already in; 138 → 141): at the fc88be9 pin the bundle went from 1,402,117
 bytes (the pin bump alone, from 1,392,156 at f9aef13) to 1,422,744. The 83 driven
-cases take about 20 ms under QuickJS.
+cases take about 20 ms under QuickJS. The four indicator rows (PL.native-indicator-row)
+bring no module (141 → 141 then; 257 → 257 at 45409ed): the bundle went from 2,734,766
+bytes to 2,740,262 (+5,496, +0.20 %) with the rows and their comments, and all 156 cases take about 50 ms.
 
 ### The props and inventory rows: containers, documents, doors, the notice board, the inventory panel (PL.native-props-rows)
 
@@ -2874,7 +2921,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `core_vendor` | every vendored file matches its recorded sha256 and the pin; `cases/core-ui-save-slots.json` carries core's `load_refusals` as `ui.loadRefusal` cases (with `--check --core`, exactly as many as core states at the pin); every `save.rules` case under `tests/cases/` states exactly the sorted extension keys the vendored bundle's registry answers (22 at 45409ed; with `--check --core`, also the keys of core's `extensionRegistry` in `src/save-extensions.ts` at the pin) |
 | `core_vendor_extension_keys_negative` | that extension-key check alone over `tests/save-extension-keys-negative/`: a dropped key, a reordered list, an unregistered key, a list loosened to any array and a dropped key inside `$subset`, each named, and the run failed |
 | `core_vendor_language_negative` | the language transcription guard alone, over fourteen in-memory perturbations of `cases/core-language-*.json` (a dropped case, a dropped call, a first call changed, an answer expected nowhere, a call that is no language row, an answer weakened to a subset, an NPC's mode at one band dropped; slice 3: an identification answer dropped, an examine weakened, a collection run's first call changed, a knowledge world's collected words expected nowhere, a listening chat dropped, a listening chat's quests not expected, a submitted composition weakened): passes only when the guard names all fourteen |
-| `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (132 of 147 cases at 72c658c; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
+| `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven whole (156 of 156 cases at 45409ed, 0 undriven): config, continue, rows and run through the `saves.slots.*` session rows, the 15 indicator cases through the bare `saves.indicator.*` rows (one call per step, then one `apply` batch); and a wrong config, run and indicator answer (the last on both legs) and an undrivable indicator case seen as wrong |
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (129 cases at 431c95b, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
 | `props_vehicle_placement_corpus`, `props_vehicle_placement_corpus_negative`, `props_vehicle_placement_corpus_numerics` | core's world-vehicle parking corpus (`conformance/props/vehicle-placement.json`, 26 cases at 45409ed: park 23, probes 3) driven whole through the `props.vehicle.*` rows by `tests/props_vehicle_placement_corpus.cpp`, one row call per case (0 undriven; `numerics` must name double precision; `props.vehicle.contract` held to the file's contract; refusal probes for `bad-place`, `no-open-spot`, `[invalid-input]`, an unknown op and row); the negative perturbs every case; the numerics control (`tests/props-negative/vehicle-placement-float.json`, a file naming single precision) must fail on that line |

@@ -215,9 +215,31 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   session created with `config: { slotCount, quickSlot: null }` (core's
   `continueSlot` reads exactly `slotCount` slots), `rows` through create's `view`
   (a `busy` rows case: one pending `save` of slot 0 first). The
-  15 `indicator` cases (11 at fc88be9) are not a session's (they show a bare indicator); the
-  view's `indicator` is the binding's whole indicator. Numbers compare within the
-  file's `tolerance`.
+  15 `indicator` cases (11 at fc88be9) are not a session's (they show a bare
+  indicator); in a session the view's `indicator` is the binding's whole
+  indicator. Numbers compare within the file's `tolerance`.
+- **The bare save indicator (Unreal's `P1.unreal.indicator-row`, after
+  PL.native-indicator-row; U132(1), U133(1)).** Four rows over core's
+  `ui/save-indicator-model` (`README.md`, "The bare indicator") let a binding run
+  those 15 cases, which `P1.unreal.retire-slots-copy` holds NOT-YET-BOUND: the
+  binding keeps the indicator (core's plain-data `SaveIndicator`, `{ state, kind,
+  detail, slot, ageSec }`) and passes it back. `saves.indicator.show { state,
+  kind?, detail?, slot? }` → the indicator (`showSaveIndicator`; `state:
+  "hidden"` is core's hidden indicator, the start); `saves.indicator.tick {
+  indicator, dtSec }` → the indicator (`advanceSaveIndicator`; `dtSec` null is
+  the non-finite tick); `saves.indicator.view { indicator }` → `{ visible, state,
+  label, detail, kind, opacity }` (`saveIndicatorView`); `saves.indicator.apply {
+  indicator?, ops: [{ op: "show", state, kind?, detail?, slot? } | { op: "tick",
+  dtSec }] }` → `{ results: [view after each op], indicator, view }`. Drive an
+  `indicator` case the way `tests/saves_slots_corpus.cpp` does: start from `show {
+  state: "hidden", kind: null }`; a step `{ show: {…} }` is `show` with those
+  fields as they stand, a step `{ tick: s }` is `tick { indicator, dtSec: s }`
+  (null stays null); after each, `view` is the step's view, compared with
+  `expected.views[i]` by the file's rule (numbers within `tolerance`, the rest
+  exactly, key sets included). The same case as one `apply` must give the same
+  views. The binding draws `label` (and `detail`, when not empty) at `opacity`
+  while `visible`; it restates no state, label, "Slot N" numbering, hold or fade —
+  core states them, the rows answer them.
 - **Props and inventory (Unreal's `P6.unreal.retire-props-copy`, after
   PL.native-props-rows; U89(2)).** `Portable/InsimulProps.{h,cpp}` is an interim
   port of core's P6 logic; every entry point of it has a row (`README.md`, "The

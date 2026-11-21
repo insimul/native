@@ -424,6 +424,18 @@ import { MECHANIC_STEP_OPS, runMechanicRuntimeCase } from '@insimul/core/game-en
 // autosave is due, the indicator). It does no I/O; the host does the I/O each
 // step's `effect` names and answers with `finished`.
 import { SAVE_SLOTS_DEFAULTS, SaveSlotsSession } from '@insimul/core/save-slots';
+// The bare save indicator (PL.native-indicator-row; U132(1), U133(1)): core's
+// own three functions over its plain-data `SaveIndicator`, for a host that shows
+// the indicator without a session (`conformance/saves/slots.json`'s `indicator`
+// op). Already bundled with the session; the `saves.indicator.*` rows call these
+// and decide nothing.
+import {
+	HIDDEN_SAVE_INDICATOR,
+	SAVE_INDICATOR_STATES,
+	advanceSaveIndicator,
+	saveIndicatorView,
+	showSaveIndicator,
+} from '@insimul/core/ui/save-indicator-model';
 
 // ── the title screen, the tutorial quest and the onboarding (P8.core; PL.native-title-rows, U92(1)) ──
 // Core's title menu over the save slots (`titleMenu`, `chooseTitleEntry`), the
@@ -1324,6 +1336,65 @@ function saveSlotsOps(m) {
 			return plain(model.finished(result));
 		},
 	};
+}
+
+// ── the bare save indicator (PL.native-indicator-row) ─────────────────────────
+
+// Core's `SaveKind`, a type-only union (ui/save-indicator-model.ts).
+const SAVE_KINDS = ['auto', 'quick', 'manual'];
+
+// The fields of core's `SaveIndicator`, all required (ui/save-indicator-model.ts).
+const SAVE_INDICATOR_FIELDS = ['state', 'kind', 'detail', 'slot', 'ageSec'];
+
+function saveKindOrNull(method, value, name) {
+	if (value === null || SAVE_KINDS.includes(value)) return value;
+	throw refuse(method, `\`${name}\` must be one of ${SAVE_KINDS.join(', ')} or null (got ${JSON.stringify(value ?? null)})`);
+}
+
+/**
+ * Core's `showSaveIndicator(state, kind, detail, slot)` over a show's fields:
+ * `state` one of core's `SAVE_INDICATOR_STATES` (required); `kind` one of core's
+ * `SaveKind` or null (absent is null, as core's corpus runner reads it);
+ * `detail` a string (absent or null is core's default, ''); `slot` a number or
+ * null (absent is null). Any number goes to core, which shows a slot state only
+ * with a 0-based integer slot and answers `hidden` otherwise (the corpus pins
+ * -1, 1.5 and null).
+ */
+function showIndicatorOf(method, fields) {
+	if (fields.state === undefined) throw refuse(method, '`state` is required (one of core\'s SAVE_INDICATOR_STATES)');
+	const state = oneOf(method, fields.state, SAVE_INDICATOR_STATES, 'state');
+	const kind = saveKindOrNull(method, fields.kind === undefined ? null : fields.kind, 'kind');
+	const detail = fields.detail === undefined || fields.detail === null ? undefined : needString(method, fields.detail, 'detail');
+	const slot = fields.slot === undefined || fields.slot === null ? null : needNumber(method, fields.slot, 'slot');
+	return showSaveIndicator(state, kind, detail, slot);
+}
+
+/**
+ * An indicator the host holds (core's `SaveIndicator`, as a row answered it):
+ * exactly its five fields, of core's declared types. Nothing else is checked:
+ * what an indicator means is core's to read.
+ */
+function saveIndicatorArg(method, value, name) {
+	if (value === undefined) throw refuse(method, `\`${name}\` is required (core's SaveIndicator, as saves.indicator.show answered it)`);
+	needObject(method, value, name);
+	for (const k of Object.keys(value)) {
+		if (!SAVE_INDICATOR_FIELDS.includes(k)) throw refuse(method, `\`${name}.${k}\` is not a field of core's SaveIndicator (${SAVE_INDICATOR_FIELDS.join(', ')})`);
+	}
+	for (const k of SAVE_INDICATOR_FIELDS) {
+		if (!(k in value)) throw refuse(method, `\`${name}.${k}\` is required (core's SaveIndicator has ${SAVE_INDICATOR_FIELDS.join(', ')})`);
+	}
+	oneOf(method, value.state, SAVE_INDICATOR_STATES, `${name}.state`);
+	saveKindOrNull(method, value.kind, `${name}.kind`);
+	needString(method, value.detail, `${name}.detail`);
+	if (value.slot !== null) needNumber(method, value.slot, `${name}.slot`);
+	needNumber(method, value.ageSec, `${name}.ageSec`);
+	return { state: value.state, kind: value.kind, detail: value.detail, slot: value.slot, ageSec: value.ageSec };
+}
+
+/** A tick's seconds: a number, or null for a non-finite tick (JSON has no NaN; the corpus writes it so). Required. */
+function indicatorSeconds(method, value) {
+	if (value === undefined) throw refuse(method, '`dtSec` is required (seconds; null is a non-finite tick)');
+	return value === null ? Number.NaN : needNumber(method, value, 'dtSec');
 }
 
 // ── the title screen, the tutorial and the onboarding (P8; PL.native-title-rows) ──
@@ -7048,6 +7119,63 @@ const METHODS = {
 		const s = session(m, args, 'saves.slots');
 		const results = await applyOps(m, s, args, saveSlotsOps(m));
 		return { results, view: plain(s.model.view()) };
+	},
+
+	/**
+	 * The bare save indicator (PL.native-indicator-row; U132(1), U133(1)): core's
+	 * `ui/save-indicator-model` without a session, for a host that shows the
+	 * indicator itself (`conformance/saves/slots.json`'s `indicator` op). The host
+	 * keeps the indicator (core's plain-data `SaveIndicator`, `{ state, kind,
+	 * detail, slot, ageSec }`) and passes it back; nothing is held here.
+	 *
+	 * `saves.indicator.show { state, kind?, detail?, slot? }` → the indicator —
+	 * core's `showSaveIndicator`. `state: "hidden"` answers core's hidden
+	 * indicator, which is where a host starts.
+	 */
+	'saves.indicator.show': (args) => plain(showIndicatorOf('saves.indicator.show', args)),
+
+	/**
+	 * `saves.indicator.tick { indicator, dtSec }` → the indicator — core's
+	 * `advanceSaveIndicator`. `dtSec` is seconds; null is a non-finite tick, which
+	 * core answers by changing nothing (as it does 0 and a negative).
+	 */
+	'saves.indicator.tick': (args) => {
+		const m = 'saves.indicator.tick';
+		const ind = saveIndicatorArg(m, args.indicator, 'indicator');
+		return plain(advanceSaveIndicator(ind, indicatorSeconds(m, args.dtSec)));
+	},
+
+	/**
+	 * `saves.indicator.view { indicator }` → `{ visible, state, label, detail,
+	 * kind, opacity }` — core's `saveIndicatorView`, what the host draws.
+	 */
+	'saves.indicator.view': (args) => plain(saveIndicatorView(saveIndicatorArg('saves.indicator.view', args.indicator, 'indicator'))),
+
+	/**
+	 * `saves.indicator.apply { indicator?, ops }` → `{ results, indicator, view }`
+	 * — the same three functions as a batch: `indicator` absent or null is core's
+	 * hidden indicator; each op is `show { state, kind?, detail?, slot? }` or
+	 * `tick { dtSec }`, applied in order, and its result is the view after it
+	 * (what the corpus records per step); `indicator` is the one to keep and
+	 * `view` its view. A failing op stops the batch with an error naming its
+	 * index; nothing is kept, since nothing is held.
+	 */
+	'saves.indicator.apply': async (args) => {
+		const m = 'saves.indicator.apply';
+		const s = {
+			ind: args.indicator === undefined || args.indicator === null ? HIDDEN_SAVE_INDICATOR : saveIndicatorArg(m, args.indicator, 'indicator'),
+		};
+		const results = await applyOps(m, s, args, {
+			show: (st, op) => {
+				st.ind = showIndicatorOf(m, op);
+				return plain(saveIndicatorView(st.ind));
+			},
+			tick: (st, op) => {
+				st.ind = advanceSaveIndicator(st.ind, indicatorSeconds(m, op.dtSec));
+				return plain(saveIndicatorView(st.ind));
+			},
+		});
+		return { results, indicator: plain(s.ind), view: plain(saveIndicatorView(s.ind)) };
 	},
 
 	/**

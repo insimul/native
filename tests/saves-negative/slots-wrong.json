@@ -1,15 +1,16 @@
 {
   "area": "saves-slots",
-  "description": "The negative control for saves_slots_corpus (tests/saves_slots_corpus.cpp): two cases in conformance/saves/slots.json's shape whose expectations are DELIBERATELY WRONG — one driven through saves.slots.create's resolved config, one through a saves.slots.apply run. saves_slots_corpus_negative passes only when the runner reports both as differing and the run as failed.",
+  "description": "The negative control for saves_slots_corpus (tests/saves_slots_corpus.cpp): four cases in conformance/saves/slots.json's shape whose expectations are DELIBERATELY WRONG — one driven through saves.slots.create's resolved config, one through a saves.slots.apply run, one indicator case driven through the bare saves.indicator.* rows (PL.native-indicator-row: one show/tick/view call per step, then the whole case as one saves.indicator.apply), and one indicator case no row can drive (a step that is neither show nor tick). saves_slots_corpus_negative passes only when the runner reports the first three as differing (the wrong indicator case on both of its legs), the fourth as undriven, and the run as failed.",
   "version": 1,
   "sources": [
-    "hand-written; the right answers are core's (conformance/saves/slots.json, 'config: none stated is the defaults' and 'run: deleting an empty slot or one that does not exist is refused')"
+    "hand-written; the right answers are core's (conformance/saves/slots.json, 'config: none stated is the defaults' and 'run: deleting an empty slot or one that does not exist is refused', and 'indicator: \"Saved!\" holds 1 s, fades over 2 s, then hides')"
   ],
   "tolerance": 1e-09,
   "contract": {
     "ops": [
       "config",
-      "run"
+      "run",
+      "indicator"
     ]
   },
   "cases": [
@@ -58,6 +59,82 @@
         "start": {}
       },
       "note": "`steps` is written before `start` so the first difference the runner meets is the wrongly accepted delete (core refuses it: slot_empty)."
+    },
+    {
+      "name": "indicator: expected WRONGLY to hold \"Saved!\" at full opacity at age 1.5",
+      "op": "indicator",
+      "input": {
+        "steps": [
+          {
+            "show": {
+              "state": "saved",
+              "kind": "auto"
+            }
+          },
+          {
+            "tick": 1.5
+          }
+        ]
+      },
+      "expected": {
+        "views": [
+          {
+            "visible": true,
+            "state": "saved",
+            "label": "Saved!",
+            "detail": "",
+            "kind": "auto",
+            "opacity": 1
+          },
+          {
+            "visible": true,
+            "state": "saved",
+            "label": "Saved!",
+            "detail": "",
+            "kind": "auto",
+            "opacity": 1
+          }
+        ]
+      },
+      "note": "Core fades a result linearly after its 1 s hold: at age 1.5 the opacity is 0.75. A comparator that ignored opacity, or a row that did not age the indicator, would pass this."
+    },
+    {
+      "name": "indicator: WRONGLY undrivable, a step that is neither show nor tick",
+      "op": "indicator",
+      "input": {
+        "steps": [
+          {
+            "show": {
+              "state": "saved",
+              "kind": "auto"
+            }
+          },
+          {
+            "flash": 1
+          }
+        ]
+      },
+      "expected": {
+        "views": [
+          {
+            "visible": true,
+            "state": "saved",
+            "label": "Saved!",
+            "detail": "",
+            "kind": "auto",
+            "opacity": 1
+          },
+          {
+            "visible": true,
+            "state": "saved",
+            "label": "Saved!",
+            "detail": "",
+            "kind": "auto",
+            "opacity": 1
+          }
+        ]
+      },
+      "note": "Every indicator case must be driven (the exemption the runner used to print a reason for is gone): an indicator case the rows cannot take fails the run as undriven."
     }
   ]
 }

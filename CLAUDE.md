@@ -626,11 +626,16 @@
   `SaveSlotsSession`**, held to core's `conformance/saves/slots.json`, copied the
   same way (`SAVES_CORPUS_FILES`). `tests/saves_slots_corpus.cpp` drives every
   `config`/`continue`/`rows`/`run` case through `saves.slots.create` and ONE
-  `saves.slots.apply` per run step (the view after each step is the session's);
-  only the `indicator` op (a bare indicator, no session step shows one) goes
-  undriven, with a measured reason printed per case. Any other undrivable case
-  fails the run — do not widen that exemption, add a way to drive the case.
-  `saves_slots_corpus_negative` must see it fail.
+  `saves.slots.apply` per run step (the view after each step is the session's),
+  and every `indicator` case (a bare indicator, which no session step shows)
+  through the bare `saves.indicator.show` / `.tick` / `.view` rows over core's
+  `ui/save-indicator-model` (PL.native-indicator-row, U132(1)): one row call per
+  step with the indicator held by the runner, as an engine holds it, then the
+  whole case again as one `saves.indicator.apply` batch. All 156 cases are
+  driven; there is NO exemption any more, so an undrivable case of any op fails
+  the run — add a way to drive it. `saves_slots_corpus_negative` must see a
+  wrong config, a wrong run, a wrong indicator case (on both legs) and an
+  undrivable indicator case fail.
 - **The props and inventory rows (PL.native-props-rows, U89(2)) run core's P6
   corpora UNCHANGED**, copied the same way (`PROPS_CORPUS_FILES`:
   `conformance/props/{containers,documents,doors,notice-board}.json` and

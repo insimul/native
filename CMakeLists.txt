@@ -845,25 +845,31 @@ set_tests_properties(p9a_corpus_negative PROPERTIES
 # corebridge/vendor/core/conformance/saves/ at the pin (sha256 in VENDORED.json,
 # checked by core_vendor; byte-compared with core by `--check --core`). The
 # runner drives every config, continue, rows and run case through a session
-# (one apply per run step) and compares by the corpus's rule; the indicator cases,
-# which show a bare indicator no session step can, are reported with a measured
-# reason each (tests/saves_slots_corpus.cpp). It fails when a row is missing,
-# when any other case cannot be driven, when a declared op goes undriven, when a
-# session is left open, and when its comparator cannot fail. A pure consumer of
-# insimulcore.h; the JSON reader is tests/radiant/json_value.cpp, used unchanged.
-# Never skips: the corpus is in-repo.
+# (one apply per run step), and every indicator case (a bare indicator, no
+# session's) through the `saves.indicator.*` rows over core's
+# ui/save-indicator-model (PL.native-indicator-row, U132(1)) twice — one
+# show/tick then view call per step, and the whole case as one
+# saves.indicator.apply — and compares by the corpus's rule
+# (tests/saves_slots_corpus.cpp). All 156 cases at 45409ed are driven, 15 of
+# them indicator cases. It fails when a row is missing, when any case cannot be
+# driven, when a declared op goes undriven, when a session is left open, and
+# when its comparator cannot fail. A pure consumer of insimulcore.h; the JSON
+# reader is tests/radiant/json_value.cpp, used unchanged. Never skips: the
+# corpus is in-repo.
 add_executable(insimulcore_saves_slots tests/saves_slots_corpus.cpp tests/radiant/json_value.cpp)
 target_include_directories(insimulcore_saves_slots PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 target_link_libraries(insimulcore_saves_slots PRIVATE insimulcore)
 add_test(NAME saves_slots_corpus COMMAND insimulcore_saves_slots
   ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/conformance/saves/slots.json)
-# The negative control: the same runner over two deliberately wrong cases
-# (tests/saves-negative/), one config and one run. It passes only when the runner
-# reports BOTH as differing and the run as failed.
+# The negative control: the same runner over four deliberately wrong cases
+# (tests/saves-negative/): one config, one run, one indicator case (seen wrong on
+# both legs, the per-step rows and the batch) and one indicator case no row can
+# drive. It passes only when the runner reports the first three as differing,
+# the fourth as undriven, and the run as failed.
 add_test(NAME saves_slots_corpus_negative COMMAND insimulcore_saves_slots
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/saves-negative/slots-wrong.json)
 set_tests_properties(saves_slots_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "expected WRONGLY to resolve no config to four slots [^\n]*slotCount: 4 != 3.*expected WRONGLY to delete an empty slot [^\n]*unexpected key 'refusal'.*saves_slots_corpus: FAIL")
+  PASS_REGULAR_EXPRESSION "expected WRONGLY to resolve no config to four slots [^\n]*slotCount: 4 != 3.*expected WRONGLY to delete an empty slot [^\n]*unexpected key 'refusal'.*expected WRONGLY to hold [^\n]*show/tick/view: [$][.]views[[]1[]][.]opacity: 1 != 0[.]75.*expected WRONGLY to hold [^\n]*saves[.]indicator[.]apply: [$][.]views[[]1[]][.]opacity: 1 != 0[.]75.*WRONGLY undrivable [^\n]*not driven: an indicator step this runner does not know.*1 undriven, 7 failed.*saves_slots_corpus: FAIL")
 
 # props_corpus (PL.native-props-rows, rulings U89(2) and U36): core's P6 logic —
 # containers, documents and the reader, doors, the notice board and the notices a

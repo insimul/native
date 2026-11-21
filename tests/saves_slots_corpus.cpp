@@ -1,12 +1,15 @@
 // saves_slots_corpus.cpp — core's save-slots corpus, driven through libinsimulcore's
-// `saves.slots.create` / `saves.slots.apply` session rows.
+// `saves.slots.create` / `saves.slots.apply` session rows and its bare
+// `saves.indicator.*` rows.
 //
 // PL.native-catchup (rulings U83(1), U84, U87). Core's `SaveSlotsSession`
 // (src/save-slots.ts, P1.core-slots) is a session row pair of corebridge/js/entry.js.
 // This gate holds it to core's own corpus, conformance/saves/slots.json, COPIED
 // byte for byte into corebridge/vendor/core/conformance/saves/ at the pin and
-// sha256-checked by the `core_vendor` ctest. Nothing here re-writes a case, and
-// nothing here calls a stateless helper: every answer comes out of a session.
+// sha256-checked by the `core_vendor` ctest. Nothing here re-writes a case.
+// Every config/continue/rows/run answer comes out of a session; the indicator
+// cases, which show a bare indicator (PL.native-indicator-row, U132(1)), come out
+// of the `saves.indicator.*` rows over core's `ui/save-indicator-model`.
 //
 // How each op of the corpus (its `contract.ops`) is driven:
 //
@@ -31,20 +34,26 @@
 //              with an operation running: one `save` of slot 0 (every slot count
 //              has one) is applied first and must be accepted; a pending save
 //              changes no slot and no active slot, only `busy`.
-//   indicator  {steps}        NOT DRIVEN, with a measured reason per case: the op
-//              shows ANY state with ANY kind and detail on a bare indicator
-//              (core's `showSaveIndicator`), and the session shows the indicator
-//              only through its own steps. The reason printed for each case
-//              counts how many of its views the session itself produced in the
-//              run cases above (compared by the same rule), and names the views
-//              it never reached.
+//   indicator  {steps}        TWICE, through the bare indicator rows. (1) One
+//              row call per step, the host holding the indicator between them as
+//              an engine does: the start is `saves.indicator.show { state:
+//              "hidden", kind: null }` (core's hidden indicator, as core's runner
+//              starts); a step `{show: {state, kind, detail?, slot?}}` is
+//              `saves.indicator.show` with those fields, a step `{tick: s}` is
+//              `saves.indicator.tick { indicator, dtSec: s }` (null stays null,
+//              the non-finite tick); after each, `saves.indicator.view {
+//              indicator }` is the step's view. (2) The whole case as ONE
+//              `saves.indicator.apply { ops }` (no indicator: the hidden one),
+//              `show` ops carrying the show's fields and `tick` ops `dtSec`: its
+//              `results` are the views, and its `indicator` must equal (1)'s last.
+//              Both must match `expected.views`.
 //
-// A case of any other op, or a run step that cannot be expressed as an op, FAILS
-// the run: only the indicator op may go undriven. The run also fails when the
-// table lacks either row, when the file is not the save-slots corpus or holds no
-// case, when a declared op is neither driven nor (indicator) reasoned, when a
-// session is left open, and when its comparator cannot tell a wrong answer from a
-// right one (a self-test on every start).
+// A case of any op that cannot be driven, or a step that cannot be expressed as
+// a row call, FAILS the run: no case goes undriven. The run also fails when the
+// table lacks any of the rows, when the file is not the save-slots corpus or
+// holds no case, when a declared op goes undriven, when a session is left open,
+// and when its comparator cannot tell a wrong answer from a right one (a
+// self-test on every start).
 //
 // Comparison is the corpus's own rule (core's `compareVillageState`): numbers
 // within the file's `tolerance`, everything else exactly, object key sets
@@ -76,6 +85,10 @@ namespace {
 
 const char *const kCreate = "saves.slots.create";
 const char *const kApply = "saves.slots.apply";
+const char *const kShow = "saves.indicator.show";
+const char *const kTick = "saves.indicator.tick";
+const char *const kView = "saves.indicator.view";
+const char *const kIndicatorApply = "saves.indicator.apply";
 
 std::string read_file(const std::string &path, bool &ok) {
 	std::ifstream in(path, std::ios::binary);
@@ -356,16 +369,36 @@ std::string op_of_step(const JsonValue &step, std::string &why) {
 	return op.done();
 }
 
-// The member `key` of `obj` as raw JSON, or `null`.
-std::string member_json(const JsonValue &obj, const char *key) {
-	const JsonValue *v = obj.find(key);
-	return v ? json_of(*v) : std::string("null");
-}
-
 struct Driven {
-	JsonValuePtr actual;           // the case's answer, in its `expected` shape
-	std::vector<JsonValuePtr> indicators;  // every indicator view the session showed (run cases)
+	JsonValuePtr actual;  // the case's answer, in its `expected` shape
+	JsonValuePtr batch;   // indicator cases: the same answer through one saves.indicator.apply
 };
+
+// An indicator step as a `saves.indicator.apply` op, or "" with `why` set. A
+// `show` op carries the show's fields; a `tick` op its seconds as `dtSec`.
+std::string indicator_op_of_step(const JsonValue &step, std::string &why) {
+	if (!step.is_object() || step.object_items.size() != 1) {
+		why = "an indicator step names exactly one of show, tick: " + json_of(step);
+		return {};
+	}
+	const std::string &k = step.object_items[0].first;
+	const JsonValue &v = *step.object_items[0].second;
+	ObjectText op;
+	op.add("op", "\"" + k + "\"");
+	if (k == "show") {
+		if (!v.is_object() || v.find("op")) {
+			why = "a show step the rows cannot take (not an object of show fields): " + json_of(step);
+			return {};
+		}
+		for (const auto &kv : v.object_items) op.add(kv.first, *kv.second);
+	} else if (k == "tick") {
+		op.add("dtSec", v);
+	} else {
+		why = "an indicator step this runner does not know: " + json_of(step);
+		return {};
+	}
+	return op.done();
+}
 
 // Drive one case through the session rows. False with `why` when it cannot be
 // driven or a call failed.
@@ -431,6 +464,50 @@ bool drive(Caller &c, const std::string &op, const JsonValue &input, Driven &out
 		out.actual = make_object({{"rows", std::make_shared<JsonValue>(*rows)}});
 		return true;
 	}
+	if (op == "indicator") {
+		const JsonValue *steps = input.find("steps");
+		if (!steps || !steps->is_array()) return why = "an indicator case needs steps", false;
+		// (1) one row call per step, the indicator held here between calls.
+		auto ind = c.call(kShow, "{\"state\":\"hidden\",\"kind\":null}");
+		if (!ind) return why = c.error, false;
+		std::vector<JsonValuePtr> views;
+		std::vector<std::string> ops;
+		for (const auto &st : steps->array_items) {
+			const std::string o = indicator_op_of_step(*st, why);
+			if (o.empty()) return false;
+			ops.push_back(o);
+			const std::string &k = st->object_items[0].first;
+			if (k == "show") {
+				ind = c.call(kShow, json_of(*st->object_items[0].second));
+			} else {
+				ObjectText args;
+				args.add("indicator", *ind);
+				args.add("dtSec", *st->object_items[0].second);
+				ind = c.call(kTick, args.done());
+			}
+			if (!ind) return why = c.error, false;
+			ObjectText vargs;
+			vargs.add("indicator", *ind);
+			auto view = c.call(kView, vargs.done());
+			if (!view) return why = c.error, false;
+			views.push_back(view);
+		}
+		out.actual = make_object({{"views", make_array(std::move(views))}});
+		// (2) the whole case as one batch.
+		std::string list;
+		for (const auto &o : ops) list += (list.empty() ? "" : ",") + o;
+		auto b = c.call(kIndicatorApply, "{\"ops\":[" + list + "]}");
+		if (!b) return why = c.error, false;
+		const JsonValue *results = b->find("results");
+		const JsonValue *last = b->find("indicator");
+		if (!results || !results->is_array() || !last || !b->find("view")) {
+			return why = std::string(kIndicatorApply) + " answered no results, indicator and view", false;
+		}
+		const std::string held = compare(*ind, *last, 0.0, "$.indicator");
+		if (!held.empty()) return why = std::string(kIndicatorApply) + "'s indicator is not the rows' last: " + held, false;
+		out.batch = make_object({{"views", std::make_shared<JsonValue>(*results)}});
+		return true;
+	}
 	if (op == "run") {
 		const JsonValue *init = input.find("init");
 		const JsonValue *steps = input.find("steps");
@@ -439,7 +516,6 @@ bool drive(Caller &c, const std::string &op, const JsonValue &input, Driven &out
 		auto r = c.create(init ? json_of(*init) : std::string("{}"), session);
 		if (!r) return why = c.error, false;
 		JsonValuePtr start = std::make_shared<JsonValue>(*r->find("view"));
-		if (start->find("indicator")) out.indicators.push_back(std::make_shared<JsonValue>(*start->find("indicator")));
 		std::vector<JsonValuePtr> answers;
 		for (const auto &st : steps->array_items) {
 			const std::string o = op_of_step(*st, why);
@@ -453,7 +529,6 @@ bool drive(Caller &c, const std::string &op, const JsonValue &input, Driven &out
 				return why = c.error, false;
 			}
 			auto view = std::make_shared<JsonValue>(*a->find("view"));
-			if (view->find("indicator")) out.indicators.push_back(std::make_shared<JsonValue>(*view->find("indicator")));
 			answers.push_back(make_object({{"result", a->find("results")->array_items[0]}, {"view", view}}));
 		}
 		c.dispose(session);
@@ -513,7 +588,7 @@ int main(int argc, char **argv) {
 		if (list && list->is_array()) {
 			for (const auto &x : list->array_items) table.insert(x->as_string());
 		}
-		for (const char *row : {kCreate, kApply}) {
+		for (const char *row : {kCreate, kApply, kShow, kTick, kView, kIndicatorApply}) {
 			if (!table.count(row)) {
 				std::printf("  [FAIL] surface: the method table has no %s row\n", row);
 				failed++;
@@ -521,9 +596,8 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	std::map<std::string, int> driven, reasoned;
-	std::vector<std::pair<std::string, JsonValuePtr>> indicator_cases;  // name, expected
-	std::vector<JsonValuePtr> session_indicators;
+	std::map<std::string, int> driven;
+	int undriven = 0;
 	const auto t0 = std::chrono::steady_clock::now();
 	for (const auto &cp : case_list->array_items) {
 		const JsonValue &cs = *cp;
@@ -536,62 +610,26 @@ int main(int argc, char **argv) {
 			failed++;
 			continue;
 		}
-		if (op == "indicator") {
-			indicator_cases.emplace_back(name, cp->find("expected") ? std::make_shared<JsonValue>(*expected) : nullptr);
-			reasoned[op]++;
-			continue;
-		}
 		Driven d;
 		std::string why;
 		if (!drive(c, op, *input, d, why)) {
 			std::printf("  [FAIL] %s — not driven: %s\n", name.c_str(), why.c_str());
 			failed++;
+			undriven++;
 			continue;
 		}
 		const std::string diff = compare(*expected, *d.actual, tol, "$");
-		if (!diff.empty()) {
-			std::printf("  [FAIL] %s — %s\n", name.c_str(), diff.c_str());
+		const std::string batch_diff = d.batch ? compare(*expected, *d.batch, tol, "$") : std::string();
+		if (!diff.empty() || !batch_diff.empty()) {
+			if (!diff.empty()) std::printf("  [FAIL] %s — %s%s\n", name.c_str(), d.batch ? "show/tick/view: " : "", diff.c_str());
+			if (!batch_diff.empty()) std::printf("  [FAIL] %s — %s: %s\n", name.c_str(), kIndicatorApply, batch_diff.c_str());
 			failed++;
 			continue;
 		}
 		driven[op]++;
-		for (auto &v : d.indicators) session_indicators.push_back(v);
 	}
 
-	// The indicator cases: a measured reason each (see the top of this file).
-	for (const auto &ic : indicator_cases) {
-		const JsonValue *views = ic.second ? ic.second->find("views") : nullptr;
-		if (!views || !views->is_array()) {
-			std::printf("  [FAIL] %s — an indicator case with no expected views\n", ic.first.c_str());
-			failed++;
-			continue;
-		}
-		int reached = 0;
-		std::set<std::string> unreached;
-		for (const auto &v : views->array_items) {
-			bool seen = false;
-			for (const auto &s : session_indicators) {
-				if (compare(*v, *s, tol, "$").empty()) {
-					seen = true;
-					break;
-				}
-			}
-			if (seen) {
-				reached++;
-			} else {
-				unreached.insert(v->get_string("state") + "/" + member_json(*v, "kind") + "/opacity " +
-				                 member_json(*v, "opacity") + (v->get_string("detail").empty() ? "" : "/detail"));
-			}
-		}
-		std::string list;
-		for (const auto &u : unreached) list += (list.empty() ? "" : ", ") + u;
-		std::printf("  [skip] %s — not driven: op indicator shows any state, kind and detail on a bare indicator "
-		            "(showSaveIndicator), which no session step does; %d of its %zu view(s) are views the session "
-		            "itself showed in the run cases%s%s\n",
-		            ic.first.c_str(), reached, views->size(), unreached.empty() ? "" : "; never reached: ", list.c_str());
-	}
-
-	// Every op the corpus declares is driven or (indicator only) reasoned.
+	// Every op the corpus declares is driven.
 	const JsonValue *contract = doc.find("contract");
 	const JsonValue *ops = contract ? contract->find("ops") : nullptr;
 	if (!ops || !ops->is_array() || ops->size() == 0) {
@@ -600,8 +638,8 @@ int main(int argc, char **argv) {
 	} else {
 		for (const auto &o : ops->array_items) {
 			const std::string name = o->as_string();
-			if (!driven.count(name) && !(name == "indicator" && reasoned.count(name))) {
-				std::printf("  [FAIL] op %s is declared but no case of it was driven through the session\n", name.c_str());
+			if (!driven.count(name)) {
+				std::printf("  [FAIL] op %s is declared but no case of it was driven through the rows\n", name.c_str());
 				failed++;
 			}
 		}
@@ -625,10 +663,9 @@ int main(int argc, char **argv) {
 		total_driven += kv.second;
 		by_op += (by_op.empty() ? "" : ", ") + kv.first + " " + std::to_string(kv.second);
 	}
-	std::printf("saves_slots_corpus: %zu case(s): %d driven through the session (%s), %zu indicator case(s) not "
-	            "driven (reasons above), %d failed, %.0f ms\n",
-	            case_list->size(), total_driven, by_op.c_str(), indicator_cases.size(), failed, ms);
-	if (failed || total_driven == 0) {
+	std::printf("saves_slots_corpus: %zu case(s): %d driven through the rows (%s), %d undriven, %d failed, %.0f ms\n",
+	            case_list->size(), total_driven, by_op.c_str(), undriven, failed, ms);
+	if (failed || undriven || total_driven == 0) {
 		std::printf("saves_slots_corpus: FAIL\n");
 		return 1;
 	}

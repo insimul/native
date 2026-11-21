@@ -1,6 +1,6 @@
 {
   "area": "saves-slots",
-  "description": "Hand-written: the saves.slots session rows' own contract (PL.native-catchup; core's SaveSlotsSession, P1.core-slots, U83(1)) — create's resolved config and view, one result per op with a refusal as a VALUE, the effect the host must carry out, a null tick, a disk_changed listing (PL.disk-changed-step) with its disk record, and the row's own refusals as errors. Core's own corpus (conformance/saves/slots.json) is driven whole through these rows by the saves_slots_corpus ctest (tests/saves_slots_corpus.cpp), not transcribed here.",
+  "description": "Hand-written: the saves.slots session rows' own contract (PL.native-catchup; core's SaveSlotsSession, P1.core-slots, U83(1)) — create's resolved config and view, one result per op with a refusal as a VALUE, the effect the host must carry out, a null tick, a disk_changed listing (PL.disk-changed-step) with its disk record, and the row's own refusals as errors; and the bare saves.indicator.* rows' own contract (PL.native-indicator-row, U132(1); core's ui/save-indicator-model): show / tick / view over an indicator the host keeps, the apply batch's results, and their refusals. Core's own corpus (conformance/saves/slots.json) is driven whole through these rows by the saves_slots_corpus ctest (tests/saves_slots_corpus.cpp), not transcribed here.",
   "cases": [
     {
       "name": "saves.slots.create: no args is core's defaults, nothing active, autosave off",
@@ -596,6 +596,759 @@
           "args": {
             "session": 2
           }
+        }
+      ]
+    },
+    {
+      "name": "saves.indicator.show / tick / view (PL.native-indicator-row): a host starts from core's hidden indicator, shows \"Saved!\", ticks it through the hold and the fade and keeps the indicator itself; \"Saving…\" does not age; a slot state names its slot as index + 1 and is hidden without an index; a state that names no slot ignores one",
+      "steps": [
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "hidden",
+            "kind": null
+          },
+          "expect": {
+            "state": "hidden",
+            "kind": null,
+            "detail": "",
+            "slot": null,
+            "ageSec": 0
+          },
+          "bind": "hidden"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {
+            "indicator": {
+              "$ref": "hidden"
+            }
+          },
+          "expect": {
+            "visible": false,
+            "state": "hidden",
+            "label": "",
+            "detail": "",
+            "kind": null,
+            "opacity": 0
+          }
+        },
+        {
+          "call": "saves.indicator.tick",
+          "args": {
+            "indicator": {
+              "$ref": "hidden"
+            },
+            "dtSec": 1
+          },
+          "expect": {
+            "state": "hidden",
+            "kind": null,
+            "detail": "",
+            "slot": null,
+            "ageSec": 0
+          }
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "saved",
+            "kind": "auto"
+          },
+          "expect": {
+            "state": "saved",
+            "kind": "auto",
+            "detail": "",
+            "slot": null,
+            "ageSec": 0
+          },
+          "bind": "saved"
+        },
+        {
+          "call": "saves.indicator.tick",
+          "args": {
+            "indicator": {
+              "$ref": "saved"
+            },
+            "dtSec": 1.5
+          },
+          "expect": {
+            "state": "saved",
+            "kind": "auto",
+            "detail": "",
+            "slot": null,
+            "ageSec": 1.5
+          },
+          "bind": "aged"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {
+            "indicator": {
+              "$ref": "aged"
+            }
+          },
+          "expect": {
+            "visible": true,
+            "state": "saved",
+            "label": "Saved!",
+            "detail": "",
+            "kind": "auto",
+            "opacity": 0.75
+          }
+        },
+        {
+          "call": "saves.indicator.tick",
+          "args": {
+            "indicator": {
+              "$ref": "aged"
+            },
+            "dtSec": null
+          },
+          "expect": {
+            "state": "saved",
+            "kind": "auto",
+            "detail": "",
+            "slot": null,
+            "ageSec": 1.5
+          }
+        },
+        {
+          "call": "saves.indicator.tick",
+          "args": {
+            "indicator": {
+              "$ref": "aged"
+            },
+            "dtSec": 0
+          },
+          "expect": {
+            "state": "saved",
+            "kind": "auto",
+            "detail": "",
+            "slot": null,
+            "ageSec": 1.5
+          }
+        },
+        {
+          "call": "saves.indicator.tick",
+          "args": {
+            "indicator": {
+              "$ref": "aged"
+            },
+            "dtSec": -1
+          },
+          "expect": {
+            "state": "saved",
+            "kind": "auto",
+            "detail": "",
+            "slot": null,
+            "ageSec": 1.5
+          }
+        },
+        {
+          "call": "saves.indicator.tick",
+          "args": {
+            "indicator": {
+              "$ref": "aged"
+            },
+            "dtSec": 1.5
+          },
+          "expect": {
+            "state": "hidden",
+            "kind": null,
+            "detail": "",
+            "slot": null,
+            "ageSec": 0
+          }
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "saving",
+            "kind": "quick"
+          },
+          "expect": {
+            "state": "saving",
+            "kind": "quick",
+            "detail": "",
+            "slot": null,
+            "ageSec": 0
+          },
+          "bind": "saving"
+        },
+        {
+          "call": "saves.indicator.tick",
+          "args": {
+            "indicator": {
+              "$ref": "saving"
+            },
+            "dtSec": 100
+          },
+          "expect": {
+            "state": "saving",
+            "kind": "quick",
+            "detail": "",
+            "slot": null,
+            "ageSec": 0
+          }
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "nothing_to_delete",
+            "kind": "manual",
+            "slot": 9
+          },
+          "expect": {
+            "state": "nothing_to_delete",
+            "kind": "manual",
+            "detail": "",
+            "slot": 9,
+            "ageSec": 0
+          },
+          "bind": "empty"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {
+            "indicator": {
+              "$ref": "empty"
+            }
+          },
+          "expect": {
+            "visible": true,
+            "state": "nothing_to_delete",
+            "label": "Slot 10 is empty: there is nothing to delete.",
+            "detail": "",
+            "kind": "manual",
+            "opacity": 1
+          }
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "deleted",
+            "kind": "manual",
+            "slot": 1.5
+          },
+          "expect": {
+            "state": "hidden",
+            "kind": null,
+            "detail": "",
+            "slot": null,
+            "ageSec": 0
+          }
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "deleted",
+            "kind": "manual"
+          },
+          "expect": {
+            "state": "hidden",
+            "kind": null,
+            "detail": "",
+            "slot": null,
+            "ageSec": 0
+          }
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "load_failed",
+            "kind": "quick",
+            "detail": "x",
+            "slot": 0
+          },
+          "expect": {
+            "state": "load_failed",
+            "kind": "quick",
+            "detail": "x",
+            "slot": null,
+            "ageSec": 0
+          }
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "saved"
+          },
+          "expect": {
+            "state": "saved",
+            "kind": null,
+            "detail": "",
+            "slot": null,
+            "ageSec": 0
+          }
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "saved",
+            "kind": "auto",
+            "detail": null,
+            "slot": null
+          },
+          "expect": {
+            "state": "saved",
+            "kind": "auto",
+            "detail": "",
+            "slot": null,
+            "ageSec": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "saves.indicator.apply (PL.native-indicator-row): a results batch — one view per op, in order, then the indicator to keep and its view; a batch continued from a kept indicator; no ops is the given indicator's view",
+      "steps": [
+        {
+          "call": "saves.indicator.apply",
+          "args": {
+            "ops": [
+              {
+                "op": "show",
+                "state": "deleted",
+                "kind": "manual",
+                "slot": 2
+              },
+              {
+                "op": "tick",
+                "dtSec": 2
+              },
+              {
+                "op": "show",
+                "state": "saving",
+                "kind": "quick"
+              },
+              {
+                "op": "tick",
+                "dtSec": 5
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "visible": true,
+                "state": "deleted",
+                "label": "Slot 3 deleted.",
+                "detail": "",
+                "kind": "manual",
+                "opacity": 1
+              },
+              {
+                "visible": true,
+                "state": "deleted",
+                "label": "Slot 3 deleted.",
+                "detail": "",
+                "kind": "manual",
+                "opacity": 0.5
+              },
+              {
+                "visible": true,
+                "state": "saving",
+                "label": "Saving…",
+                "detail": "",
+                "kind": "quick",
+                "opacity": 1
+              },
+              {
+                "visible": true,
+                "state": "saving",
+                "label": "Saving…",
+                "detail": "",
+                "kind": "quick",
+                "opacity": 1
+              }
+            ],
+            "indicator": {
+              "state": "saving",
+              "kind": "quick",
+              "detail": "",
+              "slot": null,
+              "ageSec": 0
+            },
+            "view": {
+              "visible": true,
+              "state": "saving",
+              "label": "Saving…",
+              "detail": "",
+              "kind": "quick",
+              "opacity": 1
+            }
+          }
+        },
+        {
+          "call": "saves.indicator.apply",
+          "args": {
+            "indicator": {
+              "state": "saved",
+              "kind": "auto",
+              "detail": "",
+              "slot": null,
+              "ageSec": 2.5
+            },
+            "ops": [
+              {
+                "op": "tick",
+                "dtSec": 0.25
+              },
+              {
+                "op": "tick",
+                "dtSec": 0.25
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "visible": true,
+                "state": "saved",
+                "label": "Saved!",
+                "detail": "",
+                "kind": "auto",
+                "opacity": 0.125
+              },
+              {
+                "visible": false,
+                "state": "hidden",
+                "label": "",
+                "detail": "",
+                "kind": null,
+                "opacity": 0
+              }
+            ],
+            "indicator": {
+              "state": "hidden",
+              "kind": null,
+              "detail": "",
+              "slot": null,
+              "ageSec": 0
+            },
+            "view": {
+              "visible": false,
+              "state": "hidden",
+              "label": "",
+              "detail": "",
+              "kind": null,
+              "opacity": 0
+            }
+          }
+        },
+        {
+          "call": "saves.indicator.apply",
+          "args": {
+            "indicator": {
+              "state": "loaded",
+              "kind": "quick",
+              "detail": "",
+              "slot": null,
+              "ageSec": 2
+            },
+            "ops": []
+          },
+          "expect": {
+            "results": [],
+            "indicator": {
+              "state": "loaded",
+              "kind": "quick",
+              "detail": "",
+              "slot": null,
+              "ageSec": 2
+            },
+            "view": {
+              "visible": true,
+              "state": "loaded",
+              "label": "Loaded!",
+              "detail": "",
+              "kind": "quick",
+              "opacity": 0.5
+            }
+          }
+        },
+        {
+          "call": "saves.indicator.apply",
+          "args": {
+            "indicator": null,
+            "ops": [
+              {
+                "op": "tick",
+                "dtSec": null
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "visible": false,
+                "state": "hidden",
+                "label": "",
+                "detail": "",
+                "kind": null,
+                "opacity": 0
+              }
+            ],
+            "indicator": {
+              "state": "hidden",
+              "kind": null,
+              "detail": "",
+              "slot": null,
+              "ageSec": 0
+            },
+            "view": {
+              "visible": false,
+              "state": "hidden",
+              "label": "",
+              "detail": "",
+              "kind": null,
+              "opacity": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "saves.indicator.*: the rows refuse an unknown state or kind, a missing argument and what core's types declare and JSON cannot hold, as errors",
+      "steps": [
+        {
+          "call": "saves.indicator.show",
+          "args": {},
+          "expectError": "saves.indicator.show: `state` is required"
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "bogus",
+            "kind": "auto"
+          },
+          "expectError": "saves.indicator.show: `state` must be one of hidden, saving, saved,"
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "saved",
+            "kind": "cloud"
+          },
+          "expectError": "saves.indicator.show: `kind` must be one of auto, quick, manual or null (got \"cloud\")"
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "saved",
+            "kind": "auto",
+            "detail": 5
+          },
+          "expectError": "saves.indicator.show: `detail` must be a string"
+        },
+        {
+          "call": "saves.indicator.show",
+          "args": {
+            "state": "deleted",
+            "kind": "manual",
+            "slot": "1"
+          },
+          "expectError": "saves.indicator.show: `slot` must be a finite number"
+        },
+        {
+          "call": "saves.indicator.tick",
+          "args": {
+            "dtSec": 1
+          },
+          "expectError": "saves.indicator.tick: `indicator` is required"
+        },
+        {
+          "call": "saves.indicator.tick",
+          "args": {
+            "indicator": {
+              "state": "saved",
+              "kind": "auto",
+              "detail": "",
+              "slot": null,
+              "ageSec": 0
+            }
+          },
+          "expectError": "saves.indicator.tick: `dtSec` is required"
+        },
+        {
+          "call": "saves.indicator.tick",
+          "args": {
+            "indicator": {
+              "state": "saved",
+              "kind": "auto",
+              "detail": "",
+              "slot": null,
+              "ageSec": 0
+            },
+            "dtSec": "1"
+          },
+          "expectError": "saves.indicator.tick: `dtSec` must be a finite number"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {},
+          "expectError": "saves.indicator.view: `indicator` is required"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {
+            "indicator": "saved"
+          },
+          "expectError": "saves.indicator.view: `indicator` must be a JSON object"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {
+            "indicator": {
+              "state": "saved",
+              "kind": "auto",
+              "detail": "",
+              "slot": null,
+              "ageSec": 0,
+              "extra": 1
+            }
+          },
+          "expectError": "saves.indicator.view: `indicator.extra` is not a field of core's SaveIndicator"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {
+            "indicator": {
+              "state": "saved",
+              "kind": "auto",
+              "detail": "",
+              "slot": null
+            }
+          },
+          "expectError": "saves.indicator.view: `indicator.ageSec` is required"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {
+            "indicator": {
+              "state": "bogus",
+              "kind": "auto",
+              "detail": "",
+              "slot": null,
+              "ageSec": 0
+            }
+          },
+          "expectError": "saves.indicator.view: `indicator.state` must be one of"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {
+            "indicator": {
+              "state": "saved",
+              "kind": "cloud",
+              "detail": "",
+              "slot": null,
+              "ageSec": 0
+            }
+          },
+          "expectError": "saves.indicator.view: `indicator.kind` must be one of auto, quick, manual or null"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {
+            "indicator": {
+              "state": "saved",
+              "kind": "auto",
+              "detail": null,
+              "slot": null,
+              "ageSec": 0
+            }
+          },
+          "expectError": "saves.indicator.view: `indicator.detail` must be a string"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {
+            "indicator": {
+              "state": "saved",
+              "kind": "auto",
+              "detail": "",
+              "slot": "0",
+              "ageSec": 0
+            }
+          },
+          "expectError": "saves.indicator.view: `indicator.slot` must be a finite number"
+        },
+        {
+          "call": "saves.indicator.view",
+          "args": {
+            "indicator": {
+              "state": "saved",
+              "kind": "auto",
+              "detail": "",
+              "slot": null,
+              "ageSec": null
+            }
+          },
+          "expectError": "saves.indicator.view: `indicator.ageSec` must be a finite number"
+        },
+        {
+          "call": "saves.indicator.apply",
+          "args": {
+            "ops": "tick"
+          },
+          "expectError": "saves.indicator.apply: `ops` must be an array"
+        },
+        {
+          "call": "saves.indicator.apply",
+          "args": {
+            "indicator": {
+              "state": "saved"
+            },
+            "ops": []
+          },
+          "expectError": "saves.indicator.apply: `indicator.kind` is required"
+        },
+        {
+          "call": "saves.indicator.apply",
+          "args": {
+            "ops": [
+              {
+                "op": "show",
+                "state": "saved",
+                "kind": "auto"
+              },
+              {
+                "op": "flash"
+              }
+            ]
+          },
+          "expectError": "saves.indicator.apply: ops[1] has no known op \"flash\" (known: show, tick)"
+        },
+        {
+          "call": "saves.indicator.apply",
+          "args": {
+            "ops": [
+              {
+                "op": "show",
+                "state": "saved",
+                "kind": "auto"
+              },
+              {
+                "op": "tick"
+              }
+            ]
+          },
+          "expectError": "saves.indicator.apply: ops[1] (tick) failed: insimulcore: saves.indicator.apply: `dtSec` is required"
+        },
+        {
+          "call": "saves.indicator.apply",
+          "args": {
+            "ops": [
+              {
+                "op": "show",
+                "state": "nope",
+                "kind": "auto"
+              }
+            ]
+          },
+          "expectError": "saves.indicator.apply: ops[0] (show) failed: insimulcore: saves.indicator.apply: `state` must be one of"
         }
       ]
     }

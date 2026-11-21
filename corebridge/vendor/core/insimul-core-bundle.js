@@ -35805,6 +35805,25 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
   });
 
   // @insimul/core/src/ui/save-indicator-model.ts
+  var SAVE_INDICATOR_STATES = [
+    "hidden",
+    "saving",
+    "saved",
+    "save_failed",
+    "loading",
+    "loaded",
+    "load_failed",
+    "nothing_to_load",
+    "deleted",
+    "deleted_autosave_off",
+    "delete_cancelled",
+    "delete_failed",
+    "nothing_to_delete",
+    "slot_changed_outside",
+    "slot_deleted_outside",
+    "quick_changed_outside",
+    "quick_deleted_outside"
+  ];
   var SAVE_INDICATOR_IN_PROGRESS = ["saving", "loading"];
   var SLOT_NUMBER_PLACEHOLDER = "{n}";
   var SAVE_SLOT_DELETE_WORDS = Object.freeze({
@@ -52971,6 +52990,40 @@ Return JSON format:
       }
     };
   }
+  var SAVE_KINDS = ["auto", "quick", "manual"];
+  var SAVE_INDICATOR_FIELDS = ["state", "kind", "detail", "slot", "ageSec"];
+  function saveKindOrNull(method, value, name) {
+    if (value === null || SAVE_KINDS.includes(value)) return value;
+    throw refuse2(method, `\`${name}\` must be one of ${SAVE_KINDS.join(", ")} or null (got ${JSON.stringify(value ?? null)})`);
+  }
+  function showIndicatorOf(method, fields) {
+    if (fields.state === void 0) throw refuse2(method, "`state` is required (one of core's SAVE_INDICATOR_STATES)");
+    const state = oneOf(method, fields.state, SAVE_INDICATOR_STATES, "state");
+    const kind = saveKindOrNull(method, fields.kind === void 0 ? null : fields.kind, "kind");
+    const detail = fields.detail === void 0 || fields.detail === null ? void 0 : needString(method, fields.detail, "detail");
+    const slot = fields.slot === void 0 || fields.slot === null ? null : needNumber(method, fields.slot, "slot");
+    return showSaveIndicator(state, kind, detail, slot);
+  }
+  function saveIndicatorArg(method, value, name) {
+    if (value === void 0) throw refuse2(method, `\`${name}\` is required (core's SaveIndicator, as saves.indicator.show answered it)`);
+    needObject(method, value, name);
+    for (const k of Object.keys(value)) {
+      if (!SAVE_INDICATOR_FIELDS.includes(k)) throw refuse2(method, `\`${name}.${k}\` is not a field of core's SaveIndicator (${SAVE_INDICATOR_FIELDS.join(", ")})`);
+    }
+    for (const k of SAVE_INDICATOR_FIELDS) {
+      if (!(k in value)) throw refuse2(method, `\`${name}.${k}\` is required (core's SaveIndicator has ${SAVE_INDICATOR_FIELDS.join(", ")})`);
+    }
+    oneOf(method, value.state, SAVE_INDICATOR_STATES, `${name}.state`);
+    saveKindOrNull(method, value.kind, `${name}.kind`);
+    needString(method, value.detail, `${name}.detail`);
+    if (value.slot !== null) needNumber(method, value.slot, `${name}.slot`);
+    needNumber(method, value.ageSec, `${name}.ageSec`);
+    return { state: value.state, kind: value.kind, detail: value.detail, slot: value.slot, ageSec: value.ageSec };
+  }
+  function indicatorSeconds(method, value) {
+    if (value === void 0) throw refuse2(method, "`dtSec` is required (seconds; null is a non-finite tick)");
+    return value === null ? Number.NaN : needNumber(method, value, "dtSec");
+  }
   function titleContract() {
     return plain({
       "ui-title-flow": {
@@ -57524,6 +57577,59 @@ Return JSON format:
       const s = session(m, args, "saves.slots");
       const results = await applyOps(m, s, args, saveSlotsOps(m));
       return { results, view: plain(s.model.view()) };
+    },
+    /**
+     * The bare save indicator (PL.native-indicator-row; U132(1), U133(1)): core's
+     * `ui/save-indicator-model` without a session, for a host that shows the
+     * indicator itself (`conformance/saves/slots.json`'s `indicator` op). The host
+     * keeps the indicator (core's plain-data `SaveIndicator`, `{ state, kind,
+     * detail, slot, ageSec }`) and passes it back; nothing is held here.
+     *
+     * `saves.indicator.show { state, kind?, detail?, slot? }` → the indicator —
+     * core's `showSaveIndicator`. `state: "hidden"` answers core's hidden
+     * indicator, which is where a host starts.
+     */
+    "saves.indicator.show": (args) => plain(showIndicatorOf("saves.indicator.show", args)),
+    /**
+     * `saves.indicator.tick { indicator, dtSec }` → the indicator — core's
+     * `advanceSaveIndicator`. `dtSec` is seconds; null is a non-finite tick, which
+     * core answers by changing nothing (as it does 0 and a negative).
+     */
+    "saves.indicator.tick": (args) => {
+      const m = "saves.indicator.tick";
+      const ind = saveIndicatorArg(m, args.indicator, "indicator");
+      return plain(advanceSaveIndicator(ind, indicatorSeconds(m, args.dtSec)));
+    },
+    /**
+     * `saves.indicator.view { indicator }` → `{ visible, state, label, detail,
+     * kind, opacity }` — core's `saveIndicatorView`, what the host draws.
+     */
+    "saves.indicator.view": (args) => plain(saveIndicatorView(saveIndicatorArg("saves.indicator.view", args.indicator, "indicator"))),
+    /**
+     * `saves.indicator.apply { indicator?, ops }` → `{ results, indicator, view }`
+     * — the same three functions as a batch: `indicator` absent or null is core's
+     * hidden indicator; each op is `show { state, kind?, detail?, slot? }` or
+     * `tick { dtSec }`, applied in order, and its result is the view after it
+     * (what the corpus records per step); `indicator` is the one to keep and
+     * `view` its view. A failing op stops the batch with an error naming its
+     * index; nothing is kept, since nothing is held.
+     */
+    "saves.indicator.apply": async (args) => {
+      const m = "saves.indicator.apply";
+      const s = {
+        ind: args.indicator === void 0 || args.indicator === null ? HIDDEN_SAVE_INDICATOR : saveIndicatorArg(m, args.indicator, "indicator")
+      };
+      const results = await applyOps(m, s, args, {
+        show: (st, op) => {
+          st.ind = showIndicatorOf(m, op);
+          return plain(saveIndicatorView(st.ind));
+        },
+        tick: (st, op) => {
+          st.ind = advanceSaveIndicator(st.ind, indicatorSeconds(m, op.dtSec));
+          return plain(saveIndicatorView(st.ind));
+        }
+      });
+      return { results, indicator: plain(s.ind), view: plain(saveIndicatorView(s.ind)) };
     },
     /**
      * `ui.titleFlow.contract {}` → `{ 'ui-title-flow': {…} }` — the data tables
