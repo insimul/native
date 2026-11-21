@@ -3,19 +3,19 @@
   "rules": "scripts/open-boundary.rules.json",
   "rulesVersion": 1,
   "repository": {
-    "root": "native-native-kb-instantiation-error",
-    "gitHead": "647f2aa38f651927c066c592f6f060293ee3498b"
+    "root": "native-native-dock-operations-rows",
+    "gitHead": "e527bb837a28e9dc0a2c718e05e77255093db57e"
   },
   "coverage": {
-    "files": 542,
-    "packScanned": 286,
+    "files": 549,
+    "packScanned": 292,
     "packDocuments": [],
     "importFiles": 21,
-    "importSpecifiers": 220,
+    "importSpecifiers": 221,
     "cargoManifests": 3,
     "cargoDependencies": 3,
-    "cFiles": 156,
-    "cIncludes": 941,
+    "cFiles": 157,
+    "cIncludes": 952,
     "buildFiles": 21
   },
   "content": [
@@ -2547,7 +2547,20 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 1127,
+      "line": 1132,
+      "specifier": "@insimul/core/editor/dock-operations",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the editor.dockOperations.ids, .rules and .request rows (DOCK_OPERATION_IDS, DOCK_OPERATION_RULES and dockOperationRequest: the request a dock sends for the four operations engine editor docks call, or core's refusal; PL.native-dock-operations-rows, rulings U132 and U113), exactly as the passBy.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-dock-operations-rows (Features Gauntlet PL.native-dock-operations-rows)",
+      "reviewedAt": "2026-11-21"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 1137,
       "specifier": "@insimul/core/system-packs/composer",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2560,7 +2573,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 1136,
+      "line": 1146,
       "specifier": "@insimul/core/editor/layout/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2573,7 +2586,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 1137,
+      "line": 1147,
       "specifier": "@insimul/core/editor/layout/composition/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -2758,7 +2771,7 @@
       "unresolved": 0
     },
     "dependency": {
-      "findings": 138,
+      "findings": 139,
       "unresolved": 0
     },
     "unusedAllowances": 0
