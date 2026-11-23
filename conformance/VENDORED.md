@@ -5,9 +5,9 @@
 `prolog/` is a mirror of `@insimul/core`'s
 `packages/core/conformance/prolog/` (the source of truth; see that package's
 `conformance/README.md` for the case format, the order-independence rule, and the
-"Amendments for the native harness" notes). Re-sync it with a plain copy of every
-`*.json` — never hand-write or hand-edit a case here, or the two engines stop
-testing the same thing.
+"Amendments for the native harness" notes). Re-sync it from core's git objects
+with the recorder below, never a hand copy — never hand-write or hand-edit a case
+here, or the two engines stop testing the same thing.
 
 **The bytes are held, not only the answers.** `PROLOG_MIRROR.json` (beside this
 file, deliberately outside `prolog/` so no leg reads it as a corpus file) records
@@ -95,7 +95,7 @@ Consumers here:
 - `tests/prolog_mirror_digest.cmake` (ctests `prolog_mirror_digest` and
   `prolog_mirror_digest_negative`) — the digest gate over the bytes.
 
-Both resolve the corpus as: `INSIMUL_CONFORMANCE_DIR` (env, absolute) → this
+The three legs resolve the corpus as: `INSIMUL_CONFORMANCE_DIR` (env, absolute) → this
 vendored directory → the monorepo sibling
 `../insimul-runtime/packages/core/conformance/prolog`.
 
