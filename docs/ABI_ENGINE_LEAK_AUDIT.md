@@ -214,8 +214,11 @@ by type first, and `sort/2` shows it: `2.0` sorts before `1`.
 This is exactly the "Trealla-specific term ordering" the tasklist warns about, and it is
 *invisible*: every consumer sees a well-formed, plausibly-ordered solution list. Any KB
 using `sort/2`, `msort/2`, `setof/3` or `@</2` over mixed numerics gets a different
-answer order on a different engine — including the conformance corpus's own
-`unordered: false` cases, which compare position by position.
+answer order on a different engine — including inside the conformance corpus, whose
+bindings compare position by position (a `sort/2` list within one solution). The
+solution LIST is an unordered multiset in every leg since U120(9) (core's order rule;
+this note first read "the corpus's `unordered: false` cases", a key core never states),
+and `scripts/conformance_parity.sh`'s raw diff still holds the legs' enumeration order.
 
 Cannot be insulated without re-implementing the term order. **Name it and gate on it**:
 a swap must run a term-ordering case and fail visibly.
