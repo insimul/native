@@ -447,11 +447,12 @@ add_test(NAME conformance COMMAND insimul_conformance)
 # conformance/prolog/ to conformance/PROLOG_MIRROR.json — the sha256 of core's
 # bytes at corebridge/core-pin.json's coreCommit for every mirrored file, and every
 # core file not mirrored yet — and refuses an extra, missing, renamed or changed
-# file and a record taken at another commit than the pin. With INSIMUL_CORE_DIR set
-# (a git checkout of @insimul/core) it also holds the record itself to core's git
-# objects at the pin. Plain cmake -P: no node, no skip. Its negative control
-# perturbs a copy six ways (eight with INSIMUL_CORE_DIR) and passes only when every
-# perturbation is refused for its own named reason.
+# file and a record taken at another commit than the pin. With a git checkout of
+# @insimul/core (INSIMUL_CORE_DIR, else by default the monorepo's sibling core when
+# it holds the pin's commit; the script resolves it) it also holds the record itself
+# to core's git objects at the pin. Plain cmake -P: no node, no skip. Its negative
+# control perturbs a copy six ways (eight with a core checkout) and passes only when
+# every perturbation is refused for its own named reason.
 set(INSIMUL_PROLOG_MIRROR_ARGS
   -DMIRROR_DIR=${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog
   -DMANIFEST=${CMAKE_CURRENT_SOURCE_DIR}/conformance/PROLOG_MIRROR.json
