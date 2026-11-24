@@ -4832,6 +4832,160 @@
   },
   {
    "world": "spanish-real",
+   "why": "A phrase is a run of PIECES, not of tokens: the dash between `mi` and `amigo` keys to nothing and is no piece, so `mi — amigo` is the phrase `mi amigo` (one match, one index), not `amigo` alone.",
+   "level": "A1",
+   "line": "Hola mi — amigo",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "mi amigo",
+     "translation": "my friend",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "mi amigo"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "The first look reads only the homograph's OWN clause, and every clause end starts a new clause: `red`'s clause (between the two `.`) holds no evidence, the English `time` in the third clause is not read, and with none in its own clause the nearest in the line is `amigo`, so `red` is Spanish.",
+   "level": "A1",
+   "line": "amigo. red. now time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "amigo",
+     "translation": "friend",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "amigo",
+     "red"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A comma ends no clause: `amigo,` and `red` share a clause, so `amigo` one unit before is the nearest evidence of its own clause, nearer than the English `time`, and `red` is Spanish.",
+   "level": "A1",
+   "line": "amigo, red now time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "amigo",
+     "translation": "friend",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "amigo",
+     "red"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "Only a token opening with `(` or `[` waives the separator: `«net»` opens with a guillemet, so it is no gloss of `red`; it keys to `net`, English evidence one unit on, and `red` is English.",
+   "level": "A1",
+   "line": "We fish with a red «net» here",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "U+2019 is no closer (the closers are `)` `]` `»` `”` `\"` `'`): `el.’` ends no clause, so the evidence word `el` before `red`, as near as the English `time` after, decides and `red` is Spanish (compare `el.” red time`).",
+   "level": "A1",
+   "line": "el.’ red time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "red"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A gloss article is recognised by its key: `The` keys to `the`, so `— The net —` glosses `red` as `— the net —` does, though the English `the` just before would otherwise make it English.",
+   "level": "A1",
+   "line": "Bring the red — The net — tomorrow",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "red"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
    "why": "A number is a word character, so a key may end in one: `covid-19` keys to `covid-19`.",
    "level": "A1",
    "line": "Hay covid-19 aquí",
