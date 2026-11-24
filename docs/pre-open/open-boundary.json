@@ -4,7 +4,7 @@
   "rulesVersion": 1,
   "repository": {
     "root": "native-native-chat-cefr-rows-s1-line-rule-table",
-    "gitHead": "26e623f26e941a324ffa8ad0971841beff1a6a83"
+    "gitHead": "8b9a5ac005a3b91137b44d3b0869528e61f2441c"
   },
   "coverage": {
     "files": 585,
