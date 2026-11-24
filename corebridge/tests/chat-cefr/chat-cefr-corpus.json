@@ -4004,6 +4004,42 @@
    }
   },
   {
+   "world": "constructed-tongue",
+   "why": "The mastered list is compared with the entry's KEY, not its word: `Varo`'s key is `varo`, so the mastered `varo` covers it; it takes index 0 and is marked seen, but gets no card.",
+   "level": "A1",
+   "line": "Varo",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [
+    "varo"
+   ],
+   "hints": [],
+   "nextState": {
+    "seen": [
+     "varo"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "Only U+2018 and U+2019 key as an apostrophe: U+02BC (modifier letter apostrophe) is a letter (\\p{Lm}), so it is kept and `dorʼath` keys to itself, which is no key; nothing is hinted.",
+   "level": "A1",
+   "line": "Hola dorʼath",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
    "world": "spanish-real",
    "why": "Accents and inverted marks: `¿Dónde` keys to `dónde`; the phrase `buenos días` is one match.",
    "level": "A1",
@@ -4982,6 +5018,95 @@
      "red"
     ],
     "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "The gloss separator is its own TOKEN that keys to nothing, not punctuation on the homograph's token: the colon of `red:` ends the clause but separates nothing, so `net` is no gloss of `red`; with no evidence in `red`'s own clause, the nearest in the line is the English `net`, and `red` is English.",
+   "level": "A1",
+   "line": "We fish with a red: net here",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A comma glued to the homograph is no gloss separator either: `red,` keys to `red`, `net` follows with no token between, so it is no gloss; it is English evidence one unit on, and `red` is English.",
+   "level": "A1",
+   "line": "We fish with a red, net here",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A glossed homograph is no evidence for its neighbours (only target, foreign and English units are): `red (net)` hints `red`, but `sin`'s nearest evidence is the English `net`, so `sin` is English.",
+   "level": "A1",
+   "line": "sin red (net)",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "red"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "Only a token opening with `(` or `[` waives the separator: `“net”` opens with a left double quotation mark, so it is no gloss of `red`; it keys to `net`, English evidence one unit on, and `red` is English.",
+   "level": "A1",
+   "line": "We fish with a red “net” here",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "Only a token opening with `(` or `[` waives the separator: `\"net\"` opens with a straight double quote, so it is no gloss of `red`; it keys to `net`, English evidence one unit on, and `red` is English.",
+   "level": "A1",
+   "line": "We fish with a red \"net\" here",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
    }
   },
   {

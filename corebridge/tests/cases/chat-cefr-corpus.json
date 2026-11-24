@@ -4337,7 +4337,67 @@
    ]
   },
   {
-   "name": "lineCases[17] spanish-real A1: Accents and inverted marks: `¿Dónde` keys to `dónde`; the phrase `buenos días` is one match.",
+   "name": "lineCases[17] constructed-tongue A1: The mastered list is compared with the entry's KEY, not its word: `Varo`'s key is `varo`, so the mastered `varo` covers it; it takes index 0 and is marked seen, but gets no card.",
+   "steps": [
+    {
+     "call": "chatCefr.vocabHintsForLine",
+     "args": {
+      "section": {
+       "$file": "../chat-cefr/chat-cefr-corpus.json",
+       "$path": "worlds.0.chatCefr"
+      },
+      "line": "Varo",
+      "level": "A1",
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      },
+      "mastered": [
+       "varo"
+      ]
+     },
+     "expect": {
+      "hints": [],
+      "state": {
+       "seen": [
+        "varo"
+       ],
+       "newWordIndex": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "lineCases[18] constructed-tongue A1: Only U+2018 and U+2019 key as an apostrophe: U+02BC (modifier letter apostrophe) is a letter (\\p{Lm}), so it is kept and `dorʼath` keys to itself, which is no key; nothing is hinted.",
+   "steps": [
+    {
+     "call": "chatCefr.vocabHintsForLine",
+     "args": {
+      "section": {
+       "$file": "../chat-cefr/chat-cefr-corpus.json",
+       "$path": "worlds.0.chatCefr"
+      },
+      "line": "Hola dorʼath",
+      "level": "A1",
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      },
+      "mastered": []
+     },
+     "expect": {
+      "hints": [],
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "lineCases[19] spanish-real A1: Accents and inverted marks: `¿Dónde` keys to `dónde`; the phrase `buenos días` is one match.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4387,7 +4447,7 @@
    ]
   },
   {
-   "name": "lineCases[18] spanish-real A1: An English line using the homograph `once`: no target evidence anywhere, so `once` stays English.",
+   "name": "lineCases[20] spanish-real A1: An English line using the homograph `once`: no target evidence anywhere, so `once` stays English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4415,7 +4475,7 @@
    ]
   },
   {
-   "name": "lineCases[19] spanish-real A1: The same homograph beside target evidence (`calle`, and the evidence word `la`) is Spanish.",
+   "name": "lineCases[21] spanish-real A1: The same homograph beside target evidence (`calle`, and the evidence word `la`) is Spanish.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4459,7 +4519,7 @@
    ]
   },
   {
-   "name": "lineCases[20] spanish-real A1: A homograph glossed after a dash, read past one article (`— the net —`), is target-language even in an English line.",
+   "name": "lineCases[22] spanish-real A1: A homograph glossed after a dash, read past one article (`— the net —`), is target-language even in an English line.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4496,7 +4556,7 @@
    ]
   },
   {
-   "name": "lineCases[21] spanish-real A1: A homograph glossed in parentheses (no separator token needed) is target-language.",
+   "name": "lineCases[23] spanish-real A1: A homograph glossed in parentheses (no separator token needed) is target-language.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4533,7 +4593,7 @@
    ]
   },
   {
-   "name": "lineCases[22] spanish-real A1: A gloss after a dash with no article: `sin — without —` glosses `sin`.",
+   "name": "lineCases[24] spanish-real A1: A gloss after a dash with no article: `sin — without —` glosses `sin`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4570,7 +4630,7 @@
    ]
   },
   {
-   "name": "lineCases[23] spanish-real A1: A homograph glossed in square brackets (a token opening with `[`, no separator token needed) is target-language: without the gloss, `net` (English, one unit on) would make `red` English.",
+   "name": "lineCases[25] spanish-real A1: A homograph glossed in square brackets (a token opening with `[`, no separator token needed) is target-language: without the gloss, `net` (English, one unit on) would make `red` English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4607,7 +4667,7 @@
    ]
   },
   {
-   "name": "lineCases[24] spanish-real A1: A gloss is compared with the alternatives too: `fin — finish —` glosses `fin` by its alternative, though its translation is `end`; unglossed, the English `finish` one unit on would make it English.",
+   "name": "lineCases[26] spanish-real A1: A gloss is compared with the alternatives too: `fin — finish —` glosses `fin` by its alternative, though its translation is `end`; unglossed, the English `finish` one unit on would make it English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4644,7 +4704,7 @@
    ]
   },
   {
-   "name": "lineCases[25] spanish-real A1: A clause end may carry closing quotes: `friend.\"` ends the clause, so `once` takes the evidence of its own (`amigo`), not the English `friend` just before.",
+   "name": "lineCases[27] spanish-real A1: A clause end may carry closing quotes: `friend.\"` ends the clause, so `once` takes the evidence of its own (`amigo`), not the English `friend` just before.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4688,7 +4748,7 @@
    ]
   },
   {
-   "name": "lineCases[26] spanish-real A1: A gloss of k words is compared with the next k pieces: `pie — on foot —` glosses `pie` by its two-word translation; unglossed, `foot` (an English gloss word, in the next clause) would be the nearest evidence and make it English.",
+   "name": "lineCases[28] spanish-real A1: A gloss of k words is compared with the next k pieces: `pie — on foot —` glosses `pie` by its two-word translation; unglossed, `foot` (an English gloss word, in the next clause) would be the nearest evidence and make it English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4725,7 +4785,7 @@
    ]
   },
   {
-   "name": "lineCases[27] spanish-real A1: After a gloss article the gloss is also tried from the article itself: `can — a dog —` glosses `can`, whose translation `a dog` opens with the article; unglossed, the English `dog` would make it English.",
+   "name": "lineCases[29] spanish-real A1: After a gloss article the gloss is also tried from the article itself: `can — a dog —` glosses `can`, whose translation `a dog` opens with the article; unglossed, the English `dog` would make it English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4762,7 +4822,7 @@
    ]
   },
   {
-   "name": "lineCases[28] spanish-real A1: A token opening with `(` only waives the separator; the gloss must still match: `(big)` is no gloss of `red` (net), so the English `net` after it is the nearest evidence and `red` is English.",
+   "name": "lineCases[30] spanish-real A1: A token opening with `(` only waives the separator; the gloss must still match: `(big)` is no gloss of `red` (net), so the English `net` after it is the nearest evidence and `red` is English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4790,7 +4850,7 @@
    ]
   },
   {
-   "name": "lineCases[29] spanish-real A1: English evidence is every word of every gloss: `time` (the second word of `hora`'s alternative `the time`) one unit before `red` is as near as the evidence word `el` after, and the one before decides, so `red` is English.",
+   "name": "lineCases[31] spanish-real A1: English evidence is every word of every gloss: `time` (the second word of `hora`'s alternative `the time`) one unit before `red` is as near as the evidence word `el` after, and the one before decides, so `red` is English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4818,7 +4878,7 @@
    ]
   },
   {
-   "name": "lineCases[30] spanish-real A1: English evidence words are keyed: `usted`'s translation `you (formal)` gives `formal`, edge brackets stripped, one unit before `red`, as near as `el` after; the one before decides, so `red` is English.",
+   "name": "lineCases[32] spanish-real A1: English evidence words are keyed: `usted`'s translation `you (formal)` gives `formal`, edge brackets stripped, one unit before `red`, as near as `el` after; the one before decides, so `red` is English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4846,7 +4906,7 @@
    ]
   },
   {
-   "name": "lineCases[31] spanish-real A1: Non-ASCII is read on a piece's key, not its token: `“Hey”` keys to `hey`, which is ASCII and no evidence, so `red` has no evidence and stays English.",
+   "name": "lineCases[33] spanish-real A1: Non-ASCII is read on a piece's key, not its token: `“Hey”` keys to `hey`, which is ASCII and no evidence, so `red` has no evidence and stays English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4874,7 +4934,7 @@
    ]
   },
   {
-   "name": "lineCases[32] spanish-real A1: A clause ends at `…` too: `el…` closes the first clause, so the nearest evidence in `red`'s own clause is the English `time`, not the evidence word `el` before it, and `red` is English.",
+   "name": "lineCases[34] spanish-real A1: A clause ends at `…` too: `el…` closes the first clause, so the nearest evidence in `red`'s own clause is the English `time`, not the evidence word `el` before it, and `red` is English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4902,7 +4962,7 @@
    ]
   },
   {
-   "name": "lineCases[33] spanish-real A1: A gloss word is English before it is foreign: `naïve` (the gloss of `ingenuo`) holds a character outside ASCII but is English evidence, so `red` beside it is English.",
+   "name": "lineCases[35] spanish-real A1: A gloss word is English before it is foreign: `naïve` (the gloss of `ingenuo`) holds a character outside ASCII but is English evidence, so `red` beside it is English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4930,7 +4990,7 @@
    ]
   },
   {
-   "name": "lineCases[34] spanish-real A1: A match ends at its last token: after the phrase `Buenos días` the next piece follows with no separator, so `red` shares its clause, and the target phrase just before it makes `red` Spanish though the English `net` follows.",
+   "name": "lineCases[36] spanish-real A1: A match ends at its last token: after the phrase `Buenos días` the next piece follows with no separator, so `red` shares its clause, and the target phrase just before it makes `red` Spanish though the English `net` follows.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4973,7 +5033,7 @@
    ]
   },
   {
-   "name": "lineCases[35] spanish-real A1: A gloss must equal the next pieces, not begin them: `— on footing` is no gloss of `pie` (on foot), and with no evidence anywhere in the line `pie` stays English.",
+   "name": "lineCases[37] spanish-real A1: A gloss must equal the next pieces, not begin them: `— on footing` is no gloss of `pie` (on foot), and with no evidence anywhere in the line `pie` stays English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5001,7 +5061,7 @@
    ]
   },
   {
-   "name": "lineCases[36] spanish-real A1: English evidence needs at least three code points, and three is enough: `dog` (from `can`'s `a dog`) one unit before `red` is as near as the evidence word `el` after, and the one before decides, so `red` is English.",
+   "name": "lineCases[38] spanish-real A1: English evidence needs at least three code points, and three is enough: `dog` (from `can`'s `a dog`) one unit before `red` is as near as the evidence word `el` after, and the one before decides, so `red` is English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5029,7 +5089,7 @@
    ]
   },
   {
-   "name": "lineCases[37] spanish-real A1: The gloss is read over the following pieces, tokens that key to nothing dropped: `— on — foot` still glosses `pie` (on foot).",
+   "name": "lineCases[39] spanish-real A1: The gloss is read over the following pieces, tokens that key to nothing dropped: `— on — foot` still glosses `pie` (on foot).",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5066,7 +5126,7 @@
    ]
   },
   {
-   "name": "lineCases[38] spanish-real A1: A gloss is compared by its key: `sale`'s translation `Goes out.` keys to `goes out`, so `— goes out —` glosses it.",
+   "name": "lineCases[40] spanish-real A1: A gloss is compared by its key: `sale`'s translation `Goes out.` keys to `goes out`, so `— goes out —` glosses it.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5103,7 +5163,7 @@
    ]
   },
   {
-   "name": "lineCases[39] spanish-real A1: A line splits on any whitespace, a newline too: `el` before the line break is the nearest evidence for `red`, which is Spanish.",
+   "name": "lineCases[41] spanish-real A1: A line splits on any whitespace, a newline too: `el` before the line break is the nearest evidence for `red`, which is Spanish.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5140,7 +5200,7 @@
    ]
   },
   {
-   "name": "lineCases[40] spanish-real A1: A clause ends at `?`: `el?` closes the first clause, so the nearest evidence in `red`'s own clause is the English `time`, and `red` is English.",
+   "name": "lineCases[42] spanish-real A1: A clause ends at `?`: `el?` closes the first clause, so the nearest evidence in `red`'s own clause is the English `time`, and `red` is English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5168,7 +5228,7 @@
    ]
   },
   {
-   "name": "lineCases[41] spanish-real A1: A clause ends at `:`: `el:` closes the first clause, so the nearest evidence in `red`'s own clause is the English `time`, and `red` is English.",
+   "name": "lineCases[43] spanish-real A1: A clause ends at `:`: `el:` closes the first clause, so the nearest evidence in `red`'s own clause is the English `time`, and `red` is English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5196,7 +5256,7 @@
    ]
   },
   {
-   "name": "lineCases[42] spanish-real A1: A clause end may carry `)`: `el.)` closes the first clause, so `red` takes the English `time` of its own.",
+   "name": "lineCases[44] spanish-real A1: A clause end may carry `)`: `el.)` closes the first clause, so `red` takes the English `time` of its own.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5224,7 +5284,7 @@
    ]
   },
   {
-   "name": "lineCases[43] spanish-real A1: A clause end may carry `]`: `el.]` closes the first clause, so `red` takes the English `time` of its own.",
+   "name": "lineCases[45] spanish-real A1: A clause end may carry `]`: `el.]` closes the first clause, so `red` takes the English `time` of its own.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5252,7 +5312,7 @@
    ]
   },
   {
-   "name": "lineCases[44] spanish-real A1: A clause end may carry `”`: `el.”` closes the first clause, so `red` takes the English `time` of its own.",
+   "name": "lineCases[46] spanish-real A1: A clause end may carry `”`: `el.”` closes the first clause, so `red` takes the English `time` of its own.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5280,7 +5340,7 @@
    ]
   },
   {
-   "name": "lineCases[45] spanish-real A1: A clause end may carry `'`: `el.'` closes the first clause, so `red` takes the English `time` of its own.",
+   "name": "lineCases[47] spanish-real A1: A clause end may carry `'`: `el.'` closes the first clause, so `red` takes the English `time` of its own.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5308,7 +5368,7 @@
    ]
   },
   {
-   "name": "lineCases[46] spanish-real A1: A clause end may carry any number of closers: `el.)”` closes the first clause, so `red` takes the English `time` of its own.",
+   "name": "lineCases[48] spanish-real A1: A clause end may carry any number of closers: `el.)”` closes the first clause, so `red` takes the English `time` of its own.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5336,7 +5396,7 @@
    ]
   },
   {
-   "name": "lineCases[47] spanish-real A1: A clause end is at a token's end: the `.` inside `e.g` ends no clause, so the evidence word `el` two units before `red` is as near as the English `time` two after, and the one before makes `red` Spanish.",
+   "name": "lineCases[49] spanish-real A1: A clause end is at a token's end: the `.` inside `e.g` ends no clause, so the evidence word `el` two units before `red` is as near as the English `time` two after, and the one before makes `red` Spanish.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5373,7 +5433,7 @@
    ]
   },
   {
-   "name": "lineCases[48] spanish-real A1: A bracket waives the separator only when it opens the token: `net(` keys to `net` but does not open with `(`, so it is no gloss of `red`; as English evidence it makes `red` English.",
+   "name": "lineCases[50] spanish-real A1: A bracket waives the separator only when it opens the token: `net(` keys to `net` but does not open with `(`, so it is no gloss of `red`; as English evidence it makes `red` English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5401,7 +5461,7 @@
    ]
   },
   {
-   "name": "lineCases[49] spanish-real A1: The gloss article `a` is read past: `— a net —` glosses `red`.",
+   "name": "lineCases[51] spanish-real A1: The gloss article `a` is read past: `— a net —` glosses `red`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5438,7 +5498,7 @@
    ]
   },
   {
-   "name": "lineCases[50] spanish-real A1: The gloss article `an` is read past: `— an eleven —` glosses `once`, though the English `eleven` would otherwise make it English.",
+   "name": "lineCases[52] spanish-real A1: The gloss article `an` is read past: `— an eleven —` glosses `once`, though the English `eleven` would otherwise make it English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5475,7 +5535,7 @@
    ]
   },
   {
-   "name": "lineCases[51] spanish-real A1: At most one gloss article is read past: `— the a net —` is no gloss of `red`, and the English `the` just before makes it English.",
+   "name": "lineCases[53] spanish-real A1: At most one gloss article is read past: `— the a net —` is no gloss of `red`, and the English `the` just before makes it English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5503,7 +5563,7 @@
    ]
   },
   {
-   "name": "lineCases[52] spanish-real A1: A gloss that keys to nothing glosses nothing: `son`'s alternative `…` keys to nothing and so cannot match past the article `the` at the line's end; the English `the` makes `son` English.",
+   "name": "lineCases[54] spanish-real A1: A gloss that keys to nothing glosses nothing: `son`'s alternative `…` keys to nothing and so cannot match past the article `the` at the line's end; the English `the` makes `son` English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5531,7 +5591,7 @@
    ]
   },
   {
-   "name": "lineCases[53] spanish-real A1: A gloss splits into words on any whitespace, a no-break space too: `hoy`'s translation `this day` gives the English word `day`, one unit before `red`, as near as `el` after; the one before decides, so `red` is English.",
+   "name": "lineCases[55] spanish-real A1: A gloss splits into words on any whitespace, a no-break space too: `hoy`'s translation `this day` gives the English word `day`, one unit before `red`, as near as `el` after; the one before decides, so `red` is English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5559,7 +5619,7 @@
    ]
   },
   {
-   "name": "lineCases[54] spanish-real A1: English evidence counts code points, not UTF-16 units: `𐌰𐌱` (an alternative of `runa`) is two code points, too short to be English evidence; it holds characters outside ASCII, so it is foreign evidence and `red` is Spanish.",
+   "name": "lineCases[56] spanish-real A1: English evidence counts code points, not UTF-16 units: `𐌰𐌱` (an alternative of `runa`) is two code points, too short to be English evidence; it holds characters outside ASCII, so it is foreign evidence and `red` is Spanish.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5596,7 +5656,7 @@
    ]
   },
   {
-   "name": "lineCases[55] spanish-real A1: The scan resumes after a match: `mi amigo` is one match and `amigo`, a key too, is not met again inside it.",
+   "name": "lineCases[57] spanish-real A1: The scan resumes after a match: `mi amigo` is one match and `amigo`, a key too, is not met again inside it.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5632,7 +5692,7 @@
    ]
   },
   {
-   "name": "lineCases[56] spanish-real A1: A phrase is a run of PIECES, not of tokens: the dash between `mi` and `amigo` keys to nothing and is no piece, so `mi — amigo` is the phrase `mi amigo` (one match, one index), not `amigo` alone.",
+   "name": "lineCases[58] spanish-real A1: A phrase is a run of PIECES, not of tokens: the dash between `mi` and `amigo` keys to nothing and is no piece, so `mi — amigo` is the phrase `mi amigo` (one match, one index), not `amigo` alone.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5668,7 +5728,7 @@
    ]
   },
   {
-   "name": "lineCases[57] spanish-real A1: The first look reads only the homograph's OWN clause, and every clause end starts a new clause: `red`'s clause (between the two `.`) holds no evidence, the English `time` in the third clause is not read, and with none in its own clause the nearest in the line is `amigo`, so `red` is Spanish.",
+   "name": "lineCases[59] spanish-real A1: The first look reads only the homograph's OWN clause, and every clause end starts a new clause: `red`'s clause (between the two `.`) holds no evidence, the English `time` in the third clause is not read, and with none in its own clause the nearest in the line is `amigo`, so `red` is Spanish.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5712,7 +5772,7 @@
    ]
   },
   {
-   "name": "lineCases[58] spanish-real A1: A comma ends no clause: `amigo,` and `red` share a clause, so `amigo` one unit before is the nearest evidence of its own clause, nearer than the English `time`, and `red` is Spanish.",
+   "name": "lineCases[60] spanish-real A1: A comma ends no clause: `amigo,` and `red` share a clause, so `amigo` one unit before is the nearest evidence of its own clause, nearer than the English `time`, and `red` is Spanish.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5756,7 +5816,7 @@
    ]
   },
   {
-   "name": "lineCases[59] spanish-real A1: Only a token opening with `(` or `[` waives the separator: `«net»` opens with a guillemet, so it is no gloss of `red`; it keys to `net`, English evidence one unit on, and `red` is English.",
+   "name": "lineCases[61] spanish-real A1: Only a token opening with `(` or `[` waives the separator: `«net»` opens with a guillemet, so it is no gloss of `red`; it keys to `net`, English evidence one unit on, and `red` is English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5784,7 +5844,7 @@
    ]
   },
   {
-   "name": "lineCases[60] spanish-real A1: U+2019 is no closer (the closers are `)` `]` `»` `”` `\"` `'`): `el.’` ends no clause, so the evidence word `el` before `red`, as near as the English `time` after, decides and `red` is Spanish (compare `el.” red time`).",
+   "name": "lineCases[62] spanish-real A1: U+2019 is no closer (the closers are `)` `]` `»` `”` `\"` `'`): `el.’` ends no clause, so the evidence word `el` before `red`, as near as the English `time` after, decides and `red` is Spanish (compare `el.” red time`).",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5821,7 +5881,7 @@
    ]
   },
   {
-   "name": "lineCases[61] spanish-real A1: A gloss article is recognised by its key: `The` keys to `the`, so `— The net —` glosses `red` as `— the net —` does, though the English `the` just before would otherwise make it English.",
+   "name": "lineCases[63] spanish-real A1: A gloss article is recognised by its key: `The` keys to `the`, so `— The net —` glosses `red` as `— the net —` does, though the English `the` just before would otherwise make it English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5858,7 +5918,156 @@
    ]
   },
   {
-   "name": "lineCases[62] spanish-real A1: A number is a word character, so a key may end in one: `covid-19` keys to `covid-19`.",
+   "name": "lineCases[64] spanish-real A1: The gloss separator is its own TOKEN that keys to nothing, not punctuation on the homograph's token: the colon of `red:` ends the clause but separates nothing, so `net` is no gloss of `red`; with no evidence in `red`'s own clause, the nearest in the line is the English `net`, and `red` is English.",
+   "steps": [
+    {
+     "call": "chatCefr.vocabHintsForLine",
+     "args": {
+      "section": {
+       "$file": "../chat-cefr/chat-cefr-corpus.json",
+       "$path": "worlds.1.chatCefr"
+      },
+      "line": "We fish with a red: net here",
+      "level": "A1",
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      },
+      "mastered": []
+     },
+     "expect": {
+      "hints": [],
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "lineCases[65] spanish-real A1: A comma glued to the homograph is no gloss separator either: `red,` keys to `red`, `net` follows with no token between, so it is no gloss; it is English evidence one unit on, and `red` is English.",
+   "steps": [
+    {
+     "call": "chatCefr.vocabHintsForLine",
+     "args": {
+      "section": {
+       "$file": "../chat-cefr/chat-cefr-corpus.json",
+       "$path": "worlds.1.chatCefr"
+      },
+      "line": "We fish with a red, net here",
+      "level": "A1",
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      },
+      "mastered": []
+     },
+     "expect": {
+      "hints": [],
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "lineCases[66] spanish-real A1: A glossed homograph is no evidence for its neighbours (only target, foreign and English units are): `red (net)` hints `red`, but `sin`'s nearest evidence is the English `net`, so `sin` is English.",
+   "steps": [
+    {
+     "call": "chatCefr.vocabHintsForLine",
+     "args": {
+      "section": {
+       "$file": "../chat-cefr/chat-cefr-corpus.json",
+       "$path": "worlds.1.chatCefr"
+      },
+      "line": "sin red (net)",
+      "level": "A1",
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      },
+      "mastered": []
+     },
+     "expect": {
+      "hints": [
+       {
+        "word": "red",
+        "translation": "net",
+        "partOfSpeech": "noun",
+        "difficulty": "beginner"
+       }
+      ],
+      "state": {
+       "seen": [
+        "red"
+       ],
+       "newWordIndex": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "lineCases[67] spanish-real A1: Only a token opening with `(` or `[` waives the separator: `“net”` opens with a left double quotation mark, so it is no gloss of `red`; it keys to `net`, English evidence one unit on, and `red` is English.",
+   "steps": [
+    {
+     "call": "chatCefr.vocabHintsForLine",
+     "args": {
+      "section": {
+       "$file": "../chat-cefr/chat-cefr-corpus.json",
+       "$path": "worlds.1.chatCefr"
+      },
+      "line": "We fish with a red “net” here",
+      "level": "A1",
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      },
+      "mastered": []
+     },
+     "expect": {
+      "hints": [],
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "lineCases[68] spanish-real A1: Only a token opening with `(` or `[` waives the separator: `\"net\"` opens with a straight double quote, so it is no gloss of `red`; it keys to `net`, English evidence one unit on, and `red` is English.",
+   "steps": [
+    {
+     "call": "chatCefr.vocabHintsForLine",
+     "args": {
+      "section": {
+       "$file": "../chat-cefr/chat-cefr-corpus.json",
+       "$path": "worlds.1.chatCefr"
+      },
+      "line": "We fish with a red \"net\" here",
+      "level": "A1",
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      },
+      "mastered": []
+     },
+     "expect": {
+      "hints": [],
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "lineCases[69] spanish-real A1: A number is a word character, so a key may end in one: `covid-19` keys to `covid-19`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5895,7 +6104,7 @@
    ]
   },
   {
-   "name": "lineCases[63] spanish-real A1: Longest first: `Buenos días` is one match though `buenos` alone is a key too; the later `buenos` alone is its own match and new.",
+   "name": "lineCases[70] spanish-real A1: Longest first: `Buenos días` is one match though `buenos` alone is a key too; the later `buenos` alone is its own match and new.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5945,7 +6154,7 @@
    ]
   },
   {
-   "name": "lineCases[64] spanish-real A1: No separator and no bracket between `red` and `net`: no gloss; `net`, an English gloss word of the lexicon, is the nearest evidence, so `red` is English.",
+   "name": "lineCases[71] spanish-real A1: No separator and no bracket between `red` and `net`: no gloss; `net`, an English gloss word of the lexicon, is the nearest evidence, so `red` is English.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5973,7 +6182,7 @@
    ]
   },
   {
-   "name": "lineCases[65] spanish-real A1: Clause rule: the homograph `once` after the `;` takes the evidence of its own clause (`amigo`), though the English `friend` is as near across the clause end.",
+   "name": "lineCases[72] spanish-real A1: Clause rule: the homograph `once` after the `;` takes the evidence of its own clause (`amigo`), though the English `friend` is as near across the clause end.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6017,7 +6226,7 @@
    ]
   },
   {
-   "name": "lineCases[66] spanish-real A1: Equal distance: the evidence before decides (`morning` English two units before, `pan` Spanish two after).",
+   "name": "lineCases[73] spanish-real A1: Equal distance: the evidence before decides (`morning` English two units before, `pan` Spanish two after).",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6054,7 +6263,7 @@
    ]
   },
   {
-   "name": "lineCases[67] spanish-real A1: A non-ASCII word that is no key is foreign evidence: `está` makes `sin` Spanish.",
+   "name": "lineCases[74] spanish-real A1: A non-ASCII word that is no key is foreign evidence: `está` makes `sin` Spanish.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6091,7 +6300,7 @@
    ]
   },
   {
-   "name": "lineCases[68] spanish-real A1: Gloss words shorter than three letters are no English evidence: `red` with `on` and `it` only stays without evidence (English).",
+   "name": "lineCases[75] spanish-real A1: Gloss words shorter than three letters are no English evidence: `red` with `on` and `it` only stays without evidence (English).",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6119,7 +6328,7 @@
    ]
   },
   {
-   "name": "lineCases[69] spanish-real A1: A gloss word shorter than three letters (`in`, the gloss of `en`) is no English evidence: the nearest evidence to `red` is `calle`, two units on, so `red` is Spanish.",
+   "name": "lineCases[76] spanish-real A1: A gloss word shorter than three letters (`in`, the gloss of `en`) is no English evidence: the nearest evidence to `red` is `calle`, two units on, so `red` is Spanish.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6163,7 +6372,7 @@
    ]
   },
   {
-   "name": "lineCases[70] spanish-real A1: A token that keys to nothing (`—`) ends a clause: `once` takes the evidence of its own clause (`calle`, two units on), not the English `friend` just before the dash.",
+   "name": "lineCases[77] spanish-real A1: A token that keys to nothing (`—`) ends a clause: `once` takes the evidence of its own clause (`calle`, two units on), not the English `friend` just before the dash.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6207,7 +6416,7 @@
    ]
   },
   {
-   "name": "lineCases[71] spanish-real A2: A homograph judged English (its clause holds the English `friend`) takes no index and is not marked seen; `amigo` after the `;` takes index 0 and, at A2, its card.",
+   "name": "lineCases[78] spanish-real A2: A homograph judged English (its clause holds the English `friend`) takes no index and is not marked seen; `amigo` after the `;` takes index 0 and, at A2, its card.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6244,7 +6453,7 @@
    ]
   },
   {
-   "name": "lineCases[72] spanish-real A1: A1 with a mastered accented word given decomposed: keyed through NFC it matches `mañana`.",
+   "name": "lineCases[79] spanish-real A1: A1 with a mastered accented word given decomposed: keyed through NFC it matches `mañana`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6284,7 +6493,7 @@
    ]
   },
   {
-   "name": "lineCases[73] spanish-real C2: C2 (frequency 0): only the advanced `desafortunadamente`.",
+   "name": "lineCases[80] spanish-real C2: C2 (frequency 0): only the advanced `desafortunadamente`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6322,7 +6531,7 @@
    ]
   },
   {
-   "name": "lineCases[74] french-real A1: An English line with four homographs and English glosses: no target evidence, nothing hinted.",
+   "name": "lineCases[81] french-real A1: An English line with four homographs and English glosses: no target evidence, nothing hinted.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6350,7 +6559,7 @@
    ]
   },
   {
-   "name": "lineCases[75] french-real A1: A mixed line: the English `chance` is passed over; the French clause after the dash hints its words.",
+   "name": "lineCases[82] french-real A1: A mixed line: the English `chance` is passed over; the French clause after the dash hints its words.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6401,7 +6610,7 @@
    ]
   },
   {
-   "name": "lineCases[76] french-real A1: Evidence words: `bonne` speaks for `chance`.",
+   "name": "lineCases[83] french-real A1: Evidence words: `bonne` speaks for `chance`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6438,7 +6647,7 @@
    ]
   },
   {
-   "name": "lineCases[77] french-real A1: English evidence counts the alternatives too: `tall` (an alternative of `grand`, no translation) before `pain` is as near as the evidence word `la` after, and the one before decides, so `pain` is English; `ville` is hinted.",
+   "name": "lineCases[84] french-real A1: English evidence counts the alternatives too: `tall` (an alternative of `grand`, no translation) before `pain` is as near as the evidence word `la` after, and the one before decides, so `pain` is English; `ville` is hinted.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6475,7 +6684,7 @@
    ]
   },
   {
-   "name": "lineCases[78] french-real A1: A clause end may carry a closing guillemet: `friend!»` ends the clause, so `chance` takes the evidence of its own (`mon`), not the English `friend` just before.",
+   "name": "lineCases[85] french-real A1: A clause end may carry a closing guillemet: `friend!»` ends the clause, so `chance` takes the evidence of its own (`mon`), not the English `friend` just before.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6526,7 +6735,7 @@
    ]
   },
   {
-   "name": "lineCases[79] french-real A1: A three-word phrase is one match (`il y a`), then `un an` makes `an` French by the evidence word `un`.",
+   "name": "lineCases[86] french-real A1: A three-word phrase is one match (`il y a`), then `un an` makes `an` French by the evidence word `un`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6569,7 +6778,7 @@
    ]
   },
   {
-   "name": "lineCases[80] french-real A1: With no evidence in its own clause, a homograph takes the nearest in the whole line: the first sentence holds none for `pain` (`no` and `gain` are no evidence), and the nearest in the line is the evidence word `La`, so `pain` is hinted; `place` is French by its own clause.",
+   "name": "lineCases[87] french-real A1: With no evidence in its own clause, a homograph takes the nearest in the whole line: the first sentence holds none for `pain` (`no` and `gain` are no evidence), and the nearest in the line is the evidence word `La`, so `pain` is hinted; `place` is French by its own clause.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6620,7 +6829,7 @@
    ]
   },
   {
-   "name": "lineCases[81] french-real A1: A gloss with an article read past: `pain — the bread —` glosses `pain`.",
+   "name": "lineCases[88] french-real A1: A gloss with an article read past: `pain — the bread —` glosses `pain`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6657,7 +6866,7 @@
    ]
   },
   {
-   "name": "lineCases[82] french-real A2: A2 hints every third new word: `mon` (index 0) gets its card, `ami` (1) and `grand` (2) do not; the bracketed gloss after a target word changes nothing.",
+   "name": "lineCases[89] french-real A2: A2 hints every third new word: `mon` (index 0) gets its card, `ami` (1) and `grand` (2) do not; the bracketed gloss after a target word changes nothing.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6696,7 +6905,7 @@
    ]
   },
   {
-   "name": "lineCases[83] cyrillic-real A1: Cyrillic words keep their letters; the phrase matches first.",
+   "name": "lineCases[90] cyrillic-real A1: Cyrillic words keep their letters; the phrase matches first.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6746,7 +6955,7 @@
    ]
   },
   {
-   "name": "lineCases[84] cyrillic-real A1: A combining mark is a word character, so it is not stripped from a word's end: `Вода́` keys to `вода́`, its stress mark kept.",
+   "name": "lineCases[91] cyrillic-real A1: A combining mark is a word character, so it is not stripped from a word's end: `Вода́` keys to `вода́`, its stress mark kept.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6783,7 +6992,7 @@
    ]
   },
   {
-   "name": "lineCases[85] vietnamese-real A1: A decomposed line finds the composed keys (NFC); the phrase `cà phê` is one match.",
+   "name": "lineCases[92] vietnamese-real A1: A decomposed line finds the composed keys (NFC); the phrase `cà phê` is one match.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6834,7 +7043,7 @@
    ]
   },
   {
-   "name": "lineCases[86] no-language-system A1: A world with nothing to learn: no hints, the state unchanged.",
+   "name": "lineCases[93] no-language-system A1: A world with nothing to learn: no hints, the state unchanged.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -6866,7 +7075,7 @@
    ]
   },
   {
-   "name": "lineCases[87] earlier-shape A1: An entry with no alsoEnglish is no homograph: `once` is hinted even in an English line (the earlier rule).",
+   "name": "lineCases[94] earlier-shape A1: An entry with no alsoEnglish is no homograph: `once` is hinted even in an English line (the earlier rule).",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
