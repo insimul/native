@@ -1,0 +1,4673 @@
+{
+ "area": "ui-notifications",
+ "description": "core's HUD shell corpus (conformance/ui/notifications-cases.json, P2.core) through the ui.notifications.* rows, each op the calls core's reference runner (src/ui/hud-corpus.ts) makes, through them; numbers held exactly (the corpus's tolerance is 1e-9; tests/ui_hud_corpus.cpp replays the file itself within it).",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/ui/notifications-cases.json": "ebc61f0b7159f91c025ca81a0d988996e8df8b0e57a911fcb8dbcb9fc203bc04"
+  }
+ },
+ "cases": [
+  {
+   "name": "ui-notifications: the contract ui.notifications.contract states",
+   "steps": [
+    {
+     "call": "ui.notifications.contract",
+     "expect": {
+      "kinds": [
+       "info",
+       "success",
+       "warning",
+       "danger"
+      ],
+      "kindColor": {
+       "info": "accent",
+       "success": "success",
+       "warning": "warning",
+       "danger": "danger"
+      },
+      "defaultLifetimeSeconds": 4,
+      "historyMax": 200
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: push with no kind or lifetime is info, the accent colour, for the default lifetime",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "push",
+        "text": "Saved."
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       1
+      ],
+      "view": {
+       "visible": [
+        {
+         "id": 1,
+         "text": "Saved.",
+         "kind": "info",
+         "remaining": 4,
+         "color": "accent"
+        }
+       ],
+       "count": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: each kind maps to its token colour",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "push",
+        "text": "a",
+        "kind": "info"
+       },
+       {
+        "op": "push",
+        "text": "b",
+        "kind": "success"
+       },
+       {
+        "op": "push",
+        "text": "c",
+        "kind": "warning"
+       },
+       {
+        "op": "push",
+        "text": "d",
+        "kind": "danger"
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       1,
+       2,
+       3,
+       4
+      ],
+      "view": {
+       "visible": [
+        {
+         "id": 1,
+         "text": "a",
+         "kind": "info",
+         "remaining": 4,
+         "color": "accent"
+        },
+        {
+         "id": 2,
+         "text": "b",
+         "kind": "success",
+         "remaining": 4,
+         "color": "success"
+        },
+        {
+         "id": 3,
+         "text": "c",
+         "kind": "warning",
+         "remaining": 4,
+         "color": "warning"
+        },
+        {
+         "id": 4,
+         "text": "d",
+         "kind": "danger",
+         "remaining": 4,
+         "color": "danger"
+        }
+       ],
+       "count": 4
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: ids start at 1 and count up; the queue is oldest first",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "push",
+        "text": "first"
+       },
+       {
+        "op": "push",
+        "text": "second",
+        "kind": "success",
+        "lifetime": 2
+       },
+       {
+        "op": "push",
+        "text": "third",
+        "kind": "warning",
+        "lifetime": 9
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       1,
+       2,
+       3
+      ],
+      "view": {
+       "visible": [
+        {
+         "id": 1,
+         "text": "first",
+         "kind": "info",
+         "remaining": 4,
+         "color": "accent"
+        },
+        {
+         "id": 2,
+         "text": "second",
+         "kind": "success",
+         "remaining": 2,
+         "color": "success"
+        },
+        {
+         "id": 3,
+         "text": "third",
+         "kind": "warning",
+         "remaining": 9,
+         "color": "warning"
+        }
+       ],
+       "count": 3
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: tick expires the shorter lifetime and reports the change",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "push",
+        "text": "hello",
+        "kind": "info",
+        "lifetime": 3
+       },
+       {
+        "op": "push",
+        "text": "saved",
+        "kind": "success",
+        "lifetime": 1
+       },
+       {
+        "op": "tick",
+        "delta": 1.5
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       1,
+       2,
+       true
+      ],
+      "view": {
+       "visible": [
+        {
+         "id": 1,
+         "text": "hello",
+         "kind": "info",
+         "remaining": 1.5,
+         "color": "accent"
+        }
+       ],
+       "count": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: a toast whose remaining time reaches exactly 0 expires",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "push",
+        "text": "x",
+        "lifetime": 2
+       },
+       {
+        "op": "tick",
+        "delta": 2
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       1,
+       true
+      ],
+      "view": {
+       "visible": [],
+       "count": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: a toast just short of 0 stays, and nothing changed",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "push",
+        "text": "x",
+        "lifetime": 2
+       },
+       {
+        "op": "tick",
+        "delta": 1.75
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       1,
+       false
+      ],
+      "view": {
+       "visible": [
+        {
+         "id": 1,
+         "text": "x",
+         "kind": "info",
+         "remaining": 0.25,
+         "color": "accent"
+        }
+       ],
+       "count": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: ticks accumulate until the lifetime is spent",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "push",
+        "text": "x"
+       },
+       {
+        "op": "tick",
+        "delta": 1
+       },
+       {
+        "op": "tick",
+        "delta": 1
+       },
+       {
+        "op": "tick",
+        "delta": 1
+       },
+       {
+        "op": "tick",
+        "delta": 1
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       1,
+       false,
+       false,
+       false,
+       true
+      ],
+      "view": {
+       "visible": [],
+       "count": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: tick on an empty queue reports no change",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "tick",
+        "delta": 1
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       false
+      ],
+      "view": {
+       "visible": [],
+       "count": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: tick of 0 with toasts showing reports no change",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "push",
+        "text": "x"
+       },
+       {
+        "op": "tick",
+        "delta": 0
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       1,
+       false
+      ],
+      "view": {
+       "visible": [
+        {
+         "id": 1,
+         "text": "x",
+         "kind": "info",
+         "remaining": 4,
+         "color": "accent"
+        }
+       ],
+       "count": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: a lifetime of 0 shows until the next tick, even a tick of 0",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "push",
+        "text": "flash",
+        "kind": "danger",
+        "lifetime": 0
+       },
+       {
+        "op": "tick",
+        "delta": 0
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       1,
+       true
+      ],
+      "view": {
+       "visible": [],
+       "count": 0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: dismiss removes by id; an unknown or already dismissed id removes nothing",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "push",
+        "text": "a"
+       },
+       {
+        "op": "push",
+        "text": "b"
+       },
+       {
+        "op": "dismiss",
+        "id": 1
+       },
+       {
+        "op": "dismiss",
+        "id": 1
+       },
+       {
+        "op": "dismiss",
+        "id": 99
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       1,
+       2,
+       true,
+       false,
+       false
+      ],
+      "view": {
+       "visible": [
+        {
+         "id": 2,
+         "text": "b",
+         "kind": "info",
+         "remaining": 4,
+         "color": "accent"
+        }
+       ],
+       "count": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications toasts: clear empties the queue but does not reset the id counter",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "push",
+        "text": "a"
+       },
+       {
+        "op": "push",
+        "text": "b"
+       },
+       {
+        "op": "clear"
+       },
+       {
+        "op": "push",
+        "text": "c"
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       1,
+       2,
+       null,
+       3
+      ],
+      "view": {
+       "visible": [
+        {
+         "id": 3,
+         "text": "c",
+         "kind": "info",
+         "remaining": 4,
+         "color": "accent"
+        }
+       ],
+       "count": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications history: push stamps the id (from 0) and the clock, and keeps the fields it was given",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "historyPush",
+        "title": "Quest accepted",
+        "description": "The Missing Writer",
+        "icon": "quest",
+        "color": "#c9a24b",
+        "category": "quest",
+        "at": 1000
+       },
+       {
+        "op": "historyAll"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        0,
+        [
+         {
+          "title": "Quest accepted",
+          "description": "The Missing Writer",
+          "icon": "quest",
+          "color": "#c9a24b",
+          "category": "quest",
+          "id": 0,
+          "timestamp": 1000
+         }
+        ]
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications history: absent optional fields stay absent",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "historyPush",
+        "title": "Bare",
+        "at": 5
+       },
+       {
+        "op": "historyAll"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        0,
+        [
+         {
+          "title": "Bare",
+          "id": 0,
+          "timestamp": 5
+         }
+        ]
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications history: every category is carried as given",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "historyPush",
+        "title": "q",
+        "category": "quest",
+        "at": 1
+       },
+       {
+        "op": "historyPush",
+        "title": "s",
+        "category": "system",
+        "at": 2
+       },
+       {
+        "op": "historyPush",
+        "title": "b",
+        "category": "building",
+        "at": 3
+       },
+       {
+        "op": "historyPush",
+        "title": "n",
+        "category": "npc",
+        "at": 4
+       },
+       {
+        "op": "historyPush",
+        "title": "i",
+        "category": "item",
+        "at": 5
+       },
+       {
+        "op": "historyPush",
+        "title": "k",
+        "category": "skill",
+        "at": 6
+       },
+       {
+        "op": "historyPush",
+        "title": "g",
+        "category": "general",
+        "at": 7
+       },
+       {
+        "op": "historyAll"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        [
+         {
+          "title": "g",
+          "category": "general",
+          "id": 6,
+          "timestamp": 7
+         },
+         {
+          "title": "k",
+          "category": "skill",
+          "id": 5,
+          "timestamp": 6
+         },
+         {
+          "title": "i",
+          "category": "item",
+          "id": 4,
+          "timestamp": 5
+         },
+         {
+          "title": "n",
+          "category": "npc",
+          "id": 3,
+          "timestamp": 4
+         },
+         {
+          "title": "b",
+          "category": "building",
+          "id": 2,
+          "timestamp": 3
+         },
+         {
+          "title": "s",
+          "category": "system",
+          "id": 1,
+          "timestamp": 2
+         },
+         {
+          "title": "q",
+          "category": "quest",
+          "id": 0,
+          "timestamp": 1
+         }
+        ]
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications history: recent(n) is the newest n, newest first",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "historyPush",
+        "title": "A",
+        "at": 10
+       },
+       {
+        "op": "historyPush",
+        "title": "B",
+        "at": 20
+       },
+       {
+        "op": "historyPush",
+        "title": "C",
+        "at": 30
+       },
+       {
+        "op": "historyRecent",
+        "count": 2
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        0,
+        1,
+        2,
+        [
+         {
+          "title": "C",
+          "id": 2,
+          "timestamp": 30
+         },
+         {
+          "title": "B",
+          "id": 1,
+          "timestamp": 20
+         }
+        ]
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications history: recent(n) beyond the stored count returns them all, newest first",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "historyPush",
+        "title": "A",
+        "at": 10
+       },
+       {
+        "op": "historyPush",
+        "title": "B",
+        "at": 20
+       },
+       {
+        "op": "historyRecent",
+        "count": 5
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        0,
+        1,
+        [
+         {
+          "title": "B",
+          "id": 1,
+          "timestamp": 20
+         },
+         {
+          "title": "A",
+          "id": 0,
+          "timestamp": 10
+         }
+        ]
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications history: recent(0) is empty",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "historyPush",
+        "title": "A",
+        "at": 10
+       },
+       {
+        "op": "historyRecent",
+        "count": 0
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        0,
+        []
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications history: all() is the whole log, newest first; length counts it",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "historyPush",
+        "title": "A",
+        "at": 10
+       },
+       {
+        "op": "historyPush",
+        "title": "B",
+        "at": 10
+       },
+       {
+        "op": "historyPush",
+        "title": "C",
+        "at": 11
+       },
+       {
+        "op": "historyAll"
+       },
+       {
+        "op": "historyLength"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        0,
+        1,
+        2,
+        [
+         {
+          "title": "C",
+          "id": 2,
+          "timestamp": 11
+         },
+         {
+          "title": "B",
+          "id": 1,
+          "timestamp": 10
+         },
+         {
+          "title": "A",
+          "id": 0,
+          "timestamp": 10
+         }
+        ],
+        3
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications history: the log keeps 200, evicting the oldest first",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "historyPush",
+        "title": "n 0",
+        "at": 100
+       },
+       {
+        "op": "historyPush",
+        "title": "n 1"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 2"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 3"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 4"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 5"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 6"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 7"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 8"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 9"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 10"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 11"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 12"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 13"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 14"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 15"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 16"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 17"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 18"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 19"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 20"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 21"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 22"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 23"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 24"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 25"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 26"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 27"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 28"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 29"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 30"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 31"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 32"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 33"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 34"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 35"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 36"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 37"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 38"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 39"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 40"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 41"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 42"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 43"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 44"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 45"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 46"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 47"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 48"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 49"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 50"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 51"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 52"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 53"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 54"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 55"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 56"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 57"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 58"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 59"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 60"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 61"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 62"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 63"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 64"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 65"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 66"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 67"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 68"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 69"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 70"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 71"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 72"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 73"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 74"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 75"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 76"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 77"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 78"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 79"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 80"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 81"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 82"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 83"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 84"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 85"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 86"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 87"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 88"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 89"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 90"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 91"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 92"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 93"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 94"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 95"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 96"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 97"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 98"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 99"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 100"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 101"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 102"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 103"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 104"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 105"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 106"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 107"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 108"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 109"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 110"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 111"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 112"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 113"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 114"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 115"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 116"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 117"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 118"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 119"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 120"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 121"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 122"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 123"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 124"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 125"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 126"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 127"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 128"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 129"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 130"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 131"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 132"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 133"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 134"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 135"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 136"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 137"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 138"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 139"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 140"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 141"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 142"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 143"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 144"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 145"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 146"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 147"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 148"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 149"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 150"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 151"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 152"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 153"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 154"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 155"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 156"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 157"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 158"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 159"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 160"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 161"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 162"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 163"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 164"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 165"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 166"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 167"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 168"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 169"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 170"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 171"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 172"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 173"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 174"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 175"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 176"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 177"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 178"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 179"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 180"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 181"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 182"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 183"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 184"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 185"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 186"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 187"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 188"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 189"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 190"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 191"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 192"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 193"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 194"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 195"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 196"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 197"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 198"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 199"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 200"
+       },
+       {
+        "op": "historyLength"
+       },
+       {
+        "op": "historyRecent",
+        "count": 1
+       },
+       {
+        "op": "historyAll"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        0,
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        200,
+        200,
+        [
+         {
+          "title": "n 200",
+          "id": 200,
+          "timestamp": 100
+         }
+        ],
+        {
+         "$ids": [
+          200,
+          199,
+          198,
+          197,
+          196,
+          195,
+          194,
+          193,
+          192,
+          191,
+          190,
+          189,
+          188,
+          187,
+          186,
+          185,
+          184,
+          183,
+          182,
+          181,
+          180,
+          179,
+          178,
+          177,
+          176,
+          175,
+          174,
+          173,
+          172,
+          171,
+          170,
+          169,
+          168,
+          167,
+          166,
+          165,
+          164,
+          163,
+          162,
+          161,
+          160,
+          159,
+          158,
+          157,
+          156,
+          155,
+          154,
+          153,
+          152,
+          151,
+          150,
+          149,
+          148,
+          147,
+          146,
+          145,
+          144,
+          143,
+          142,
+          141,
+          140,
+          139,
+          138,
+          137,
+          136,
+          135,
+          134,
+          133,
+          132,
+          131,
+          130,
+          129,
+          128,
+          127,
+          126,
+          125,
+          124,
+          123,
+          122,
+          121,
+          120,
+          119,
+          118,
+          117,
+          116,
+          115,
+          114,
+          113,
+          112,
+          111,
+          110,
+          109,
+          108,
+          107,
+          106,
+          105,
+          104,
+          103,
+          102,
+          101,
+          100,
+          99,
+          98,
+          97,
+          96,
+          95,
+          94,
+          93,
+          92,
+          91,
+          90,
+          89,
+          88,
+          87,
+          86,
+          85,
+          84,
+          83,
+          82,
+          81,
+          80,
+          79,
+          78,
+          77,
+          76,
+          75,
+          74,
+          73,
+          72,
+          71,
+          70,
+          69,
+          68,
+          67,
+          66,
+          65,
+          64,
+          63,
+          62,
+          61,
+          60,
+          59,
+          58,
+          57,
+          56,
+          55,
+          54,
+          53,
+          52,
+          51,
+          50,
+          49,
+          48,
+          47,
+          46,
+          45,
+          44,
+          43,
+          42,
+          41,
+          40,
+          39,
+          38,
+          37,
+          36,
+          35,
+          34,
+          33,
+          32,
+          31,
+          30,
+          29,
+          28,
+          27,
+          26,
+          25,
+          24,
+          23,
+          22,
+          21,
+          20,
+          19,
+          18,
+          17,
+          16,
+          15,
+          14,
+          13,
+          12,
+          11,
+          10,
+          9,
+          8,
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1
+         ]
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications history: exactly 200 evicts nothing",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "historyPush",
+        "title": "n 0",
+        "category": "system",
+        "at": 100
+       },
+       {
+        "op": "historyPush",
+        "title": "n 1",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 2",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 3",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 4",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 5",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 6",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 7",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 8",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 9",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 10",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 11",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 12",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 13",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 14",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 15",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 16",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 17",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 18",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 19",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 20",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 21",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 22",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 23",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 24",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 25",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 26",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 27",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 28",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 29",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 30",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 31",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 32",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 33",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 34",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 35",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 36",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 37",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 38",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 39",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 40",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 41",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 42",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 43",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 44",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 45",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 46",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 47",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 48",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 49",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 50",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 51",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 52",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 53",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 54",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 55",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 56",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 57",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 58",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 59",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 60",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 61",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 62",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 63",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 64",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 65",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 66",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 67",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 68",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 69",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 70",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 71",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 72",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 73",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 74",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 75",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 76",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 77",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 78",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 79",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 80",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 81",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 82",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 83",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 84",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 85",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 86",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 87",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 88",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 89",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 90",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 91",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 92",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 93",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 94",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 95",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 96",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 97",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 98",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 99",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 100",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 101",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 102",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 103",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 104",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 105",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 106",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 107",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 108",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 109",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 110",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 111",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 112",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 113",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 114",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 115",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 116",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 117",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 118",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 119",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 120",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 121",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 122",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 123",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 124",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 125",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 126",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 127",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 128",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 129",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 130",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 131",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 132",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 133",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 134",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 135",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 136",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 137",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 138",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 139",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 140",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 141",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 142",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 143",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 144",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 145",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 146",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 147",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 148",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 149",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 150",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 151",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 152",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 153",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 154",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 155",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 156",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 157",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 158",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 159",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 160",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 161",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 162",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 163",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 164",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 165",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 166",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 167",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 168",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 169",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 170",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 171",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 172",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 173",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 174",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 175",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 176",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 177",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 178",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 179",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 180",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 181",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 182",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 183",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 184",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 185",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 186",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 187",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 188",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 189",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 190",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 191",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 192",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 193",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 194",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 195",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 196",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 197",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 198",
+        "category": "system"
+       },
+       {
+        "op": "historyPush",
+        "title": "n 199",
+        "category": "system"
+       },
+       {
+        "op": "historyLength"
+       },
+       {
+        "op": "historyRecent",
+        "count": 1
+       },
+       {
+        "op": "historyRecent",
+        "count": 200
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        0,
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        {
+         "$type": "number"
+        },
+        199,
+        200,
+        [
+         {
+          "title": "n 199",
+          "category": "system",
+          "id": 199,
+          "timestamp": 100
+         }
+        ],
+        {
+         "$ids": [
+          199,
+          198,
+          197,
+          196,
+          195,
+          194,
+          193,
+          192,
+          191,
+          190,
+          189,
+          188,
+          187,
+          186,
+          185,
+          184,
+          183,
+          182,
+          181,
+          180,
+          179,
+          178,
+          177,
+          176,
+          175,
+          174,
+          173,
+          172,
+          171,
+          170,
+          169,
+          168,
+          167,
+          166,
+          165,
+          164,
+          163,
+          162,
+          161,
+          160,
+          159,
+          158,
+          157,
+          156,
+          155,
+          154,
+          153,
+          152,
+          151,
+          150,
+          149,
+          148,
+          147,
+          146,
+          145,
+          144,
+          143,
+          142,
+          141,
+          140,
+          139,
+          138,
+          137,
+          136,
+          135,
+          134,
+          133,
+          132,
+          131,
+          130,
+          129,
+          128,
+          127,
+          126,
+          125,
+          124,
+          123,
+          122,
+          121,
+          120,
+          119,
+          118,
+          117,
+          116,
+          115,
+          114,
+          113,
+          112,
+          111,
+          110,
+          109,
+          108,
+          107,
+          106,
+          105,
+          104,
+          103,
+          102,
+          101,
+          100,
+          99,
+          98,
+          97,
+          96,
+          95,
+          94,
+          93,
+          92,
+          91,
+          90,
+          89,
+          88,
+          87,
+          86,
+          85,
+          84,
+          83,
+          82,
+          81,
+          80,
+          79,
+          78,
+          77,
+          76,
+          75,
+          74,
+          73,
+          72,
+          71,
+          70,
+          69,
+          68,
+          67,
+          66,
+          65,
+          64,
+          63,
+          62,
+          61,
+          60,
+          59,
+          58,
+          57,
+          56,
+          55,
+          54,
+          53,
+          52,
+          51,
+          50,
+          49,
+          48,
+          47,
+          46,
+          45,
+          44,
+          43,
+          42,
+          41,
+          40,
+          39,
+          38,
+          37,
+          36,
+          35,
+          34,
+          33,
+          32,
+          31,
+          30,
+          29,
+          28,
+          27,
+          26,
+          25,
+          24,
+          23,
+          22,
+          21,
+          20,
+          19,
+          18,
+          17,
+          16,
+          15,
+          14,
+          13,
+          12,
+          11,
+          10,
+          9,
+          8,
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+         ]
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-notifications history: clear empties the log but does not reset the id counter",
+   "steps": [
+    {
+     "call": "ui.notifications.create",
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.notifications.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "historyPush",
+        "title": "A",
+        "at": 1
+       },
+       {
+        "op": "historyPush",
+        "title": "B",
+        "at": 2
+       },
+       {
+        "op": "historyClear"
+       },
+       {
+        "op": "historyLength"
+       },
+       {
+        "op": "historyPush",
+        "title": "C",
+        "at": 3
+       },
+       {
+        "op": "historyAll"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        0,
+        1,
+        null,
+        0,
+        2,
+        [
+         {
+          "title": "C",
+          "id": 2,
+          "timestamp": 3
+         }
+        ]
+       ]
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

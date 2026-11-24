@@ -1,0 +1,2385 @@
+{
+  "area": "ui-compass",
+  "description": "The compass view-model (Features WV1, P2.core; catalog ui-compass): a heading in degrees clockwise from north with its 8-point name, and a bearing for every marker on the strip. Core space (CORE_CONVENTION): ground axes x and z, yaw in radians about +Y, positive turning +Z toward +X; a yaw of t faces (sin t, cos t). North is an input to op view (northYaw, the core-space yaw that faces north) and a world fact to ops north and world_view (P2.core-north): a geography's georeference states it (northYaw = georeference.rotationRad, 0 when absent), and a world that states none gets the declared default (contract defaultNorthYaw, core +Z, east at +X). Runner: src/ui/hud-corpus.ts. Op view runs compassView({yaw, northYaw, position, markers, span?, mirrored?}) -> {ok:true, value} or {ok:false, refusal:{code, field}}; op heading runs compassHeading(yaw, northYaw); op cardinal runs compassCardinal(degrees); op north runs worldNorth(geography?) -> {ok:true, value:{northYaw, source}} or a refusal; op world_view runs worldCompassView({geography?, yaw? | facing?, position, markers, span?, mirrored?}) -> {ok:true, north, value} or a refusal. One exception to the null rule below: span: null means the span is not stated (the default span, contract spanNull), never a non-finite span, in ops view and world_view alike (P2.core's m3, settled in P1.core-slots). A level that lays the IR's plan out mirrored (Unreal's village: X = x, Y = z) keeps the IR's numbers for positions, hands its facing as the ground direction facing {x, z} in them, never its own yaw, and says mirrored: true, so the strip puts each marker on the side the player sees it (contract mirroredLevel, relativeRule). Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). A non-finite number is written as null in an input. Regenerate with npm run hud-corpora; npm run hud-corpora:check fails on any difference.",
+  "version": 1,
+  "sources": [
+    "New in core. The 8 points and their rounding (a half-way heading rounds clockwise) match Godot compass_panel.gd cardinal_of, Unreal SInsimulVillageHud and Babylon genre-hud-model compassPoint; the heading as facing less north matches Unreal SInsimulVillageHud::SetCompass; the default span is Godot's SPAN.",
+    "Inputs are synthetic. No case sits on an exact visibility edge, where a last-bit difference between engines would flip it, nor on the heading's 0/360 wrap (a facing along an axis is written with an exact 0).",
+    "North (P2.core-north, UU gaps 4.9): GeoreferenceIR.rotationRad (NF.C6) where the world states one; else core +Z, the reading core's backdrop already gives a plan (editor/layout/backdrop.ts: N is +z, E is +x). The mirrored level is Unreal's village (InsimulVillageDirector NorthYaw 90: \"The IR's +z is north; that is Unreal's +Y\"; SInsimulVillageHud::SetCompass bearing = yaw - NorthYaw, which a mirror makes run backwards; its yaw grows clockwise seen from above, SInsimulVillageHud.cpp:246, so facing (X, Y) the player's right is (-Y, X)). A reflection is undone by no rotation, so the mirrored strip keeps the world's labels and draws relative in the player's own sense (mirrored: true; P2.core-north round 2, the critic's B1)."
+  ],
+  "tolerance": 1e-9,
+  "contract": {
+    "points": [
+      "N",
+      "NE",
+      "E",
+      "SE",
+      "S",
+      "SW",
+      "W",
+      "NW"
+    ],
+    "defaultSpanDegrees": 150,
+    "spanNull": "span: null is not stated: the default span (defaultSpanDegrees), never not_finite",
+    "minDistanceM": 1e-9,
+    "headingRange": "[0, 360)",
+    "relativeRange": "(-180, 180], positive to the right as the player sees it",
+    "relativeRule": "stripRelative(bearing, heading, mirrored): unmirrored relative = wrap(bearing - heading); mirrored: true, relative = wrap(heading - bearing) (labels run N W S E clockwise); wrap into (-180, 180]. Cardinal ticks use the same rule",
+    "visibleRule": "|relative| <= span / 2; offset = relative / (span / 2)",
+    "refusalCodes": [
+      "not_finite",
+      "span_out_of_range",
+      "not_boolean"
+    ],
+    "refusalOrder": [
+      "yaw",
+      "northYaw",
+      "span",
+      "span range",
+      "mirrored",
+      "position.x",
+      "position.z",
+      "markers[i].position.x",
+      "markers[i].position.z"
+    ],
+    "defaultNorthYaw": 0,
+    "northSources": [
+      "georeference",
+      "default"
+    ],
+    "northRule": "a georeference states north: northYaw = rotationRad (0 when absent; not wrapped); no geography or no georeference: defaultNorthYaw",
+    "worldRefusalCodes": [
+      "not_finite",
+      "facing_twice",
+      "facing_unstated",
+      "facing_zero",
+      "span_out_of_range",
+      "not_boolean"
+    ],
+    "worldRefusalOrder": [
+      "georeference.rotationRad",
+      "facing given twice or not at all",
+      "facing.x",
+      "facing.z",
+      "facing of length 0",
+      "then op view's order"
+    ],
+    "mirroredLevel": "level X = IR x, level Y = IR z; positions are the IR's numbers as they stand; facing = {x: Forward.X, z: Forward.Y}, i.e. an Unreal yaw d faces {x: cos d, z: sin d}; and mirrored: true. Heading, cardinal and bearings stay the world's labels; relative and offset are in the player's own sense (a marker on the player's right in the level is on the strip's right) and the view carries mirrored: true. The minimap passes mirrored too (contract projectionMirrored)"
+  },
+  "cases": [
+    {
+      "name": "facing north with north at +Z is heading 0, N",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "a quarter turn toward +X is heading 90, E",
+      "op": "view",
+      "input": {
+        "yaw": 1.5707963267948966,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 90,
+          "cardinal": "E",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "facing -Z is heading 180, S",
+      "op": "view",
+      "input": {
+        "yaw": 3.141592653589793,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 180,
+          "cardinal": "S",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "a negative yaw wraps: -90 is heading 270, W",
+      "op": "view",
+      "input": {
+        "yaw": -1.5707963267948966,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 270,
+          "cardinal": "W",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "more than a turn wraps: 450 is heading 90",
+      "op": "view",
+      "input": {
+        "yaw": 7.853981633974483,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 90,
+          "cardinal": "E",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "north is an input: with north at +X, facing +X is heading 0",
+      "op": "view",
+      "input": {
+        "yaw": 1.5707963267948966,
+        "northYaw": 1.5707963267948966,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "with north at +X, facing +Z is heading 270, W",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 1.5707963267948966,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 270,
+          "cardinal": "W",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "with north at -Z, facing +X is heading 270, W",
+      "op": "view",
+      "input": {
+        "yaw": 1.5707963267948966,
+        "northYaw": 3.141592653589793,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 270,
+          "cardinal": "W",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "heading 30 rounds to NE; the default span is stated",
+      "op": "view",
+      "input": {
+        "yaw": 0.5235987755982988,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 29.999999999999996,
+          "cardinal": "NE",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "marker bearings are measured from the subject: ahead, right, behind, left, and the diagonals",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "ahead",
+            "position": {
+              "x": 10,
+              "z": 30
+            }
+          },
+          {
+            "id": "right",
+            "position": {
+              "x": 20,
+              "z": 20
+            }
+          },
+          {
+            "id": "behind",
+            "position": {
+              "x": 10,
+              "z": 10
+            }
+          },
+          {
+            "id": "left",
+            "position": {
+              "x": 0,
+              "z": 20
+            }
+          },
+          {
+            "id": "ahead-right",
+            "position": {
+              "x": 20,
+              "z": 30
+            }
+          },
+          {
+            "id": "ahead-left",
+            "position": {
+              "x": 0,
+              "z": 30
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 150,
+          "markers": [
+            {
+              "id": "ahead",
+              "distance": 10,
+              "bearing": 0,
+              "relative": 0,
+              "visible": true,
+              "offset": 0
+            },
+            {
+              "id": "right",
+              "distance": 10,
+              "bearing": 90,
+              "relative": 90,
+              "visible": false,
+              "offset": null
+            },
+            {
+              "id": "behind",
+              "distance": 10,
+              "bearing": 180,
+              "relative": 180,
+              "visible": false,
+              "offset": null
+            },
+            {
+              "id": "left",
+              "distance": 10,
+              "bearing": 270,
+              "relative": -90,
+              "visible": false,
+              "offset": null
+            },
+            {
+              "id": "ahead-right",
+              "distance": 14.142135623730951,
+              "bearing": 45,
+              "relative": 45,
+              "visible": true,
+              "offset": 0.6
+            },
+            {
+              "id": "ahead-left",
+              "distance": 14.142135623730951,
+              "bearing": 315,
+              "relative": -45,
+              "visible": true,
+              "offset": -0.6
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "relative bearing wraps across north (facing 350, a marker at bearing 10 is 20 to the right)",
+      "op": "view",
+      "input": {
+        "yaw": 6.108652381980153,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "m",
+            "position": {
+              "x": 18.68240888334652,
+              "z": 69.2403876506104
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 349.99999999999994,
+          "cardinal": "N",
+          "span": 150,
+          "markers": [
+            {
+              "id": "m",
+              "distance": 49.99999999999999,
+              "bearing": 10.000000000000002,
+              "relative": 20.000000000000057,
+              "visible": true,
+              "offset": 0.26666666666666744
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a marker straight behind is +180, never -180",
+      "op": "view",
+      "input": {
+        "yaw": 1.5707963267948966,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "behind",
+            "position": {
+              "x": 0,
+              "z": 20
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 90,
+          "cardinal": "E",
+          "span": 150,
+          "markers": [
+            {
+              "id": "behind",
+              "distance": 10,
+              "bearing": 270,
+              "relative": 180,
+              "visible": false,
+              "offset": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a marker on the subject has a distance of 0 and no bearing",
+      "op": "view",
+      "input": {
+        "yaw": 0.7853981633974483,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "here",
+            "position": {
+              "x": 10,
+              "z": 20
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 45,
+          "cardinal": "NE",
+          "span": 150,
+          "markers": [
+            {
+              "id": "here",
+              "distance": 0,
+              "bearing": null,
+              "relative": null,
+              "visible": false,
+              "offset": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "bearings follow north, not the facing alone",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 1.5707963267948966,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "plusX",
+            "position": {
+              "x": 30,
+              "z": 20
+            }
+          },
+          {
+            "id": "plusZ",
+            "position": {
+              "x": 10,
+              "z": 40
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 270,
+          "cardinal": "W",
+          "span": 150,
+          "markers": [
+            {
+              "id": "plusX",
+              "distance": 20,
+              "bearing": 0,
+              "relative": 90,
+              "visible": false,
+              "offset": null
+            },
+            {
+              "id": "plusZ",
+              "distance": 20,
+              "bearing": 270,
+              "relative": 0,
+              "visible": true,
+              "offset": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a span of 360 shows every marker; behind is the right-hand edge",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "behind",
+            "position": {
+              "x": 10,
+              "z": 0
+            }
+          },
+          {
+            "id": "right",
+            "position": {
+              "x": 40,
+              "z": 20
+            }
+          }
+        ],
+        "span": 360
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 360,
+          "markers": [
+            {
+              "id": "behind",
+              "distance": 20,
+              "bearing": 180,
+              "relative": 180,
+              "visible": true,
+              "offset": 1
+            },
+            {
+              "id": "right",
+              "distance": 30,
+              "bearing": 90,
+              "relative": 90,
+              "visible": true,
+              "offset": 0.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a narrower span hides what a wider one shows",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "ahead-right",
+            "position": {
+              "x": 20,
+              "z": 30
+            }
+          },
+          {
+            "id": "wide",
+            "position": {
+              "x": 30,
+              "z": 25
+            }
+          }
+        ],
+        "span": 100
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 100,
+          "markers": [
+            {
+              "id": "ahead-right",
+              "distance": 14.142135623730951,
+              "bearing": 45,
+              "relative": 45,
+              "visible": true,
+              "offset": 0.9
+            },
+            {
+              "id": "wide",
+              "distance": 20.615528128088304,
+              "bearing": 75.96375653207353,
+              "relative": 75.96375653207353,
+              "visible": false,
+              "offset": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "kind and label are carried through; absent ones stay absent; the input order is kept",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "z-last",
+            "position": {
+              "x": 10,
+              "z": 30
+            },
+            "kind": "quest",
+            "label": "The well"
+          },
+          {
+            "id": "a-first",
+            "position": {
+              "x": 20,
+              "z": 30
+            },
+            "kind": "waypoint"
+          },
+          {
+            "id": "m-mid",
+            "position": {
+              "x": 0,
+              "z": 30
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 150,
+          "markers": [
+            {
+              "id": "z-last",
+              "distance": 10,
+              "bearing": 0,
+              "relative": 0,
+              "visible": true,
+              "offset": 0,
+              "kind": "quest",
+              "label": "The well"
+            },
+            {
+              "id": "a-first",
+              "distance": 14.142135623730951,
+              "bearing": 45,
+              "relative": 45,
+              "visible": true,
+              "offset": 0.6,
+              "kind": "waypoint"
+            },
+            {
+              "id": "m-mid",
+              "distance": 14.142135623730951,
+              "bearing": 315,
+              "relative": -45,
+              "visible": true,
+              "offset": -0.6
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "no markers is an empty list",
+      "op": "view",
+      "input": {
+        "yaw": 3.490658503988659,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 200,
+          "cardinal": "S",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "refused: a non-finite yaw (null in JSON)",
+      "op": "view",
+      "input": {
+        "yaw": null,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_finite",
+          "field": "yaw"
+        }
+      }
+    },
+    {
+      "name": "refused: a non-finite northYaw",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": null,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_finite",
+          "field": "northYaw"
+        }
+      }
+    },
+    {
+      "name": "refusal order: yaw before northYaw",
+      "op": "view",
+      "input": {
+        "yaw": null,
+        "northYaw": null,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_finite",
+          "field": "yaw"
+        }
+      }
+    },
+    {
+      "name": "a span of null reads as absent: the default span, not a non-finite one",
+      "op": "view",
+      "input": {
+        "yaw": 0.5235987755982988,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "ahead-right",
+            "position": {
+              "x": 20,
+              "z": 30
+            }
+          }
+        ],
+        "span": null
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 29.999999999999996,
+          "cardinal": "NE",
+          "span": 150,
+          "markers": [
+            {
+              "id": "ahead-right",
+              "distance": 14.142135623730951,
+              "bearing": 45,
+              "relative": 15.000000000000004,
+              "visible": true,
+              "offset": 0.20000000000000004
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "refused: a span of 0",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [],
+        "span": 0
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "span_out_of_range",
+          "field": "span"
+        }
+      }
+    },
+    {
+      "name": "refused: a span over 360",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [],
+        "span": 361
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "span_out_of_range",
+          "field": "span"
+        }
+      }
+    },
+    {
+      "name": "refused: a negative span",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [],
+        "span": -10
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "span_out_of_range",
+          "field": "span"
+        }
+      }
+    },
+    {
+      "name": "refused: a non-finite position",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": null
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_finite",
+          "field": "position.z"
+        }
+      }
+    },
+    {
+      "name": "refusal order: span before position",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": null,
+          "z": 0
+        },
+        "markers": [],
+        "span": 0
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "span_out_of_range",
+          "field": "span"
+        }
+      }
+    },
+    {
+      "name": "mirrored: op view takes it too; facing +Z with north at +Z, a marker at +X is on the strip's left",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "plusX",
+            "position": {
+              "x": 30,
+              "z": 20
+            }
+          }
+        ],
+        "mirrored": true
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 150,
+          "markers": [
+            {
+              "id": "plusX",
+              "distance": 20,
+              "bearing": 90,
+              "relative": -90,
+              "visible": false,
+              "offset": null
+            }
+          ],
+          "mirrored": true
+        }
+      }
+    },
+    {
+      "name": "refused: a mirrored that is not a boolean",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [],
+        "mirrored": 1
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_boolean",
+          "field": "mirrored"
+        }
+      }
+    },
+    {
+      "name": "refusal order: the span's range before mirrored",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [],
+        "span": 0,
+        "mirrored": 1
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "span_out_of_range",
+          "field": "span"
+        }
+      }
+    },
+    {
+      "name": "refusal order: mirrored before position",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": null,
+          "z": 0
+        },
+        "markers": [],
+        "mirrored": "true"
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_boolean",
+          "field": "mirrored"
+        }
+      }
+    },
+    {
+      "name": "refused: the first marker with a non-finite position, by index",
+      "op": "view",
+      "input": {
+        "yaw": 0,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "ok",
+            "position": {
+              "x": 1,
+              "z": 1
+            }
+          },
+          {
+            "id": "bad",
+            "position": {
+              "x": 1,
+              "z": null
+            }
+          },
+          {
+            "id": "worse",
+            "position": {
+              "x": null,
+              "z": null
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_finite",
+          "field": "markers[1].position.z"
+        }
+      }
+    },
+    {
+      "name": "heading: yaw less north, in degrees",
+      "op": "heading",
+      "input": {
+        "yaw": 1.7453292519943295,
+        "northYaw": 0.5235987755982988
+      },
+      "expected": {
+        "heading": 70
+      }
+    },
+    {
+      "name": "heading: a tiny negative wraps to 0, never 360",
+      "op": "heading",
+      "input": {
+        "yaw": -1e-17,
+        "northYaw": 0
+      },
+      "expected": {
+        "heading": 0
+      }
+    },
+    {
+      "name": "heading: exactly a full turn is 0",
+      "op": "heading",
+      "input": {
+        "yaw": 6.283185307179586,
+        "northYaw": 0
+      },
+      "expected": {
+        "heading": 0
+      }
+    },
+    {
+      "name": "cardinal: 0 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 0
+      },
+      "expected": {
+        "cardinal": "N"
+      }
+    },
+    {
+      "name": "cardinal: 22.4 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 22.4
+      },
+      "expected": {
+        "cardinal": "N"
+      }
+    },
+    {
+      "name": "cardinal: 22.5 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 22.5
+      },
+      "expected": {
+        "cardinal": "NE"
+      }
+    },
+    {
+      "name": "cardinal: 67.5 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 67.5
+      },
+      "expected": {
+        "cardinal": "E"
+      }
+    },
+    {
+      "name": "cardinal: 90 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 90
+      },
+      "expected": {
+        "cardinal": "E"
+      }
+    },
+    {
+      "name": "cardinal: 112.5 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 112.5
+      },
+      "expected": {
+        "cardinal": "SE"
+      }
+    },
+    {
+      "name": "cardinal: 135 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 135
+      },
+      "expected": {
+        "cardinal": "SE"
+      }
+    },
+    {
+      "name": "cardinal: 157.5 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 157.5
+      },
+      "expected": {
+        "cardinal": "S"
+      }
+    },
+    {
+      "name": "cardinal: 180 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 180
+      },
+      "expected": {
+        "cardinal": "S"
+      }
+    },
+    {
+      "name": "cardinal: 202.5 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 202.5
+      },
+      "expected": {
+        "cardinal": "SW"
+      }
+    },
+    {
+      "name": "cardinal: 270 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 270
+      },
+      "expected": {
+        "cardinal": "W"
+      }
+    },
+    {
+      "name": "cardinal: 337.4 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 337.4
+      },
+      "expected": {
+        "cardinal": "NW"
+      }
+    },
+    {
+      "name": "cardinal: 337.5 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 337.5
+      },
+      "expected": {
+        "cardinal": "N"
+      }
+    },
+    {
+      "name": "cardinal: 359.9 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 359.9
+      },
+      "expected": {
+        "cardinal": "N"
+      }
+    },
+    {
+      "name": "cardinal: -45 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": -45
+      },
+      "expected": {
+        "cardinal": "NW"
+      }
+    },
+    {
+      "name": "cardinal: 405 degrees",
+      "op": "cardinal",
+      "input": {
+        "degrees": 405
+      },
+      "expected": {
+        "cardinal": "NE"
+      }
+    },
+    {
+      "name": "north: a world with no geography gets the declared default, +Z",
+      "op": "north",
+      "input": {},
+      "expected": {
+        "ok": true,
+        "value": {
+          "northYaw": 0,
+          "source": "default"
+        }
+      }
+    },
+    {
+      "name": "north: a null geography states nothing: the default",
+      "op": "north",
+      "input": {
+        "geography": null
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "northYaw": 0,
+          "source": "default"
+        }
+      }
+    },
+    {
+      "name": "north: a geography with no georeference states nothing: the default",
+      "op": "north",
+      "input": {
+        "geography": {
+          "settlements": []
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "northYaw": 0,
+          "source": "default"
+        }
+      }
+    },
+    {
+      "name": "north: a georeference with no rotation states north at +Z, from the world",
+      "op": "north",
+      "input": {
+        "geography": {
+          "georeference": {
+            "crs": "EPSG:32630",
+            "origin": {
+              "x": 500000,
+              "y": 4100000
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "northYaw": 0,
+          "source": "georeference"
+        }
+      }
+    },
+    {
+      "name": "north: a georeference turned 90 degrees counter-clockwise puts north at +X",
+      "op": "north",
+      "input": {
+        "geography": {
+          "georeference": {
+            "crs": "EPSG:32630",
+            "origin": {
+              "x": 500000,
+              "y": 4100000
+            },
+            "rotationRad": 1.5707963267948966
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "northYaw": 1.5707963267948966,
+          "source": "georeference"
+        }
+      }
+    },
+    {
+      "name": "north: a clockwise turn is a negative yaw, kept as stated (not wrapped)",
+      "op": "north",
+      "input": {
+        "geography": {
+          "georeference": {
+            "crs": "EPSG:32630",
+            "origin": {
+              "x": 500000,
+              "y": 4100000
+            },
+            "rotationRad": -0.5235987755982988
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "northYaw": -0.5235987755982988,
+          "source": "georeference"
+        }
+      }
+    },
+    {
+      "name": "north: a local frame states north the same way",
+      "op": "north",
+      "input": {
+        "geography": {
+          "georeference": {
+            "crs": "local",
+            "origin": {
+              "x": 500000,
+              "y": 4100000
+            },
+            "rotationRad": 3.141592653589793
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "northYaw": 3.141592653589793,
+          "source": "georeference"
+        }
+      }
+    },
+    {
+      "name": "north: refused, a non-finite rotation",
+      "op": "north",
+      "input": {
+        "geography": {
+          "georeference": {
+            "crs": "local",
+            "origin": {
+              "x": 0,
+              "y": 0
+            },
+            "rotationRad": null
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_finite",
+          "field": "georeference.rotationRad"
+        }
+      }
+    },
+    {
+      "name": "world: no geography, facing +Z is N; a marker at +X is due east",
+      "op": "world_view",
+      "input": {
+        "yaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "east",
+            "position": {
+              "x": 30,
+              "z": 20
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 150,
+          "markers": [
+            {
+              "id": "east",
+              "distance": 20,
+              "bearing": 90,
+              "relative": 90,
+              "visible": false,
+              "offset": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "world: the georeference states the north: turned 90, facing +Z is W and +X is N",
+      "op": "world_view",
+      "input": {
+        "geography": {
+          "georeference": {
+            "crs": "EPSG:32630",
+            "origin": {
+              "x": 500000,
+              "y": 4100000
+            },
+            "rotationRad": 1.5707963267948966
+          }
+        },
+        "yaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "plusX",
+            "position": {
+              "x": 30,
+              "z": 20
+            }
+          },
+          {
+            "id": "plusZ",
+            "position": {
+              "x": 10,
+              "z": 40
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 1.5707963267948966,
+          "source": "georeference"
+        },
+        "value": {
+          "heading": 270,
+          "cardinal": "W",
+          "span": 150,
+          "markers": [
+            {
+              "id": "plusX",
+              "distance": 20,
+              "bearing": 0,
+              "relative": 90,
+              "visible": false,
+              "offset": null
+            },
+            {
+              "id": "plusZ",
+              "distance": 20,
+              "bearing": 270,
+              "relative": 0,
+              "visible": true,
+              "offset": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "world: an unturned georeference agrees with the default but says it is stated",
+      "op": "world_view",
+      "input": {
+        "geography": {
+          "georeference": {
+            "crs": "EPSG:32630",
+            "origin": {
+              "x": 500000,
+              "y": 4100000
+            },
+            "rotationRad": 0
+          }
+        },
+        "yaw": 0.7853981633974483,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "georeference"
+        },
+        "value": {
+          "heading": 45,
+          "cardinal": "NE",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "world: a facing direction instead of a yaw: +X is E",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 1,
+          "z": 0
+        },
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 90,
+          "cardinal": "E",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "world: a facing need not be a unit vector",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": -3,
+          "z": -3
+        },
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 225,
+          "cardinal": "SW",
+          "span": 150,
+          "markers": []
+        }
+      }
+    },
+    {
+      "name": "mirrored level (X=x, Y=z): an Unreal yaw of 0 faces the IR +x, heading 90, E (yaw less a fixed north says 270, W)",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 1,
+          "z": 0
+        },
+        "mirrored": true,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 90,
+          "cardinal": "E",
+          "span": 150,
+          "markers": [],
+          "mirrored": true
+        }
+      }
+    },
+    {
+      "name": "mirrored level: an Unreal yaw of 90 faces the IR +z, heading 0, N",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 0,
+          "z": 1
+        },
+        "mirrored": true,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 150,
+          "markers": [],
+          "mirrored": true
+        }
+      }
+    },
+    {
+      "name": "mirrored level: an Unreal yaw of 30 is heading 60 (the mirror reverses the turn; the strip is mirrored with it)",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 0.8660254037844387,
+          "z": 0.49999999999999994
+        },
+        "mirrored": true,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 60.00000000000001,
+          "cardinal": "NE",
+          "span": 150,
+          "markers": [],
+          "mirrored": true
+        }
+      }
+    },
+    {
+      "name": "mirrored level: an Unreal yaw of -120 is heading 210, SW",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": -0.4999999999999998,
+          "z": -0.8660254037844387
+        },
+        "mirrored": true,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 210,
+          "cardinal": "SW",
+          "span": 150,
+          "markers": [],
+          "mirrored": true
+        }
+      }
+    },
+    {
+      "name": "mirrored level: facing north, a marker at the level's +X (east, on the player's left) is on the strip's left",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 0,
+          "z": 1
+        },
+        "mirrored": true,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "levelPlusX",
+            "position": {
+              "x": 30,
+              "z": 20
+            }
+          },
+          {
+            "id": "levelMinusX",
+            "position": {
+              "x": -10,
+              "z": 20
+            }
+          }
+        ],
+        "span": 200
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 200,
+          "markers": [
+            {
+              "id": "levelPlusX",
+              "distance": 20,
+              "bearing": 90,
+              "relative": -90,
+              "visible": true,
+              "offset": -0.9
+            },
+            {
+              "id": "levelMinusX",
+              "distance": 20,
+              "bearing": 270,
+              "relative": 90,
+              "visible": true,
+              "offset": 0.9
+            }
+          ],
+          "mirrored": true
+        }
+      }
+    },
+    {
+      "name": "mirrored level: facing north, the labels run N W S E clockwise (W on the right, E on the left, S behind)",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 0,
+          "z": 1
+        },
+        "mirrored": true,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "n",
+            "position": {
+              "x": 10,
+              "z": 40
+            }
+          },
+          {
+            "id": "w",
+            "position": {
+              "x": -10,
+              "z": 20
+            }
+          },
+          {
+            "id": "s",
+            "position": {
+              "x": 11,
+              "z": 0
+            }
+          },
+          {
+            "id": "e",
+            "position": {
+              "x": 30,
+              "z": 20
+            }
+          }
+        ],
+        "span": 360
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 360,
+          "markers": [
+            {
+              "id": "n",
+              "distance": 20,
+              "bearing": 0,
+              "relative": 0,
+              "visible": true,
+              "offset": 0
+            },
+            {
+              "id": "w",
+              "distance": 20,
+              "bearing": 270,
+              "relative": 90,
+              "visible": true,
+              "offset": 0.5
+            },
+            {
+              "id": "s",
+              "distance": 20.024984394500787,
+              "bearing": 177.13759477388825,
+              "relative": -177.13759477388825,
+              "visible": true,
+              "offset": -0.9840977487438236
+            },
+            {
+              "id": "e",
+              "distance": 20,
+              "bearing": 90,
+              "relative": -90,
+              "visible": true,
+              "offset": -0.5
+            }
+          ],
+          "mirrored": true
+        }
+      }
+    },
+    {
+      "name": "mirrored level: an Unreal yaw of 30, a marker ahead-right in the level is on the strip's right",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 0.8660254037844387,
+          "z": 0.49999999999999994
+        },
+        "mirrored": true,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "aheadRight",
+            "position": {
+              "x": 16.66025403784439,
+              "z": 28.464101615137753
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 60.00000000000001,
+          "cardinal": "NE",
+          "span": 150,
+          "markers": [
+            {
+              "id": "aheadRight",
+              "distance": 10.77032961426901,
+              "bearing": 38.198590513648206,
+              "relative": 21.8014094863518,
+              "visible": true,
+              "offset": 0.290685459818024
+            }
+          ],
+          "mirrored": true
+        }
+      }
+    },
+    {
+      "name": "mirrored level with a georeference turned 90: the level's +X is north, and its +Y (W) is on the player's right",
+      "op": "world_view",
+      "input": {
+        "geography": {
+          "georeference": {
+            "crs": "EPSG:32630",
+            "origin": {
+              "x": 500000,
+              "y": 4100000
+            },
+            "rotationRad": 1.5707963267948966
+          }
+        },
+        "facing": {
+          "x": 1,
+          "z": 0
+        },
+        "mirrored": true,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "levelPlusY",
+            "position": {
+              "x": 10,
+              "z": 40
+            }
+          }
+        ],
+        "span": 200
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 1.5707963267948966,
+          "source": "georeference"
+        },
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 200,
+          "markers": [
+            {
+              "id": "levelPlusY",
+              "distance": 20,
+              "bearing": 270,
+              "relative": 90,
+              "visible": true,
+              "offset": 0.9
+            }
+          ],
+          "mirrored": true
+        }
+      }
+    },
+    {
+      "name": "world: the same markers unmirrored put E on the right and W on the left (the control for the mirrored strip)",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 0,
+          "z": 1
+        },
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "n",
+            "position": {
+              "x": 10,
+              "z": 40
+            }
+          },
+          {
+            "id": "w",
+            "position": {
+              "x": -10,
+              "z": 20
+            }
+          },
+          {
+            "id": "s",
+            "position": {
+              "x": 11,
+              "z": 0
+            }
+          },
+          {
+            "id": "e",
+            "position": {
+              "x": 30,
+              "z": 20
+            }
+          }
+        ],
+        "span": 360
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 360,
+          "markers": [
+            {
+              "id": "n",
+              "distance": 20,
+              "bearing": 0,
+              "relative": 0,
+              "visible": true,
+              "offset": 0
+            },
+            {
+              "id": "w",
+              "distance": 20,
+              "bearing": 270,
+              "relative": -90,
+              "visible": true,
+              "offset": -0.5
+            },
+            {
+              "id": "s",
+              "distance": 20.024984394500787,
+              "bearing": 177.13759477388825,
+              "relative": 177.13759477388825,
+              "visible": true,
+              "offset": 0.9840977487438236
+            },
+            {
+              "id": "e",
+              "distance": 20,
+              "bearing": 90,
+              "relative": 90,
+              "visible": true,
+              "offset": 0.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "world: mirrored false is an unmirrored level",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 0,
+          "z": 1
+        },
+        "mirrored": false,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "e",
+            "position": {
+              "x": 30,
+              "z": 20
+            }
+          }
+        ],
+        "span": 200
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 200,
+          "markers": [
+            {
+              "id": "e",
+              "distance": 20,
+              "bearing": 90,
+              "relative": 90,
+              "visible": true,
+              "offset": 0.9
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "world: refused, a mirrored that is not a boolean",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 0,
+          "z": 1
+        },
+        "mirrored": "yes",
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_boolean",
+          "field": "mirrored"
+        }
+      }
+    },
+    {
+      "name": "world: refused, a facing given as both a yaw and a direction",
+      "op": "world_view",
+      "input": {
+        "yaw": 0,
+        "facing": {
+          "x": 0,
+          "z": 1
+        },
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "facing_twice",
+          "field": "facing"
+        }
+      }
+    },
+    {
+      "name": "world: refused, no facing at all",
+      "op": "world_view",
+      "input": {
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "facing_unstated",
+          "field": "facing"
+        }
+      }
+    },
+    {
+      "name": "world: refused, a facing of length 0",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 0,
+          "z": 0
+        },
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "facing_zero",
+          "field": "facing"
+        }
+      }
+    },
+    {
+      "name": "world: refused, a non-finite facing",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 1,
+          "z": null
+        },
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_finite",
+          "field": "facing.z"
+        }
+      }
+    },
+    {
+      "name": "world: refusal order: the north facts before the facing",
+      "op": "world_view",
+      "input": {
+        "geography": {
+          "georeference": {
+            "crs": "local",
+            "origin": {
+              "x": 0,
+              "y": 0
+            },
+            "rotationRad": null
+          }
+        },
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_finite",
+          "field": "georeference.rotationRad"
+        }
+      }
+    },
+    {
+      "name": "world: the view's own refusals follow (a span of 0)",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 0,
+          "z": 1
+        },
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [],
+        "span": 0
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "span_out_of_range",
+          "field": "span"
+        }
+      }
+    },
+    {
+      "name": "world: a span of null reads as absent, the default span",
+      "op": "world_view",
+      "input": {
+        "facing": {
+          "x": 0,
+          "z": 1
+        },
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": [
+          {
+            "id": "e",
+            "position": {
+              "x": 30,
+              "z": 20
+            }
+          }
+        ],
+        "span": null
+      },
+      "expected": {
+        "ok": true,
+        "north": {
+          "northYaw": 0,
+          "source": "default"
+        },
+        "value": {
+          "heading": 0,
+          "cardinal": "N",
+          "span": 150,
+          "markers": [
+            {
+              "id": "e",
+              "distance": 20,
+              "bearing": 90,
+              "relative": 90,
+              "visible": false,
+              "offset": null
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

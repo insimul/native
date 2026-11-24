@@ -1,0 +1,2738 @@
+{
+ "area": "ui-compass",
+ "description": "core's HUD shell corpus (conformance/ui/compass-cases.json, P2.core) through the ui.compass.* rows, each op the calls core's reference runner (src/ui/hud-corpus.ts) makes, through them; numbers held exactly (the corpus's tolerance is 1e-9; tests/ui_hud_corpus.cpp replays the file itself within it).",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/ui/compass-cases.json": "ca29db0766df2fa676af008cb8af58cc56d71e34a1ee02d9d006a4c5a8996e69"
+  }
+ },
+ "cases": [
+  {
+   "name": "ui-compass: the contract ui.compass.contract states",
+   "steps": [
+    {
+     "call": "ui.compass.contract",
+     "expect": {
+      "points": [
+       "N",
+       "NE",
+       "E",
+       "SE",
+       "S",
+       "SW",
+       "W",
+       "NW"
+      ],
+      "defaultSpanDegrees": 150,
+      "minDistanceM": 1e-9,
+      "defaultNorthYaw": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: facing north with north at +Z is heading 0, N",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: a quarter turn toward +X is heading 90, E",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 1.5707963267948966,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 90,
+       "cardinal": "E",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: facing -Z is heading 180, S",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 3.141592653589793,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 180,
+       "cardinal": "S",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: a negative yaw wraps: -90 is heading 270, W",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": -1.5707963267948966,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 270,
+       "cardinal": "W",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: more than a turn wraps: 450 is heading 90",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 7.853981633974483,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 90,
+       "cardinal": "E",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: north is an input: with north at +X, facing +X is heading 0",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 1.5707963267948966,
+      "northYaw": 1.5707963267948966,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: with north at +X, facing +Z is heading 270, W",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 1.5707963267948966,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 270,
+       "cardinal": "W",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: with north at -Z, facing +X is heading 270, W",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 1.5707963267948966,
+      "northYaw": 3.141592653589793,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 270,
+       "cardinal": "W",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: heading 30 rounds to NE; the default span is stated",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0.5235987755982988,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 29.999999999999996,
+       "cardinal": "NE",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: marker bearings are measured from the subject: ahead, right, behind, left, and the diagonals",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "ahead",
+        "position": {
+         "x": 10,
+         "z": 30
+        }
+       },
+       {
+        "id": "right",
+        "position": {
+         "x": 20,
+         "z": 20
+        }
+       },
+       {
+        "id": "behind",
+        "position": {
+         "x": 10,
+         "z": 10
+        }
+       },
+       {
+        "id": "left",
+        "position": {
+         "x": 0,
+         "z": 20
+        }
+       },
+       {
+        "id": "ahead-right",
+        "position": {
+         "x": 20,
+         "z": 30
+        }
+       },
+       {
+        "id": "ahead-left",
+        "position": {
+         "x": 0,
+         "z": 30
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 150,
+       "markers": [
+        {
+         "id": "ahead",
+         "distance": 10,
+         "bearing": 0,
+         "relative": 0,
+         "visible": true,
+         "offset": 0
+        },
+        {
+         "id": "right",
+         "distance": 10,
+         "bearing": 90,
+         "relative": 90,
+         "visible": false,
+         "offset": null
+        },
+        {
+         "id": "behind",
+         "distance": 10,
+         "bearing": 180,
+         "relative": 180,
+         "visible": false,
+         "offset": null
+        },
+        {
+         "id": "left",
+         "distance": 10,
+         "bearing": 270,
+         "relative": -90,
+         "visible": false,
+         "offset": null
+        },
+        {
+         "id": "ahead-right",
+         "distance": 14.142135623730951,
+         "bearing": 45,
+         "relative": 45,
+         "visible": true,
+         "offset": 0.6
+        },
+        {
+         "id": "ahead-left",
+         "distance": 14.142135623730951,
+         "bearing": 315,
+         "relative": -45,
+         "visible": true,
+         "offset": -0.6
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: relative bearing wraps across north (facing 350, a marker at bearing 10 is 20 to the right)",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 6.108652381980153,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "m",
+        "position": {
+         "x": 18.68240888334652,
+         "z": 69.2403876506104
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 349.99999999999994,
+       "cardinal": "N",
+       "span": 150,
+       "markers": [
+        {
+         "id": "m",
+         "distance": 49.99999999999999,
+         "bearing": 10.000000000000002,
+         "relative": 20.000000000000057,
+         "visible": true,
+         "offset": 0.26666666666666744
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: a marker straight behind is +180, never -180",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 1.5707963267948966,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "behind",
+        "position": {
+         "x": 0,
+         "z": 20
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 90,
+       "cardinal": "E",
+       "span": 150,
+       "markers": [
+        {
+         "id": "behind",
+         "distance": 10,
+         "bearing": 270,
+         "relative": 180,
+         "visible": false,
+         "offset": null
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: a marker on the subject has a distance of 0 and no bearing",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0.7853981633974483,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "here",
+        "position": {
+         "x": 10,
+         "z": 20
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 45,
+       "cardinal": "NE",
+       "span": 150,
+       "markers": [
+        {
+         "id": "here",
+         "distance": 0,
+         "bearing": null,
+         "relative": null,
+         "visible": false,
+         "offset": null
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: bearings follow north, not the facing alone",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 1.5707963267948966,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "plusX",
+        "position": {
+         "x": 30,
+         "z": 20
+        }
+       },
+       {
+        "id": "plusZ",
+        "position": {
+         "x": 10,
+         "z": 40
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 270,
+       "cardinal": "W",
+       "span": 150,
+       "markers": [
+        {
+         "id": "plusX",
+         "distance": 20,
+         "bearing": 0,
+         "relative": 90,
+         "visible": false,
+         "offset": null
+        },
+        {
+         "id": "plusZ",
+         "distance": 20,
+         "bearing": 270,
+         "relative": 0,
+         "visible": true,
+         "offset": 0
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: a span of 360 shows every marker; behind is the right-hand edge",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "behind",
+        "position": {
+         "x": 10,
+         "z": 0
+        }
+       },
+       {
+        "id": "right",
+        "position": {
+         "x": 40,
+         "z": 20
+        }
+       }
+      ],
+      "span": 360
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 360,
+       "markers": [
+        {
+         "id": "behind",
+         "distance": 20,
+         "bearing": 180,
+         "relative": 180,
+         "visible": true,
+         "offset": 1
+        },
+        {
+         "id": "right",
+         "distance": 30,
+         "bearing": 90,
+         "relative": 90,
+         "visible": true,
+         "offset": 0.5
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: a narrower span hides what a wider one shows",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "ahead-right",
+        "position": {
+         "x": 20,
+         "z": 30
+        }
+       },
+       {
+        "id": "wide",
+        "position": {
+         "x": 30,
+         "z": 25
+        }
+       }
+      ],
+      "span": 100
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 100,
+       "markers": [
+        {
+         "id": "ahead-right",
+         "distance": 14.142135623730951,
+         "bearing": 45,
+         "relative": 45,
+         "visible": true,
+         "offset": 0.9
+        },
+        {
+         "id": "wide",
+         "distance": 20.615528128088304,
+         "bearing": 75.96375653207353,
+         "relative": 75.96375653207353,
+         "visible": false,
+         "offset": null
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: kind and label are carried through; absent ones stay absent; the input order is kept",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "z-last",
+        "position": {
+         "x": 10,
+         "z": 30
+        },
+        "kind": "quest",
+        "label": "The well"
+       },
+       {
+        "id": "a-first",
+        "position": {
+         "x": 20,
+         "z": 30
+        },
+        "kind": "waypoint"
+       },
+       {
+        "id": "m-mid",
+        "position": {
+         "x": 0,
+         "z": 30
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 150,
+       "markers": [
+        {
+         "id": "z-last",
+         "distance": 10,
+         "bearing": 0,
+         "relative": 0,
+         "visible": true,
+         "offset": 0,
+         "kind": "quest",
+         "label": "The well"
+        },
+        {
+         "id": "a-first",
+         "distance": 14.142135623730951,
+         "bearing": 45,
+         "relative": 45,
+         "visible": true,
+         "offset": 0.6,
+         "kind": "waypoint"
+        },
+        {
+         "id": "m-mid",
+         "distance": 14.142135623730951,
+         "bearing": 315,
+         "relative": -45,
+         "visible": true,
+         "offset": -0.6
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: no markers is an empty list",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 3.490658503988659,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 200,
+       "cardinal": "S",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refused: a non-finite yaw (null in JSON)",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": null,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_finite",
+       "field": "yaw",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refused: a non-finite northYaw",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": null,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_finite",
+       "field": "northYaw",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refusal order: yaw before northYaw",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": null,
+      "northYaw": null,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_finite",
+       "field": "yaw",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: a span of null reads as absent: the default span, not a non-finite one",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0.5235987755982988,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "ahead-right",
+        "position": {
+         "x": 20,
+         "z": 30
+        }
+       }
+      ],
+      "span": null
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 29.999999999999996,
+       "cardinal": "NE",
+       "span": 150,
+       "markers": [
+        {
+         "id": "ahead-right",
+         "distance": 14.142135623730951,
+         "bearing": 45,
+         "relative": 15.000000000000004,
+         "visible": true,
+         "offset": 0.20000000000000004
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refused: a span of 0",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [],
+      "span": 0
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "span_out_of_range",
+       "field": "span",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refused: a span over 360",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [],
+      "span": 361
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "span_out_of_range",
+       "field": "span",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refused: a negative span",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [],
+      "span": -10
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "span_out_of_range",
+       "field": "span",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refused: a non-finite position",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": null
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_finite",
+       "field": "position.z",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refusal order: span before position",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": null,
+       "z": 0
+      },
+      "markers": [],
+      "span": 0
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "span_out_of_range",
+       "field": "span",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: mirrored: op view takes it too; facing +Z with north at +Z, a marker at +X is on the strip's left",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "plusX",
+        "position": {
+         "x": 30,
+         "z": 20
+        }
+       }
+      ],
+      "mirrored": true
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 150,
+       "markers": [
+        {
+         "id": "plusX",
+         "distance": 20,
+         "bearing": 90,
+         "relative": -90,
+         "visible": false,
+         "offset": null
+        }
+       ],
+       "mirrored": true
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refused: a mirrored that is not a boolean",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [],
+      "mirrored": 1
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_boolean",
+       "field": "mirrored",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refusal order: the span's range before mirrored",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [],
+      "span": 0,
+      "mirrored": 1
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "span_out_of_range",
+       "field": "span",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refusal order: mirrored before position",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": null,
+       "z": 0
+      },
+      "markers": [],
+      "mirrored": "true"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_boolean",
+       "field": "mirrored",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass view: refused: the first marker with a non-finite position, by index",
+   "steps": [
+    {
+     "call": "ui.compass.view",
+     "args": {
+      "yaw": 0,
+      "northYaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "ok",
+        "position": {
+         "x": 1,
+         "z": 1
+        }
+       },
+       {
+        "id": "bad",
+        "position": {
+         "x": 1,
+         "z": null
+        }
+       },
+       {
+        "id": "worse",
+        "position": {
+         "x": null,
+         "z": null
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_finite",
+       "field": "markers[1].position.z",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass heading: heading: yaw less north, in degrees",
+   "steps": [
+    {
+     "call": "ui.compass.heading",
+     "args": {
+      "yaw": 1.7453292519943295,
+      "northYaw": 0.5235987755982988
+     },
+     "expect": {
+      "heading": 70
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass heading: heading: a tiny negative wraps to 0, never 360",
+   "steps": [
+    {
+     "call": "ui.compass.heading",
+     "args": {
+      "yaw": -1e-17,
+      "northYaw": 0
+     },
+     "expect": {
+      "heading": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass heading: heading: exactly a full turn is 0",
+   "steps": [
+    {
+     "call": "ui.compass.heading",
+     "args": {
+      "yaw": 6.283185307179586,
+      "northYaw": 0
+     },
+     "expect": {
+      "heading": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 0 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 0
+     },
+     "expect": {
+      "cardinal": "N"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 22.4 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 22.4
+     },
+     "expect": {
+      "cardinal": "N"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 22.5 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 22.5
+     },
+     "expect": {
+      "cardinal": "NE"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 67.5 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 67.5
+     },
+     "expect": {
+      "cardinal": "E"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 90 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 90
+     },
+     "expect": {
+      "cardinal": "E"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 112.5 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 112.5
+     },
+     "expect": {
+      "cardinal": "SE"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 135 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 135
+     },
+     "expect": {
+      "cardinal": "SE"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 157.5 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 157.5
+     },
+     "expect": {
+      "cardinal": "S"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 180 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 180
+     },
+     "expect": {
+      "cardinal": "S"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 202.5 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 202.5
+     },
+     "expect": {
+      "cardinal": "SW"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 270 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 270
+     },
+     "expect": {
+      "cardinal": "W"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 337.4 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 337.4
+     },
+     "expect": {
+      "cardinal": "NW"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 337.5 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 337.5
+     },
+     "expect": {
+      "cardinal": "N"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 359.9 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 359.9
+     },
+     "expect": {
+      "cardinal": "N"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: -45 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": -45
+     },
+     "expect": {
+      "cardinal": "NW"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass cardinal: cardinal: 405 degrees",
+   "steps": [
+    {
+     "call": "ui.compass.cardinal",
+     "args": {
+      "degrees": 405
+     },
+     "expect": {
+      "cardinal": "NE"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass north: north: a world with no geography gets the declared default, +Z",
+   "steps": [
+    {
+     "call": "ui.compass.north",
+     "args": {},
+     "expect": {
+      "ok": true,
+      "value": {
+       "northYaw": 0,
+       "source": "default"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass north: north: a null geography states nothing: the default",
+   "steps": [
+    {
+     "call": "ui.compass.north",
+     "args": {
+      "geography": null
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "northYaw": 0,
+       "source": "default"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass north: north: a geography with no georeference states nothing: the default",
+   "steps": [
+    {
+     "call": "ui.compass.north",
+     "args": {
+      "geography": {
+       "settlements": []
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "northYaw": 0,
+       "source": "default"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass north: north: a georeference with no rotation states north at +Z, from the world",
+   "steps": [
+    {
+     "call": "ui.compass.north",
+     "args": {
+      "geography": {
+       "georeference": {
+        "crs": "EPSG:32630",
+        "origin": {
+         "x": 500000,
+         "y": 4100000
+        }
+       }
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "northYaw": 0,
+       "source": "georeference"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass north: north: a georeference turned 90 degrees counter-clockwise puts north at +X",
+   "steps": [
+    {
+     "call": "ui.compass.north",
+     "args": {
+      "geography": {
+       "georeference": {
+        "crs": "EPSG:32630",
+        "origin": {
+         "x": 500000,
+         "y": 4100000
+        },
+        "rotationRad": 1.5707963267948966
+       }
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "northYaw": 1.5707963267948966,
+       "source": "georeference"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass north: north: a clockwise turn is a negative yaw, kept as stated (not wrapped)",
+   "steps": [
+    {
+     "call": "ui.compass.north",
+     "args": {
+      "geography": {
+       "georeference": {
+        "crs": "EPSG:32630",
+        "origin": {
+         "x": 500000,
+         "y": 4100000
+        },
+        "rotationRad": -0.5235987755982988
+       }
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "northYaw": -0.5235987755982988,
+       "source": "georeference"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass north: north: a local frame states north the same way",
+   "steps": [
+    {
+     "call": "ui.compass.north",
+     "args": {
+      "geography": {
+       "georeference": {
+        "crs": "local",
+        "origin": {
+         "x": 500000,
+         "y": 4100000
+        },
+        "rotationRad": 3.141592653589793
+       }
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "northYaw": 3.141592653589793,
+       "source": "georeference"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass north: north: refused, a non-finite rotation",
+   "steps": [
+    {
+     "call": "ui.compass.north",
+     "args": {
+      "geography": {
+       "georeference": {
+        "crs": "local",
+        "origin": {
+         "x": 0,
+         "y": 0
+        },
+        "rotationRad": null
+       }
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_finite",
+       "field": "georeference.rotationRad",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: no geography, facing +Z is N; a marker at +X is due east",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "yaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "east",
+        "position": {
+         "x": 30,
+         "z": 20
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 150,
+       "markers": [
+        {
+         "id": "east",
+         "distance": 20,
+         "bearing": 90,
+         "relative": 90,
+         "visible": false,
+         "offset": null
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: the georeference states the north: turned 90, facing +Z is W and +X is N",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "geography": {
+       "georeference": {
+        "crs": "EPSG:32630",
+        "origin": {
+         "x": 500000,
+         "y": 4100000
+        },
+        "rotationRad": 1.5707963267948966
+       }
+      },
+      "yaw": 0,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "plusX",
+        "position": {
+         "x": 30,
+         "z": 20
+        }
+       },
+       {
+        "id": "plusZ",
+        "position": {
+         "x": 10,
+         "z": 40
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 1.5707963267948966,
+       "source": "georeference"
+      },
+      "value": {
+       "heading": 270,
+       "cardinal": "W",
+       "span": 150,
+       "markers": [
+        {
+         "id": "plusX",
+         "distance": 20,
+         "bearing": 0,
+         "relative": 90,
+         "visible": false,
+         "offset": null
+        },
+        {
+         "id": "plusZ",
+         "distance": 20,
+         "bearing": 270,
+         "relative": 0,
+         "visible": true,
+         "offset": 0
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: an unturned georeference agrees with the default but says it is stated",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "geography": {
+       "georeference": {
+        "crs": "EPSG:32630",
+        "origin": {
+         "x": 500000,
+         "y": 4100000
+        },
+        "rotationRad": 0
+       }
+      },
+      "yaw": 0.7853981633974483,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "georeference"
+      },
+      "value": {
+       "heading": 45,
+       "cardinal": "NE",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: a facing direction instead of a yaw: +X is E",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 1,
+       "z": 0
+      },
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 90,
+       "cardinal": "E",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: a facing need not be a unit vector",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": -3,
+       "z": -3
+      },
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 225,
+       "cardinal": "SW",
+       "span": 150,
+       "markers": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: mirrored level (X=x, Y=z): an Unreal yaw of 0 faces the IR +x, heading 90, E (yaw less a fixed north says 270, W)",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 1,
+       "z": 0
+      },
+      "mirrored": true,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 90,
+       "cardinal": "E",
+       "span": 150,
+       "markers": [],
+       "mirrored": true
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: mirrored level: an Unreal yaw of 90 faces the IR +z, heading 0, N",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 0,
+       "z": 1
+      },
+      "mirrored": true,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 150,
+       "markers": [],
+       "mirrored": true
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: mirrored level: an Unreal yaw of 30 is heading 60 (the mirror reverses the turn; the strip is mirrored with it)",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 0.8660254037844387,
+       "z": 0.49999999999999994
+      },
+      "mirrored": true,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 60.00000000000001,
+       "cardinal": "NE",
+       "span": 150,
+       "markers": [],
+       "mirrored": true
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: mirrored level: an Unreal yaw of -120 is heading 210, SW",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": -0.4999999999999998,
+       "z": -0.8660254037844387
+      },
+      "mirrored": true,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 210,
+       "cardinal": "SW",
+       "span": 150,
+       "markers": [],
+       "mirrored": true
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: mirrored level: facing north, a marker at the level's +X (east, on the player's left) is on the strip's left",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 0,
+       "z": 1
+      },
+      "mirrored": true,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "levelPlusX",
+        "position": {
+         "x": 30,
+         "z": 20
+        }
+       },
+       {
+        "id": "levelMinusX",
+        "position": {
+         "x": -10,
+         "z": 20
+        }
+       }
+      ],
+      "span": 200
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 200,
+       "markers": [
+        {
+         "id": "levelPlusX",
+         "distance": 20,
+         "bearing": 90,
+         "relative": -90,
+         "visible": true,
+         "offset": -0.9
+        },
+        {
+         "id": "levelMinusX",
+         "distance": 20,
+         "bearing": 270,
+         "relative": 90,
+         "visible": true,
+         "offset": 0.9
+        }
+       ],
+       "mirrored": true
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: mirrored level: facing north, the labels run N W S E clockwise (W on the right, E on the left, S behind)",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 0,
+       "z": 1
+      },
+      "mirrored": true,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "n",
+        "position": {
+         "x": 10,
+         "z": 40
+        }
+       },
+       {
+        "id": "w",
+        "position": {
+         "x": -10,
+         "z": 20
+        }
+       },
+       {
+        "id": "s",
+        "position": {
+         "x": 11,
+         "z": 0
+        }
+       },
+       {
+        "id": "e",
+        "position": {
+         "x": 30,
+         "z": 20
+        }
+       }
+      ],
+      "span": 360
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 360,
+       "markers": [
+        {
+         "id": "n",
+         "distance": 20,
+         "bearing": 0,
+         "relative": 0,
+         "visible": true,
+         "offset": 0
+        },
+        {
+         "id": "w",
+         "distance": 20,
+         "bearing": 270,
+         "relative": 90,
+         "visible": true,
+         "offset": 0.5
+        },
+        {
+         "id": "s",
+         "distance": 20.024984394500787,
+         "bearing": 177.13759477388825,
+         "relative": -177.13759477388825,
+         "visible": true,
+         "offset": -0.9840977487438236
+        },
+        {
+         "id": "e",
+         "distance": 20,
+         "bearing": 90,
+         "relative": -90,
+         "visible": true,
+         "offset": -0.5
+        }
+       ],
+       "mirrored": true
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: mirrored level: an Unreal yaw of 30, a marker ahead-right in the level is on the strip's right",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 0.8660254037844387,
+       "z": 0.49999999999999994
+      },
+      "mirrored": true,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "aheadRight",
+        "position": {
+         "x": 16.66025403784439,
+         "z": 28.464101615137753
+        }
+       }
+      ]
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 60.00000000000001,
+       "cardinal": "NE",
+       "span": 150,
+       "markers": [
+        {
+         "id": "aheadRight",
+         "distance": 10.77032961426901,
+         "bearing": 38.198590513648206,
+         "relative": 21.8014094863518,
+         "visible": true,
+         "offset": 0.290685459818024
+        }
+       ],
+       "mirrored": true
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: mirrored level with a georeference turned 90: the level's +X is north, and its +Y (W) is on the player's right",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "geography": {
+       "georeference": {
+        "crs": "EPSG:32630",
+        "origin": {
+         "x": 500000,
+         "y": 4100000
+        },
+        "rotationRad": 1.5707963267948966
+       }
+      },
+      "facing": {
+       "x": 1,
+       "z": 0
+      },
+      "mirrored": true,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "levelPlusY",
+        "position": {
+         "x": 10,
+         "z": 40
+        }
+       }
+      ],
+      "span": 200
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 1.5707963267948966,
+       "source": "georeference"
+      },
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 200,
+       "markers": [
+        {
+         "id": "levelPlusY",
+         "distance": 20,
+         "bearing": 270,
+         "relative": 90,
+         "visible": true,
+         "offset": 0.9
+        }
+       ],
+       "mirrored": true
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: the same markers unmirrored put E on the right and W on the left (the control for the mirrored strip)",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 0,
+       "z": 1
+      },
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "n",
+        "position": {
+         "x": 10,
+         "z": 40
+        }
+       },
+       {
+        "id": "w",
+        "position": {
+         "x": -10,
+         "z": 20
+        }
+       },
+       {
+        "id": "s",
+        "position": {
+         "x": 11,
+         "z": 0
+        }
+       },
+       {
+        "id": "e",
+        "position": {
+         "x": 30,
+         "z": 20
+        }
+       }
+      ],
+      "span": 360
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 360,
+       "markers": [
+        {
+         "id": "n",
+         "distance": 20,
+         "bearing": 0,
+         "relative": 0,
+         "visible": true,
+         "offset": 0
+        },
+        {
+         "id": "w",
+         "distance": 20,
+         "bearing": 270,
+         "relative": -90,
+         "visible": true,
+         "offset": -0.5
+        },
+        {
+         "id": "s",
+         "distance": 20.024984394500787,
+         "bearing": 177.13759477388825,
+         "relative": 177.13759477388825,
+         "visible": true,
+         "offset": 0.9840977487438236
+        },
+        {
+         "id": "e",
+         "distance": 20,
+         "bearing": 90,
+         "relative": 90,
+         "visible": true,
+         "offset": 0.5
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: mirrored false is an unmirrored level",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 0,
+       "z": 1
+      },
+      "mirrored": false,
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "e",
+        "position": {
+         "x": 30,
+         "z": 20
+        }
+       }
+      ],
+      "span": 200
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 200,
+       "markers": [
+        {
+         "id": "e",
+         "distance": 20,
+         "bearing": 90,
+         "relative": 90,
+         "visible": true,
+         "offset": 0.9
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: refused, a mirrored that is not a boolean",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 0,
+       "z": 1
+      },
+      "mirrored": "yes",
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_boolean",
+       "field": "mirrored",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: refused, a facing given as both a yaw and a direction",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "yaw": 0,
+      "facing": {
+       "x": 0,
+       "z": 1
+      },
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "facing_twice",
+       "field": "facing",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: refused, no facing at all",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "facing_unstated",
+       "field": "facing",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: refused, a facing of length 0",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 0,
+       "z": 0
+      },
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "facing_zero",
+       "field": "facing",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: refused, a non-finite facing",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 1,
+       "z": null
+      },
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_finite",
+       "field": "facing.z",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: refusal order: the north facts before the facing",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "geography": {
+       "georeference": {
+        "crs": "local",
+        "origin": {
+         "x": 0,
+         "y": 0
+        },
+        "rotationRad": null
+       }
+      },
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": []
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_finite",
+       "field": "georeference.rotationRad",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: the view's own refusals follow (a span of 0)",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 0,
+       "z": 1
+      },
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [],
+      "span": 0
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "span_out_of_range",
+       "field": "span",
+       "message": {
+        "$type": "string"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-compass world_view: world: a span of null reads as absent, the default span",
+   "steps": [
+    {
+     "call": "ui.compass.worldView",
+     "args": {
+      "facing": {
+       "x": 0,
+       "z": 1
+      },
+      "position": {
+       "x": 10,
+       "z": 20
+      },
+      "markers": [
+       {
+        "id": "e",
+        "position": {
+         "x": 30,
+         "z": 20
+        }
+       }
+      ],
+      "span": null
+     },
+     "expect": {
+      "ok": true,
+      "north": {
+       "northYaw": 0,
+       "source": "default"
+      },
+      "value": {
+       "heading": 0,
+       "cardinal": "N",
+       "span": 150,
+       "markers": [
+        {
+         "id": "e",
+         "distance": 20,
+         "bearing": 90,
+         "relative": 90,
+         "visible": false,
+         "offset": null
+        }
+       ]
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -7171,6 +7171,389 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
   };
 
+  // @insimul/core/src/game-engine/logic/NotificationStore.ts
+  var NOTIFICATION_HISTORY_MAX = 200;
+  var NotificationLog = class {
+    constructor(options = {}) {
+      __publicField(this, "notifications", []);
+      __publicField(this, "idCounter", 0);
+      __publicField(this, "listeners", /* @__PURE__ */ new Set());
+      __publicField(this, "now");
+      __publicField(this, "maxItems");
+      this.now = options.now ?? (() => Date.now());
+      this.maxItems = options.maxItems ?? NOTIFICATION_HISTORY_MAX;
+    }
+    /** Push a new notification and notify listeners. */
+    push(opts) {
+      const n = {
+        ...opts,
+        id: this.idCounter++,
+        timestamp: this.now()
+      };
+      this.notifications.push(n);
+      if (this.notifications.length > this.maxItems) {
+        this.notifications.splice(0, this.notifications.length - this.maxItems);
+      }
+      this.emit();
+      return n;
+    }
+    /** Return the most recent `count` notifications (newest-first). */
+    recent(count) {
+      const start = Math.max(0, this.notifications.length - count);
+      return this.notifications.slice(start).reverse();
+    }
+    /** Return all notifications (newest-first). */
+    all() {
+      return [...this.notifications].reverse();
+    }
+    /** Number of stored notifications. */
+    get length() {
+      return this.notifications.length;
+    }
+    /** Clear all notifications. */
+    clear() {
+      this.notifications = [];
+      this.emit();
+    }
+    /** Subscribe to changes. Returns an unsubscribe function. */
+    subscribe(fn) {
+      this.listeners.add(fn);
+      return () => this.listeners.delete(fn);
+    }
+    emit() {
+      this.listeners.forEach((fn) => fn());
+    }
+  };
+  var NotificationStore = new NotificationLog();
+
+  // @insimul/core/src/ui/compass-model.ts
+  var COMPASS_POINTS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  var DEFAULT_COMPASS_SPAN_DEG = 150;
+  var COMPASS_MIN_DISTANCE_M = 1e-9;
+  var RAD_TO_DEG = 180 / Math.PI;
+  function wrapDegrees(degrees) {
+    let r = degrees % 360;
+    if (r < 0) r += 360;
+    if (r >= 360 || r === 0) r = 0;
+    return r;
+  }
+  function wrapSignedDegrees(degrees) {
+    const r = wrapDegrees(degrees);
+    return r > 180 ? r - 360 : r;
+  }
+  function yawOfDirection(dx, dz) {
+    return Math.atan2(dx, dz);
+  }
+  function compassHeading(yaw, northYaw) {
+    return wrapDegrees((yaw - northYaw) * RAD_TO_DEG);
+  }
+  function stripRelative(bearing, heading, mirrored = false) {
+    return wrapSignedDegrees(mirrored ? heading - bearing : bearing - heading);
+  }
+  function compassCardinal(degrees) {
+    return COMPASS_POINTS[Math.round(wrapDegrees(degrees) / 45) % 8];
+  }
+  function refuse(code, field, message) {
+    return { ok: false, refusal: { code, field, message } };
+  }
+  function compassView(input) {
+    const span = input.span ?? DEFAULT_COMPASS_SPAN_DEG;
+    for (const [field, v] of [["yaw", input.yaw], ["northYaw", input.northYaw], ["span", span]]) {
+      if (!Number.isFinite(v)) return refuse("not_finite", field, `${field} must be a finite number, got ${v}`);
+    }
+    if (!(span > 0 && span <= 360)) return refuse("span_out_of_range", "span", `span must be in (0, 360], got ${span}`);
+    const mirroredIn = input.mirrored;
+    if (mirroredIn !== void 0 && typeof mirroredIn !== "boolean") {
+      return refuse("not_boolean", "mirrored", `mirrored must be true or false, got ${String(mirroredIn)}`);
+    }
+    const mirrored = mirroredIn === true;
+    for (const axis of ["x", "z"]) {
+      if (!Number.isFinite(input.position[axis])) {
+        return refuse("not_finite", `position.${axis}`, `position.${axis} must be a finite number`);
+      }
+    }
+    for (let i = 0; i < input.markers.length; i++) {
+      for (const axis of ["x", "z"]) {
+        if (!Number.isFinite(input.markers[i].position[axis])) {
+          return refuse("not_finite", `markers[${i}].position.${axis}`, `markers[${i}].position.${axis} must be a finite number`);
+        }
+      }
+    }
+    const heading = compassHeading(input.yaw, input.northYaw);
+    const half = span / 2;
+    const markers = input.markers.map((m) => {
+      const dx = m.position.x - input.position.x;
+      const dz = m.position.z - input.position.z;
+      const distance2 = Math.hypot(dx, dz);
+      const base = { id: m.id, distance: distance2, bearing: null, relative: null, visible: false, offset: null };
+      if (m.kind !== void 0) base.kind = m.kind;
+      if (m.label !== void 0) base.label = m.label;
+      if (distance2 < COMPASS_MIN_DISTANCE_M) return base;
+      const bearing = compassHeading(yawOfDirection(dx, dz), input.northYaw);
+      const relative = stripRelative(bearing, heading, mirrored);
+      const visible = Math.abs(relative) <= half;
+      return { ...base, bearing, relative, visible, offset: visible ? relative / half : null };
+    });
+    const value = { heading, cardinal: compassCardinal(heading), span, markers };
+    if (mirrored) value.mirrored = true;
+    return { ok: true, value };
+  }
+  var DEFAULT_NORTH_YAW = 0;
+  function worldNorth(facts) {
+    const geo = facts?.georeference;
+    if (geo === void 0 || geo === null) {
+      return { ok: true, value: { northYaw: DEFAULT_NORTH_YAW, source: "default" } };
+    }
+    const r = geo.rotationRad;
+    if (r === void 0) return { ok: true, value: { northYaw: 0, source: "georeference" } };
+    if (typeof r !== "number" || !Number.isFinite(r)) {
+      return {
+        ok: false,
+        refusal: { code: "not_finite", field: "georeference.rotationRad", message: `georeference.rotationRad must be a finite number, got ${r}` }
+      };
+    }
+    return { ok: true, value: { northYaw: r === 0 ? 0 : r, source: "georeference" } };
+  }
+  function worldCompassView(input) {
+    const north = worldNorth(input.geography);
+    if (!north.ok) return north;
+    const hasYaw = input.yaw !== void 0;
+    const facing = input.facing;
+    const hasFacing = facing !== void 0 && facing !== null;
+    const refuse22 = (code, field, message) => ({
+      ok: false,
+      refusal: { code, field, message }
+    });
+    if (hasYaw && hasFacing) return refuse22("facing_twice", "facing", "give yaw or facing, not both");
+    if (!hasYaw && !hasFacing) return refuse22("facing_unstated", "facing", "give yaw or facing");
+    let yaw = input.yaw;
+    if (hasFacing) {
+      for (const axis of ["x", "z"]) {
+        if (!Number.isFinite(facing[axis])) {
+          return refuse22("not_finite", `facing.${axis}`, `facing.${axis} must be a finite number`);
+        }
+      }
+      if (Math.hypot(facing.x, facing.z) < COMPASS_MIN_DISTANCE_M) {
+        return refuse22("facing_zero", "facing", "facing must be a direction, not a point");
+      }
+      yaw = yawOfDirection(facing.x, facing.z);
+    }
+    const view2 = { yaw, northYaw: north.value.northYaw, position: input.position, markers: input.markers };
+    if (input.span !== void 0) view2.span = input.span;
+    if (input.mirrored !== void 0) view2.mirrored = input.mirrored;
+    const r = compassView(view2);
+    if (!r.ok) return r;
+    return { ok: true, north: north.value, value: r.value };
+  }
+
+  // @insimul/core/src/ui/minimap-model.ts
+  var MINIMAP_MARKER_TYPES = [
+    "player",
+    "settlement",
+    "npc",
+    "quest",
+    "quest_objective",
+    "building",
+    "exclamation",
+    "question",
+    "discovery"
+  ];
+  var MINIMAP_FEED_OWNED = /^(player|settlement_|npc_|quest_|objective_|item_|board_)/;
+  var MARKER_SIZE_PX = {
+    player: 6,
+    settlement: 8,
+    quest: 7,
+    quest_objective: 5,
+    discovery: 6,
+    building: 3,
+    exclamation: 14,
+    question: 11
+  };
+  var DEFAULT_MARKER_SIZE_PX = 4;
+  var MinimapModel = class {
+    constructor(worldSize = 1024) {
+      __publicField(this, "store", /* @__PURE__ */ new Map());
+      __publicField(this, "world", 1024);
+      __publicField(this, "visible", false);
+      this.setWorldSize(worldSize);
+    }
+    // ── The world this map covers ───────────────────────────────────────────
+    setWorldSize(size) {
+      this.world = size > 0 ? size : 1024;
+    }
+    worldSize() {
+      return this.world;
+    }
+    // ── Markers ─────────────────────────────────────────────────────────────
+    /** Add or replace a marker. */
+    addMarker(marker) {
+      this.store.set(marker.id, marker);
+    }
+    removeMarker(id4) {
+      return this.store.delete(id4);
+    }
+    clearMarkers() {
+      this.store.clear();
+    }
+    getMarker(id4) {
+      return this.store.get(id4) ?? null;
+    }
+    markerCount() {
+      return this.store.size;
+    }
+    /** Every marker, in insertion order (the order both views draw them). */
+    markers() {
+      return [...this.store.values()];
+    }
+    markerIds() {
+      return [...this.store.keys()];
+    }
+    /** The player marker, which is also what drives the top-down re-capture. */
+    player() {
+      return this.store.get("player") ?? null;
+    }
+    // ── Visibility ──────────────────────────────────────────────────────────
+    setVisible(visible) {
+      this.visible = visible;
+    }
+    isVisible() {
+      return this.visible;
+    }
+    // ── The live feed ───────────────────────────────────────────────────────
+    /**
+     * Fold a live snapshot into the marker table. This is what makes the
+     * world-space slate show the map the player actually sees: the HUD minimap is
+     * driven by this stream, not by `addMarker`, so a VR view fed only by
+     * `addMarker` would show quest hotspots over an empty world.
+     *
+     * `buildings` is deliberately NOT ingested — the 2D panel paints thousands of
+     * footprints straight from the snapshot, and a per-tick marker per building
+     * would cost more than the slate is worth. Markers whose kind is absent from a
+     * snapshot are dropped, so a departed NPC leaves the map.
+     */
+    ingest(feed) {
+      if (Number.isFinite(feed.worldSize) && feed.worldSize > 0) {
+        this.setWorldSize(feed.worldSize);
+      }
+      const keep = /* @__PURE__ */ new Set();
+      const put = (id4, type, pos, extra = {}) => {
+        keep.add(id4);
+        this.store.set(id4, { id: id4, type, position: { x: pos.x, y: 0, z: pos.z }, ...extra });
+      };
+      if (feed.playerPosition) put("player", "player", feed.playerPosition);
+      for (const s of feed.settlements ?? []) put(`settlement_${s.id}`, "settlement", s.position, { label: s.name });
+      for (const n of feed.npcPositions ?? []) put(`npc_${n.id}`, "npc", n.position, { label: n.name });
+      for (const q of feed.questMarkers ?? []) put(`quest_${q.id}`, "quest", q.position, { label: q.title });
+      for (const o of feed.questObjectiveMarkers ?? []) {
+        put(`objective_${o.id}`, "quest_objective", o.position, {
+          label: o.questTitle,
+          color: o.color,
+          shape: o.shape
+        });
+      }
+      for (const i of feed.questItemMarkers ?? []) put(`item_${i.id}`, "quest_objective", i.position, { label: i.itemName });
+      for (const b of feed.noticeBoards ?? []) {
+        put(`board_${b.id}`, b.questCount > 0 ? "exclamation" : "question", b.position);
+      }
+      for (const id4 of [...this.store.keys()]) {
+        if (keep.has(id4)) continue;
+        if (MINIMAP_FEED_OWNED.test(id4)) this.store.delete(id4);
+      }
+    }
+    // ── Projection ──────────────────────────────────────────────────────────
+    /**
+     * Project a world position onto a square map `sizePx` across, as an offset
+     * from its centre. Unit-agnostic, exactly like `RadialMenuModel.slots`: the 2D
+     * overlay passes pixels, the VR slate passes its own panel pixels, so the two
+     * maps cannot drift.
+     *
+     * **Orientation (P2.core-north).** Given the world's `northYaw` (`worldNorth` in
+     * `./compass-model`), the map is drawn **north up, east right**, and so agrees with
+     * the compass: the offset right is the position's distance along east (the yaw a
+     * quarter turn clockwise of north) and the offset down is its distance along south.
+     * With the default north (core +Z) that is `x = p.x · k`, `y = -p.z · k`, where
+     * `k = sizePx / worldSize`. This is the form every engine binds.
+     *
+     * **A mirrored level** (`mirrored`, as the compass's `CompassInput.mirrored`): a level
+     * that lays the IR's plan out mirrored (Unreal's village, X = x and Y = z) shows the
+     * world with east on the LEFT of north, seen from above. The map then agrees with the
+     * level, not with a map of the IR: north up, east LEFT (`x` negated), so a marker on the
+     * player's right in the level is on the map's right too. It needs a `northYaw`: Babylon's
+     * rule has no stated orientation to mirror, so `mirrored` without one throws.
+     *
+     * Without a `northYaw`, Babylon's rule is kept unchanged (`y` follows +z down the
+     * page), which under the default north is north DOWN with east still right: the
+     * world seen mirrored. It is a legacy projection, not a second default north (the one
+     * default is the compass's `DEFAULT_NORTH_YAW`), kept only so Babylon's switch-over is
+     * an import swap; that switch-over retires it.
+     */
+    project(position, sizePx, northYaw, mirrored = false) {
+      if (northYaw !== void 0) {
+        const k = sizePx / this.world;
+        const east = { x: Math.cos(northYaw), z: -Math.sin(northYaw) };
+        const north = { x: Math.sin(northYaw), z: Math.cos(northYaw) };
+        const x = (mirrored ? -1 : 1) * (position.x * east.x + position.z * east.z) * k;
+        const y = -(position.x * north.x + position.z * north.z) * k;
+        return { x: x === 0 ? 0 : x, y: y === 0 ? 0 : y };
+      }
+      if (mirrored) throw new RangeError("minimap: mirrored needs a northYaw to mirror");
+      const half = this.world / 2;
+      const mapHalf = sizePx / 2;
+      return {
+        x: (position.x + half) / this.world * sizePx - mapHalf,
+        y: (position.z + half) / this.world * sizePx - mapHalf
+      };
+    }
+    /** The token role a marker type paints with. */
+    toneFor(type) {
+      switch (type) {
+        case "player":
+          return "accent";
+        case "settlement":
+          return "warning";
+        case "npc":
+          return "success";
+        case "quest":
+        case "quest_objective":
+        case "exclamation":
+        case "question":
+          return "quest";
+        case "building":
+          return "text_disabled";
+        case "discovery":
+          return "success";
+        default:
+          return "text_primary";
+      }
+    }
+    /** Marker diameter at the 2D overlay's scale. */
+    sizeFor(type) {
+      return MARKER_SIZE_PX[type] ?? DEFAULT_MARKER_SIZE_PX;
+    }
+    /**
+     * Every marker placed for a map `sizePx` across. `scale` multiplies the marker
+     * diameters (a world-space slate is drawn bigger than the corner overlay).
+     * `theme` resolves a marker's tone when it has no colour of its own; without
+     * one, such a marker's `color` is `null`. `northYaw` (and `mirrored`) orient the map as
+     * {@link MinimapModel.project} says (north up); without it, Babylon's rule.
+     */
+    placed(sizePx, scale2 = 1, theme, northYaw, mirrored = false) {
+      if (mirrored && northYaw === void 0) throw new RangeError("minimap: mirrored needs a northYaw to mirror");
+      return this.markers().map((marker) => {
+        const { x, y } = this.project(marker.position, sizePx, northYaw, mirrored);
+        const tone = this.toneFor(marker.type);
+        return {
+          marker,
+          offsetX: x,
+          offsetY: y,
+          size: this.sizeFor(marker.type) * scale2,
+          color: marker.color ?? (theme ? theme.color(tone) : null),
+          tone
+        };
+      });
+    }
+  };
+
   // @insimul/core/src/feature-modules/genre-bundles.ts
   var ALL_MODULES = [
     "knowledge-acquisition",
@@ -13423,7 +13806,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const id4 = traversalLinkId(link);
       const cost = traversalCost(link, tuning);
       const requires = edgeRequirements(input.links, link.from, link.to);
-      const refusal3 = refuse(link, id4, cost, { modes, blocked, input });
+      const refusal3 = refuse2(link, id4, cost, { modes, blocked, input });
       return {
         id: id4,
         from: link.from,
@@ -13442,7 +13825,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     );
     return affordances;
   }
-  function refuse(link, id4, cost, ctx) {
+  function refuse2(link, id4, cost, ctx) {
     if (ctx.blocked.has(edgeKey(link.from, link.to))) return "blocked";
     if (!ctx.modes.has(link.mode)) return "mode";
     if (link.geometric && ctx.input.geometry?.[id4] === false) return "impassable";
@@ -22054,7 +22437,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function planBuild(request, context = {}) {
     const refusals = [];
     const notes = [];
-    const refuse4 = (code, field, detail) => refusals.push({ code, field, detail });
+    const refuse5 = (code, field, detail) => refusals.push({ code, field, detail });
     const note = (code, field, detail) => notes.push({ code, field, detail });
     const done = (plan2) => {
       refusals.sort(order(BUILD_REFUSAL_CODES));
@@ -22062,7 +22445,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       return refusals.length > 0 ? { ok: false, refusals, notes, plan: null } : { ok: true, refusals, notes, plan: plan2 };
     };
     for (const field of findSecrets(request)) {
-      refuse4("secret-in-request", field, "The build request carries a password, token or database address. Remove it: a build never needs one.");
+      refuse5("secret-in-request", field, "The build request carries a password, token or database address. Remove it: a build never needs one.");
     }
     const parsed = buildRequestSchema.safeParse(request);
     if (!parsed.success) {
@@ -22072,10 +22455,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         const key = field ?? "\0";
         if (seen.has(key)) continue;
         seen.add(key);
-        refuse4("invalid-request", field, `The build request is not one Insimul can read: ${shapeMessage(issue.message)}.`);
+        refuse5("invalid-request", field, `The build request is not one Insimul can read: ${shapeMessage(issue.message)}.`);
       }
       if (recipePairBroken(request) && !seen.has("recipe.sha256")) {
-        refuse4("invalid-request", "recipe.sha256", "The build request is not one Insimul can read: a recipe file comes with its sha256, and a sha256 only with a file.");
+        refuse5("invalid-request", "recipe.sha256", "The build request is not one Insimul can read: a recipe file comes with its sha256, and a sha256 only with a file.");
       }
       return done(null);
     }
@@ -22091,23 +22474,23 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     for (const [field, p] of paths) {
       if (projectPathProblem(p) !== null) {
         pathsOk = false;
-        refuse4("path-outside-project", field, "Every file a build reads or writes must be inside the project.");
+        refuse5("path-outside-project", field, "Every file a build reads or writes must be inside the project.");
       }
     }
     if (pathsOk) {
       for (const [field, p] of paths) {
         if (field !== "target.outDir" && isInsideDirFolded(p, r.target.outDir)) {
-          refuse4("out-dir-holds-inputs", field, "The build folder holds a file the build reads. Choose a build folder of its own.");
+          refuse5("out-dir-holds-inputs", field, "The build folder holds a file the build reads. Choose a build folder of its own.");
         }
       }
       if (BUILD_ENGINE_RESERVED_DIRS[r.engine].some((d) => isInsideDirFolded(r.target.outDir, d))) {
-        refuse4("out-dir-reserved", "target.outDir", `The build folder is one ${ENGINE_NAMES[r.engine]} keeps the project in. Choose a build folder of its own.`);
+        refuse5("out-dir-reserved", "target.outDir", `The build folder is one ${ENGINE_NAMES[r.engine]} keeps the project in. Choose a build folder of its own.`);
       }
     }
     if (!BUILD_ENGINE_PLATFORMS[r.engine].includes(platform)) {
-      refuse4("target-unsupported", "target.platform", unsupportedSentence(r.engine, platform));
+      refuse5("target-unsupported", "target.platform", unsupportedSentence(r.engine, platform));
     } else if (platform !== "web" && platform !== r.host.os && !BUILD_CROSS_DESKTOP_ENGINES.includes(r.engine)) {
-      refuse4(
+      refuse5(
         "target-not-on-host",
         "target.platform",
         `${ENGINE_NAMES[r.engine]} builds a desktop game only for the computer it runs on (${BUILD_PLATFORM_LABELS[r.host.os]}).`
@@ -22115,11 +22498,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     const recipe = r.recipe === null ? null : { id: r.recipe.id, bound: r.recipe.file === void 0 };
     if (r.recipe !== null && r.recipe.file === void 0 && !RECIPE_IDS.includes(r.recipe.id)) {
-      refuse4("unknown-recipe", "recipe.id", "That recipe is not one Insimul knows. Choose a recipe, or give its recipe file.");
+      refuse5("unknown-recipe", "recipe.id", "That recipe is not one Insimul knows. Choose a recipe, or give its recipe file.");
     }
     const seenPacks = /* @__PURE__ */ new Set();
     r.packs.enabled.forEach((id4, i) => {
-      if (seenPacks.has(id4)) refuse4("duplicate-pack", `packs.enabled.${i}`, "A system is listed twice. List each system once.");
+      if (seenPacks.has(id4)) refuse5("duplicate-pack", `packs.enabled.${i}`, "A system is listed twice. List each system once.");
       seenPacks.add(id4);
     });
     if (context.lock === void 0) {
@@ -22127,14 +22510,14 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     } else {
       const lock = systemPacksLockSchema.safeParse(context.lock);
       if (!lock.success) {
-        refuse4("lock-invalid", "packs.lock.file", "The project's systems file is damaged. Update the systems to rewrite it.");
+        refuse5("lock-invalid", "packs.lock.file", "The project's systems file is damaged. Update the systems to rewrite it.");
       } else {
         if (lock.data.plugin.engine !== r.engine) {
-          refuse4("lock-engine-mismatch", "packs.lock.file", `The project's systems file was written for another engine, not ${ENGINE_NAMES[r.engine]}.`);
+          refuse5("lock-engine-mismatch", "packs.lock.file", `The project's systems file was written for another engine, not ${ENGINE_NAMES[r.engine]}.`);
         }
         r.packs.enabled.forEach((id4, i) => {
           if (!Object.prototype.hasOwnProperty.call(lock.data.packs, id4)) {
-            refuse4("pack-not-locked", `packs.enabled.${i}`, "A system the build runs is not installed in this project. Install it, or leave it out.");
+            refuse5("pack-not-locked", `packs.enabled.${i}`, "A system the build runs is not installed in this project. Install it, or leave it out.");
           }
         });
         for (const id4 of [...new Set(r.packs.enabled)].sort()) {
@@ -22160,12 +22543,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     } else {
       for (const input of inputs) {
         const got = Object.prototype.hasOwnProperty.call(context.files, input.path) ? context.files[input.path] : void 0;
-        if (got === void 0) refuse4("input-missing", fieldOf[input.role], `The ${input.role === "lock" ? "systems" : input.role} file the build reads is missing.`);
-        else if (got !== input.sha256) refuse4("input-changed", fieldOf[input.role], `The ${input.role === "lock" ? "systems" : input.role} file changed after the build was asked for. Ask again.`);
+        if (got === void 0) refuse5("input-missing", fieldOf[input.role], `The ${input.role === "lock" ? "systems" : input.role} file the build reads is missing.`);
+        else if (got !== input.sha256) refuse5("input-changed", fieldOf[input.role], `The ${input.role === "lock" ? "systems" : input.role} file changed after the build was asked for. Ask again.`);
       }
     }
     if (r.world.predicateSchemaHash !== void 0 && context.predicateSchemaHash !== void 0 && r.world.predicateSchemaHash !== context.predicateSchemaHash) {
-      refuse4("predicate-schema-mismatch", "world.predicateSchemaHash", "The world was exported for another version of Insimul's rules. Export the world again, or update the plugin.");
+      refuse5("predicate-schema-mismatch", "world.predicateSchemaHash", "The world was exported for another version of Insimul's rules. Export the world again, or update the plugin.");
     }
     return done({
       requestId: r.requestId,
@@ -31765,41 +32148,6 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
       refused: refused2,
       notes
     };
-  }
-
-  // @insimul/core/src/ui/compass-model.ts
-  var COMPASS_POINTS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-  var RAD_TO_DEG = 180 / Math.PI;
-  function wrapDegrees(degrees) {
-    let r = degrees % 360;
-    if (r < 0) r += 360;
-    if (r >= 360 || r === 0) r = 0;
-    return r;
-  }
-  function yawOfDirection(dx, dz) {
-    return Math.atan2(dx, dz);
-  }
-  function compassHeading(yaw, northYaw) {
-    return wrapDegrees((yaw - northYaw) * RAD_TO_DEG);
-  }
-  function compassCardinal(degrees) {
-    return COMPASS_POINTS[Math.round(wrapDegrees(degrees) / 45) % 8];
-  }
-  var DEFAULT_NORTH_YAW = 0;
-  function worldNorth(facts) {
-    const geo = facts?.georeference;
-    if (geo === void 0 || geo === null) {
-      return { ok: true, value: { northYaw: DEFAULT_NORTH_YAW, source: "default" } };
-    }
-    const r = geo.rotationRad;
-    if (r === void 0) return { ok: true, value: { northYaw: 0, source: "georeference" } };
-    if (typeof r !== "number" || !Number.isFinite(r)) {
-      return {
-        ok: false,
-        refusal: { code: "not_finite", field: "georeference.rotationRad", message: `georeference.rotationRad must be a finite number, got ${r}` }
-      };
-    }
-    return { ok: true, value: { northYaw: r === 0 ? 0 : r, source: "georeference" } };
   }
 
   // @insimul/core/src/ui/genre-hud-model.ts
@@ -47597,7 +47945,7 @@ Return JSON format:
     }
   };
   var isDockOperationId = (value) => typeof value === "string" && DOCK_OPERATION_IDS.includes(value);
-  var refuse2 = (code, message, received) => ({
+  var refuse3 = (code, message, received) => ({
     ok: false,
     error: { code, message, received }
   });
@@ -47618,7 +47966,7 @@ Return JSON format:
     }
     const rule2 = DOCK_OPERATION_RULES[operationId];
     if (typeof input.worldId !== "string" || input.worldId === "") {
-      return refuse2(
+      return refuse3(
         "missing-path-parameter",
         `${operationId} addresses one world: ${operation.path} needs a worldId`,
         input.worldId === "" ? "an empty worldId" : "no worldId"
@@ -47627,7 +47975,7 @@ Return JSON format:
     const asked = input.query ?? {};
     for (const name of Object.keys(asked)) {
       if (!rule2.query.some((q) => q.name === name)) {
-        return refuse2(
+        return refuse3(
           "unknown-query-parameter",
           `${operationId}'s published row names ${rule2.query.length > 0 ? rule2.query.map((q) => q.name).join(", ") : "no query parameter"}; the contract declares nothing else`,
           `the query parameter ${JSON.stringify(name)}`
@@ -47639,7 +47987,7 @@ Return JSON format:
       const value = asked[q.name];
       if (value === void 0 || value === "") {
         if (q.required) {
-          return refuse2(
+          return refuse3(
             "missing-query-parameter",
             `${operationId} requires the query parameter ${q.name}`,
             value === "" ? `an empty ${q.name}` : `no ${q.name}`
@@ -47648,7 +47996,7 @@ Return JSON format:
         continue;
       }
       if (q.enum !== null && !q.enum.includes(value)) {
-        return refuse2(
+        return refuse3(
           "query-value-not-allowed",
           `${operationId}'s ${q.name} is one of ${q.enum.join(", ")}; the server answers anything else with a 400`,
           `${q.name} ${JSON.stringify(value)}, which the contract does not name`
@@ -47661,26 +48009,26 @@ Return JSON format:
     const empty = given === void 0 || given === null || isPlainObject(given) && Object.keys(given).length === 0;
     if (!empty) {
       if (rule2.body === "none") {
-        return refuse2(
+        return refuse3(
           "unexpected-body",
           `${operationId} takes no request body: the contract declares none, and the dock sends no content through it`,
           describeValue(given)
         );
       }
       if (!isPlainObject(given)) {
-        return refuse2("body-not-object", `${operationId}'s body is a JSON object or nothing (the server answers 400)`, describeValue(given));
+        return refuse3("body-not-object", `${operationId}'s body is a JSON object or nothing (the server answers 400)`, describeValue(given));
       }
       for (const [name, value] of Object.entries(given)) {
         const type = rule2.bodyMembers[name];
         if (type === void 0) {
-          return refuse2(
+          return refuse3(
             "unknown-body-member",
             `${operationId}'s body carries ${Object.keys(rule2.bodyMembers).join(", ")} and nothing else`,
             `the body member ${JSON.stringify(name)}`
           );
         }
         if (type === "integer" && !(typeof value === "number" && Number.isInteger(value))) {
-          return refuse2("invalid-body-member", `${operationId}'s ${name} is an integer`, `${name} ${describeValue(value)}`);
+          return refuse3("invalid-body-member", `${operationId}'s ${name} is an integer`, `${name} ${describeValue(value)}`);
         }
       }
       body2 = { ...given };
@@ -47885,7 +48233,7 @@ Return JSON format:
     if (request === null || typeof request !== "object") throw new CompositionError("invalid-request", "a request is an object");
     const refusals = [];
     const notes = [];
-    const refuse4 = (code, pack, detail) => {
+    const refuse5 = (code, pack, detail) => {
       refusals.push({ code, pack, detail });
     };
     const rows = new Map(catalog.index.packs.map((p) => [p.id, p]));
@@ -47932,12 +48280,12 @@ Return JSON format:
     for (const id4 of Object.keys(game).sort((a, b) => (order2.get(a) ?? 1e9) - (order2.get(b) ?? 1e9) || a.localeCompare(b))) {
       const g = game[id4] ?? {};
       if (!known.has(id4)) {
-        refuse4("unknown-pack", id4, `the pack index has no pack '${id4}'`);
+        refuse5("unknown-pack", id4, `the pack index has no pack '${id4}'`);
         continue;
       }
       const presetHas = source.has(id4);
       if (g.enabled === false) {
-        if (source.get(id4) === "always-on") refuse4("always-on", id4, `'${id4}' is always on and cannot be switched off`);
+        if (source.get(id4) === "always-on") refuse5("always-on", id4, `'${id4}' is always on and cannot be switched off`);
         else if (presetHas) disabled.add(id4);
       } else if (g.enabled === true && !presetHas) {
         source.set(id4, "game");
@@ -47973,14 +48321,14 @@ Return JSON format:
       const id4 = queue.shift();
       for (const dep of requiresOf(id4)) {
         if (!known.has(dep)) {
-          refuse4("unknown-pack", id4, `'${id4}' requires '${dep}', which the pack index does not list`);
+          refuse5("unknown-pack", id4, `'${id4}' requires '${dep}', which the pack index does not list`);
           continue;
         }
         if (!requiredBy.has(dep)) requiredBy.set(dep, /* @__PURE__ */ new Set());
         requiredBy.get(dep)?.add(id4);
         if (!installed.has(dep)) {
           if (disabled.has(dep)) {
-            refuse4("required-by", dep, `'${dep}' cannot be switched off: '${id4}' requires it`);
+            refuse5("required-by", dep, `'${dep}' cannot be switched off: '${id4}' requires it`);
             disabled.delete(dep);
           } else source.set(dep, source.get(dep) ?? "dependency");
           installed.add(dep);
@@ -47991,7 +48339,7 @@ Return JSON format:
     let changes = 0;
     for (const id4 of [.../* @__PURE__ */ new Set([...switchedOn, ...disabled, ...retuned])].sort((a, b) => (order2.get(a) ?? 0) - (order2.get(b) ?? 0))) {
       if (switchedOn.has(id4) || disabled.has(id4) || installed.has(id4)) changes += 1;
-      else refuse4("not-installed", id4, `'${id4}' is not installed, so its variant, style and parameters do nothing; switch it on first`);
+      else refuse5("not-installed", id4, `'${id4}' is not installed, so its variant, style and parameters do nothing; switch it on first`);
     }
     const sorted = [];
     const placed2 = /* @__PURE__ */ new Set();
@@ -53199,25 +53547,25 @@ Return JSON format:
   ];
 
   // corebridge/js/entry.js
-  function refuse3(method, message) {
+  function refuse4(method, message) {
     return new Error(`insimulcore: ${method}: ${message}`);
   }
   function needObject(method, value, name) {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
-      throw refuse3(method, `\`${name}\` must be a JSON object`);
+      throw refuse4(method, `\`${name}\` must be a JSON object`);
     }
     return value;
   }
   function needArray(method, value, name) {
-    if (!Array.isArray(value)) throw refuse3(method, `\`${name}\` must be an array`);
+    if (!Array.isArray(value)) throw refuse4(method, `\`${name}\` must be an array`);
     return value;
   }
   function needString(method, value, name) {
-    if (typeof value !== "string") throw refuse3(method, `\`${name}\` must be a string`);
+    if (typeof value !== "string") throw refuse4(method, `\`${name}\` must be a string`);
     return value;
   }
   function needNumber(method, value, name) {
-    if (typeof value !== "number" || !Number.isFinite(value)) throw refuse3(method, `\`${name}\` must be a finite number`);
+    if (typeof value !== "number" || !Number.isFinite(value)) throw refuse4(method, `\`${name}\` must be a finite number`);
     return value;
   }
   function optNumber(method, value, name) {
@@ -53225,7 +53573,7 @@ Return JSON format:
   }
   function oneOf(method, value, allowed, name) {
     if (!allowed.includes(value)) {
-      throw refuse3(method, `\`${name}\` must be one of ${allowed.join(", ")} (got ${JSON.stringify(value)})`);
+      throw refuse4(method, `\`${name}\` must be one of ${allowed.join(", ")} (got ${JSON.stringify(value)})`);
     }
     return value;
   }
@@ -53323,7 +53671,7 @@ Return JSON format:
       disk_changed: ({ model }, op) => plain(model.diskChanged(op.slots === void 0 || op.slots === null ? null : slotListOf(m, op.slots))),
       finished: ({ model }, op) => {
         const { op: _name, ...result2 } = op;
-        if (typeof result2.ok !== "boolean") throw refuse3(m, "`ok` must be a boolean");
+        if (typeof result2.ok !== "boolean") throw refuse4(m, "`ok` must be a boolean");
         optStringField(m, result2, "savedAt");
         optStringField(m, result2, "outcome");
         if (result2.summary !== void 0 && result2.summary !== null) needObject(m, result2.summary, "summary");
@@ -53335,10 +53683,10 @@ Return JSON format:
   var SAVE_INDICATOR_FIELDS = ["state", "kind", "detail", "slot", "ageSec"];
   function saveKindOrNull(method, value, name) {
     if (value === null || SAVE_KINDS.includes(value)) return value;
-    throw refuse3(method, `\`${name}\` must be one of ${SAVE_KINDS.join(", ")} or null (got ${JSON.stringify(value ?? null)})`);
+    throw refuse4(method, `\`${name}\` must be one of ${SAVE_KINDS.join(", ")} or null (got ${JSON.stringify(value ?? null)})`);
   }
   function showIndicatorOf(method, fields) {
-    if (fields.state === void 0) throw refuse3(method, "`state` is required (one of core's SAVE_INDICATOR_STATES)");
+    if (fields.state === void 0) throw refuse4(method, "`state` is required (one of core's SAVE_INDICATOR_STATES)");
     const state = oneOf(method, fields.state, SAVE_INDICATOR_STATES, "state");
     const kind = saveKindOrNull(method, fields.kind === void 0 ? null : fields.kind, "kind");
     const detail = fields.detail === void 0 || fields.detail === null ? void 0 : needString(method, fields.detail, "detail");
@@ -53346,13 +53694,13 @@ Return JSON format:
     return showSaveIndicator(state, kind, detail, slot);
   }
   function saveIndicatorArg(method, value, name) {
-    if (value === void 0) throw refuse3(method, `\`${name}\` is required (core's SaveIndicator, as saves.indicator.show answered it)`);
+    if (value === void 0) throw refuse4(method, `\`${name}\` is required (core's SaveIndicator, as saves.indicator.show answered it)`);
     needObject(method, value, name);
     for (const k of Object.keys(value)) {
-      if (!SAVE_INDICATOR_FIELDS.includes(k)) throw refuse3(method, `\`${name}.${k}\` is not a field of core's SaveIndicator (${SAVE_INDICATOR_FIELDS.join(", ")})`);
+      if (!SAVE_INDICATOR_FIELDS.includes(k)) throw refuse4(method, `\`${name}.${k}\` is not a field of core's SaveIndicator (${SAVE_INDICATOR_FIELDS.join(", ")})`);
     }
     for (const k of SAVE_INDICATOR_FIELDS) {
-      if (!(k in value)) throw refuse3(method, `\`${name}.${k}\` is required (core's SaveIndicator has ${SAVE_INDICATOR_FIELDS.join(", ")})`);
+      if (!(k in value)) throw refuse4(method, `\`${name}.${k}\` is required (core's SaveIndicator has ${SAVE_INDICATOR_FIELDS.join(", ")})`);
     }
     oneOf(method, value.state, SAVE_INDICATOR_STATES, `${name}.state`);
     saveKindOrNull(method, value.kind, `${name}.kind`);
@@ -53362,7 +53710,7 @@ Return JSON format:
     return { state: value.state, kind: value.kind, detail: value.detail, slot: value.slot, ageSec: value.ageSec };
   }
   function indicatorSeconds(method, value) {
-    if (value === void 0) throw refuse3(method, "`dtSec` is required (seconds; null is a non-finite tick)");
+    if (value === void 0) throw refuse4(method, "`dtSec` is required (seconds; null is a non-finite tick)");
     return value === null ? Number.NaN : needNumber(method, value, "dtSec");
   }
   var DOCK_REQUEST_MEMBERS = ["operationId", "worldId", "query", "body"];
@@ -53370,10 +53718,10 @@ Return JSON format:
     needObject(method, args, "args");
     for (const k of Object.keys(args)) {
       if (!DOCK_REQUEST_MEMBERS.includes(k)) {
-        throw refuse3(method, `\`args.${k}\` is not a member (${DOCK_REQUEST_MEMBERS.join(", ")}: the operation and core's DockOperationInput)`);
+        throw refuse4(method, `\`args.${k}\` is not a member (${DOCK_REQUEST_MEMBERS.join(", ")}: the operation and core's DockOperationInput)`);
       }
     }
-    if (!hasOwn3(args, "operationId")) throw refuse3(method, "`args.operationId` is missing (one of core's DOCK_OPERATION_IDS)");
+    if (!hasOwn3(args, "operationId")) throw refuse4(method, "`args.operationId` is missing (one of core's DOCK_OPERATION_IDS)");
     const operationId = oneOf(method, args.operationId, DOCK_OPERATION_IDS, "args.operationId");
     const input = {};
     if (hasOwn3(args, "worldId")) input.worldId = needString(method, args.worldId, "args.worldId");
@@ -53421,7 +53769,7 @@ Return JSON format:
   function tutorialProgressArg(method, value, name) {
     const read = readTutorialBlock(value);
     if (!read.ok) {
-      throw refuse3(
+      throw refuse4(
         method,
         `\`${name}\` is not a readable tutorial save block` + (read.keys.length ? ` (unreadable: ${read.keys.join(", ")})` : " (it must be a JSON object)")
       );
@@ -53434,7 +53782,7 @@ Return JSON format:
     try {
       linked = session(method, { session: s.saves }, "saves.slots");
     } catch (err) {
-      throw refuse3(method, `the linked \`savesSession\` ${s.saves} is not an open saves.slots session (${err.message.replace(/^insimulcore: [^:]+: /, "")})`);
+      throw refuse4(method, `the linked \`savesSession\` ${s.saves} is not an open saves.slots session (${err.message.replace(/^insimulcore: [^:]+: /, "")})`);
     }
     return { ...s.menu, session: linked.model.view() };
   }
@@ -53442,7 +53790,7 @@ Return JSON format:
     const changes = ["unbind", "rebind", "bind"].filter((k) => src[k] !== void 0 && src[k] !== null);
     if (src.bindings !== void 0 && src.bindings !== null) {
       if (changes.length) {
-        throw refuse3(method, `\`${name}.bindings\` is the whole table: state it or the changes (${changes.join(", ")}), not both`);
+        throw refuse4(method, `\`${name}.bindings\` is the whole table: state it or the changes (${changes.join(", ")}), not both`);
       }
       return needArray(method, src.bindings, `${name}.bindings`).map((b, i) => needObject(method, b, `${name}.bindings[${i}]`));
     }
@@ -53468,14 +53816,14 @@ Return JSON format:
   function sessionClockOf(method, value) {
     if (value === void 0 || value === null) return { manual: false, at: 0 };
     const ms = typeof value === "number" ? value : typeof value === "string" ? Date.parse(value) : Number.NaN;
-    if (!Number.isFinite(ms)) throw refuse3(method, "`now` must be an ISO date-time string or finite epoch milliseconds");
+    if (!Number.isFinite(ms)) throw refuse4(method, "`now` must be an ISO date-time string or finite epoch milliseconds");
     return { manual: true, at: ms };
   }
   function clockReader(io) {
     return () => io.manual ? io.at : Date.now();
   }
   function tickClock(method, io, op) {
-    if (!io.manual) throw refuse3(method, "`tick` moves a host clock: open the session with `now`");
+    if (!io.manual) throw refuse4(method, "`tick` moves a host clock: open the session with `now`");
     io.at += needNumber(method, op.ms, "ms");
     return null;
   }
@@ -53495,7 +53843,7 @@ Return JSON format:
   }
   function optBoolean(method, value, name) {
     if (value !== void 0 && value !== null && typeof value !== "boolean") {
-      throw refuse3(method, `\`${name}\` must be a boolean`);
+      throw refuse4(method, `\`${name}\` must be a boolean`);
     }
     return value;
   }
@@ -53813,7 +54161,7 @@ Return JSON format:
       needArray(method, probe, `probes[${i}]`).forEach((hit, j) => {
         needObject(method, hit, `probes[${i}][${j}]`);
         needNumber(method, hit.heightMm, `probes[${i}][${j}].heightMm`);
-        if (typeof hit.paved !== "boolean") throw refuse3(method, `\`probes[${i}][${j}].paved\` must be a boolean`);
+        if (typeof hit.paved !== "boolean") throw refuse4(method, `\`probes[${i}][${j}].paved\` must be a boolean`);
       });
     });
     return value;
@@ -53923,7 +54271,7 @@ Return JSON format:
   function probeTableArg(method, value, name) {
     needObject(method, value, name);
     for (const [link, passable] of Object.entries(value)) {
-      if (typeof passable !== "boolean") throw refuse3(method, `\`${name}.${link}\` must be a boolean`);
+      if (typeof passable !== "boolean") throw refuse4(method, `\`${name}.${link}\` must be a boolean`);
     }
     return value;
   }
@@ -53984,7 +54332,7 @@ Return JSON format:
   }
   function nowOf(method, value, name) {
     if (value !== void 0 && value !== null && typeof value !== "string" && typeof value !== "number") {
-      throw refuse3(method, `\`${name}\` must be an ISO date-time string or epoch milliseconds`);
+      throw refuse4(method, `\`${name}\` must be an ISO date-time string or epoch milliseconds`);
     }
     return value;
   }
@@ -54043,7 +54391,7 @@ Return JSON format:
       // STORED object; false when nothing is held under that id.
       equip_flag: ({ model }, op) => {
         const id4 = needString(m, op.item, "item");
-        if (typeof op.equipped !== "boolean") throw refuse3(m, "`equipped` must be a boolean");
+        if (typeof op.equipped !== "boolean") throw refuse4(m, "`equipped` must be a boolean");
         const item2 = model.getItem(id4);
         if (item2) item2.equipped = op.equipped;
         return !!item2;
@@ -54164,7 +54512,7 @@ Return JSON format:
     const read = readLanguageBlock({ book: value });
     if (!read.ok) {
       coded("invalid-input", () => {
-        throw refuse3(method, `\`${name}\` is not a book core's save reader reads: ${read.keys.map((k) => k.replace(/^book/, name)).join(", ")}`);
+        throw refuse4(method, `\`${name}\` is not a book core's save reader reads: ${read.keys.map((k) => k.replace(/^book/, name)).join(", ")}`);
       });
     }
     return read.value.book;
@@ -54222,7 +54570,7 @@ Return JSON format:
       needObject(method, value, name);
       for (const [k, d] of Object.entries(defaults)) {
         if (typeof value[k] !== typeof d || typeof d === "number" && !Number.isFinite(value[k])) {
-          throw refuse3(method, `\`${name}.${k}\` must be a ${typeof d} (core's tuning)`);
+          throw refuse4(method, `\`${name}.${k}\` must be a ${typeof d} (core's tuning)`);
         }
       }
       if ("kind" in defaults) oneOf(method, value.kind, ["vocabulary", "knowledge"], `${name}.kind`);
@@ -54527,7 +54875,7 @@ Return JSON format:
         }
         listeningQuestionsArg(method, q.questions, `${at}.questions`);
         for (const k of ["storyHeard", "evaluated"]) {
-          if (typeof q[k] !== "boolean") throw refuse3(method, `\`${at}.${k}\` must be a boolean`);
+          if (typeof q[k] !== "boolean") throw refuse4(method, `\`${at}.${k}\` must be a boolean`);
         }
         stringList(method, q.answers, `${at}.answers`);
         if (q.score !== null) needNumber(method, q.score, `${at}.score`);
@@ -54540,7 +54888,7 @@ Return JSON format:
     return value;
   }
   function needBoolean(method, value, name) {
-    if (typeof value !== "boolean") throw refuse3(method, `\`${name}\` must be a boolean`);
+    if (typeof value !== "boolean") throw refuse4(method, `\`${name}\` must be a boolean`);
     return value;
   }
   var QUEST_OBJECTIVE_STRINGS = ["id", "description", "target", "difficulty", "grammarFocus", "category"];
@@ -54603,7 +54951,7 @@ Return JSON format:
       const locks = value.objectiveLocks.length;
       const indexed = (x, at) => {
         needNumber(method, x.index, `${at}.index`);
-        if (!Number.isInteger(x.index) || x.index < 0 || x.index >= locks) throw refuse3(method, `\`${at}.index\` must name one of \`${name}.objectiveLocks\``);
+        if (!Number.isInteger(x.index) || x.index < 0 || x.index >= locks) throw refuse4(method, `\`${at}.index\` must name one of \`${name}.objectiveLocks\``);
         strs(x, at, ["type"]);
         nums(x, at, ["required", "current"]);
         bools(x, at, ["completed"]);
@@ -54706,12 +55054,12 @@ Return JSON format:
     for (const [key, check, how] of spec) {
       const where = `${name}.${key}`;
       if (!hasOwn3(value, key)) {
-        if (how === REQ || how === REQ_NULL) throw refuse3(method, `\`${where}\` is missing`);
+        if (how === REQ || how === REQ_NULL) throw refuse4(method, `\`${where}\` is missing`);
         continue;
       }
       if (value[key] === null) {
         if (how === REQ_NULL || how === OPT_NULL) continue;
-        throw refuse3(method, `\`${where}\` must not be null`);
+        throw refuse4(method, `\`${where}\` must not be null`);
       }
       check(method, value[key], where);
     }
@@ -54808,7 +55156,7 @@ Return JSON format:
     ["notes", tList(tStr), REQ]
   ];
   function puzzleAttemptArg(method, value, name) {
-    if (needArray(method, value, name).length !== 2) throw refuse3(method, `\`${name}\` must be a [riddle, count] pair`);
+    if (needArray(method, value, name).length !== 2) throw refuse4(method, `\`${name}\` must be a [riddle, count] pair`);
     needString(method, value[0], `${name}[0]`);
     needNumber(method, value[1], `${name}[1]`);
   }
@@ -54911,7 +55259,7 @@ Return JSON format:
     ["notes", tList(tStr), REQ]
   ];
   function platformerClearArg(method, value, name) {
-    if (needArray(method, value, name).length !== 2) throw refuse3(method, `\`${name}\` must be a [level, stars] pair`);
+    if (needArray(method, value, name).length !== 2) throw refuse4(method, `\`${name}\` must be a [level, stars] pair`);
     needString(method, value[0], `${name}[0]`);
     needNumber(method, value[1], `${name}[1]`);
   }
@@ -54942,7 +55290,7 @@ Return JSON format:
     const options = {};
     for (const k of keys) {
       if (!hasOwn3(args, k)) continue;
-      if (args[k] === null) throw refuse3(method, `\`${k}\` must not be null`);
+      if (args[k] === null) throw refuse4(method, `\`${k}\` must not be null`);
       checks[k](method, args[k], k);
       options[k] = args[k];
     }
@@ -54955,7 +55303,7 @@ Return JSON format:
     });
   }
   var tTuple = (shape, ...checks) => (m, v, n) => {
-    if (needArray(m, v, n).length !== checks.length) throw refuse3(m, `\`${n}\` must be a ${shape}`);
+    if (needArray(m, v, n).length !== checks.length) throw refuse4(m, `\`${n}\` must be a ${shape}`);
     checks.forEach((check, k) => check(m, v[k], `${n}[${k}]`));
   };
   var STRATEGY_AMOUNTS = tRecord(tNum);
@@ -55145,7 +55493,7 @@ Return JSON format:
   ];
   var tReplayPath = (m, v, n) => {
     tList(tGround)(m, v, n);
-    if (v.length === 0) throw refuse3(m, `\`${n}\` is empty: core's replay walks to its first point`);
+    if (v.length === 0) throw refuse4(m, `\`${n}\` is empty: core's replay walks to its first point`);
   };
   var PASS_BY_SCENE = [
     ["dt", tNum, OPT],
@@ -55213,7 +55561,7 @@ Return JSON format:
   var VEHICLE_POINT = [["x", tNum, REQ], ["z", tNum, REQ]];
   function vehicleParkingInputOf(method, args) {
     if (args.streets !== void 0) {
-      if (args.streets === null) throw refuse3(method, "`streets` must not be null: absent is the street everywhere, [] nowhere");
+      if (args.streets === null) throw refuse4(method, "`streets` must not be null: absent is the street everywhere, [] nowhere");
       needArray(method, args.streets, "streets");
     }
     for (const key of ["buildings", "statics", "slots", "interactables"]) optArrayValue(method, args[key], key);
@@ -55635,7 +55983,7 @@ Return JSON format:
       const read = readConversationRecords(args.records);
       if (!read.ok) {
         coded("invalid-input", () => {
-          throw refuse3(m, `\`records\` cannot be read: ${read.keys.length ? read.keys.join(", ") : "not a list"}`);
+          throw refuse4(m, `\`records\` cannot be read: ${read.keys.length ? read.keys.join(", ") : "not a list"}`);
         });
       }
       return { rows: plain(conversationRowsOf(args.stored, read.value)) };
@@ -55770,7 +56118,7 @@ Return JSON format:
       coded("invalid-input", () => needObject(m, args.row, "row"));
       const read = readLanguageBlock({ book: { words: [args.row] } });
       if (!read.ok) coded("invalid-input", () => {
-        throw refuse3(m, `\`row\` is not a word row core's save reader reads`);
+        throw refuse4(m, `\`row\` is not a word row core's save reader reads`);
       });
       return { view: plain(wordView(read.value.book.words[0])) };
     },
@@ -55899,7 +56247,7 @@ Return JSON format:
       const read = readLanguageBlock(args.block);
       if (!read.ok || read.value === null) {
         coded("invalid-input", () => {
-          throw refuse3(m, `\`block\` cannot be read: ${!read.ok ? read.keys.length ? read.keys.join(", ") : "not an object" : "no block"}`);
+          throw refuse4(m, `\`block\` cannot be read: ${!read.ok ? read.keys.length ? read.keys.join(", ") : "not an object" : "no block"}`);
         });
       }
       return { block: plain(languageBlockOf(read.value)) };
@@ -56552,7 +56900,7 @@ Return JSON format:
       const m = "language.objects.examine";
       const [objects, at, options] = coded("invalid-input", () => {
         const opts = needObject(m, args.options, "options");
-        if (typeof opts.languageWorld !== "boolean") throw refuse3(m, "`options.languageWorld` must be a boolean");
+        if (typeof opts.languageWorld !== "boolean") throw refuse4(m, "`options.languageWorld` must be a boolean");
         needString(m, opts.targetLanguage, "options.targetLanguage");
         needNumber(m, opts.fluency, "options.fluency");
         optNumber(m, opts.range, "options.range");
@@ -56616,7 +56964,7 @@ Return JSON format:
       const m = "language.listening.grade";
       const state = listeningStateArg(m, args.state);
       const [questId, score] = coded("invalid-input", () => {
-        if (args.score !== null && (typeof args.score !== "number" || !Number.isFinite(args.score))) throw refuse3(m, "`score` must be a finite number or null");
+        if (args.score !== null && (typeof args.score !== "number" || !Number.isFinite(args.score))) throw refuse4(m, "`score` must be a finite number or null");
         return [needString(m, args.questId, "questId"), args.score];
       });
       return plain(gradeListening(state, questId, score));
@@ -56814,7 +57162,7 @@ Return JSON format:
         for (const [k, w2] of Object.entries(s)) genreWorldArg(m, w2, `slices.${k}`);
         const named = (v, where) => {
           needString(m, v, where);
-          if (!hasOwn3(s, v)) throw refuse3(m, `\`${where}\` names no slice of \`slices\` (got ${JSON.stringify(v)})`);
+          if (!hasOwn3(s, v)) throw refuse4(m, `\`${where}\` names no slice of \`slices\` (got ${JSON.stringify(v)})`);
         };
         const w = args.world;
         if (typeof w === "string") named(w, "world");
@@ -56934,7 +57282,7 @@ Return JSON format:
         if (input.kb !== void 0) {
           const consulted = await engine.consult(input.kb);
           if (!consulted.success) {
-            const err = refuse3(m, `the KB refused \`kb\`: ${consulted.error}`);
+            const err = refuse4(m, `the KB refused \`kb\`: ${consulted.error}`);
             err.code = "invalid-input";
             throw err;
           }
@@ -57182,7 +57530,7 @@ Return JSON format:
         if (input.kb !== void 0) {
           const consulted = await engine.consult(input.kb);
           if (!consulted.success) {
-            const err = refuse3(m, `the KB refused \`kb\`: ${consulted.error}`);
+            const err = refuse4(m, `the KB refused \`kb\`: ${consulted.error}`);
             err.code = "invalid-input";
             throw err;
           }
@@ -57202,8 +57550,8 @@ Return JSON format:
       const [probe, stuck] = coded("invalid-input", () => {
         const p = optionalArg(args.probe, (v) => probeTableArg(m, v, "probe"));
         const k = optionalArg(args.stuck, (v) => stuckTableArg(m, v, "stuck"));
-        if (p !== void 0 && s.hosts.probe === null) throw refuse3(m, "`probe`: the director was created with no probe");
-        if (k !== void 0 && s.hosts.stuck === null) throw refuse3(m, "`stuck`: the director was created with no locomotion host");
+        if (p !== void 0 && s.hosts.probe === null) throw refuse4(m, "`probe`: the director was created with no probe");
+        if (k !== void 0 && s.hosts.stuck === null) throw refuse4(m, "`stuck`: the director was created with no locomotion host");
         return [p, k];
       });
       if (probe !== void 0) s.hosts.probe = probe;
@@ -57402,7 +57750,7 @@ Return JSON format:
         if (input.kb !== void 0) {
           const consulted = await engine.consult(input.kb);
           if (!consulted.success) {
-            const err = refuse3(m, `the KB refused \`kb\`: ${consulted.error}`);
+            const err = refuse4(m, `the KB refused \`kb\`: ${consulted.error}`);
             err.code = "invalid-input";
             throw err;
           }
@@ -57772,7 +58120,7 @@ Return JSON format:
       const m = "passBy.planRound";
       const radii = coded("invalid-input", () => {
         for (const k of ["here", "next", "player"]) {
-          if (!hasOwn3(args, k)) throw refuse3(m, `\`args.${k}\` is missing`);
+          if (!hasOwn3(args, k)) throw refuse4(m, `\`args.${k}\` is missing`);
           tGround(m, args[k], `args.${k}`);
         }
         return [passByRadiusArg(m, args, "villagerRadius"), passByRadiusArg(m, args, "playerRadius")];
@@ -57801,20 +58149,42 @@ Return JSON format:
       return plain(replayPassBy(args.scene));
     },
     // ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
-    /** `ui.notifications.create {}` → `{ session, view }` — core's `Notifications` toast queue. */
-    "ui.notifications.create": () => {
+    /**
+     * `ui.notifications.create { historyMax? }` → `{ session, view }` — core's two notification
+     * view-models in one session: the `Notifications` toast queue and the `NotificationLog`
+     * history behind the HUD feed and the Notifications tab (P2; PL.native-hud-rows).
+     * `historyMax` is the log's cap (core's `maxItems`, default `NOTIFICATION_HISTORY_MAX`, 200),
+     * a whole number from 0. The log's clock reads the last `at` an op gave (ms; 0 before any),
+     * as core's corpus runner gives it: a host passes its own clock, the row reads none.
+     */
+    "ui.notifications.create": (args) => {
+      const m = "ui.notifications.create";
+      const maxItems = coded("invalid-input", () => {
+        if (args.historyMax === void 0) return NOTIFICATION_HISTORY_MAX;
+        const n = needNumber(m, args.historyMax, "historyMax");
+        if (!Number.isInteger(n) || n < 0) throw refuse4(m, "`historyMax` must be a whole number from 0");
+        return n;
+      });
       const model = new Notifications();
-      return { session: openSession("ui.notifications", { model }), view: notificationsView(model) };
+      const clock = { ms: 0 };
+      const log = new NotificationLog({ now: () => clock.ms, maxItems });
+      return { session: openSession("ui.notifications", { model, log, clock }), view: notificationsView(model) };
     },
     /**
      * `ui.notifications.apply { session, ops }` → `{ results, view }`.
-     * ops: `push { text, kind?, lifetime? }` → id · `tick { delta }` (seconds) →
+     * Toasts: `push { text, kind?, lifetime? }` → id · `tick { delta }` (seconds) →
      * changed · `dismiss { id }` → dismissed · `clear` → null.
-     * view: `{ visible: [{ id, text, kind, remaining, color }], count }`.
+     * History: `historyPush { title, description?, icon?, color?, category?, at? }` → id (`at`,
+     * ms, sets the log's clock first, and it stays set; any other member is carried as core carries it) · `historyClock { at }` → null ·
+     * `historyRecent { count }` → the newest `count`, newest first · `historyAll` → every one,
+     * newest first · `historyLength` → the number kept · `historyClear` → null (ids keep
+     * counting). A history item is `{ id, timestamp, title, description?, icon?, color?, category? }`.
+     * view: `{ visible: [{ id, text, kind, remaining, color }], count }` (the toasts).
      */
     "ui.notifications.apply": async (args) => {
       const m = "ui.notifications.apply";
       const s = session(m, args, "ui.notifications");
+      const at = (op) => coded("invalid-input", () => needNumber(m, op.at, "at"));
       const results = await applyOps(m, s, args, {
         push: ({ model }, op) => {
           const kind = op.kind === void 0 ? "info" : oneOf(m, op.kind, Object.keys(KIND_COLOR), "kind");
@@ -57823,9 +58193,215 @@ Return JSON format:
         },
         tick: ({ model }, op) => model.tick(needNumber(m, op.delta, "delta")),
         dismiss: ({ model }, op) => model.dismiss(needNumber(m, op.id, "id")),
-        clear: ({ model }) => model.clear()
+        clear: ({ model }) => model.clear(),
+        historyPush: ({ log, clock }, op) => {
+          const opts = coded("invalid-input", () => {
+            declared(m, op, "op", HISTORY_PUSH_INPUT);
+            const { op: _op, at: _at, ...o } = op;
+            return o;
+          });
+          if (hasOwn3(op, "at")) clock.ms = at(op);
+          return log.push(opts).id;
+        },
+        historyClock: ({ clock }, op) => {
+          clock.ms = at(op);
+          return null;
+        },
+        historyRecent: ({ log }, op) => plain(log.recent(coded("invalid-input", () => needNumber(m, op.count, "count")))),
+        historyAll: ({ log }) => plain(log.all()),
+        historyLength: ({ log }) => log.length,
+        historyClear: ({ log }) => log.clear()
       });
       return { results, view: notificationsView(s.model) };
+    },
+    /**
+     * `ui.notifications.contract {}` → `{ kinds, kindColor, defaultLifetimeSeconds, historyMax }`:
+     * the toast kinds and their token colours (`KIND_COLOR`), the default toast lifetime (s) and
+     * the history log's default cap, as core's exports state them. The rest of the corpus's
+     * contract (the first ids, the expiry and order rules, the categories) is behaviour the
+     * cases pin, not a value a row states.
+     */
+    "ui.notifications.contract": () => ({
+      kinds: Object.keys(KIND_COLOR),
+      kindColor: { ...KIND_COLOR },
+      defaultLifetimeSeconds: DEFAULT_NOTIFICATION_LIFETIME,
+      historyMax: NOTIFICATION_HISTORY_MAX
+    }),
+    // ── the HUD compass (P2; PL.native-hud-rows, U143(2)) ──
+    // Core's compass view-model (`ui/compass-model`), stateless. Not the quest director's
+    // compass that `quest.waypoints` returns (`getCompassData`: the nearest waypoint's
+    // direction); these rows are the HUD strip's heading, cardinal and marker bearings, with
+    // north a world fact. Numbers (and `mirrored`) go to core as they are, so core's own
+    // refusals come back as values `{ ok: false, refusal: { code, field, message } }`; the
+    // rows refuse as `[invalid-input]` only the structure core cannot read (a position or
+    // marker that is not an object, markers that are not an array) and the declared strings.
+    /** `ui.compass.contract {}` → `{ points, defaultSpanDegrees, minDistanceM, defaultNorthYaw }`, core's exports. */
+    "ui.compass.contract": () => ({
+      points: [...COMPASS_POINTS],
+      defaultSpanDegrees: DEFAULT_COMPASS_SPAN_DEG,
+      minDistanceM: COMPASS_MIN_DISTANCE_M,
+      defaultNorthYaw: DEFAULT_NORTH_YAW
+    }),
+    /**
+     * `ui.compass.view { yaw, northYaw, position, markers, span?, mirrored? }` → core's
+     * `compassView`: `{ ok: true, value: { heading, cardinal, span, markers: [{ id, kind?, label?,
+     * distance, bearing, relative, visible, offset }], mirrored? } }` or `{ ok: false, refusal }`.
+     */
+    "ui.compass.view": (args) => {
+      coded("invalid-input", () => compassViewArgs("ui.compass.view", args));
+      return plain(compassView(args));
+    },
+    /**
+     * `ui.compass.worldView { geography?, yaw? | facing?, position, markers, span?, mirrored? }`
+     * → core's `worldCompassView`: north from the world's `georeference` (else the declared
+     * default), then the view: `{ ok: true, north: { northYaw, source }, value }` or
+     * `{ ok: false, refusal }` (`facing_unstated`, `facing_twice`, `facing_zero`, …).
+     */
+    "ui.compass.worldView": (args) => {
+      const m = "ui.compass.worldView";
+      coded("invalid-input", () => {
+        compassViewArgs(m, args);
+        northFactsArg(m, args.geography, "geography");
+        if (args.facing !== void 0 && args.facing !== null) needObject(m, args.facing, "facing");
+      });
+      return plain(worldCompassView(args));
+    },
+    /**
+     * `ui.compass.north { geography? }` → core's `worldNorth`: `{ ok: true, value: { northYaw,
+     * source } }` (`source` `georeference` or `default`) or `{ ok: false, refusal }`.
+     */
+    "ui.compass.north": (args) => {
+      coded("invalid-input", () => northFactsArg("ui.compass.north", args.geography, "geography"));
+      return plain(worldNorth(args.geography));
+    },
+    /** `ui.compass.heading { yaw, northYaw }` → `{ heading }`, core's `compassHeading` (degrees clockwise from north, [0, 360)). */
+    "ui.compass.heading": (args) => {
+      const m = "ui.compass.heading";
+      const [yaw, north] = coded("invalid-input", () => [needNumber(m, args.yaw, "yaw"), needNumber(m, args.northYaw, "northYaw")]);
+      return { heading: compassHeading(yaw, north) };
+    },
+    /** `ui.compass.cardinal { degrees }` → `{ cardinal }`, core's `compassCardinal` (the nearest of the 8 points; half-way rounds clockwise). */
+    "ui.compass.cardinal": (args) => {
+      const degrees = coded("invalid-input", () => needNumber("ui.compass.cardinal", args.degrees, "degrees"));
+      return { cardinal: compassCardinal(degrees) };
+    },
+    /**
+     * `ui.compass.stripRelative { bearing, heading, mirrored? }` → `{ relative }`, core's
+     * `stripRelative`: where a bearing sits on the strip, degrees from its centre in (-180, 180],
+     * positive to the right as the player sees it. What an engine places its cardinal ticks with
+     * (the corpus contract's `relativeRule`: "Cardinal ticks use the same rule").
+     */
+    "ui.compass.stripRelative": (args) => {
+      const m = "ui.compass.stripRelative";
+      const [bearing, heading, mirrored] = coded("invalid-input", () => [
+        needNumber(m, args.bearing, "bearing"),
+        needNumber(m, args.heading, "heading"),
+        args.mirrored === void 0 ? false : needBoolean(m, args.mirrored, "mirrored")
+      ]);
+      return { relative: stripRelative(bearing, heading, mirrored) };
+    },
+    // ── the HUD minimap (P2; PL.native-hud-rows, U143(2)) ──
+    // Core's `MinimapModel` (`ui/minimap-model`): the stateless projection, tone and size rows,
+    // and a session holding one model (the marker table, the live-feed fold, the visibility).
+    /**
+     * `ui.minimap.contract {}` → `{ markerTypes, tones, unknownTypeTone, sizesPx,
+     * unknownTypeSizePx, defaultWorldSize, feedOwnedIds }`, read from core's model as core's
+     * corpus emitter reads it (`MINIMAP_MARKER_TYPES`, `toneFor`, `sizeFor`, a new model's
+     * world size, `MINIMAP_FEED_OWNED`'s source).
+     */
+    "ui.minimap.contract": () => {
+      const model = new MinimapModel();
+      const unknown = "";
+      return {
+        markerTypes: [...MINIMAP_MARKER_TYPES],
+        tones: Object.fromEntries(MINIMAP_MARKER_TYPES.map((t) => [t, model.toneFor(t)])),
+        unknownTypeTone: model.toneFor(unknown),
+        sizesPx: Object.fromEntries(MINIMAP_MARKER_TYPES.map((t) => [t, model.sizeFor(t)])),
+        unknownTypeSizePx: model.sizeFor(unknown),
+        defaultWorldSize: model.worldSize(),
+        feedOwnedIds: MINIMAP_FEED_OWNED.source
+      };
+    },
+    /**
+     * `ui.minimap.project { worldSize?, position, sizePx, northYaw?, mirrored? }` → `{ x, y }`:
+     * a world position as an offset from the centre of a square map `sizePx` across, on a map
+     * of a world `worldSize` across (core's `new MinimapModel(worldSize).project(…)`; absent,
+     * null or not positive: 1024). With `northYaw` the map is north up, east right; `mirrored`
+     * (with a `northYaw`) puts east left; without `northYaw`, Babylon's legacy rule.
+     */
+    "ui.minimap.project": (args) => {
+      const m = "ui.minimap.project";
+      coded("invalid-input", () => declared(m, args, "args", MINIMAP_PROJECT_INPUT));
+      const model = args.worldSize === void 0 ? new MinimapModel() : new MinimapModel(args.worldSize);
+      return plain(model.project(args.position, args.sizePx, args.northYaw, args.mirrored));
+    },
+    /** `ui.minimap.toneFor { type }` → `{ tone }`: the token role a marker type paints with (an unknown type: `text_primary`). */
+    "ui.minimap.toneFor": (args) => {
+      const type = coded("invalid-input", () => needString("ui.minimap.toneFor", args.type, "type"));
+      return { tone: new MinimapModel().toneFor(type) };
+    },
+    /** `ui.minimap.sizeFor { type }` → `{ size }`: a marker type's diameter at the 2D overlay's scale (px; an unknown type: 4). */
+    "ui.minimap.sizeFor": (args) => {
+      const type = coded("invalid-input", () => needString("ui.minimap.sizeFor", args.type, "type"));
+      return { size: new MinimapModel().sizeFor(type) };
+    },
+    /**
+     * `ui.minimap.create { worldSize? }` → `{ session, view }` — one `MinimapModel`. view:
+     * `{ worldSize, visible, markerCount, markers (insertion order), player (the 'player' marker or null) }`.
+     */
+    "ui.minimap.create": (args) => {
+      const m = "ui.minimap.create";
+      coded("invalid-input", () => declared(m, args, "args", [["worldSize", tNum, OPT_NULL]]));
+      const model = args.worldSize === void 0 ? new MinimapModel() : new MinimapModel(args.worldSize);
+      return { session: openSession("ui.minimap", { model }), view: minimapView(model) };
+    },
+    /**
+     * `ui.minimap.apply { session, ops }` → `{ results, view }`. ops: `setWorldSize { size }` →
+     * null (not positive: 1024) · `add { marker: { id, type, position: { x, y, z }, label?,
+     * color?, shape? } }` → null (an id already there is replaced in place) · `remove { id }` →
+     * removed · `clear` → null · `ingest { feed }` → null (core's live-feed fold: one marker per
+     * feed entry, and the feed-owned ids it no longer reports retired) · `setVisible { visible }`
+     * → null · `placed { sizePx, scale?, theme?, northYaw?, mirrored? }` → `[{ id, offsetX,
+     * offsetY, size, color, tone }]` for every marker (`theme`: role → colour; with none, a
+     * marker with no colour of its own has `color` null).
+     */
+    "ui.minimap.apply": async (args) => {
+      const m = "ui.minimap.apply";
+      const s = session(m, args, "ui.minimap");
+      const check = (op, spec) => coded("invalid-input", () => declared(m, op, "op", spec));
+      const results = await applyOps(m, s, args, {
+        setWorldSize: ({ model }, op) => {
+          check(op, [["size", tNum, REQ]]);
+          model.setWorldSize(op.size);
+          return null;
+        },
+        add: ({ model }, op) => {
+          check(op, [["marker", tObj(MINIMAP_MARKER), REQ]]);
+          model.addMarker(op.marker);
+          return null;
+        },
+        remove: ({ model }, op) => {
+          check(op, [["id", tStr, REQ]]);
+          return model.removeMarker(op.id);
+        },
+        clear: ({ model }) => model.clearMarkers(),
+        ingest: ({ model }, op) => {
+          check(op, [["feed", tObj(MINIMAP_FEED), REQ]]);
+          model.ingest(op.feed);
+          return null;
+        },
+        setVisible: ({ model }, op) => {
+          check(op, [["visible", tBool, REQ]]);
+          model.setVisible(op.visible);
+          return null;
+        },
+        placed: ({ model }, op) => {
+          check(op, MINIMAP_PLACED_INPUT);
+          const theme = op.theme === void 0 ? void 0 : minimapTheme(m, model, op.theme);
+          return model.placed(op.sizePx, op.scale, theme, op.northYaw, op.mirrored).map((p) => ({ id: p.marker.id, offsetX: p.offsetX, offsetY: p.offsetY, size: p.size, color: p.color, tone: p.tone }));
+        }
+      });
+      return { results: plain(results), view: minimapView(s.model) };
     },
     /**
      * `ui.pause.create { enabledModules? | genre?, tabs? }` → `{ session, source,
@@ -59130,7 +59706,7 @@ Return JSON format:
       const results = await applyOps(m, s, args, {
         update: ({ clock }, op) => {
           const ms = needNumber(m, op.deltaMs, "deltaMs");
-          if (ms < 0) throw refuse3(m, "`deltaMs` must not be negative");
+          if (ms < 0) throw refuse4(m, "`deltaMs` must not be negative");
           return clock.update(ms);
         },
         advanceHours: ({ clock }, op) => clock.advanceHours(needNumber(m, op.hours, "hours")),
@@ -59851,7 +60427,7 @@ Return JSON format:
     /** `traversal.fastTravel.discovery { location, known }` → `{ delta }` — core's `discoveryDelta`: `location_discovered/1` asserted unless already `known`. */
     "traversal.fastTravel.discovery": (args) => {
       coded("invalid-input", () => {
-        if (typeof args.known !== "boolean") throw refuse3("traversal.fastTravel.discovery", "`known` must be a boolean");
+        if (typeof args.known !== "boolean") throw refuse4("traversal.fastTravel.discovery", "`known` must be a boolean");
       });
       return { delta: plain(discoveryDelta(args.location, args.known)) };
     },
@@ -60114,7 +60690,7 @@ Return JSON format:
         const input2 = coded("invalid-input", () => {
           for (const key of ["links", "tuning", "fastTravel", "seed", "stamina", "probe", "locomotion"]) {
             if (args[key] !== void 0 && args[key] !== null) {
-              throw refuse3(m, `\`${key}\` configures traversal, which a session with \`runsTraversal: false\` does not run`);
+              throw refuse4(m, `\`${key}\` configures traversal, which a session with \`runsTraversal: false\` does not run`);
             }
           }
           return {
@@ -60325,8 +60901,8 @@ Return JSON format:
           const [probe, stuck] = coded("invalid-input", () => {
             const p = optionalArg(op.probe, (v) => probeTableArg(m, v, "probe"));
             const k = optionalArg(op.stuck, (v) => stuckTableArg(m, v, "stuck"));
-            if (p !== void 0 && st.hosts.probe === null) throw refuse3(m, "`probe`: the session was created with no probe");
-            if (k !== void 0 && st.hosts.stuck === null) throw refuse3(m, "`stuck`: the session was created with no locomotion host");
+            if (p !== void 0 && st.hosts.probe === null) throw refuse4(m, "`probe`: the session was created with no probe");
+            if (k !== void 0 && st.hosts.stuck === null) throw refuse4(m, "`stuck`: the session was created with no locomotion host");
             return [p, k];
           });
           if (probe !== void 0) st.hosts.probe = probe;
@@ -60462,7 +61038,7 @@ Return JSON format:
       const [result2, hide] = coded("invalid-input", () => [
         buildResultLineArg(m, args.result),
         optionalArg(args.hideDetails, (v) => {
-          if (typeof v !== "boolean") throw refuse3(m, "`hideDetails` must be a boolean");
+          if (typeof v !== "boolean") throw refuse4(m, "`hideDetails` must be a boolean");
           return v;
         })
       ]);
@@ -60490,7 +61066,7 @@ Return JSON format:
      */
     "build.findSecrets": (args) => {
       coded("invalid-input", () => {
-        if (args.value === void 0) throw refuse3("build.findSecrets", "`value` must be sent (any JSON)");
+        if (args.value === void 0) throw refuse4("build.findSecrets", "`value` must be sent (any JSON)");
       });
       return { fields: findSecrets(args.value) };
     },
@@ -60994,7 +61570,7 @@ Return JSON format:
         const consulted = await engine.consult(input.kb);
         if (!consulted.success) {
           engine.destroy();
-          const err = refuse3(m, `the KB refused \`kb\`: ${consulted.error}`);
+          const err = refuse4(m, `the KB refused \`kb\`: ${consulted.error}`);
           err.code = "invalid-input";
           throw err;
         }
@@ -61176,7 +61752,7 @@ Return JSON format:
       try {
         kb = await SkillKbSession.open(world2);
       } catch (e) {
-        const err = refuse3(m, String(e && e.message ? e.message : e));
+        const err = refuse4(m, String(e && e.message ? e.message : e));
         err.code = "invalid-input";
         throw err;
       }
@@ -61444,6 +62020,95 @@ Return JSON format:
   };
   function notificationsView(model) {
     return { visible: plain(model.visible()), count: model.count() };
+  }
+  var HISTORY_PUSH_INPUT = [
+    ["title", tStr, REQ],
+    ["description", tStr, OPT],
+    ["icon", tStr, OPT],
+    ["color", tStr, OPT],
+    ["category", tStr, OPT],
+    ["at", tNum, OPT]
+  ];
+  var tObject = (m, v, n) => needObject(m, v, n);
+  var COMPASS_MARKER_INPUT = [
+    ["id", tStr, REQ],
+    ["position", tObject, REQ],
+    ["kind", tStr, OPT],
+    ["label", tStr, OPT]
+  ];
+  function compassViewArgs(method, args) {
+    return declared(method, args, "args", [
+      ["position", tObject, REQ],
+      ["markers", tList(tObj(COMPASS_MARKER_INPUT)), REQ]
+    ]);
+  }
+  function northFactsArg(method, value, name) {
+    if (value === void 0 || value === null) return value;
+    needObject(method, value, name);
+    const geo = value.georeference;
+    if (geo !== void 0 && geo !== null) needObject(method, geo, `${name}.georeference`);
+    return value;
+  }
+  var MINIMAP_VEC3 = [["x", tNum, REQ], ["y", tNum, REQ], ["z", tNum, REQ]];
+  var MINIMAP_XZ = [["x", tNum, REQ], ["z", tNum, REQ]];
+  var MINIMAP_SHAPES = ["diamond", "circle"];
+  var MINIMAP_PROJECT_INPUT = [
+    ["worldSize", tNum, OPT_NULL],
+    ["position", tObj(MINIMAP_VEC3), REQ],
+    ["sizePx", tNum, REQ],
+    ["northYaw", tNum, OPT],
+    ["mirrored", tBool, OPT]
+  ];
+  var MINIMAP_MARKER = [
+    ["id", tStr, REQ],
+    ["type", tStr, REQ],
+    ["position", tObj(MINIMAP_VEC3), REQ],
+    ["label", tStr, OPT],
+    ["color", tStr, OPT],
+    ["shape", tOneOf(MINIMAP_SHAPES), OPT]
+  ];
+  var MINIMAP_FEED = [
+    ["playerPosition", tObj(MINIMAP_XZ), OPT_NULL],
+    ["worldSize", tNum, OPT_NULL],
+    ["settlements", tList(tObj([["id", tStr, REQ], ["name", tStr, OPT], ["position", tObj(MINIMAP_XZ), REQ]])), OPT_NULL],
+    ["npcPositions", tList(tObj([["id", tStr, REQ], ["name", tStr, OPT], ["position", tObj(MINIMAP_XZ), REQ]])), OPT_NULL],
+    ["questMarkers", tList(tObj([["id", tStr, REQ], ["title", tStr, OPT], ["position", tObj(MINIMAP_XZ), REQ]])), OPT_NULL],
+    ["questObjectiveMarkers", tList(tObj([
+      ["id", tStr, REQ],
+      ["questTitle", tStr, OPT],
+      ["position", tObj(MINIMAP_XZ), REQ],
+      ["color", tStr, OPT],
+      ["shape", tOneOf(MINIMAP_SHAPES), OPT]
+    ])), OPT_NULL],
+    ["questItemMarkers", tList(tObj([["id", tStr, REQ], ["itemName", tStr, OPT], ["position", tObj(MINIMAP_XZ), REQ]])), OPT_NULL],
+    ["noticeBoards", tList(tObj([["id", tStr, REQ], ["position", tObj(MINIMAP_XZ), REQ], ["questCount", tNum, REQ]])), OPT_NULL]
+  ];
+  var MINIMAP_PLACED_INPUT = [
+    ["sizePx", tNum, REQ],
+    ["scale", tNum, OPT],
+    ["theme", tObject, OPT],
+    ["northYaw", tNum, OPT],
+    ["mirrored", tBool, OPT]
+  ];
+  function minimapTheme(method, model, theme) {
+    return coded("invalid-input", () => {
+      for (const [role, colour] of Object.entries(theme)) needString(method, colour, `op.theme.${role}`);
+      for (const marker of model.markers()) {
+        if (marker.color !== void 0 && marker.color !== null) continue;
+        const tone = model.toneFor(marker.type);
+        if (!hasOwn3(theme, tone)) throw refuse4(method, `\`op.theme\` has no colour for role '${tone}' (marker ${JSON.stringify(marker.id)})`);
+      }
+      return { color: (role) => theme[role] };
+    });
+  }
+  function minimapView(model) {
+    return {
+      worldSize: model.worldSize(),
+      visible: model.isVisible(),
+      markerCount: model.markerCount(),
+      markers: plain(model.markers()),
+      player: plain(model.player())
+    };
   }
   function pauseView(model) {
     return {

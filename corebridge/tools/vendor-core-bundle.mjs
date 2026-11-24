@@ -60,7 +60,10 @@
 // driven through the `props.interactables.*` rows. Core's P8 corpora are copied the same way
 // (PL.native-title-rows, U92(1)): `conformance/ui/title-flow.json` and
 // `conformance/quests/tutorial.json`; tests/title_corpus.cpp drives them through
-// the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows. Core's
+// the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows. Core's P2 HUD
+// corpora are copied the same way (PL.native-hud-rows, U143(2)):
+// `conformance/ui/{notifications,compass,minimap}-cases.json`; tests/ui_hud_corpus.cpp
+// drives them through the `ui.notifications.*`, `ui.compass.*` and `ui.minimap.*` rows. Core's
 // movement contract corpus is copied the same way (PL.native-camera-movement,
 // U95(5)): `conformance/camera/movement.json`; tests/props_corpus.cpp drives it
 // through the `camera.movement.*` rows. So is core's ground reading corpus
@@ -242,6 +245,18 @@ const PROPS_CORPUS_FILES = [
 // file shares `conformance/ui/` with the P9a and P6 sets, so it belongs to this
 // list there; `conformance/quests/` is this set's alone.
 const TITLE_CORPUS_FILES = ['conformance/quests/tutorial.json', 'conformance/ui/title-flow.json'];
+
+// core's P2 HUD shell corpora (PL.native-hud-rows, U143(2); core's P2.core and
+// P2.core-north), copied verbatim the same way: the toast queue and history log, the
+// compass and the minimap, driven through the `ui.notifications.*`, `ui.compass.*` and
+// `ui.minimap.*` rows by tests/ui_hud_corpus.cpp and transcribed by emit-bridge-cases.mjs
+// into cases/core-ui-{notifications,compass,minimap}.json. The files share
+// `conformance/ui/` with the P9a, P6 and P8 sets, so they belong to this list there.
+const HUD_CORPUS_FILES = [
+  'conformance/ui/compass-cases.json',
+  'conformance/ui/minimap-cases.json',
+  'conformance/ui/notifications-cases.json',
+];
 
 // core's movement contract corpus (PL.native-camera-movement, U95(5); core's
 // PL.movement-contract and PL.movement-followups), copied verbatim the same way.
@@ -702,6 +717,187 @@ function vehiclePlacementTranscriptionProblems(doc = JSON.parse(fs.readFileSync(
     problems.push(`it carries ${doc.cases.length} case(s), not the corpus's ${file.cases.length} and the contract case`);
   }
   return { problems, count: file.cases.length, declared };
+}
+
+// The HUD transcriptions (PL.native-hud-rows): cases/core-ui-{notifications,compass,minimap}.json must carry one case
+// per case of the vendored conformance/ui/<area>-cases.json, by name (`<area> <op>: <name>`), and nothing else but the
+// contract case; no case on one leg only; and each case's calls exactly the ones core's runner (src/ui/hud-corpus.ts,
+// runHudOp) makes through the rows, with every answer stated: a compass or minimap op ONE call of its row with the
+// case's whole input and answer (a compass refusal's `message`, which core's runner leaves out, held to a string); a
+// session the area's create and ONE apply of the case's steps as ops, each result the corpus's (unwrapped from
+// { id }, { changed }, { removed }, { length }, {}), the toast and minimap views exactly the case's, a history read's
+// items or ids exactly the case's. Derived here independently of the emitter, so a self-consistent re-vendor with an
+// emitter that dropped, renamed or weakened a case would not pass `--check --core`.
+const HUD_TRANSCRIPTIONS = {
+  'ui-notifications': { corpus: 'conformance/ui/notifications-cases.json', cases: 'core-ui-notifications.json', contractRow: 'ui.notifications.contract', rowKeys: ['kinds', 'kindColor', 'defaultLifetimeSeconds', 'historyMax'] },
+  'ui-compass': { corpus: 'conformance/ui/compass-cases.json', cases: 'core-ui-compass.json', contractRow: 'ui.compass.contract', rowKeys: ['points', 'defaultSpanDegrees', 'minDistanceM', 'defaultNorthYaw'] },
+  'ui-minimap': {
+    corpus: 'conformance/ui/minimap-cases.json',
+    cases: 'core-ui-minimap.json',
+    contractRow: 'ui.minimap.contract',
+    rowKeys: ['markerTypes', 'tones', 'unknownTypeTone', 'sizesPx', 'unknownTypeSizePx', 'defaultWorldSize', 'feedOwnedIds'],
+  },
+};
+const HUD_ONE_CALL = {
+  'ui-compass': { view: 'ui.compass.view', heading: 'ui.compass.heading', cardinal: 'ui.compass.cardinal', north: 'ui.compass.north', world_view: 'ui.compass.worldView' },
+  'ui-minimap': { project: 'ui.minimap.project', toneFor: 'ui.minimap.toneFor', sizeFor: 'ui.minimap.sizeFor' },
+};
+
+/** The steps core's runner's answer to HUD case `c` is, through the rows; null for an op or step it does not have. */
+function hudCallsOf(area, c) {
+  const one = HUD_ONE_CALL[area]?.[c.op];
+  if (one) {
+    const refused = area === 'ui-compass' && c.expected?.ok === false;
+    const expect = refused ? { ...c.expected, refusal: { ...c.expected.refusal, message: { $type: 'string' } } } : c.expected;
+    return [{ call: one, args: c.input, expect }];
+  }
+  const bare = (r) => {
+    const k = Object.keys(r);
+    return k.length === 0 ? null : r[k[0]];
+  };
+  const ops = [];
+  const results = [];
+  for (const [i, s] of (c.input.steps ?? []).entries()) {
+    const r = c.expected.results[i];
+    const push = (op, result) => {
+      ops.push(op);
+      results.push(result);
+    };
+    if (area === 'ui-notifications' && c.op === 'toasts') {
+      if (s.push) push({ op: 'push', ...s.push }, r.id);
+      else if ('tick' in s) push({ op: 'tick', delta: s.tick }, r.changed);
+      else if ('dismiss' in s) push({ op: 'dismiss', id: s.dismiss }, r.removed);
+      else if (s.clear === true) push({ op: 'clear' }, null);
+      else return null;
+    } else if (area === 'ui-notifications' && c.op === 'history') {
+      const at = typeof s.at === 'number' ? { at: s.at } : {};
+      if (s.push) push({ op: 'historyPush', ...s.push, ...at }, r.id);
+      else if (s.pushMany) {
+        const { count, title, category } = s.pushMany;
+        for (let k = 0; k < count; k++) {
+          push({ op: 'historyPush', title: `${title} ${k}`, ...(category === undefined ? {} : { category }), ...(k === 0 ? at : {}) },
+            k === 0 ? r.firstId : k === count - 1 ? r.lastId : { $type: 'number' });
+        }
+      } else {
+        if ('at' in at) push({ op: 'historyClock', at: at.at }, null);
+        if ('recent' in s) push({ op: 'historyRecent', count: s.recent }, s.ids === true ? { $ids: r.ids } : r.items);
+        else if (s.all === true) push({ op: 'historyAll' }, s.ids === true ? { $ids: r.ids } : r.items);
+        else if (s.length === true) push({ op: 'historyLength' }, r.length);
+        else if (s.clear === true) push({ op: 'historyClear' }, null);
+        else return null;
+      }
+    } else if (area === 'ui-minimap' && c.op === 'session') {
+      if ('setWorldSize' in s) push({ op: 'setWorldSize', size: s.setWorldSize }, null);
+      else if (s.add) push({ op: 'add', marker: s.add }, null);
+      else if ('remove' in s) push({ op: 'remove', id: s.remove }, r.removed);
+      else if (s.clear === true) push({ op: 'clear' }, null);
+      else if (s.ingest) push({ op: 'ingest', feed: s.ingest }, null);
+      else if ('setVisible' in s) push({ op: 'setVisible', visible: s.setVisible }, null);
+      else return null;
+      if (bare(r) !== results[results.length - 1] && !(bare(r) === null && results[results.length - 1] === null)) return null;
+    } else {
+      return null;
+    }
+  }
+  if (area === 'ui-minimap') {
+    if (c.input.placed !== undefined) {
+      ops.push({ op: 'placed', ...c.input.placed });
+      results.push(c.expected.placed);
+    }
+    const { worldSize, visible, markerCount, markers, player } = c.expected;
+    return [
+      { call: 'ui.minimap.create', args: c.input.worldSize === undefined ? {} : { worldSize: c.input.worldSize }, expect: { $subset: { session: 1 } } },
+      { call: 'ui.minimap.apply', args: { session: 1, ops }, expect: { results, view: { worldSize, visible, markerCount, markers, player } } },
+    ];
+  }
+  const expect = c.op === 'toasts' ? { results, view: { visible: c.expected.visible, count: c.expected.count } } : { $subset: { results } };
+  return [
+    { call: 'ui.notifications.create', expect: { $subset: { session: 1 } } },
+    { call: 'ui.notifications.apply', args: { session: 1, ops }, expect },
+  ];
+}
+
+function hudTranscriptionProblems(docs = null) {
+  const problems = [];
+  let count = 0;
+  for (const [area, t] of Object.entries(HUD_TRANSCRIPTIONS)) {
+    const file = JSON.parse(fs.readFileSync(path.join(OUT_DIR, t.corpus), 'utf8'));
+    const doc = docs?.[area] ?? JSON.parse(fs.readFileSync(path.join(CASES_DIR, t.cases), 'utf8'));
+    const byName = new Map(doc.cases.map((c) => [c.name, c]));
+    const missing = [];
+    const wrong = [];
+    for (const c of file.cases) {
+      const got = byName.get(`${area} ${c.op}: ${c.name}`);
+      if (!got) {
+        missing.push(c.name);
+        continue;
+      }
+      const want = hudCallsOf(area, c);
+      if (want === null || got.legs !== undefined || canonJson(got.steps) !== canonJson(want)) wrong.push(c.name);
+    }
+    count += file.cases.length;
+    if (missing.length) problems.push(`${t.cases}: ${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
+    if (wrong.length) problems.push(`${t.cases}: ${wrong.length} case(s) not transcribed as core's runner calls and answers them, first: ${wrong[0]}`);
+    const contractName = `${area}: the contract ${t.contractRow} states`;
+    const contract = byName.get(contractName);
+    const wantContract = Object.fromEntries(t.rowKeys.map((k) => [k, file.contract[k]]));
+    if (!contract || contract.steps?.length !== 1 || contract.steps[0].call !== t.contractRow || canonJson(contract.steps[0].expect) !== canonJson(wantContract) || contract.legs !== undefined) {
+      problems.push(`${t.cases}: the contract case does not hold ${t.contractRow} to the corpus's ${t.rowKeys.join(', ')}`);
+    }
+    if (doc.cases.length !== file.cases.length + 1 || byName.size !== doc.cases.length) {
+      problems.push(`${t.cases}: it carries ${doc.cases.length} case(s), not the corpus's ${file.cases.length} and the contract case`);
+    }
+  }
+  return { problems, count };
+}
+
+/** The HUD guard's negative control: each perturbation of a transcription must be named. */
+function hudTranscriptionNegative() {
+  const read = () => Object.fromEntries(Object.entries(HUD_TRANSCRIPTIONS).map(([a, t]) => [a, JSON.parse(fs.readFileSync(path.join(CASES_DIR, t.cases), 'utf8'))]));
+  const first = (d, area, op) => d[area].cases.find((c) => c.name.startsWith(`${area} ${op}: `));
+  const applyOf = (d, area, op) => first(d, area, op).steps[1];
+  const perturbations = [
+    ['a dropped compass case', (d) => d['ui-compass'].cases.splice(5, 1), 'corpus case(s) not transcribed'],
+    ['a case no corpus case names', (d) => d['ui-minimap'].cases.push({ ...first(d, 'ui-minimap', 'project'), name: 'ui-minimap project: invented' }), 'case(s), not the corpus'],
+    ['a call changed (a world view answered by the view row)', (d) => { first(d, 'ui-compass', 'world_view').steps[0].call = 'ui.compass.view'; }, "not transcribed as core's runner"],
+    ['an argument dropped (a view without its span)', (d) => {
+      delete d['ui-compass'].cases.find((c) => c.steps[0].call === 'ui.compass.view' && 'span' in c.steps[0].args).steps[0].args.span;
+    }, "not transcribed as core's runner"],
+    ['a refusal weakened (its message no longer held)', (d) => {
+      delete d['ui-compass'].cases.find((c) => c.steps[0].expect?.ok === false).steps[0].expect.refusal.message;
+    }, "not transcribed as core's runner"],
+    ['an answer number changed (a projection)', (d) => { first(d, 'ui-minimap', 'project').steps[0].expect.x += 1e-3; }, "not transcribed as core's runner"],
+    ['a minimap view weakened to a subset', (d) => { const st = applyOf(d, 'ui-minimap', 'session'); st.expect.view = { $subset: { worldSize: st.expect.view.worldSize } }; }, "not transcribed as core's runner"],
+    ['a placed list dropped', (d) => {
+      const st = d['ui-minimap'].cases.find((c) => c.steps[1]?.args.ops.some((o) => o.op === 'placed')).steps[1];
+      st.args.ops.pop();
+      st.expect.results.pop();
+    }, "not transcribed as core's runner"],
+    ['a toast op dropped', (d) => { const st = applyOf(d, 'ui-notifications', 'toasts'); st.args.ops.pop(); st.expect.results.pop(); }, "not transcribed as core's runner"],
+    ['a history clock dropped', (d) => {
+      const st = d['ui-notifications'].cases.find((c) => c.steps[1]?.args.ops.some((o) => o.op === 'historyPush' && 'at' in o)).steps[1];
+      delete st.args.ops.find((o) => 'at' in o).at;
+    }, "not transcribed as core's runner"],
+    ['history ids weakened to a type', (d) => {
+      const st = d['ui-notifications'].cases.find((c) => c.steps[1]?.expect.$subset?.results.some((r) => r?.$ids)).steps[1];
+      const i = st.expect.$subset.results.findIndex((r) => r?.$ids);
+      st.expect.$subset.results[i] = { $type: 'array' };
+    }, "not transcribed as core's runner"],
+    ['a case put on one leg only', (d) => { Object.assign(first(d, 'ui-minimap', 'session'), { legs: ['c'], why: 'perturbed' }); }, "not transcribed as core's runner"],
+    ['a contract key dropped', (d) => { delete d['ui-notifications'].cases[0].steps[0].expect.historyMax; }, 'the contract case'],
+    ['a contract value changed', (d) => { d['ui-compass'].cases[0].steps[0].expect.defaultSpanDegrees = 140; }, 'the contract case'],
+  ];
+  let named = 0;
+  for (const [what, perturb, want] of perturbations) {
+    const docs = read();
+    perturb(docs);
+    const { problems } = hudTranscriptionProblems(docs);
+    const hit = problems.find((p) => p.includes(want));
+    console.log(`  ${hit ? 'named' : 'MISSED'}: ${what} -> ${(hit ?? problems.join('; ')) || 'no problem'}`);
+    if (hit) named++;
+  }
+  console.log(`vendor-core-bundle: HUD transcription negative — ${named} of ${perturbations.length} perturbed transcription(s) named`);
+  if (named !== perturbations.length) fail('the HUD transcription guard missed a perturbation');
 }
 
 /** `a` and `b` the same JSON but for numbers, each within `tol` (core's compareVillageState), key sets included. */
@@ -2022,7 +2218,7 @@ function p9aFilesOnDisk() {
   const out = [];
   for (const dir of P9A_COPY_ROOTS) {
     for (const f of jsonFilesUnder(path.join(OUT_DIR, dir))) {
-      if (!PROPS_CORPUS_FILES.includes(`${dir}/${f}`) && !TITLE_CORPUS_FILES.includes(`${dir}/${f}`)) {
+      if (!PROPS_CORPUS_FILES.includes(`${dir}/${f}`) && !TITLE_CORPUS_FILES.includes(`${dir}/${f}`) && !HUD_CORPUS_FILES.includes(`${dir}/${f}`)) {
         out.push(`vendor/core/${dir}/${f}`);
       }
     }
@@ -2057,6 +2253,11 @@ function titleFilesOnDisk() {
   return listedFilesOnDisk(TITLE_CORPUS_FILES);
 }
 
+/** The vendored P2 HUD corpus files on disk, sorted (the same rule as the P6 set's). */
+function hudFilesOnDisk() {
+  return listedFilesOnDisk(HUD_CORPUS_FILES);
+}
+
 /**
  * The files on disk of a set copied as a `files` list: every file under a
  * directory no other set copies into, and only the listed files in a directory
@@ -2081,6 +2282,11 @@ function propsFilesAtPin(src) {
 /** core's P8 corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
 function titleFilesAtPin(src) {
   return filesAtPin(src, TITLE_CORPUS_FILES, 'the ui.titleFlow, ui.tutorial and ui.onboarding rows');
+}
+
+/** core's P2 HUD corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
+function hudFilesAtPin(src) {
+  return filesAtPin(src, HUD_CORPUS_FILES, 'the ui.notifications, ui.compass and ui.minimap rows');
 }
 
 /**
@@ -2559,6 +2765,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The P2 HUD corpora: the same exact-set replacement.
+    const hudSet = hudFilesAtPin(src);
+    for (const rel of hudFilesOnDisk()) if (!(rel in hudSet)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(hudSet)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     // The camera corpus: the same exact-set replacement (only the listed files).
     const camera = cameraFilesAtPin(src);
     for (const rel of cameraFilesOnDisk()) if (!(rel in camera)) fs.rmSync(path.join(BRIDGE, rel));
@@ -2659,6 +2873,7 @@ async function write(coreDir) {
       savesCorpus: SAVES_CORPUS_FILES,
       propsCorpus: PROPS_CORPUS_FILES,
       titleCorpus: TITLE_CORPUS_FILES,
+      hudCorpus: HUD_CORPUS_FILES,
       cameraCorpus: CAMERA_CORPUS_FILES,
       audioCorpus: AUDIO_CORPUS_FILES,
       survivalCorpus: SURVIVAL_CORPUS_FILES,
@@ -2685,6 +2900,7 @@ async function write(coreDir) {
       ...savesFilesOnDisk(),
       ...propsFilesOnDisk(),
       ...titleFilesOnDisk(),
+      ...hudFilesOnDisk(),
       ...cameraFilesOnDisk(),
       ...audioFilesOnDisk(),
       ...survivalFilesOnDisk(),
@@ -2709,6 +2925,7 @@ async function write(coreDir) {
     console.log(`  save corpus files, slots and tutorial progress (${Object.keys(saves).length}), copied unchanged`);
     console.log(`  P6 props and inventory corpus files (${Object.keys(props).length}), copied unchanged`);
     console.log(`  P8 title-flow and tutorial corpus files (${Object.keys(title).length}), copied unchanged`);
+    console.log(`  P2 HUD corpus files, notifications, compass and minimap (${Object.keys(hudSet).length}), copied unchanged`);
     console.log(`  camera movement corpus files (${Object.keys(camera).length}), copied unchanged`);
     console.log(`  audio ground reading and audio cue corpus files (${Object.keys(audio).length}), copied unchanged`);
     console.log(`  survival corpus files (${Object.keys(survival).length}), copied unchanged`);
@@ -2779,6 +2996,10 @@ async function check(coreDir) {
   for (const rel of TITLE_CORPUS_FILES) {
     if (!titleFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the title and tutorial corpus gate would run nothing`);
   }
+  const hudFiles = hudFilesOnDisk();
+  for (const rel of HUD_CORPUS_FILES) {
+    if (!hudFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the HUD corpus gate would run nothing`);
+  }
   const cameraFiles = cameraFilesOnDisk();
   for (const rel of CAMERA_CORPUS_FILES) {
     if (!cameraFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the camera movement corpus gate would run nothing`);
@@ -2819,11 +3040,13 @@ async function check(coreDir) {
   for (const rel of EDITOR_OPERATIONS_CORPUS_FILES) {
     if (!editorOperationsFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the dock-operations corpus gate would run nothing`);
   }
-  // conformance/ui/ is shared by the P9a, P6 and P8 sets: a file belongs to exactly one.
+  // conformance/ui/ is shared by the P9a, P6, P8 and P2 HUD sets: a file belongs to exactly one.
   const claimedTwice = propsFiles.filter((rel) => p9aFiles.includes(rel));
   if (claimedTwice.length) fail(`${claimedTwice.join(', ')} is listed as both a P9a and a P6 corpus file`);
   const titleClaimedTwice = titleFiles.filter((rel) => p9aFiles.includes(rel) || propsFiles.includes(rel));
   if (titleClaimedTwice.length) fail(`${titleClaimedTwice.join(', ')} is listed as a P8 corpus file and in another set`);
+  const hudClaimedTwice = hudFiles.filter((rel) => p9aFiles.includes(rel) || propsFiles.includes(rel) || titleFiles.includes(rel));
+  if (hudClaimedTwice.length) fail(`${hudClaimedTwice.join(', ')} is listed as a P2 HUD corpus file and in another set`);
   const expectedList = [
     ...GENERATED_FIXED,
     ...caseFiles,
@@ -2833,6 +3056,7 @@ async function check(coreDir) {
     ...savesFiles,
     ...propsFiles,
     ...titleFiles,
+    ...hudFiles,
     ...cameraFiles,
     ...audioFiles,
     ...survivalFiles,
@@ -2887,7 +3111,7 @@ async function check(coreDir) {
     `vendor-core-bundle: ${expectedList.length} file(s) match their recorded sha256 ` +
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
-      `${savesFiles.length} saves (slots, tutorial progress, village state), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ` +
+      `${savesFiles.length} saves (slots, tutorial progress, village state), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ${hudFiles.length} P2 HUD, ` +
       `${cameraFiles.length} camera movement, ${audioFiles.length} audio (ground, cues), ${survivalFiles.length} survival, ` +
       `${traversalFiles.length} traversal, ${buildFiles.length} headless build, ${progressionFiles.length} progression/skill and ` +
       `${languageFiles.length} language corpus file(s), ${genreFiles.length} genre systems corpus file(s) (the world slice among them), ` +
@@ -2937,6 +3161,13 @@ async function check(coreDir) {
     `vendor-core-bundle: world-vehicle parking — cases/${VEHICLE_PLACEMENT_CASES} transcribes all ${vehicleGuard.count} case(s) of ` +
       "conformance/props/vehicle-placement.json, by name, each one call of its op's row with the case's whole input and answer, and its contract " +
       `(${vehicleGuard.declared.length} declared library-version answer(s), each within the corpus's tolerance)`,
+  );
+  const hudGuard = hudTranscriptionProblems();
+  if (hudGuard.problems.length) fail(`the HUD transcriptions do not hold the vendored HUD corpora: ${hudGuard.problems.join('; ')}`);
+  console.log(
+    `vendor-core-bundle: HUD — cases/core-ui-{notifications,compass,minimap}.json transcribe all ${hudGuard.count} case(s) of ` +
+      "the vendored conformance/ui/{notifications,compass,minimap}-cases.json, by name, by the calls core's runner makes through the rows, " +
+      'with every answer stated, and each contract row held to the keys it states',
   );
   const genreGuard = genreTranscriptionProblems();
   if (genreGuard.problems.length) fail(`the genre transcription does not hold the vendored genre systems corpora: ${genreGuard.problems.join('; ')}`);
@@ -3033,6 +3264,16 @@ async function check(coreDir) {
       }
       for (const rel of wantTitle) {
         if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(title[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
+      const hudAtPin = hudFilesAtPin(src);
+      const wantHud = Object.keys(hudAtPin).sort();
+      if (JSON.stringify(wantHud) !== JSON.stringify(hudFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s P2 HUD corpora are ${wantHud.join(', ')} but vendor/core/ holds ${hudFiles.join(', ')}`);
+      }
+      for (const rel of wantHud) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(hudAtPin[rel])) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
@@ -3168,6 +3409,8 @@ if (args.includes('--check-language-transcription-negative')) {
   passByTranscriptionNegative();
 } else if (args.includes('--check-vehicle-placement-transcription-negative')) {
   vehiclePlacementTranscriptionNegative();
+} else if (args.includes('--check-hud-transcription-negative')) {
+  hudTranscriptionNegative();
 } else if (args.includes('--check-genre-transcription-negative')) {
   genreTranscriptionNegative();
 } else if (argValue('--check-extension-keys')) {

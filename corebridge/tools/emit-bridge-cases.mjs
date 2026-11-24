@@ -659,6 +659,181 @@ function trade(root, coreCommit) {
 	);
 }
 
+// ── the HUD shell: conformance/ui/{notifications,compass,minimap}-cases.json (src/ui/hud-corpus.ts) ──
+//
+// Core's reference runner is src/ui/hud-corpus.ts (`runHudOp`). Each case becomes the calls the
+// ui.notifications.*, ui.compass.* and ui.minimap.* rows (PL.native-hud-rows) make for it, the
+// same mapping tests/ui_hud_corpus.cpp drives over the vendored files:
+//
+//   ui-compass     view / heading / cardinal / north / world_view
+//                    -> ONE call of ui.compass.view / .heading / .cardinal / .north / .worldView,
+//                       the case's whole input as its args, its whole answer as the expectation
+//                       (a refusal's `message`, which core's runner leaves out, held to a string)
+//   ui-minimap     project / toneFor / sizeFor -> ONE call of that row
+//                  session -> ui.minimap.create { worldSize? }, then ONE ui.minimap.apply whose
+//                       ops are the case's steps in order (and `placed` last when the case reads
+//                       it): results as the row answers them, the view exactly the case's
+//   ui-notifications toasts -> ui.notifications.create, then ONE apply of the steps as ops:
+//                       results as the row answers them, the view exactly the case's
+//                  history -> ui.notifications.create, then ONE apply: a step's `at` sets the
+//                       log's clock (on its push, or as a historyClock op), pushMany is `count`
+//                       historyPush ops titled "<title> <k>", and the results are held as
+//                       core's runner reports them ({ ids } as the items' ids, in order)
+//
+// The row answers a step's result bare (an id, a boolean, null, the items); core's runner wraps
+// it ({ id }, { changed }, { removed }, {}). Unwrapping is the transcription; nothing here
+// computes an answer. One case per file holds the contract row to the contract keys it states.
+
+const HUD_COMPASS_ROWS = {
+	view: 'ui.compass.view',
+	heading: 'ui.compass.heading',
+	cardinal: 'ui.compass.cardinal',
+	north: 'ui.compass.north',
+	world_view: 'ui.compass.worldView',
+};
+const HUD_MINIMAP_ROWS = { project: 'ui.minimap.project', toneFor: 'ui.minimap.toneFor', sizeFor: 'ui.minimap.sizeFor' };
+
+/** The contract keys each contract row states (core's exports); the rest of each contract block is pinned by the cases. */
+export const HUD_CONTRACT_ROW_KEYS = {
+	'ui-compass': ['points', 'defaultSpanDegrees', 'minDistanceM', 'defaultNorthYaw'],
+	'ui-minimap': ['markerTypes', 'tones', 'unknownTypeTone', 'sizesPx', 'unknownTypeSizePx', 'defaultWorldSize', 'feedOwnedIds'],
+	'ui-notifications': ['kinds', 'kindColor', 'defaultLifetimeSeconds', 'historyMax'],
+};
+export const HUD_CONTRACT_ROWS = { 'ui-compass': 'ui.compass.contract', 'ui-minimap': 'ui.minimap.contract', 'ui-notifications': 'ui.notifications.contract' };
+export const HUD_CASE_FILES = {
+	'ui-notifications': { corpus: 'conformance/ui/notifications-cases.json', cases: 'core-ui-notifications.json' },
+	'ui-compass': { corpus: 'conformance/ui/compass-cases.json', cases: 'core-ui-compass.json' },
+	'ui-minimap': { corpus: 'conformance/ui/minimap-cases.json', cases: 'core-ui-minimap.json' },
+};
+
+/** A compass answer as the row gives it: a refusal also carries core's `message`, which core's runner leaves out. */
+export function hudCompassExpect(expected) {
+	if (expected && expected.ok === false && expected.refusal) {
+		return { ...expected, refusal: { ...expected.refusal, message: { $type: 'string' } } };
+	}
+	return expected;
+}
+
+/** A corpus step's result `{ id } | { changed } | { removed } | { length } | {}` as the row answers it. */
+function hudBare(result, where) {
+	const keys = Object.keys(result);
+	if (keys.length === 0) return null;
+	if (keys.length === 1 && ['id', 'changed', 'removed', 'length'].includes(keys[0])) return result[keys[0]];
+	throw new Error(`emit-bridge-cases: ${where}: a step result this transcription does not know: ${JSON.stringify(result)}`);
+}
+
+/** A HUD session case's ops and the results they are held to (core's runner's steps, through the rows). */
+export function hudSessionOps(area, op, input, expected, where) {
+	const ops = [];
+	const results = [];
+	const steps = input.steps ?? [];
+	const want = expected.results ?? [];
+	if (want.length !== steps.length) throw new Error(`emit-bridge-cases: ${where}: ${steps.length} step(s) but ${want.length} result(s)`);
+	steps.forEach((s, i) => {
+		const r = want[i];
+		if (area === 'ui-notifications' && op === 'toasts') {
+			if (s.push !== undefined) ops.push({ op: 'push', ...s.push });
+			else if (s.tick !== undefined) ops.push({ op: 'tick', delta: s.tick });
+			else if (s.dismiss !== undefined) ops.push({ op: 'dismiss', id: s.dismiss });
+			else if (s.clear === true) ops.push({ op: 'clear' });
+			else throw new Error(`emit-bridge-cases: ${where}: toast step ${i} unknown`);
+			results.push(hudBare(r, where));
+		} else if (area === 'ui-notifications' && op === 'history') {
+			const at = typeof s.at === 'number' ? s.at : undefined;
+			if (s.push !== undefined) {
+				ops.push({ op: 'historyPush', ...s.push, ...(at === undefined ? {} : { at }) });
+				results.push(hudBare(r, where));
+				return;
+			}
+			if (s.pushMany !== undefined) {
+				const { count, title, category } = s.pushMany;
+				for (let k = 0; k < count; k++) {
+					ops.push({ op: 'historyPush', title: `${title} ${k}`, ...(category === undefined ? {} : { category }), ...(k === 0 && at !== undefined ? { at } : {}) });
+					// core's runner reports the first and last ids only; the ones between are held to be numbers.
+					results.push(k === 0 ? r.firstId : k === count - 1 ? r.lastId : { $type: 'number' });
+				}
+				return;
+			}
+			if (at !== undefined) {
+				ops.push({ op: 'historyClock', at });
+				results.push(null);
+			}
+			if (s.recent !== undefined) ops.push({ op: 'historyRecent', count: s.recent });
+			else if (s.all === true) ops.push({ op: 'historyAll' });
+			else if (s.length === true) ops.push({ op: 'historyLength' });
+			else if (s.clear === true) ops.push({ op: 'historyClear' });
+			else throw new Error(`emit-bridge-cases: ${where}: history step ${i} unknown`);
+			if (s.recent !== undefined || s.all === true) results.push(s.ids === true ? { $ids: r.ids } : r.items);
+			else results.push(hudBare(r, where));
+		} else if (area === 'ui-minimap' && op === 'session') {
+			if (s.setWorldSize !== undefined) ops.push({ op: 'setWorldSize', size: s.setWorldSize });
+			else if (s.add !== undefined) ops.push({ op: 'add', marker: s.add });
+			else if (s.remove !== undefined) ops.push({ op: 'remove', id: s.remove });
+			else if (s.clear === true) ops.push({ op: 'clear' });
+			else if (s.ingest !== undefined) ops.push({ op: 'ingest', feed: s.ingest });
+			else if (s.setVisible !== undefined) ops.push({ op: 'setVisible', visible: s.setVisible });
+			else throw new Error(`emit-bridge-cases: ${where}: minimap step ${i} unknown`);
+			results.push(hudBare(r, where));
+		} else {
+			throw new Error(`emit-bridge-cases: ${where}: ${area} ${op} is not a session op`);
+		}
+	});
+	if (area === 'ui-minimap' && input.placed !== undefined) {
+		ops.push({ op: 'placed', ...input.placed });
+		results.push(expected.placed);
+	}
+	return { ops, results };
+}
+
+/** One HUD corpus case as bridge steps. */
+export function hudCaseSteps(area, c) {
+	const where = `${area} ${c.op}: ${c.name}`;
+	if (area === 'ui-compass') {
+		const call = HUD_COMPASS_ROWS[c.op];
+		if (!call) throw new Error(`emit-bridge-cases: ${where}: no row for op ${c.op}`);
+		return [{ call, args: c.input, expect: hudCompassExpect(c.expected) }];
+	}
+	if (area === 'ui-minimap' && HUD_MINIMAP_ROWS[c.op]) return [{ call: HUD_MINIMAP_ROWS[c.op], args: c.input, expect: c.expected }];
+	const { ops, results } = hudSessionOps(area, c.op, c.input, c.expected, where);
+	if (area === 'ui-minimap') {
+		const { results: _r, placed: _p, ...view } = c.expected;
+		return [
+			{ call: 'ui.minimap.create', args: c.input.worldSize === undefined ? {} : { worldSize: c.input.worldSize }, expect: sub({ session: 1 }) },
+			{ call: 'ui.minimap.apply', args: { session: 1, ops }, expect: { results, view } },
+		];
+	}
+	const view = c.op === 'toasts' ? { visible: c.expected.visible, count: c.expected.count } : undefined;
+	return [
+		{ call: 'ui.notifications.create', expect: sub({ session: 1 }) },
+		{ call: 'ui.notifications.apply', args: { session: 1, ops }, expect: view ? { results, view } : sub({ results }) },
+	];
+}
+
+function hud(root, coreCommit) {
+	const out = {};
+	for (const [area, { corpus, cases: name }] of Object.entries(HUD_CASE_FILES)) {
+		const r = reader(root);
+		const file = r.json(corpus);
+		if (file.area !== area) throw new Error(`emit-bridge-cases: ${corpus} is not the ${area} corpus`);
+		const contract = Object.fromEntries(HUD_CONTRACT_ROW_KEYS[area].map((k) => {
+			if (!Object.prototype.hasOwnProperty.call(file.contract, k)) throw new Error(`emit-bridge-cases: ${corpus}'s contract has no ${k}`);
+			return [k, file.contract[k]];
+		}));
+		const cases = [{ name: `${area}: the contract ${HUD_CONTRACT_ROWS[area]} states`, steps: [{ call: HUD_CONTRACT_ROWS[area], expect: contract }] }];
+		for (const c of file.cases) cases.push({ name: `${area} ${c.op}: ${c.name}`, steps: hudCaseSteps(area, c) });
+		out[name] = caseFile(
+			area,
+			`core's HUD shell corpus (${corpus}, P2.core) through the ${HUD_CONTRACT_ROWS[area].replace(/\.contract$/, '.*')} rows, ` +
+				"each op the calls core's reference runner (src/ui/hud-corpus.ts) makes, through them; numbers held exactly (the corpus's tolerance is " +
+				`${file.tolerance}; tests/ui_hud_corpus.cpp replays the file itself within it).`,
+			coreCommit,
+			r.files,
+			cases,
+		);
+	}
+	return out;
+}
+
 // ── weather: conformance/weather/progression.json (weather-corpus.test.ts)
 
 function weather(root, coreCommit) {
@@ -2445,6 +2620,7 @@ export function emitBridgeCases(root, coreCommit) {
 		'core-ui-save-slots.json': saveSlots(root, coreCommit),
 		'core-ui-loading.json': loading(root, coreCommit),
 		'core-ui-trade.json': trade(root, coreCommit),
+		...hud(root, coreCommit),
 		'core-weather-progression.json': weather(root, coreCommit),
 		...genres(root, coreCommit),
 		...language(root, coreCommit),

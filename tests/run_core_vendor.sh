@@ -21,10 +21,11 @@
 #        extensionKeys check over <case dir> (the core_vendor_extension_keys_negative
 #        ctest, PL.native-save-extension-keys). Its [SKIP] line names that ctest.
 #   $2 = --check-language-transcription-negative, --check-genre-transcription-negative,
-#        --check-pass-by-transcription-negative or --check-vehicle-placement-transcription-negative:
+#        --check-pass-by-transcription-negative, --check-vehicle-placement-transcription-negative or
+#        --check-hud-transcription-negative:
 #        run ONLY that transcription guard's negative control (core_vendor_language_negative,
 #        core_vendor_genre_negative, core_vendor_pass_by_negative,
-#        core_vendor_vehicle_placement_negative). Its [SKIP] line names that ctest.
+#        core_vendor_vehicle_placement_negative, core_vendor_hud_negative). Its [SKIP] line names that ctest.
 set -u
 
 TOOL="$1"
@@ -34,6 +35,7 @@ NAME=core_vendor
 [ "${2:-}" = "--check-genre-transcription-negative" ] && NAME=core_vendor_genre_negative
 [ "${2:-}" = "--check-pass-by-transcription-negative" ] && NAME=core_vendor_pass_by_negative
 [ "${2:-}" = "--check-vehicle-placement-transcription-negative" ] && NAME=core_vendor_vehicle_placement_negative
+[ "${2:-}" = "--check-hud-transcription-negative" ] && NAME=core_vendor_hud_negative
 
 if ! command -v node >/dev/null 2>&1; then
   echo "  [SKIP] $NAME: 'node' not found — the vendored @insimul/core bundle"
@@ -60,6 +62,9 @@ if [ "$NAME" = core_vendor_pass_by_negative ]; then
 fi
 if [ "$NAME" = core_vendor_vehicle_placement_negative ]; then
   exec node "$TOOL" --check-vehicle-placement-transcription-negative
+fi
+if [ "$NAME" = core_vendor_hud_negative ]; then
+  exec node "$TOOL" --check-hud-transcription-negative
 fi
 if [ -n "${INSIMUL_CORE_DIR:-}" ]; then
   exec node "$TOOL" --check --core "$INSIMUL_CORE_DIR"

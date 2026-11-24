@@ -656,7 +656,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, audio cues, survival, traversal (vehicles-only among them), headless build, progression, village save, villager pass-by, world-vehicle parking and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, audio cues, survival, traversal (vehicles-only among them), headless build, progression, village save, villager pass-by, world-vehicle parking, HUD (notifications, compass, minimap) and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -1141,6 +1141,31 @@
   Unreal's `Portable/InsimulVehicleRules` is the interim copy these rows (with the
   interactables, rider and session rows already here) retire
   (`P9e.unreal.retire-vehicle-rules-copy`; `corebridge/ENGINE_BINDINGS.md` maps it).
+- **The HUD rows (PL.native-hud-rows, U143(2), U128) run core's
+  `conformance/ui/{notifications,compass,minimap}-cases.json` UNCHANGED** (22, 82 and 50
+  cases at 45409ed), copied as their own P2 HUD set (`HUD_CORPUS_FILES`; they share
+  `conformance/ui/` with the P9a, P6 and P8 sets, and a file belongs to one) and driven by
+  `tests/ui_hud_corpus.cpp` as `ui_hud_corpus` (+ `_negative`, and `_wrong` over the
+  doctored `tests/hud-negative/compass-wrong.json`): each case answered as core's runner
+  (`ui/hud-corpus.ts`, `runHudOp`) answers it, through the rows, compared by
+  `compareHudValue`'s rule (the file's `tolerance`, key sets included). Each file's
+  `contract` block is held WHOLE: every key is stated by its contract row
+  (`ui.notifications.contract`, `ui.compass.contract`, `ui.minimap.contract`: core's
+  exports), measured by the run (the refusal codes and north sources the rows answer, the
+  feed's id prefixes, the first ids, the categories carried) or a rule the cases pin, and an
+  unknown key fails. `emit-bridge-cases.mjs` transcribes the three into
+  `vendor/core/cases/core-ui-{notifications,compass,minimap}.json` and `core_vendor` holds them
+  to the corpora by its own derivation (`core_vendor_hud_negative`: fourteen perturbations
+  named). The toast queue and the history log are ONE `ui.notifications` session (the log's
+  ops are `history*`; its clock is the last `at` an op gave); `ui.minimap.*` is a stateless
+  projection/tone/size trio plus a session; `ui.compass.*` is stateless and is NOT the quest
+  director's compass `quest.waypoints` returns. Numbers (and `mirrored`) go to core as sent,
+  so core's refusals are VALUES (`{ ok: false, refusal: { code, field, message } }`);
+  `[invalid-input]` is only the structure core cannot read and the strings it declares. The
+  rows pass `mirrored` exactly as core states it and say nothing about any engine's level.
+  Never import `ui/hud-corpus` (core's runner). Unreal's `Portable/InsimulHudModels` is the
+  interim copy these rows retire (`P2.unreal.retire-hud-copy`; `corebridge/ENGINE_BINDINGS.md`
+  maps it).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

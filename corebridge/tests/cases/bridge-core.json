@@ -607,13 +607,27 @@
        "traversal.vehicles.seats",
        "traversal.vehicles.stateDelta",
        "traversal.vehicles.stateFacts",
+       "ui.compass.cardinal",
+       "ui.compass.contract",
+       "ui.compass.heading",
+       "ui.compass.north",
+       "ui.compass.stripRelative",
+       "ui.compass.view",
+       "ui.compass.worldView",
        "ui.genreHud",
        "ui.journal.apply",
        "ui.journal.create",
        "ui.loadRefusal",
        "ui.loading.apply",
        "ui.loading.create",
+       "ui.minimap.apply",
+       "ui.minimap.contract",
+       "ui.minimap.create",
+       "ui.minimap.project",
+       "ui.minimap.sizeFor",
+       "ui.minimap.toneFor",
        "ui.notifications.apply",
+       "ui.notifications.contract",
        "ui.notifications.create",
        "ui.onboarding.apply",
        "ui.onboarding.create",
@@ -659,7 +673,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 625}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 639}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -691,7 +705,7 @@
    "name": "ops: an unknown op is refused with the known list; a failing op names its index and keeps the earlier ops",
    "steps": [
     {"call": "ui.notifications.create", "expect": {"$subset": {"session": 1}}},
-    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": [{"op": "fly"}]}, "expectError": "ops[0] has no known op \"fly\" (known: push, tick, dismiss, clear)"},
+    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": [{"op": "fly"}]}, "expectError": "ops[0] has no known op \"fly\" (known: push, tick, dismiss, clear, historyPush, historyClock, historyRecent, historyAll, historyLength, historyClear)"},
     {"call": "ui.notifications.apply", "args": {"session": 1, "ops": [{"op": "push", "text": "kept"}, {"op": "push", "text": "bad", "kind": "error"}]}, "expectError": "ui.notifications.apply: ops[1] (push) failed: insimulcore: ui.notifications.apply: `kind` must be one of info, success, warning, danger (got \"error\")"},
     {"call": "ui.notifications.apply", "args": {"session": 1, "ops": []}, "expect": {"results": [], "view": {"$subset": {"count": 1, "visible": {"$ids": ["kept"], "$key": "text"}}}}},
     {"call": "ui.notifications.apply", "args": {"session": 1, "ops": {"op": "clear"}}, "expectError": "`ops` must be an array"},
@@ -705,7 +719,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 625}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 639}}}}
    ]
   },
   {

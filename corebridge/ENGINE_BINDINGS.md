@@ -105,9 +105,42 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   phase over it: P1 `save.*` + `ui.saveSlots` (Unreal's save system is "code but
   unwired" — wire it to `save.encode`/`save.decode` instead of its own envelope),
   P2 `ui.notifications.*`, `ui.pause.*` (the genre path: `ui.pause.create { genre }`),
+  `ui.compass.*`, `ui.minimap.*` (the HUD rows, below),
   P3 `ui.journal.*` (the journal port), `quest.completion.*`, `quest.markers`,
   `quest.minimapMarkers`, `quest.waypoints`, P4 `clock.*`, `weather.*`.
 - Update `InsimulMechanicSurface.h`'s "FIVE methods" comment and any test pinning it.
+- **The HUD view-models, P2 (Unreal's `P2.unreal.retire-hud-copy`, after PL.native-hud-rows;
+  U143(2), U85(3), U128).** Core's three HUD view-models are rows (`README.md`, "The HUD rows"):
+  the compass (`ui.compass.*`, stateless), the minimap (`ui.minimap.project`, `.toneFor`,
+  `.sizeFor`, and a `ui.minimap` session) and the history log behind the HUD feed, which is
+  ops of the SAME `ui.notifications` session as the toast queue (`historyPush`,
+  `historyClock`, `historyRecent`, `historyAll`, `historyLength`, `historyClear`). The
+  retirement row binds them in place of the interim copy on unreal main (`ffe479fd`, read
+  only): `Portable/InsimulHudModels.{h,cpp}` (445 + 603 lines; U85(3) accepted it under U36
+  until these rows) and its corpus runner `Tests/test_hud_corpus.cpp` (906 lines). The
+  compass here is the HUD strip's, NOT the quest director's compass `quest.waypoints`
+  returns (`getCompassData`, the nearest waypoint's direction); the two stay apart.
+
+  | Unreal's interim copy (`insimul::hud`, `InsimulHudModels.h`) | Row |
+  |---|---|
+  | `kCompassPoints`, `kDefaultCompassSpanDeg`, `kCompassMinDistanceM`, `kDefaultNorthYaw` | `ui.compass.contract {}` → `{ points, defaultSpanDegrees, minDistanceM, defaultNorthYaw }` |
+  | `FCompassInput`, `FCompassView`, `FCompassRefusal`, `FCompassResult`, `CompassView` | `ui.compass.view { yaw, northYaw, position, markers, span?, mirrored? }` → `{ ok: true, value }` or the refusal VALUE `{ ok: false, refusal: { code, field, message } }`. `EOptBool::NotBoolean` is any non-boolean `mirrored` sent as it is: core refuses it (`not_boolean`) |
+  | `FNorthFacts`, `FWorldNorth`, `FWorldNorthResult`, `WorldNorth` | `ui.compass.north { geography? }` (the IR's `geography`, or just `{ georeference }`) |
+  | `FWorldCompassInput`, `FWorldCompassResult`, `WorldCompassView` | `ui.compass.worldView { geography?, yaw? or facing?, position, markers, span?, mirrored? }` → `{ ok: true, north, value }` or a refusal VALUE |
+  | `CompassHeading`, `CompassCardinal`, `StripRelative` (and `WrapDegrees`, `WrapSignedDegrees`, `YawOfDirection` inside them) | `ui.compass.heading { yaw, northYaw }`, `ui.compass.cardinal { degrees }`, `ui.compass.stripRelative { bearing, heading, mirrored? }` (the cardinal ticks' placement) |
+  | `kMinimapMarkerTypes`, `kDefaultMinimapWorldSize`, `MinimapFeedOwned`, `FMinimapModel::ToneFor`, `::SizeFor` | `ui.minimap.contract {}` → `{ markerTypes, tones, unknownTypeTone, sizesPx, unknownTypeSizePx, defaultWorldSize, feedOwnedIds }`; `ui.minimap.toneFor { type }`, `ui.minimap.sizeFor { type }` |
+  | `FMinimapModel::Project` | `ui.minimap.project { worldSize?, position: { x, y, z }, sizePx, northYaw?, mirrored? }` → `{ x, y }`; `mirrored` without a `northYaw` is core's own error |
+  | `FMinimapModel` (`SetWorldSize`, `AddMarker`, `RemoveMarker`, `ClearMarkers`, `GetMarker`, `MarkerCount`, `Markers`, `Player`, `SetVisible`, `IsVisible`, `Ingest`), `FVec3`, `FMinimapMarker`, `FFeedPoint`, `FMinimapFeed` | `ui.minimap.create { worldSize? }` and `ui.minimap.apply { session, ops: setWorldSize, add, remove, clear, ingest, setVisible }`; the view is `{ worldSize, visible, markerCount, markers, player }` |
+  | `FMinimapModel::Placed`, `FPlacedMarker`, `FToneResolver` | the `placed { sizePx, scale?, theme?, northYaw?, mirrored? }` op → `[{ id, offsetX, offsetY, size, color, tone }]`; the theme is role → colour as data, and must hold every role a marker with no colour of its own paints with (`[invalid-input]` otherwise) |
+  | `kNotificationHistoryMax`, `FGameNotification`, `FNotificationLog` (`Push`, `Recent`, `All`, `Length`, `Clear`) | `ui.notifications.create { historyMax? }` and the `history*` ops of `ui.notifications.apply`; the clock is the last `at` an op gave (ms), so the binding passes its own clock on each push; `ui.notifications.contract {}` → `{ kinds, kindColor, defaultLifetimeSeconds, historyMax }` |
+  | `kNotificationCategories` | no row: core declares the categories as a type, not a value; its corpus pins every one carried as given (`ui_hud_corpus` measures it), and the log carries any string |
+  | `FNotificationLog::Revision` | no row: the binding repaints when an `apply` changed the log (its results say so) |
+  | the toast queue (`Portable/InsimulNotifications`, `FInsimulNotifications`) | `ui.notifications.create`/`.apply`'s `push`, `tick`, `dismiss`, `clear` (rows since C0) |
+  | `VillageCompassView`, `VillageMinimapPlaced`, `kVillageLevelMirrored`, `CompassStripText`, `CompassMarkerRowText`, `CompassMarkerRowCell`, `FMinimapPin`, `FMinimapPaint`, `VillageMinimapPaintPlan`, `MinimapPaintVisibleArea`, `FVillageHudShows`, `VillageHudShows` | no row: the engine's own binding and drawing (its frame, its strip text, its paint plan, which HUD pieces its genre shows). They call the rows above in place of the copy; the `mirrored` they pass is the engine's statement about its own level, which the rows hand to core unchanged |
+
+  Re-vendor `conformance/ui/{notifications,compass,minimap}-cases.json` from core at this
+  library's pin and drive each case as `tests/ui_hud_corpus.cpp` does (core's runner
+  `ui/hud-corpus.ts` through the rows; numbers within the file's `tolerance`).
 - **Layout (L.portable-binding, after L.native-layout).** The `layout.*` rows
   (`README.md`, "The layout rows") answer every op of core's layout corpora, the
   same ops `Tests/layout_corpus_ops.h` maps onto `Portable/`. The binding replaces

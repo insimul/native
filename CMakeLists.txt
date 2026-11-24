@@ -754,6 +754,21 @@ add_test(NAME core_vendor_vehicle_placement_negative COMMAND
        --check-vehicle-placement-transcription-negative)
 set_tests_properties(core_vendor_vehicle_placement_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "vehicle-placement transcription negative [^ ]* 13 of 13 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_vehicle_placement_negative")
+# The HUD transcriptions' guard (PL.native-hud-rows: cases/core-ui-{notifications,compass,minimap}.json
+# carrying every case of the vendored conformance/ui/{notifications,compass,minimap}-cases.json by name,
+# each the calls core's runner makes through the rows with every answer stated, and each contract case
+# holding its contract row to the keys it states; derived independently of the emitter) is given fourteen
+# perturbations in memory (a dropped case, a case no corpus case names, a call changed, an argument
+# dropped, a refusal's message no longer held, an answer number changed, a minimap view weakened to a
+# subset, a placed list dropped, a toast op dropped, a history clock dropped, history ids weakened to a
+# type, a case put on one leg, a contract key dropped, a contract value changed) and passes only when all
+# fourteen are named.
+add_test(NAME core_vendor_hud_negative COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
+       --check-hud-transcription-negative)
+set_tests_properties(core_vendor_hud_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "HUD transcription negative [^ ]* 14 of 14 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_hud_negative")
 
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus
@@ -1494,6 +1509,43 @@ set_tests_properties(props_vehicle_placement_corpus_numerics PROPERTIES
 add_test(NAME props_vehicle_placement_corpus_negative COMMAND insimulcore_props_vehicle_placement_corpus --negative ${INSIMUL_VEHICLE_PLACEMENT_CORPUS})
 set_tests_properties(props_vehicle_placement_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\n.*props_vehicle_placement_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nprops_vehicle_placement_corpus --negative: PASS")
+
+# ui_hud_corpus (PL.native-hud-rows, rulings U143(2), U128, U85(3) and U36): core's three HUD
+# view-models (P2.core, P2.core-north) — the toast queue and the history log
+# (src/ui/notifications.ts, game-engine/logic/NotificationStore.ts), the compass
+# (src/ui/compass-model.ts) and the minimap (src/ui/minimap-model.ts) — as libinsimulcore's
+# `ui.notifications.*`, `ui.compass.*` and `ui.minimap.*` rows, held to core's own corpora
+# conformance/ui/{notifications,compass,minimap}-cases.json (22, 82 and 50 cases at the 45409ed
+# pin), COPIED byte for byte with the P2 HUD set (sha256 in VENDORED.json, checked by core_vendor;
+# byte-compared with core by `--check --core`). tests/ui_hud_corpus.cpp answers each case as
+# core's runner (src/ui/hud-corpus.ts, runHudOp) does, through the rows, and compares as
+# compareHudValue does (numbers within the file's tolerance, key sets both ways); it holds each
+# file's contract block whole (the keys the contract row states, the keys it measures, the rule
+# keys the cases pin; an unknown key fails), and proves on every start that its comparator,
+# perturbation and contract check can fail and that the rows refuse what core cannot read while
+# core's own refusals are values. The regex demands every probe, each file's contract whole, every
+# op driven, 0 undriven and PASS.
+add_executable(insimulcore_ui_hud_corpus tests/ui_hud_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_ui_hud_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_ui_hud_corpus PRIVATE insimulcore)
+set(INSIMUL_HUD_CORPORA
+  ${INSIMUL_PROPS_CORPUS}/ui/notifications-cases.json
+  ${INSIMUL_PROPS_CORPUS}/ui/compass-cases.json
+  ${INSIMUL_PROPS_CORPUS}/ui/minimap-cases.json)
+add_test(NAME ui_hud_corpus COMMAND insimulcore_ui_hud_corpus ${INSIMUL_HUD_CORPORA})
+set_tests_properties(ui_hud_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 14 of 14 probe[(]s[)] refused as core refuses[^\n]*\n.*ui-notifications contract: 9 key[(]s[)], whole: 4 of 4 stated by ui.notifications.contract agree; 3 of 3 measured hold[^\n]*\nui-notifications: driven toasts [1-9][0-9]*, history [1-9][0-9]*. 0 undriven\nui-notifications: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\n.*ui-compass contract: 16 key[(]s[)], whole: 4 of 4 stated by ui.compass.contract agree; 3 of 3 measured hold[^\n]*\nui-compass: driven view [1-9][0-9]*, heading [1-9][0-9]*, cardinal [1-9][0-9]*, north [1-9][0-9]*, world_view [1-9][0-9]*. 0 undriven\nui-compass: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\n.*ui-minimap contract: 12 key[(]s[)], whole: 7 of 7 stated by ui.minimap.contract agree; 1 of 1 measured hold[^\n]*\nui-minimap: driven project [1-9][0-9]*, toneFor [1-9][0-9]*, sizeFor [1-9][0-9]*, session [1-9][0-9]*. 0 undriven\nui-minimap: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nui_hud_corpus: 3 file[(]s[)], 154 of 154 case[(]s[)] driven, 0 case[(]s[)] failed, 0 failure[(]s[)][^\n]*\nui_hud_corpus: PASS")
+# Its negative pass: every case's expectation perturbed (its last leaf) must be refused.
+add_test(NAME ui_hud_corpus_negative COMMAND insimulcore_ui_hud_corpus --negative ${INSIMUL_HUD_CORPORA})
+set_tests_properties(ui_hud_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "ui-notifications: 22 of 22 perturbed case[(]s[)] refused, 0 accepted\n.*ui-compass: 82 of 82 perturbed case[(]s[)] refused, 0 accepted\n.*ui-minimap: 50 of 50 perturbed case[(]s[)] refused, 0 accepted\nui_hud_corpus --negative: 3 file[(]s[)], 154 of 154 case[(]s[)] driven, 0 case[(]s[)] failed, 0 failure[(]s[)][^\n]*\nui_hud_corpus --negative: PASS")
+# Its wrong-file control (tests/hud-negative/compass-wrong.json, core's compass corpus cut to three cases
+# and doctored): a contract value the row states otherwise, a contract key no one holds, a refusal code the
+# rows never answer, a wrong expectation and an op core's runner does not have must each be named, and the
+# run must FAIL.
+add_test(NAME ui_hud_corpus_wrong COMMAND insimulcore_ui_hud_corpus ${CMAKE_CURRENT_SOURCE_DIR}/tests/hud-negative/compass-wrong.json)
+set_tests_properties(ui_hud_corpus_wrong PROPERTIES
+  PASS_REGULAR_EXPRESSION "\\[FAIL\\] ui-compass contract: defaultSpanDegrees: 140 != 150\n[^\n]*\\[FAIL\\] ui-compass contract: the file's contract key wrongRule is not one this runner holds[^\n]*\n.*expected WRONGLY as heading 80 [^\n]*heading: 80 != 70\n[^\n]*\\[FAIL\\] WRONGLY an op core's runner does not have [^\n]*not driven: op rotate is not one of core's ui-compass ops.*\\[FAIL\\] ui-compass contract: refusalCodes: the contract states \\[not_finite, span_out_of_range, teleported\\] but the rows answered \\[not_finite\\].*ui_hud_corpus: FAIL")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest

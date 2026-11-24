@@ -1,0 +1,1799 @@
+{
+  "area": "ui-hud",
+  "description": "Hand cases for the HUD rows (PL.native-hud-rows): what core's corpora conformance/ui/{notifications,compass,minimap}-cases.json leave unpinned — the three contract rows whole against core's exports, ui.compass.stripRelative (no corpus op reaches it), a marker either side of the minimum distance and one exactly on the strip's edge, core's own value refusals for numbers and mirrored against the [invalid-input] boundary of the structure core cannot read, a null facing, yaw and georeference, mirrored without a northYaw (core's error), the minimap session's carried members, player, null feed members, partial theme and each op's boundary, and the history log in the notifications session (its cap, its clock, its separation from the toasts, the members core carries). Every expectation is computed by core's own functions and classes at the pin (gen-bridge-hud-cases.mts, kept with the builder's record); each case asserts the input it pins changes core's answer.",
+  "cases": [
+    {
+      "name": "the three HUD contract rows state core's exports: the compass's points, span, minimum distance and default north; the minimap's types, tones, sizes, world size and feed-owned pattern; the toast kinds, colours and lifetime and the history cap",
+      "steps": [
+        {
+          "call": "ui.compass.contract",
+          "args": {},
+          "expect": {
+            "points": [
+              "N",
+              "NE",
+              "E",
+              "SE",
+              "S",
+              "SW",
+              "W",
+              "NW"
+            ],
+            "defaultSpanDegrees": 150,
+            "minDistanceM": 1e-9,
+            "defaultNorthYaw": 0
+          }
+        },
+        {
+          "call": "ui.minimap.contract",
+          "args": {},
+          "expect": {
+            "markerTypes": [
+              "player",
+              "settlement",
+              "npc",
+              "quest",
+              "quest_objective",
+              "building",
+              "exclamation",
+              "question",
+              "discovery"
+            ],
+            "tones": {
+              "player": "accent",
+              "settlement": "warning",
+              "npc": "success",
+              "quest": "quest",
+              "quest_objective": "quest",
+              "building": "text_disabled",
+              "exclamation": "quest",
+              "question": "quest",
+              "discovery": "success"
+            },
+            "unknownTypeTone": "text_primary",
+            "sizesPx": {
+              "player": 6,
+              "settlement": 8,
+              "npc": 4,
+              "quest": 7,
+              "quest_objective": 5,
+              "building": 3,
+              "exclamation": 14,
+              "question": 11,
+              "discovery": 6
+            },
+            "unknownTypeSizePx": 4,
+            "defaultWorldSize": 1024,
+            "feedOwnedIds": "^(player|settlement_|npc_|quest_|objective_|item_|board_)"
+          }
+        },
+        {
+          "call": "ui.notifications.contract",
+          "args": {},
+          "expect": {
+            "kinds": [
+              "info",
+              "success",
+              "warning",
+              "danger"
+            ],
+            "kindColor": {
+              "info": "accent",
+              "success": "success",
+              "warning": "warning",
+              "danger": "danger"
+            },
+            "defaultLifetimeSeconds": 4,
+            "historyMax": 200
+          }
+        }
+      ]
+    },
+    {
+      "name": "ui.compass.stripRelative: where a bearing (or a cardinal tick) sits on the strip, across north, mirrored and not; straight behind is +180 either way; the boundary",
+      "steps": [
+        {
+          "call": "ui.compass.stripRelative",
+          "args": {
+            "bearing": 10,
+            "heading": 350
+          },
+          "expect": {
+            "relative": 20
+          }
+        },
+        {
+          "call": "ui.compass.stripRelative",
+          "args": {
+            "bearing": 10,
+            "heading": 350,
+            "mirrored": true
+          },
+          "expect": {
+            "relative": -20
+          }
+        },
+        {
+          "call": "ui.compass.stripRelative",
+          "args": {
+            "bearing": 10,
+            "heading": 350,
+            "mirrored": false
+          },
+          "expect": {
+            "relative": 20
+          }
+        },
+        {
+          "call": "ui.compass.stripRelative",
+          "args": {
+            "bearing": 300,
+            "heading": 0
+          },
+          "expect": {
+            "relative": -60
+          }
+        },
+        {
+          "call": "ui.compass.stripRelative",
+          "args": {
+            "bearing": 270,
+            "heading": 90
+          },
+          "expect": {
+            "relative": 180
+          }
+        },
+        {
+          "call": "ui.compass.stripRelative",
+          "args": {
+            "bearing": 270,
+            "heading": 90,
+            "mirrored": true
+          },
+          "expect": {
+            "relative": 180
+          }
+        },
+        {
+          "call": "ui.compass.stripRelative",
+          "args": {
+            "bearing": -45,
+            "heading": 720
+          },
+          "expect": {
+            "relative": -45
+          }
+        },
+        {
+          "call": "ui.compass.stripRelative",
+          "args": {
+            "bearing": "10",
+            "heading": 350
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.stripRelative: `bearing` must be a finite number"
+        },
+        {
+          "call": "ui.compass.stripRelative",
+          "args": {
+            "bearing": 10
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.stripRelative: `heading` must be a finite number"
+        },
+        {
+          "call": "ui.compass.stripRelative",
+          "args": {
+            "bearing": 10,
+            "heading": 0,
+            "mirrored": "yes"
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.stripRelative: `mirrored` must be a boolean"
+        }
+      ]
+    },
+    {
+      "name": "ui.compass.view: a marker nearer than minDistanceM has no bearing and one just beyond it has one; a marker exactly on the strip's edge is visible with offset 1; numbers (and mirrored) are core's to refuse as values; the structure core cannot read is [invalid-input]",
+      "steps": [
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": [
+              {
+                "id": "near",
+                "position": {
+                  "x": 10.0000000005,
+                  "z": 20
+                }
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "heading": 0,
+              "cardinal": "N",
+              "span": 150,
+              "markers": [
+                {
+                  "id": "near",
+                  "distance": 5.000000413701855e-10,
+                  "bearing": null,
+                  "relative": null,
+                  "visible": false,
+                  "offset": null
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": [
+              {
+                "id": "beyond",
+                "position": {
+                  "x": 10.000000002,
+                  "z": 20
+                }
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "heading": 0,
+              "cardinal": "N",
+              "span": 150,
+              "markers": [
+                {
+                  "id": "beyond",
+                  "distance": 2.000000165480742e-9,
+                  "bearing": 90,
+                  "relative": 90,
+                  "visible": false,
+                  "offset": null
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": [
+              {
+                "id": "east",
+                "position": {
+                  "x": 30,
+                  "z": 20
+                }
+              }
+            ],
+            "span": 180
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "heading": 0,
+              "cardinal": "N",
+              "span": 180,
+              "markers": [
+                {
+                  "id": "east",
+                  "distance": 20,
+                  "bearing": 90,
+                  "relative": 90,
+                  "visible": true,
+                  "offset": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": "0",
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": []
+          },
+          "expect": {
+            "ok": false,
+            "refusal": {
+              "code": "not_finite",
+              "field": "yaw",
+              "message": {
+                "$type": "string"
+              }
+            }
+          }
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": [],
+            "span": "100"
+          },
+          "expect": {
+            "ok": false,
+            "refusal": {
+              "code": "not_finite",
+              "field": "span",
+              "message": {
+                "$type": "string"
+              }
+            }
+          }
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": [],
+            "mirrored": null
+          },
+          "expect": {
+            "ok": false,
+            "refusal": {
+              "code": "not_boolean",
+              "field": "mirrored",
+              "message": {
+                "$type": "string"
+              }
+            }
+          }
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "markers": []
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.view: `args.position` is missing"
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": null,
+            "markers": []
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.view: `args.position` must not be null"
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.view: `args.markers` is missing"
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": {
+              "id": "m",
+              "position": {
+                "x": 10,
+                "z": 20
+              }
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.view: `args.markers` must be an array"
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": [
+              {
+                "id": "m"
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.view: `args.markers[0].position` is missing"
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": [
+              {
+                "id": 7,
+                "position": {
+                  "x": 10,
+                  "z": 20
+                }
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.view: `args.markers[0].id` must be a string"
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": [
+              {
+                "id": "m",
+                "position": {
+                  "x": 10,
+                  "z": 20
+                },
+                "kind": null
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.view: `args.markers[0].kind` must not be null"
+        },
+        {
+          "call": "ui.compass.view",
+          "args": {
+            "yaw": 0,
+            "northYaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": [
+              {
+                "id": "m",
+                "position": {
+                  "x": 10,
+                  "z": 20
+                },
+                "label": 3
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.view: `args.markers[0].label` must be a string"
+        }
+      ]
+    },
+    {
+      "name": "ui.compass.worldView and ui.compass.north: a null facing reads as absent and the yaw is used; a null yaw is a stated yaw core refuses (not_finite yaw); a null georeference states nothing; a rotation that is a string is core's not_finite; a geography, georeference or facing that is not an object is [invalid-input]",
+      "steps": [
+        {
+          "call": "ui.compass.worldView",
+          "args": {
+            "yaw": 0.5,
+            "facing": null,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": []
+          },
+          "expect": {
+            "ok": true,
+            "north": {
+              "northYaw": 0,
+              "source": "default"
+            },
+            "value": {
+              "heading": 28.64788975654116,
+              "cardinal": "NE",
+              "span": 150,
+              "markers": []
+            }
+          }
+        },
+        {
+          "call": "ui.compass.worldView",
+          "args": {
+            "yaw": null,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": []
+          },
+          "expect": {
+            "ok": false,
+            "refusal": {
+              "code": "not_finite",
+              "field": "yaw",
+              "message": {
+                "$type": "string"
+              }
+            }
+          }
+        },
+        {
+          "call": "ui.compass.north",
+          "args": {
+            "geography": {
+              "georeference": null
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "northYaw": 0,
+              "source": "default"
+            }
+          }
+        },
+        {
+          "call": "ui.compass.north",
+          "args": {
+            "geography": {
+              "georeference": {
+                "rotationRad": "1"
+              }
+            }
+          },
+          "expect": {
+            "ok": false,
+            "refusal": {
+              "code": "not_finite",
+              "field": "georeference.rotationRad",
+              "message": {
+                "$type": "string"
+              }
+            }
+          }
+        },
+        {
+          "call": "ui.compass.worldView",
+          "args": {
+            "facing": [
+              0,
+              1
+            ],
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": []
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.worldView: `facing` must be a JSON object"
+        },
+        {
+          "call": "ui.compass.worldView",
+          "args": {
+            "geography": "north",
+            "yaw": 0,
+            "position": {
+              "x": 10,
+              "z": 20
+            },
+            "markers": []
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.worldView: `geography` must be a JSON object"
+        },
+        {
+          "call": "ui.compass.north",
+          "args": {
+            "geography": {
+              "georeference": "EPSG:32630"
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.north: `geography.georeference` must be a JSON object"
+        },
+        {
+          "call": "ui.compass.worldView",
+          "args": {
+            "yaw": 0,
+            "markers": []
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.worldView: `args.position` is missing"
+        }
+      ]
+    },
+    {
+      "name": "ui.compass.heading and ui.compass.cardinal: a heading across a full turn and below zero; the half-way cardinal rounds clockwise; anything but a finite number is [invalid-input] (core would answer NaN)",
+      "steps": [
+        {
+          "call": "ui.compass.heading",
+          "args": {
+            "yaw": -1.5707963267948966,
+            "northYaw": 3.141592653589793
+          },
+          "expect": {
+            "heading": 90
+          }
+        },
+        {
+          "call": "ui.compass.cardinal",
+          "args": {
+            "degrees": -22.5
+          },
+          "expect": {
+            "cardinal": "N"
+          }
+        },
+        {
+          "call": "ui.compass.heading",
+          "args": {
+            "yaw": null,
+            "northYaw": 0
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.heading: `yaw` must be a finite number"
+        },
+        {
+          "call": "ui.compass.heading",
+          "args": {
+            "yaw": 0
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.heading: `northYaw` must be a finite number"
+        },
+        {
+          "call": "ui.compass.cardinal",
+          "args": {
+            "degrees": "N"
+          },
+          "expectError": "[invalid-input] insimulcore: ui.compass.cardinal: `degrees` must be a finite number"
+        }
+      ]
+    },
+    {
+      "name": "ui.minimap.project, toneFor, sizeFor: a null or absent world size is 1024; mirrored without a northYaw is core's own error; the boundary (a position with no y, a null northYaw, a mirrored that is not a boolean, no sizePx, a type that is not a string)",
+      "steps": [
+        {
+          "call": "ui.minimap.project",
+          "args": {
+            "worldSize": null,
+            "position": {
+              "x": 256,
+              "y": 0,
+              "z": 128
+            },
+            "sizePx": 512,
+            "northYaw": 0
+          },
+          "expect": {
+            "x": 128,
+            "y": -64
+          }
+        },
+        {
+          "call": "ui.minimap.project",
+          "args": {
+            "position": {
+              "x": 256,
+              "y": 0,
+              "z": 128
+            },
+            "sizePx": 512,
+            "northYaw": 0
+          },
+          "expect": {
+            "x": 128,
+            "y": -64
+          }
+        },
+        {
+          "call": "ui.minimap.project",
+          "args": {
+            "position": {
+              "x": 1,
+              "y": 0,
+              "z": 2
+            },
+            "sizePx": 100,
+            "mirrored": true
+          },
+          "expectError": "minimap: mirrored needs a northYaw to mirror"
+        },
+        {
+          "call": "ui.minimap.project",
+          "args": {
+            "position": {
+              "x": 1,
+              "z": 2
+            },
+            "sizePx": 100
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.project: `args.position.y` is missing"
+        },
+        {
+          "call": "ui.minimap.project",
+          "args": {
+            "position": {
+              "x": 1,
+              "y": 0,
+              "z": 2
+            },
+            "sizePx": 100,
+            "northYaw": null
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.project: `args.northYaw` must not be null"
+        },
+        {
+          "call": "ui.minimap.project",
+          "args": {
+            "position": {
+              "x": 1,
+              "y": 0,
+              "z": 2
+            },
+            "sizePx": 100,
+            "northYaw": 0,
+            "mirrored": "true"
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.project: `args.mirrored` must be a boolean"
+        },
+        {
+          "call": "ui.minimap.project",
+          "args": {
+            "position": {
+              "x": 1,
+              "y": 0,
+              "z": 2
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.project: `args.sizePx` is missing"
+        },
+        {
+          "call": "ui.minimap.toneFor",
+          "args": {},
+          "expectError": "[invalid-input] insimulcore: ui.minimap.toneFor: `type` must be a string"
+        },
+        {
+          "call": "ui.minimap.sizeFor",
+          "args": {
+            "type": null
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.sizeFor: `type` must be a string"
+        }
+      ]
+    },
+    {
+      "name": "ui.minimap sessions: a null world size is 1024; a marker's undeclared member is carried; the marker whose id is player is the view's player whatever its type; a null feed list or player reads as absent (the feed-owned player is retired); placed through a partial theme that has every role it needs; the boundary of each op; mirrored without a northYaw is core's own error; a failing op keeps the earlier ops' effects",
+      "steps": [
+        {
+          "call": "ui.minimap.create",
+          "args": {
+            "worldSize": null
+          },
+          "expect": {
+            "session": 1,
+            "view": {
+              "worldSize": 1024,
+              "visible": false,
+              "markerCount": 0,
+              "markers": [],
+              "player": null
+            }
+          }
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "add",
+                "marker": {
+                  "id": "player",
+                  "type": "npc",
+                  "position": {
+                    "x": 1,
+                    "y": 2,
+                    "z": 3
+                  },
+                  "note": "kept as given"
+                }
+              },
+              {
+                "op": "add",
+                "marker": {
+                  "id": "hand",
+                  "type": "quest_objective",
+                  "position": {
+                    "x": -100,
+                    "y": 0,
+                    "z": 100
+                  },
+                  "color": "#123456",
+                  "shape": "circle"
+                }
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              null,
+              null
+            ],
+            "view": {
+              "worldSize": 1024,
+              "visible": false,
+              "markerCount": 2,
+              "markers": [
+                {
+                  "id": "player",
+                  "type": "npc",
+                  "position": {
+                    "x": 1,
+                    "y": 2,
+                    "z": 3
+                  },
+                  "note": "kept as given"
+                },
+                {
+                  "id": "hand",
+                  "type": "quest_objective",
+                  "position": {
+                    "x": -100,
+                    "y": 0,
+                    "z": 100
+                  },
+                  "color": "#123456",
+                  "shape": "circle"
+                }
+              ],
+              "player": {
+                "id": "player",
+                "type": "npc",
+                "position": {
+                  "x": 1,
+                  "y": 2,
+                  "z": 3
+                },
+                "note": "kept as given"
+              }
+            }
+          }
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "ingest",
+                "feed": {
+                  "settlements": null,
+                  "playerPosition": null,
+                  "npcPositions": [
+                    {
+                      "id": "n1",
+                      "position": {
+                        "x": 50,
+                        "z": -50
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              null
+            ],
+            "view": {
+              "worldSize": 1024,
+              "visible": false,
+              "markerCount": 2,
+              "markers": [
+                {
+                  "id": "hand",
+                  "type": "quest_objective",
+                  "position": {
+                    "x": -100,
+                    "y": 0,
+                    "z": 100
+                  },
+                  "color": "#123456",
+                  "shape": "circle"
+                },
+                {
+                  "id": "npc_n1",
+                  "type": "npc",
+                  "position": {
+                    "x": 50,
+                    "y": 0,
+                    "z": -50
+                  }
+                }
+              ],
+              "player": null
+            }
+          }
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "placed",
+                "sizePx": 200,
+                "theme": {
+                  "success": "#00aa00"
+                },
+                "northYaw": 0
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              [
+                {
+                  "id": "hand",
+                  "offsetX": -19.53125,
+                  "offsetY": -19.53125,
+                  "size": 5,
+                  "color": "#123456",
+                  "tone": "quest"
+                },
+                {
+                  "id": "npc_n1",
+                  "offsetX": 9.765625,
+                  "offsetY": 9.765625,
+                  "size": 4,
+                  "color": "#00aa00",
+                  "tone": "success"
+                }
+              ]
+            ],
+            "view": {
+              "worldSize": 1024,
+              "visible": false,
+              "markerCount": 2,
+              "markers": [
+                {
+                  "id": "hand",
+                  "type": "quest_objective",
+                  "position": {
+                    "x": -100,
+                    "y": 0,
+                    "z": 100
+                  },
+                  "color": "#123456",
+                  "shape": "circle"
+                },
+                {
+                  "id": "npc_n1",
+                  "type": "npc",
+                  "position": {
+                    "x": 50,
+                    "y": 0,
+                    "z": -50
+                  }
+                }
+              ],
+              "player": null
+            }
+          }
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "placed",
+                "sizePx": 200,
+                "theme": {
+                  "accent": "#000001"
+                },
+                "northYaw": 0
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.apply: ops[0] (placed) failed: insimulcore: ui.minimap.apply: `op.theme` has no colour for role 'success' (marker \"npc_n1\")"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "placed",
+                "sizePx": 200,
+                "theme": {
+                  "success": 7
+                }
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.apply: ops[0] (placed) failed: insimulcore: ui.minimap.apply: `op.theme.success` must be a string"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "placed",
+                "sizePx": 200,
+                "mirrored": true
+              }
+            ]
+          },
+          "expectError": "minimap: mirrored needs a northYaw to mirror"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "placed",
+                "sizePx": 200,
+                "scale": null
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.apply: ops[0] (placed) failed: insimulcore: ui.minimap.apply: `op.scale` must not be null"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "add",
+                "marker": {
+                  "id": "hand",
+                  "type": "quest_objective",
+                  "position": {
+                    "x": -100,
+                    "y": 0,
+                    "z": 100
+                  },
+                  "color": "#123456",
+                  "shape": "square"
+                }
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.apply: ops[0] (add) failed: insimulcore: ui.minimap.apply: `op.marker.shape` must be one of diamond, circle (got \"square\")"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "add",
+                "marker": {
+                  "id": "x",
+                  "type": "npc",
+                  "position": {
+                    "x": 0,
+                    "z": 0
+                  }
+                }
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.apply: ops[0] (add) failed: insimulcore: ui.minimap.apply: `op.marker.position.y` is missing"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "remove",
+                "id": 5
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.apply: ops[0] (remove) failed: insimulcore: ui.minimap.apply: `op.id` must be a string"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "setVisible",
+                "visible": 1
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.apply: ops[0] (setVisible) failed: insimulcore: ui.minimap.apply: `op.visible` must be a boolean"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "setWorldSize",
+                "size": "big"
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.apply: ops[0] (setWorldSize) failed: insimulcore: ui.minimap.apply: `op.size` must be a finite number"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "ingest",
+                "feed": {
+                  "settlements": "Bergerac"
+                }
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.apply: ops[0] (ingest) failed: insimulcore: ui.minimap.apply: `op.feed.settlements` must be an array"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "ingest",
+                "feed": {
+                  "npcPositions": [
+                    {
+                      "id": "n2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.apply: ops[0] (ingest) failed: insimulcore: ui.minimap.apply: `op.feed.npcPositions[0].position` is missing"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "ingest",
+                "feed": {
+                  "noticeBoards": [
+                    {
+                      "id": "b",
+                      "position": {
+                        "x": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.apply: ops[0] (ingest) failed: insimulcore: ui.minimap.apply: `op.feed.noticeBoards[0].questCount` is missing"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "fly"
+              }
+            ]
+          },
+          "expectError": "ops[0] has no known op \"fly\""
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "setVisible",
+                "visible": true
+              },
+              {
+                "op": "remove",
+                "id": 9
+              }
+            ]
+          },
+          "expectError": "ops[1] (remove) failed"
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": []
+          },
+          "expect": {
+            "results": [],
+            "view": {
+              "worldSize": 1024,
+              "visible": true,
+              "markerCount": 2,
+              "markers": [
+                {
+                  "id": "hand",
+                  "type": "quest_objective",
+                  "position": {
+                    "x": -100,
+                    "y": 0,
+                    "z": 100
+                  },
+                  "color": "#123456",
+                  "shape": "circle"
+                },
+                {
+                  "id": "npc_n1",
+                  "type": "npc",
+                  "position": {
+                    "x": 50,
+                    "y": 0,
+                    "z": -50
+                  }
+                }
+              ],
+              "player": null
+            }
+          }
+        },
+        {
+          "call": "ui.minimap.create",
+          "args": {
+            "worldSize": "big"
+          },
+          "expectError": "[invalid-input] insimulcore: ui.minimap.create: `args.worldSize` must be a finite number"
+        }
+      ]
+    },
+    {
+      "name": "ui.minimap sessions: placed on an empty map is an empty list; setWorldSize below zero falls back to 1024",
+      "steps": [
+        {
+          "call": "ui.minimap.create",
+          "args": {},
+          "expect": {
+            "session": 1,
+            "view": {
+              "worldSize": 1024,
+              "visible": false,
+              "markerCount": 0,
+              "markers": [],
+              "player": null
+            }
+          }
+        },
+        {
+          "call": "ui.minimap.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "placed",
+                "sizePx": 100
+              },
+              {
+                "op": "setWorldSize",
+                "size": 300
+              },
+              {
+                "op": "setWorldSize",
+                "size": -3
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              [],
+              null,
+              null
+            ],
+            "view": {
+              "worldSize": 1024,
+              "visible": false,
+              "markerCount": 0,
+              "markers": [],
+              "player": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ui.notifications.create's historyMax is the log's cap: 2 keeps the newest two, 0 keeps nothing (ids still count); a cap that is not a whole number from 0 is [invalid-input]",
+      "steps": [
+        {
+          "call": "ui.notifications.create",
+          "args": {
+            "historyMax": 2
+          },
+          "expect": {
+            "session": 1,
+            "view": {
+              "visible": [],
+              "count": 0
+            }
+          }
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "historyPush",
+                "title": "a"
+              },
+              {
+                "op": "historyPush",
+                "title": "b"
+              },
+              {
+                "op": "historyPush",
+                "title": "c"
+              },
+              {
+                "op": "historyAll"
+              },
+              {
+                "op": "historyLength"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              0,
+              1,
+              2,
+              [
+                {
+                  "title": "c",
+                  "id": 2,
+                  "timestamp": 0
+                },
+                {
+                  "title": "b",
+                  "id": 1,
+                  "timestamp": 0
+                }
+              ],
+              2
+            ],
+            "view": {
+              "visible": [],
+              "count": 0
+            }
+          }
+        },
+        {
+          "call": "ui.notifications.create",
+          "args": {
+            "historyMax": 0
+          },
+          "expect": {
+            "session": 2,
+            "view": {
+              "visible": [],
+              "count": 0
+            }
+          }
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 2,
+            "ops": [
+              {
+                "op": "historyPush",
+                "title": "a"
+              },
+              {
+                "op": "historyLength"
+              },
+              {
+                "op": "historyRecent",
+                "count": 5
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              0,
+              0,
+              []
+            ],
+            "view": {
+              "visible": [],
+              "count": 0
+            }
+          }
+        },
+        {
+          "call": "ui.notifications.create",
+          "args": {
+            "historyMax": -1
+          },
+          "expectError": "[invalid-input] insimulcore: ui.notifications.create: `historyMax` must be a whole number from 0"
+        },
+        {
+          "call": "ui.notifications.create",
+          "args": {
+            "historyMax": 1.5
+          },
+          "expectError": "[invalid-input] insimulcore: ui.notifications.create: `historyMax` must be a whole number from 0"
+        },
+        {
+          "call": "ui.notifications.create",
+          "args": {
+            "historyMax": "2"
+          },
+          "expectError": "[invalid-input] insimulcore: ui.notifications.create: `historyMax` must be a finite number"
+        }
+      ]
+    },
+    {
+      "name": "the history log's clock is the last at an op gave, kept until the next (historyClock, or a push's own at); 0 before any; an at that is not a finite number is [invalid-input]",
+      "steps": [
+        {
+          "call": "ui.notifications.create",
+          "args": {},
+          "expect": {
+            "session": 1,
+            "view": {
+              "visible": [],
+              "count": 0
+            }
+          }
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "historyClock",
+                "at": 500
+              },
+              {
+                "op": "historyPush",
+                "title": "one"
+              },
+              {
+                "op": "historyPush",
+                "title": "two",
+                "category": "quest"
+              },
+              {
+                "op": "historyPush",
+                "title": "three",
+                "icon": "bell",
+                "at": 700
+              },
+              {
+                "op": "historyAll"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              null,
+              0,
+              1,
+              2,
+              [
+                {
+                  "title": "three",
+                  "icon": "bell",
+                  "id": 2,
+                  "timestamp": 700
+                },
+                {
+                  "title": "two",
+                  "category": "quest",
+                  "id": 1,
+                  "timestamp": 500
+                },
+                {
+                  "title": "one",
+                  "id": 0,
+                  "timestamp": 500
+                }
+              ]
+            ],
+            "view": {
+              "visible": [],
+              "count": 0
+            }
+          }
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "historyClock",
+                "at": "800"
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.notifications.apply: ops[0] (historyClock) failed: insimulcore: ui.notifications.apply: `at` must be a finite number"
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "historyPush",
+                "title": "x",
+                "at": null
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.notifications.apply: ops[0] (historyPush) failed: insimulcore: ui.notifications.apply: `op.at` must not be null"
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "historyClock"
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.notifications.apply: ops[0] (historyClock) failed: insimulcore: ui.notifications.apply: `at` must be a finite number"
+        }
+      ]
+    },
+    {
+      "name": "toasts and the history log share a session, not a state: toast ids count from 1 and history ids from 0; clear empties only the toasts and historyClear only the log (whose ids keep counting); the view is the toasts'",
+      "steps": [
+        {
+          "call": "ui.notifications.create",
+          "args": {},
+          "expect": {
+            "session": 1,
+            "view": {
+              "visible": [],
+              "count": 0
+            }
+          }
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "push",
+                "text": "saved"
+              },
+              {
+                "op": "historyPush",
+                "title": "saved"
+              },
+              {
+                "op": "clear"
+              },
+              {
+                "op": "historyLength"
+              },
+              {
+                "op": "push",
+                "text": "again",
+                "kind": "success",
+                "lifetime": 2
+              },
+              {
+                "op": "historyClear"
+              },
+              {
+                "op": "historyPush",
+                "title": "after"
+              },
+              {
+                "op": "historyAll"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              1,
+              0,
+              null,
+              1,
+              2,
+              null,
+              1,
+              [
+                {
+                  "title": "after",
+                  "id": 1,
+                  "timestamp": 0
+                }
+              ]
+            ],
+            "view": {
+              "visible": [
+                {
+                  "id": 2,
+                  "text": "again",
+                  "kind": "success",
+                  "remaining": 2,
+                  "color": "success"
+                }
+              ],
+              "count": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "historyPush carries a member core does not declare as core does, and core's own id and timestamp win over given ones; historyRecent with a negative count is core's answer; the declared members' boundary",
+      "steps": [
+        {
+          "call": "ui.notifications.create",
+          "args": {},
+          "expect": {
+            "session": 1,
+            "view": {
+              "visible": [],
+              "count": 0
+            }
+          }
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "historyPush",
+                "title": "odd",
+                "id": 99,
+                "timestamp": 5,
+                "extra": {
+                  "kept": true
+                }
+              },
+              {
+                "op": "historyAll"
+              },
+              {
+                "op": "historyRecent",
+                "count": -1
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              0,
+              [
+                {
+                  "title": "odd",
+                  "id": 0,
+                  "timestamp": 0,
+                  "extra": {
+                    "kept": true
+                  }
+                }
+              ],
+              []
+            ],
+            "view": {
+              "visible": [],
+              "count": 0
+            }
+          }
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "historyPush"
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.notifications.apply: ops[0] (historyPush) failed: insimulcore: ui.notifications.apply: `op.title` is missing"
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "historyPush",
+                "title": "x",
+                "category": 5
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.notifications.apply: ops[0] (historyPush) failed: insimulcore: ui.notifications.apply: `op.category` must be a string"
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "historyPush",
+                "title": "x",
+                "description": null
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.notifications.apply: ops[0] (historyPush) failed: insimulcore: ui.notifications.apply: `op.description` must not be null"
+        },
+        {
+          "call": "ui.notifications.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "historyRecent",
+                "count": "all"
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.notifications.apply: ops[0] (historyRecent) failed: insimulcore: ui.notifications.apply: `count` must be a finite number"
+        }
+      ]
+    }
+  ]
+}

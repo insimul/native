@@ -975,6 +975,33 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/NotificationStore",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the ui.notifications history ops and ui.notifications.contract (NotificationLog, NOTIFICATION_HISTORY_MAX) (the HUD shell view-models; PL.native-hud-rows, rulings U143, U128 and U36), exactly as the props.vehicle.* rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-hud-rows (Features Gauntlet PL.native-hud-rows)",
+      "reviewedAt": "2026-11-24"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/compass-model",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the ui.compass.* rows (compassView, worldCompassView, worldNorth, compassHeading, compassCardinal, stripRelative and the COMPASS_* and DEFAULT_* constants) (the HUD shell view-models; PL.native-hud-rows, rulings U143, U128 and U36), exactly as the props.vehicle.* rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-hud-rows (Features Gauntlet PL.native-hud-rows)",
+      "reviewedAt": "2026-11-24"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/minimap-model",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the ui.minimap.* rows (MinimapModel, MINIMAP_MARKER_TYPES, MINIMAP_FEED_OWNED) (the HUD shell view-models; PL.native-hud-rows, rulings U143, U128 and U36), exactly as the props.vehicle.* rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-hud-rows (Features Gauntlet PL.native-hud-rows)",
+      "reviewedAt": "2026-11-24"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/editor/binding/archetypes",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the genrePieces.deriveArchetype, .collect and .stamp rows (the binding walk's genre piece leg: deriveGenrePieceArchetype, and collectPlaceableEntities and stampWorldArchetypes over a world holding only entities.genrePieces; PL.native-genre-rows slice 4, rulings U128, U115, U103 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

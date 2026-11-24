@@ -432,8 +432,22 @@ game; **meta** = about the bridge itself.
 | `props.vehicle.streetProbes` | `{ at, radiusM }` → `{ points: [{ x, z }] }` | `props/vehicle-placement` `vehicleStreetProbes` | P9e world-vehicle parking |
 | `inventory.create` | `{ player?: { gold, inventory } }` → `{ session, view: { filter, counts, gold, rows, equipment, save } }` | `ui/inventory-model` `InventoryViewModel` | P6 |
 | `inventory.apply` | `{ session, ops: add, remove, filter, toggle, set_gold, add_gold, remove_gold, equip_flag, get, items, load, clear }` → `{ results, view }` | same | P6 |
-| `ui.notifications.create` | `{}` → `{ session, view }` | `ui/notifications` `Notifications` | P2 |
-| `ui.notifications.apply` | `{ session, ops: push, tick, dismiss, clear }` → `{ results, view }` | same | P2 |
+| `ui.notifications.create` | `{ historyMax? }` → `{ session, view }` (the toast queue and the history log, one session) | `ui/notifications` `Notifications`; `game-engine/logic/NotificationStore` `NotificationLog` | P2; the log PL.native-hud-rows (U143(2)) |
+| `ui.notifications.apply` | `{ session, ops: push, tick, dismiss, clear, historyPush, historyClock, historyRecent, historyAll, historyLength, historyClear }` → `{ results, view }` | same | P2; the history ops PL.native-hud-rows |
+| `ui.notifications.contract` | `{}` → `{ kinds, kindColor, defaultLifetimeSeconds, historyMax }` | `ui/notifications` `KIND_COLOR`, `DEFAULT_NOTIFICATION_LIFETIME`; `NOTIFICATION_HISTORY_MAX` | P2 HUD (PL.native-hud-rows) |
+| `ui.compass.contract` | `{}` → `{ points, defaultSpanDegrees, minDistanceM, defaultNorthYaw }` | `ui/compass-model` constants | P2 HUD (PL.native-hud-rows) |
+| `ui.compass.view` | `{ yaw, northYaw, position, markers, span?, mirrored? }` → `{ ok: true, value: { heading, cardinal, span, markers, mirrored? } }` or the refusal VALUE `{ ok: false, refusal: { code, field, message } }` | `ui/compass-model` `compassView` | P2 HUD |
+| `ui.compass.worldView` | `{ geography?, yaw? or facing?, position, markers, span?, mirrored? }` → `{ ok: true, north, value }` or a refusal VALUE | `ui/compass-model` `worldCompassView` | P2 HUD (north: P2.core-north) |
+| `ui.compass.north` | `{ geography? }` → `{ ok: true, value: { northYaw, source } }` or a refusal VALUE | `ui/compass-model` `worldNorth` | P2 HUD |
+| `ui.compass.heading` | `{ yaw, northYaw }` → `{ heading }` | `ui/compass-model` `compassHeading` | P2 HUD |
+| `ui.compass.cardinal` | `{ degrees }` → `{ cardinal }` | `ui/compass-model` `compassCardinal` | P2 HUD |
+| `ui.compass.stripRelative` | `{ bearing, heading, mirrored? }` → `{ relative }` | `ui/compass-model` `stripRelative` | P2 HUD |
+| `ui.minimap.contract` | `{}` → `{ markerTypes, tones, unknownTypeTone, sizesPx, unknownTypeSizePx, defaultWorldSize, feedOwnedIds }` | `ui/minimap-model` `MINIMAP_MARKER_TYPES`, `MINIMAP_FEED_OWNED`, `MinimapModel` | P2 HUD (PL.native-hud-rows) |
+| `ui.minimap.project` | `{ worldSize?, position, sizePx, northYaw?, mirrored? }` → `{ x, y }` | `ui/minimap-model` `MinimapModel.project` | P2 HUD |
+| `ui.minimap.toneFor` | `{ type }` → `{ tone }` | `MinimapModel.toneFor` | P2 HUD |
+| `ui.minimap.sizeFor` | `{ type }` → `{ size }` | `MinimapModel.sizeFor` | P2 HUD |
+| `ui.minimap.create` | `{ worldSize? }` → `{ session, view: { worldSize, visible, markerCount, markers, player } }` | `ui/minimap-model` `MinimapModel` | P2 HUD |
+| `ui.minimap.apply` | `{ session, ops: setWorldSize, add, remove, clear, ingest, setVisible, placed }` → `{ results, view }` | same | P2 HUD |
 | `ui.pause.create` | `{ enabledModules? or genre?, tabs? }` → `{ session, source, enabledModules, view }` | `ui/pause-menu-model` `PauseMenuModel`; `genre` via `resolveGenre` | P2 |
 | `ui.pause.apply` | `{ session, ops: open, close, toggle, setActive }` → `{ results, view }` | same | P2 |
 | `ui.journal.create` | `{ quests?, maxTracked? }` → `{ session, view }` | `ui/quest-journal-model` `QuestJournalModel` (journal, tracker HUD, offer) | P3 |
@@ -2962,6 +2976,76 @@ the corpus (V8's answer exactly, the row's within the tolerance). Hand cases:
 the pin. Unreal's interim `Portable/InsimulVehicleRules` (`ParkVehicle`, `StreetProbes`)
 is what these rows retire (`P9e.unreal.retire-vehicle-rules-copy`; `ENGINE_BINDINGS.md`).
 
+### The HUD rows (PL.native-hud-rows)
+
+Core's three HUD view-models (P2.core and P2.core-north; U143(2), U128): the compass
+(`src/ui/compass-model.ts`), the minimap (`src/ui/minimap-model.ts`) and the notification
+history log behind the HUD feed and the Notifications tab (`NotificationLog`,
+`src/game-engine/logic/NotificationStore.ts`), beside the toast queue the
+`ui.notifications` rows already ran. Core space throughout: ground axes `x` and `z` in
+metres, yaw in radians about +Y, a positive yaw turning +Z toward +X.
+
+- **`ui.compass.*` is stateless.** `view` is core's `compassView` (north an input),
+  `worldView` its `worldCompassView` (north from the world's `georeference`, else the one
+  declared default, +Z; the facing given as a core yaw or as a ground direction `facing`),
+  `north` its `worldNorth`, `heading`, `cardinal` and `stripRelative` its helpers (the last
+  is where an engine puts its cardinal ticks), `contract` its constants. A refusal is a
+  VALUE, `{ ok: false, refusal: { code, field, message } }` (`message` is for a log; core's
+  corpus pins `code` and `field`). `mirrored` is core's input flag, passed to core exactly as
+  given: the engine states whether its own level lays the plan out mirrored, and core
+  refuses anything but a boolean (`not_boolean`). This is NOT the quest director's compass
+  `quest.waypoints` answers (the nearest waypoint's direction).
+- **`ui.minimap.*`**: `project`, `toneFor` and `sizeFor` are stateless (`project` on a new
+  `MinimapModel(worldSize)`, as core's corpus runner asks); a `ui.minimap` session holds
+  one model: `add`, `remove`, `clear`, `ingest` (the live feed: one marker per feed entry,
+  the feed-owned ids it no longer reports retired, hand-added markers kept), `setVisible`,
+  `setWorldSize`, and `placed` (every marker placed on a map `sizePx` across: `{ id,
+  offsetX, offsetY, size, color, tone }`; `theme` is role → colour as data, and with none a
+  marker with no colour of its own has `color: null` for the engine to resolve in its own
+  tokens). With a `northYaw` the map is north up, east right; `mirrored` with a `northYaw`
+  puts east left; `mirrored` without one is core's own error. The view is `{ worldSize,
+  visible, markerCount, markers, player }`.
+- **The history log is ops of the `ui.notifications` session**, not a second surface:
+  `historyPush { title, description?, icon?, color?, category?, at? }` → its id (from 0;
+  the toasts' count from 1), `historyClock { at }`, `historyRecent { count }` and
+  `historyAll` (newest first), `historyLength`, `historyClear` (ids keep counting).
+  `create { historyMax? }` sets the cap (default 200; the oldest is evicted first). The
+  log's clock is the last `at` an op gave, in ms (0 before any): the row reads no clock of
+  its own, so a host passes its own on each push, and a replay is exact. A push's members
+  core does not declare are carried as core carries them; core's id and timestamp win.
+  The view stays the toasts'.
+- **`[invalid-input]` only for the structure core cannot read and the strings it
+  declares**: a position or marker that is not an object, markers that are not an array, a
+  feed list that is not an array (null reads as absent, as core's `??` does), a minimap
+  position without `x`, `y` and `z`, a marker type or id that is not a string, a theme
+  missing a role it needs, a heading, cardinal or strip input that is not a finite number
+  (core would answer NaN), a `historyMax` that is not a whole number from 0. Every number
+  core checks itself (a compass yaw, span, position or rotation, a world size) goes to core
+  as sent, because core's corpora pin its refusals and fallbacks (a null yaw is
+  `not_finite`, a world size of 0 is 1024).
+
+Evidence: `ui_hud_corpus` (`tests/ui_hud_corpus.cpp`) drives core's
+`conformance/ui/{notifications,compass,minimap}-cases.json` (22, 82 and 50 cases at
+45409ed), copied byte for byte as the P2 HUD set, each case answered as core's reference
+runner (`src/ui/hud-corpus.ts`, `runHudOp`) answers it, through the rows, and compared by
+the corpora's own rule (`compareHudValue`: numbers within the file's `tolerance`, 1e-9,
+the rest exactly, key sets included; it also counts the answers identical to the last
+bit). Each file's `contract` block is held whole: the keys a contract row states
+(`ui.notifications.contract`, `ui.compass.contract`, `ui.minimap.contract`, read from
+core's exports) exactly; the keys the run measures (the refusal codes and north sources
+the rows answered over the file's cases, each feed list's id prefix, the first toast and
+history ids, every category carried as given); and the rule keys the cases pin, named; a
+key the runner does not know fails it. Its refusal probes show that what core refuses is a
+value and what core cannot read is `[invalid-input]`. `ui_hud_corpus_negative` perturbs
+every case's expectation; `ui_hud_corpus_wrong` runs a doctored compass file and must see
+each of its wrongs named. The same 154 cases run on both case legs (and
+`corebridge_cases_parity`) as `vendor/core/cases/core-ui-{notifications,compass,minimap}.json`,
+which `emit-bridge-cases.mjs` transcribes and `core_vendor` holds to the vendored corpora by
+its own derivation (`core_vendor_hud_negative`: fourteen perturbations named). Hand cases:
+`tests/cases/bridge-hud.json`, every expectation computed by core's own functions and
+classes at the pin. Unreal's interim `Portable/InsimulHudModels` is what these rows retire
+(`P2.unreal.retire-hud-copy`; `ENGINE_BINDINGS.md`).
+
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 
 `save.rules`' `extensionKeys` is `Object.keys(extensionRegistry).sort()` over core's
@@ -2986,15 +3070,13 @@ save) should equal this list; `save.rules` is the row to hold it to.
 
 ### What the feature phases asked for and core does not have yet
 
-Exposed "as core has them" — so a few UI view-models in the brief are not rows,
-because there is nothing in core at the pinned commit to expose: **no HUD
-view-model** (the HUD shell composes `ui.notifications`, `ui.journal`'s tracker,
-`quest.waypoints`' compass and the clock), and **no
-minimap view-model** beyond the two marker functions (`quest.minimapMarkers`,
-`quest.markers` with `surface: "minimap"`). The Features Round plan (§1) lists compass and minimap
-view-models as core work; when they land, they are rows here. (The inventory
-panel's view-model landed in core with P6.core and is the `inventory.*` rows
-since PL.native-props-rows, above.)
+Exposed "as core has them". The HUD shell's compass and minimap view-models, which
+the Features Round plan (§1) listed as core work, landed in core with P2.core and are
+the `ui.compass.*` and `ui.minimap.*` rows since PL.native-hud-rows (above), with the
+history log as the `ui.notifications` session's `history*` ops; the quest marker
+functions (`quest.minimapMarkers`, `quest.markers` with `surface: "minimap"`) feed the
+minimap's markers. (The inventory panel's view-model landed in core with P6.core and is
+the `inventory.*` rows since PL.native-props-rows, above.)
 
 ## Sessions
 
@@ -3077,6 +3159,8 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
 | `props_vehicle_placement_corpus`, `props_vehicle_placement_corpus_negative`, `props_vehicle_placement_corpus_numerics` | core's world-vehicle parking corpus (`conformance/props/vehicle-placement.json`, 26 cases at 45409ed: park 23, probes 3) driven whole through the `props.vehicle.*` rows by `tests/props_vehicle_placement_corpus.cpp`, one row call per case (0 undriven; `numerics` must name double precision; `props.vehicle.contract` held to the file's contract; refusal probes for `bad-place`, `no-open-spot`, `[invalid-input]`, an unknown op and row); the negative perturbs every case; the numerics control (`tests/props-negative/vehicle-placement-float.json`, a file naming single precision) must fail on that line |
 | `core_vendor_vehicle_placement_negative` | the vehicle-placement transcription guard alone, over thirteen in-memory perturbations of `cases/core-props-vehicle-placement.json` (a dropped case, an invented one, a call changed, an argument dropped, an answer weakened to a subset, a number changed, a refusal code changed, a case on one leg, a contract constant dropped, the deviations weakened, a tier reworded, a declared answer outside the corpus's tolerance, a declaration whose V8 answer is not the corpus's): passes only when the guard names all thirteen |
+| `ui_hud_corpus`, `ui_hud_corpus_negative`, `ui_hud_corpus_wrong` | core's HUD corpora (`conformance/ui/{notifications,compass,minimap}-cases.json`, 22, 82 and 50 cases at 45409ed) driven whole through the `ui.notifications.*`, `ui.compass.*` and `ui.minimap.*` rows by `tests/ui_hud_corpus.cpp`, each case as core's `runHudOp` answers it (0 undriven; each file's contract block held whole: the keys its contract row states, the keys the run measures, the rule keys the cases pin; refusal probes for core's value refusals, `[invalid-input]`, an unknown op and row); the negative perturbs every case; the wrong-file control (`tests/hud-negative/compass-wrong.json`) must see each doctored contract key, expectation and op named |
+| `core_vendor_hud_negative` | the HUD transcription guard alone, over fourteen in-memory perturbations of `cases/core-ui-{notifications,compass,minimap}.json` (a dropped case, an invented one, a call changed, an argument dropped, a refusal's message no longer held, a number changed, a minimap view weakened, a placed list dropped, a toast op dropped, a history clock dropped, history ids weakened, a case on one leg, a contract key dropped, a contract value changed): passes only when the guard names all fourteen |
 | `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (73 cases at 45409ed with 8 `press`, 53 at d88b6f0, 33 at 431c95b, 27 at 72c658c; 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does, a press through target, examinePick and press; its contract's data tables held to `props.contract`; the stands sent with no `y` counted against `props.interactables.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give, two runner controls (a case's `ranges`, a lone `prop`), a stand with no `y` read as floor 0, a pick acting over the target and a stand's dropped `objects` seen as wrong |
 | `audio_ground_corpus`, `audio_ground_corpus_negative` | core's ground reading corpus driven whole through the `audio.ground.*` rows (48 cases, 0 undriven; every case whose world lists two or more settlements, ground surfaces or roads driven again with them reversed; its contract's data held to `audio.ground.contract`), and Unreal's sidewalk for a footpath in the contract, an undriven op and six answers an engine keeping one of its interim readings would give seen as wrong |
 | `audio_cues_corpus`, `audio_cues_corpus_negative` | the footstep cases of core's audio cue corpus (`conformance/audio/cues.json` at 45409ed: footstepRun 7, footstep 26) driven through the stateless `audio.stepFootsteps` row (0 undriven; the runner keeps the state as a host does; its contract's `footsteps` data held to `audio.footsteps.contract`; the 63 ambient and music cases reported as not reached), and a wrong run interval, seven wrong clocks and an op on no list seen as wrong |

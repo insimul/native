@@ -1,0 +1,1529 @@
+{
+  "area": "ui-notifications",
+  "description": "The notifications view-models (Features WV1, P2.core; CROSS-ENGINE-FEATURES §4, 2. HUD shell; catalog ui-notifications): the toast queue (core src/ui/notifications.ts Notifications, mirrored by Godot insimul_notifications.gd and Unreal FInsimulNotifications) and the history log behind the collapsed HUD feed and the Notifications tab (core src/game-engine/logic/NotificationStore.ts NotificationLog, the NotificationStore singleton's class). Runner: src/ui/hud-corpus.ts. Op toasts runs steps {push:{text,kind?,lifetime?}} -> {id}, {tick:seconds} -> {changed}, {dismiss:id} -> {removed}, {clear:true} -> {} on a new queue and pins every result, the visible list and the count. Op history runs steps on a new log whose clock reads the last step's at (ms, 0 before any): {push:{title,description?,icon?,color?,category?}} -> {id}, {pushMany:{count,title,category?}} pushes \"<title> <k>\" for k = 0..count-1 -> {firstId,lastId}, {recent:n} and {all:true} -> {items} (or {ids} with ids:true), {length:true}, {clear:true}. Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). A non-finite number is written as null in an input. Regenerate with npm run hud-corpora; npm run hud-corpora:check fails on any difference.",
+  "version": 1,
+  "sources": [
+    "Rules are core main's, unchanged: Notifications (US-GU1) and NotificationStore (moved from Babylon earlier); P2.core only exports the log's class with an injectable clock and cap.",
+    "Inputs are synthetic."
+  ],
+  "tolerance": 1e-9,
+  "contract": {
+    "kinds": [
+      "info",
+      "success",
+      "warning",
+      "danger"
+    ],
+    "kindColor": {
+      "info": "accent",
+      "success": "success",
+      "warning": "warning",
+      "danger": "danger"
+    },
+    "defaultLifetimeSeconds": 4,
+    "toastFirstId": 1,
+    "toastExpiry": "a toast is dropped by the tick that takes its remaining time to 0 or below",
+    "historyFirstId": 0,
+    "historyMax": 200,
+    "historyOrder": "newest first",
+    "categories": [
+      "quest",
+      "system",
+      "building",
+      "npc",
+      "item",
+      "skill",
+      "general"
+    ]
+  },
+  "cases": [
+    {
+      "name": "push with no kind or lifetime is info, the accent colour, for the default lifetime",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "push": {
+              "text": "Saved."
+            }
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 1
+          }
+        ],
+        "visible": [
+          {
+            "id": 1,
+            "text": "Saved.",
+            "kind": "info",
+            "remaining": 4,
+            "color": "accent"
+          }
+        ],
+        "count": 1
+      }
+    },
+    {
+      "name": "each kind maps to its token colour",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "push": {
+              "text": "a",
+              "kind": "info"
+            }
+          },
+          {
+            "push": {
+              "text": "b",
+              "kind": "success"
+            }
+          },
+          {
+            "push": {
+              "text": "c",
+              "kind": "warning"
+            }
+          },
+          {
+            "push": {
+              "text": "d",
+              "kind": "danger"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          },
+          {
+            "id": 3
+          },
+          {
+            "id": 4
+          }
+        ],
+        "visible": [
+          {
+            "id": 1,
+            "text": "a",
+            "kind": "info",
+            "remaining": 4,
+            "color": "accent"
+          },
+          {
+            "id": 2,
+            "text": "b",
+            "kind": "success",
+            "remaining": 4,
+            "color": "success"
+          },
+          {
+            "id": 3,
+            "text": "c",
+            "kind": "warning",
+            "remaining": 4,
+            "color": "warning"
+          },
+          {
+            "id": 4,
+            "text": "d",
+            "kind": "danger",
+            "remaining": 4,
+            "color": "danger"
+          }
+        ],
+        "count": 4
+      }
+    },
+    {
+      "name": "ids start at 1 and count up; the queue is oldest first",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "push": {
+              "text": "first"
+            }
+          },
+          {
+            "push": {
+              "text": "second",
+              "kind": "success",
+              "lifetime": 2
+            }
+          },
+          {
+            "push": {
+              "text": "third",
+              "kind": "warning",
+              "lifetime": 9
+            }
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          },
+          {
+            "id": 3
+          }
+        ],
+        "visible": [
+          {
+            "id": 1,
+            "text": "first",
+            "kind": "info",
+            "remaining": 4,
+            "color": "accent"
+          },
+          {
+            "id": 2,
+            "text": "second",
+            "kind": "success",
+            "remaining": 2,
+            "color": "success"
+          },
+          {
+            "id": 3,
+            "text": "third",
+            "kind": "warning",
+            "remaining": 9,
+            "color": "warning"
+          }
+        ],
+        "count": 3
+      }
+    },
+    {
+      "name": "tick expires the shorter lifetime and reports the change",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "push": {
+              "text": "hello",
+              "kind": "info",
+              "lifetime": 3
+            }
+          },
+          {
+            "push": {
+              "text": "saved",
+              "kind": "success",
+              "lifetime": 1
+            }
+          },
+          {
+            "tick": 1.5
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          },
+          {
+            "changed": true
+          }
+        ],
+        "visible": [
+          {
+            "id": 1,
+            "text": "hello",
+            "kind": "info",
+            "remaining": 1.5,
+            "color": "accent"
+          }
+        ],
+        "count": 1
+      }
+    },
+    {
+      "name": "a toast whose remaining time reaches exactly 0 expires",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "push": {
+              "text": "x",
+              "lifetime": 2
+            }
+          },
+          {
+            "tick": 2
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 1
+          },
+          {
+            "changed": true
+          }
+        ],
+        "visible": [],
+        "count": 0
+      }
+    },
+    {
+      "name": "a toast just short of 0 stays, and nothing changed",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "push": {
+              "text": "x",
+              "lifetime": 2
+            }
+          },
+          {
+            "tick": 1.75
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 1
+          },
+          {
+            "changed": false
+          }
+        ],
+        "visible": [
+          {
+            "id": 1,
+            "text": "x",
+            "kind": "info",
+            "remaining": 0.25,
+            "color": "accent"
+          }
+        ],
+        "count": 1
+      }
+    },
+    {
+      "name": "ticks accumulate until the lifetime is spent",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "push": {
+              "text": "x"
+            }
+          },
+          {
+            "tick": 1
+          },
+          {
+            "tick": 1
+          },
+          {
+            "tick": 1
+          },
+          {
+            "tick": 1
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 1
+          },
+          {
+            "changed": false
+          },
+          {
+            "changed": false
+          },
+          {
+            "changed": false
+          },
+          {
+            "changed": true
+          }
+        ],
+        "visible": [],
+        "count": 0
+      }
+    },
+    {
+      "name": "tick on an empty queue reports no change",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "tick": 1
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "changed": false
+          }
+        ],
+        "visible": [],
+        "count": 0
+      }
+    },
+    {
+      "name": "tick of 0 with toasts showing reports no change",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "push": {
+              "text": "x"
+            }
+          },
+          {
+            "tick": 0
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 1
+          },
+          {
+            "changed": false
+          }
+        ],
+        "visible": [
+          {
+            "id": 1,
+            "text": "x",
+            "kind": "info",
+            "remaining": 4,
+            "color": "accent"
+          }
+        ],
+        "count": 1
+      }
+    },
+    {
+      "name": "a lifetime of 0 shows until the next tick, even a tick of 0",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "push": {
+              "text": "flash",
+              "kind": "danger",
+              "lifetime": 0
+            }
+          },
+          {
+            "tick": 0
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 1
+          },
+          {
+            "changed": true
+          }
+        ],
+        "visible": [],
+        "count": 0
+      }
+    },
+    {
+      "name": "dismiss removes by id; an unknown or already dismissed id removes nothing",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "push": {
+              "text": "a"
+            }
+          },
+          {
+            "push": {
+              "text": "b"
+            }
+          },
+          {
+            "dismiss": 1
+          },
+          {
+            "dismiss": 1
+          },
+          {
+            "dismiss": 99
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          },
+          {
+            "removed": true
+          },
+          {
+            "removed": false
+          },
+          {
+            "removed": false
+          }
+        ],
+        "visible": [
+          {
+            "id": 2,
+            "text": "b",
+            "kind": "info",
+            "remaining": 4,
+            "color": "accent"
+          }
+        ],
+        "count": 1
+      }
+    },
+    {
+      "name": "clear empties the queue but does not reset the id counter",
+      "op": "toasts",
+      "input": {
+        "steps": [
+          {
+            "push": {
+              "text": "a"
+            }
+          },
+          {
+            "push": {
+              "text": "b"
+            }
+          },
+          {
+            "clear": true
+          },
+          {
+            "push": {
+              "text": "c"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          },
+          {},
+          {
+            "id": 3
+          }
+        ],
+        "visible": [
+          {
+            "id": 3,
+            "text": "c",
+            "kind": "info",
+            "remaining": 4,
+            "color": "accent"
+          }
+        ],
+        "count": 1
+      }
+    },
+    {
+      "name": "push stamps the id (from 0) and the clock, and keeps the fields it was given",
+      "op": "history",
+      "input": {
+        "steps": [
+          {
+            "at": 1000,
+            "push": {
+              "title": "Quest accepted",
+              "description": "The Missing Writer",
+              "icon": "quest",
+              "color": "#c9a24b",
+              "category": "quest"
+            }
+          },
+          {
+            "all": true
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 0
+          },
+          {
+            "items": [
+              {
+                "title": "Quest accepted",
+                "description": "The Missing Writer",
+                "icon": "quest",
+                "color": "#c9a24b",
+                "category": "quest",
+                "id": 0,
+                "timestamp": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "absent optional fields stay absent",
+      "op": "history",
+      "input": {
+        "steps": [
+          {
+            "at": 5,
+            "push": {
+              "title": "Bare"
+            }
+          },
+          {
+            "all": true
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 0
+          },
+          {
+            "items": [
+              {
+                "title": "Bare",
+                "id": 0,
+                "timestamp": 5
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "every category is carried as given",
+      "op": "history",
+      "input": {
+        "steps": [
+          {
+            "at": 1,
+            "push": {
+              "title": "q",
+              "category": "quest"
+            }
+          },
+          {
+            "at": 2,
+            "push": {
+              "title": "s",
+              "category": "system"
+            }
+          },
+          {
+            "at": 3,
+            "push": {
+              "title": "b",
+              "category": "building"
+            }
+          },
+          {
+            "at": 4,
+            "push": {
+              "title": "n",
+              "category": "npc"
+            }
+          },
+          {
+            "at": 5,
+            "push": {
+              "title": "i",
+              "category": "item"
+            }
+          },
+          {
+            "at": 6,
+            "push": {
+              "title": "k",
+              "category": "skill"
+            }
+          },
+          {
+            "at": 7,
+            "push": {
+              "title": "g",
+              "category": "general"
+            }
+          },
+          {
+            "all": true
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 0
+          },
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          },
+          {
+            "id": 3
+          },
+          {
+            "id": 4
+          },
+          {
+            "id": 5
+          },
+          {
+            "id": 6
+          },
+          {
+            "items": [
+              {
+                "title": "g",
+                "category": "general",
+                "id": 6,
+                "timestamp": 7
+              },
+              {
+                "title": "k",
+                "category": "skill",
+                "id": 5,
+                "timestamp": 6
+              },
+              {
+                "title": "i",
+                "category": "item",
+                "id": 4,
+                "timestamp": 5
+              },
+              {
+                "title": "n",
+                "category": "npc",
+                "id": 3,
+                "timestamp": 4
+              },
+              {
+                "title": "b",
+                "category": "building",
+                "id": 2,
+                "timestamp": 3
+              },
+              {
+                "title": "s",
+                "category": "system",
+                "id": 1,
+                "timestamp": 2
+              },
+              {
+                "title": "q",
+                "category": "quest",
+                "id": 0,
+                "timestamp": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "recent(n) is the newest n, newest first",
+      "op": "history",
+      "input": {
+        "steps": [
+          {
+            "at": 10,
+            "push": {
+              "title": "A"
+            }
+          },
+          {
+            "at": 20,
+            "push": {
+              "title": "B"
+            }
+          },
+          {
+            "at": 30,
+            "push": {
+              "title": "C"
+            }
+          },
+          {
+            "recent": 2
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 0
+          },
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          },
+          {
+            "items": [
+              {
+                "title": "C",
+                "id": 2,
+                "timestamp": 30
+              },
+              {
+                "title": "B",
+                "id": 1,
+                "timestamp": 20
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "recent(n) beyond the stored count returns them all, newest first",
+      "op": "history",
+      "input": {
+        "steps": [
+          {
+            "at": 10,
+            "push": {
+              "title": "A"
+            }
+          },
+          {
+            "at": 20,
+            "push": {
+              "title": "B"
+            }
+          },
+          {
+            "recent": 5
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 0
+          },
+          {
+            "id": 1
+          },
+          {
+            "items": [
+              {
+                "title": "B",
+                "id": 1,
+                "timestamp": 20
+              },
+              {
+                "title": "A",
+                "id": 0,
+                "timestamp": 10
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "recent(0) is empty",
+      "op": "history",
+      "input": {
+        "steps": [
+          {
+            "at": 10,
+            "push": {
+              "title": "A"
+            }
+          },
+          {
+            "recent": 0
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 0
+          },
+          {
+            "items": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "all() is the whole log, newest first; length counts it",
+      "op": "history",
+      "input": {
+        "steps": [
+          {
+            "at": 10,
+            "push": {
+              "title": "A"
+            }
+          },
+          {
+            "at": 10,
+            "push": {
+              "title": "B"
+            }
+          },
+          {
+            "at": 11,
+            "push": {
+              "title": "C"
+            }
+          },
+          {
+            "all": true
+          },
+          {
+            "length": true
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 0
+          },
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          },
+          {
+            "items": [
+              {
+                "title": "C",
+                "id": 2,
+                "timestamp": 11
+              },
+              {
+                "title": "B",
+                "id": 1,
+                "timestamp": 10
+              },
+              {
+                "title": "A",
+                "id": 0,
+                "timestamp": 10
+              }
+            ]
+          },
+          {
+            "length": 3
+          }
+        ]
+      }
+    },
+    {
+      "name": "the log keeps 200, evicting the oldest first",
+      "op": "history",
+      "input": {
+        "steps": [
+          {
+            "at": 100,
+            "pushMany": {
+              "count": 201,
+              "title": "n"
+            }
+          },
+          {
+            "length": true
+          },
+          {
+            "recent": 1
+          },
+          {
+            "all": true,
+            "ids": true
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "firstId": 0,
+            "lastId": 200
+          },
+          {
+            "length": 200
+          },
+          {
+            "items": [
+              {
+                "title": "n 200",
+                "id": 200,
+                "timestamp": 100
+              }
+            ]
+          },
+          {
+            "ids": [
+              200,
+              199,
+              198,
+              197,
+              196,
+              195,
+              194,
+              193,
+              192,
+              191,
+              190,
+              189,
+              188,
+              187,
+              186,
+              185,
+              184,
+              183,
+              182,
+              181,
+              180,
+              179,
+              178,
+              177,
+              176,
+              175,
+              174,
+              173,
+              172,
+              171,
+              170,
+              169,
+              168,
+              167,
+              166,
+              165,
+              164,
+              163,
+              162,
+              161,
+              160,
+              159,
+              158,
+              157,
+              156,
+              155,
+              154,
+              153,
+              152,
+              151,
+              150,
+              149,
+              148,
+              147,
+              146,
+              145,
+              144,
+              143,
+              142,
+              141,
+              140,
+              139,
+              138,
+              137,
+              136,
+              135,
+              134,
+              133,
+              132,
+              131,
+              130,
+              129,
+              128,
+              127,
+              126,
+              125,
+              124,
+              123,
+              122,
+              121,
+              120,
+              119,
+              118,
+              117,
+              116,
+              115,
+              114,
+              113,
+              112,
+              111,
+              110,
+              109,
+              108,
+              107,
+              106,
+              105,
+              104,
+              103,
+              102,
+              101,
+              100,
+              99,
+              98,
+              97,
+              96,
+              95,
+              94,
+              93,
+              92,
+              91,
+              90,
+              89,
+              88,
+              87,
+              86,
+              85,
+              84,
+              83,
+              82,
+              81,
+              80,
+              79,
+              78,
+              77,
+              76,
+              75,
+              74,
+              73,
+              72,
+              71,
+              70,
+              69,
+              68,
+              67,
+              66,
+              65,
+              64,
+              63,
+              62,
+              61,
+              60,
+              59,
+              58,
+              57,
+              56,
+              55,
+              54,
+              53,
+              52,
+              51,
+              50,
+              49,
+              48,
+              47,
+              46,
+              45,
+              44,
+              43,
+              42,
+              41,
+              40,
+              39,
+              38,
+              37,
+              36,
+              35,
+              34,
+              33,
+              32,
+              31,
+              30,
+              29,
+              28,
+              27,
+              26,
+              25,
+              24,
+              23,
+              22,
+              21,
+              20,
+              19,
+              18,
+              17,
+              16,
+              15,
+              14,
+              13,
+              12,
+              11,
+              10,
+              9,
+              8,
+              7,
+              6,
+              5,
+              4,
+              3,
+              2,
+              1
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "exactly 200 evicts nothing",
+      "op": "history",
+      "input": {
+        "steps": [
+          {
+            "at": 100,
+            "pushMany": {
+              "count": 200,
+              "title": "n",
+              "category": "system"
+            }
+          },
+          {
+            "length": true
+          },
+          {
+            "recent": 1
+          },
+          {
+            "recent": 200,
+            "ids": true
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "firstId": 0,
+            "lastId": 199
+          },
+          {
+            "length": 200
+          },
+          {
+            "items": [
+              {
+                "title": "n 199",
+                "category": "system",
+                "id": 199,
+                "timestamp": 100
+              }
+            ]
+          },
+          {
+            "ids": [
+              199,
+              198,
+              197,
+              196,
+              195,
+              194,
+              193,
+              192,
+              191,
+              190,
+              189,
+              188,
+              187,
+              186,
+              185,
+              184,
+              183,
+              182,
+              181,
+              180,
+              179,
+              178,
+              177,
+              176,
+              175,
+              174,
+              173,
+              172,
+              171,
+              170,
+              169,
+              168,
+              167,
+              166,
+              165,
+              164,
+              163,
+              162,
+              161,
+              160,
+              159,
+              158,
+              157,
+              156,
+              155,
+              154,
+              153,
+              152,
+              151,
+              150,
+              149,
+              148,
+              147,
+              146,
+              145,
+              144,
+              143,
+              142,
+              141,
+              140,
+              139,
+              138,
+              137,
+              136,
+              135,
+              134,
+              133,
+              132,
+              131,
+              130,
+              129,
+              128,
+              127,
+              126,
+              125,
+              124,
+              123,
+              122,
+              121,
+              120,
+              119,
+              118,
+              117,
+              116,
+              115,
+              114,
+              113,
+              112,
+              111,
+              110,
+              109,
+              108,
+              107,
+              106,
+              105,
+              104,
+              103,
+              102,
+              101,
+              100,
+              99,
+              98,
+              97,
+              96,
+              95,
+              94,
+              93,
+              92,
+              91,
+              90,
+              89,
+              88,
+              87,
+              86,
+              85,
+              84,
+              83,
+              82,
+              81,
+              80,
+              79,
+              78,
+              77,
+              76,
+              75,
+              74,
+              73,
+              72,
+              71,
+              70,
+              69,
+              68,
+              67,
+              66,
+              65,
+              64,
+              63,
+              62,
+              61,
+              60,
+              59,
+              58,
+              57,
+              56,
+              55,
+              54,
+              53,
+              52,
+              51,
+              50,
+              49,
+              48,
+              47,
+              46,
+              45,
+              44,
+              43,
+              42,
+              41,
+              40,
+              39,
+              38,
+              37,
+              36,
+              35,
+              34,
+              33,
+              32,
+              31,
+              30,
+              29,
+              28,
+              27,
+              26,
+              25,
+              24,
+              23,
+              22,
+              21,
+              20,
+              19,
+              18,
+              17,
+              16,
+              15,
+              14,
+              13,
+              12,
+              11,
+              10,
+              9,
+              8,
+              7,
+              6,
+              5,
+              4,
+              3,
+              2,
+              1,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "clear empties the log but does not reset the id counter",
+      "op": "history",
+      "input": {
+        "steps": [
+          {
+            "at": 1,
+            "push": {
+              "title": "A"
+            }
+          },
+          {
+            "at": 2,
+            "push": {
+              "title": "B"
+            }
+          },
+          {
+            "clear": true
+          },
+          {
+            "length": true
+          },
+          {
+            "at": 3,
+            "push": {
+              "title": "C"
+            }
+          },
+          {
+            "all": true
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "id": 0
+          },
+          {
+            "id": 1
+          },
+          {},
+          {
+            "length": 0
+          },
+          {
+            "id": 2
+          },
+          {
+            "items": [
+              {
+                "title": "C",
+                "id": 2,
+                "timestamp": 3
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

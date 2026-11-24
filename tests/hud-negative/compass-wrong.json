@@ -1,0 +1,90 @@
+{
+  "area": "ui-compass",
+  "description": "tests/hud-negative/compass-wrong.json, the ui_hud_corpus_wrong control (PL.native-hud-rows): core's compass corpus (conformance/ui/compass-cases.json at the pin) cut to three cases and doctored. The contract states defaultSpanDegrees 140 (the row states 150), a refusal code the rows never answer (teleported) and a key no runner holds (wrongRule); one case expects a wrong heading, one names an op core's runner does not have. The runner must name each and FAIL.",
+  "version": 1,
+  "sources": [
+    "Doctored from core's conformance/ui/compass-cases.json; not a corpus."
+  ],
+  "tolerance": 1e-9,
+  "contract": {
+    "points": [
+      "N",
+      "NE",
+      "E",
+      "SE",
+      "S",
+      "SW",
+      "W",
+      "NW"
+    ],
+    "defaultSpanDegrees": 140,
+    "spanNull": "(a rule in words, pinned by the cases; its text left out here)",
+    "minDistanceM": 1e-9,
+    "headingRange": "(a rule in words, pinned by the cases; its text left out here)",
+    "relativeRange": "(a rule in words, pinned by the cases; its text left out here)",
+    "relativeRule": "(a rule in words, pinned by the cases; its text left out here)",
+    "visibleRule": "(a rule in words, pinned by the cases; its text left out here)",
+    "refusalCodes": [
+      "not_finite",
+      "span_out_of_range",
+      "teleported"
+    ],
+    "refusalOrder": "(a rule in words, pinned by the cases; its text left out here)",
+    "defaultNorthYaw": 0,
+    "northSources": [
+      "georeference",
+      "default"
+    ],
+    "northRule": "(a rule in words, pinned by the cases; its text left out here)",
+    "worldRefusalCodes": [
+      "not_finite",
+      "facing_twice",
+      "facing_unstated",
+      "facing_zero",
+      "span_out_of_range",
+      "not_boolean"
+    ],
+    "worldRefusalOrder": "(a rule in words, pinned by the cases; its text left out here)",
+    "mirroredLevel": "(a rule in words, pinned by the cases; its text left out here)",
+    "wrongRule": "a rule no runner holds"
+  },
+  "cases": [
+    {
+      "name": "expected WRONGLY as heading 80 (it is 70)",
+      "op": "heading",
+      "input": {
+        "yaw": 1.7453292519943295,
+        "northYaw": 0.5235987755982988
+      },
+      "expected": {
+        "heading": 80
+      }
+    },
+    {
+      "name": "WRONGLY an op core's runner does not have",
+      "op": "rotate",
+      "input": {},
+      "expected": {}
+    },
+    {
+      "name": "refused: a non-finite yaw (null in JSON)",
+      "op": "view",
+      "input": {
+        "yaw": null,
+        "northYaw": 0,
+        "position": {
+          "x": 10,
+          "z": 20
+        },
+        "markers": []
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_finite",
+          "field": "yaw"
+        }
+      }
+    }
+  ]
+}

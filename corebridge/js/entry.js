@@ -89,7 +89,24 @@ import {
 import { BLACKBOARD_EXTENSION_KEY } from '@insimul/core/ai/blackboard';
 
 // ── in-game UI view-models ────────────────────────────────────────────────────
-import { KIND_COLOR, Notifications } from '@insimul/core/ui/notifications';
+import { DEFAULT_NOTIFICATION_LIFETIME, KIND_COLOR, Notifications } from '@insimul/core/ui/notifications';
+// The HUD shell's other view-models (P2; PL.native-hud-rows, U143(2)): the history log
+// behind the HUD feed, the compass and the minimap. Never `ui/hud-corpus`, core's corpus
+// runner: the rows call the models, and tests/ui_hud_corpus.cpp is the runner here.
+import { NOTIFICATION_HISTORY_MAX, NotificationLog } from '@insimul/core/game-engine/logic/NotificationStore';
+import {
+	COMPASS_MIN_DISTANCE_M,
+	COMPASS_POINTS,
+	DEFAULT_COMPASS_SPAN_DEG,
+	DEFAULT_NORTH_YAW,
+	compassCardinal,
+	compassHeading,
+	compassView,
+	stripRelative,
+	worldCompassView,
+	worldNorth,
+} from '@insimul/core/ui/compass-model';
+import { MINIMAP_FEED_OWNED, MINIMAP_MARKER_TYPES, MinimapModel } from '@insimul/core/ui/minimap-model';
 import { DEFAULT_MENU_TABS, PauseMenuModel } from '@insimul/core/ui/pause-menu-model';
 import { QuestJournalModel } from '@insimul/core/ui/quest-journal-model';
 import { SLOT_MESSAGES, SaveSlotModel, loadRefusalMessage, slotOutcomeOfLoadRefusal } from '@insimul/core/ui/save-slot-model';
@@ -7070,21 +7087,43 @@ const METHODS = {
 
 	// ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
 
-	/** `ui.notifications.create {}` → `{ session, view }` — core's `Notifications` toast queue. */
-	'ui.notifications.create': () => {
+	/**
+	 * `ui.notifications.create { historyMax? }` → `{ session, view }` — core's two notification
+	 * view-models in one session: the `Notifications` toast queue and the `NotificationLog`
+	 * history behind the HUD feed and the Notifications tab (P2; PL.native-hud-rows).
+	 * `historyMax` is the log's cap (core's `maxItems`, default `NOTIFICATION_HISTORY_MAX`, 200),
+	 * a whole number from 0. The log's clock reads the last `at` an op gave (ms; 0 before any),
+	 * as core's corpus runner gives it: a host passes its own clock, the row reads none.
+	 */
+	'ui.notifications.create': (args) => {
+		const m = 'ui.notifications.create';
+		const maxItems = coded('invalid-input', () => {
+			if (args.historyMax === undefined) return NOTIFICATION_HISTORY_MAX;
+			const n = needNumber(m, args.historyMax, 'historyMax');
+			if (!Number.isInteger(n) || n < 0) throw refuse(m, '`historyMax` must be a whole number from 0');
+			return n;
+		});
 		const model = new Notifications();
-		return { session: openSession('ui.notifications', { model }), view: notificationsView(model) };
+		const clock = { ms: 0 };
+		const log = new NotificationLog({ now: () => clock.ms, maxItems });
+		return { session: openSession('ui.notifications', { model, log, clock }), view: notificationsView(model) };
 	},
 
 	/**
 	 * `ui.notifications.apply { session, ops }` → `{ results, view }`.
-	 * ops: `push { text, kind?, lifetime? }` → id · `tick { delta }` (seconds) →
+	 * Toasts: `push { text, kind?, lifetime? }` → id · `tick { delta }` (seconds) →
 	 * changed · `dismiss { id }` → dismissed · `clear` → null.
-	 * view: `{ visible: [{ id, text, kind, remaining, color }], count }`.
+	 * History: `historyPush { title, description?, icon?, color?, category?, at? }` → id (`at`,
+	 * ms, sets the log's clock first, and it stays set; any other member is carried as core carries it) · `historyClock { at }` → null ·
+	 * `historyRecent { count }` → the newest `count`, newest first · `historyAll` → every one,
+	 * newest first · `historyLength` → the number kept · `historyClear` → null (ids keep
+	 * counting). A history item is `{ id, timestamp, title, description?, icon?, color?, category? }`.
+	 * view: `{ visible: [{ id, text, kind, remaining, color }], count }` (the toasts).
 	 */
 	'ui.notifications.apply': async (args) => {
 		const m = 'ui.notifications.apply';
 		const s = session(m, args, 'ui.notifications');
+		const at = (op) => coded('invalid-input', () => needNumber(m, op.at, 'at'));
 		const results = await applyOps(m, s, args, {
 			push: ({ model }, op) => {
 				const kind = op.kind === undefined ? 'info' : oneOf(m, op.kind, Object.keys(KIND_COLOR), 'kind');
@@ -7096,8 +7135,234 @@ const METHODS = {
 			tick: ({ model }, op) => model.tick(needNumber(m, op.delta, 'delta')),
 			dismiss: ({ model }, op) => model.dismiss(needNumber(m, op.id, 'id')),
 			clear: ({ model }) => model.clear(),
+			historyPush: ({ log, clock }, op) => {
+				// The op is the push's options, less the op's own `op` and `at`: core spreads them
+				// into the notification (its id and timestamp win), as it does any member it does not declare.
+				const opts = coded('invalid-input', () => {
+					declared(m, op, 'op', HISTORY_PUSH_INPUT);
+					const { op: _op, at: _at, ...o } = op;
+					return o;
+				});
+				if (hasOwn(op, 'at')) clock.ms = at(op);
+				return log.push(opts).id;
+			},
+			historyClock: ({ clock }, op) => {
+				clock.ms = at(op);
+				return null;
+			},
+			historyRecent: ({ log }, op) => plain(log.recent(coded('invalid-input', () => needNumber(m, op.count, 'count')))),
+			historyAll: ({ log }) => plain(log.all()),
+			historyLength: ({ log }) => log.length,
+			historyClear: ({ log }) => log.clear(),
 		});
 		return { results, view: notificationsView(s.model) };
+	},
+
+	/**
+	 * `ui.notifications.contract {}` → `{ kinds, kindColor, defaultLifetimeSeconds, historyMax }`:
+	 * the toast kinds and their token colours (`KIND_COLOR`), the default toast lifetime (s) and
+	 * the history log's default cap, as core's exports state them. The rest of the corpus's
+	 * contract (the first ids, the expiry and order rules, the categories) is behaviour the
+	 * cases pin, not a value a row states.
+	 */
+	'ui.notifications.contract': () => ({
+		kinds: Object.keys(KIND_COLOR),
+		kindColor: { ...KIND_COLOR },
+		defaultLifetimeSeconds: DEFAULT_NOTIFICATION_LIFETIME,
+		historyMax: NOTIFICATION_HISTORY_MAX,
+	}),
+
+	// ── the HUD compass (P2; PL.native-hud-rows, U143(2)) ──
+	// Core's compass view-model (`ui/compass-model`), stateless. Not the quest director's
+	// compass that `quest.waypoints` returns (`getCompassData`: the nearest waypoint's
+	// direction); these rows are the HUD strip's heading, cardinal and marker bearings, with
+	// north a world fact. Numbers (and `mirrored`) go to core as they are, so core's own
+	// refusals come back as values `{ ok: false, refusal: { code, field, message } }`; the
+	// rows refuse as `[invalid-input]` only the structure core cannot read (a position or
+	// marker that is not an object, markers that are not an array) and the declared strings.
+
+	/** `ui.compass.contract {}` → `{ points, defaultSpanDegrees, minDistanceM, defaultNorthYaw }`, core's exports. */
+	'ui.compass.contract': () => ({
+		points: [...COMPASS_POINTS],
+		defaultSpanDegrees: DEFAULT_COMPASS_SPAN_DEG,
+		minDistanceM: COMPASS_MIN_DISTANCE_M,
+		defaultNorthYaw: DEFAULT_NORTH_YAW,
+	}),
+
+	/**
+	 * `ui.compass.view { yaw, northYaw, position, markers, span?, mirrored? }` → core's
+	 * `compassView`: `{ ok: true, value: { heading, cardinal, span, markers: [{ id, kind?, label?,
+	 * distance, bearing, relative, visible, offset }], mirrored? } }` or `{ ok: false, refusal }`.
+	 */
+	'ui.compass.view': (args) => {
+		coded('invalid-input', () => compassViewArgs('ui.compass.view', args));
+		return plain(compassView(args));
+	},
+
+	/**
+	 * `ui.compass.worldView { geography?, yaw? | facing?, position, markers, span?, mirrored? }`
+	 * → core's `worldCompassView`: north from the world's `georeference` (else the declared
+	 * default), then the view: `{ ok: true, north: { northYaw, source }, value }` or
+	 * `{ ok: false, refusal }` (`facing_unstated`, `facing_twice`, `facing_zero`, …).
+	 */
+	'ui.compass.worldView': (args) => {
+		const m = 'ui.compass.worldView';
+		coded('invalid-input', () => {
+			compassViewArgs(m, args);
+			northFactsArg(m, args.geography, 'geography');
+			if (args.facing !== undefined && args.facing !== null) needObject(m, args.facing, 'facing');
+		});
+		return plain(worldCompassView(args));
+	},
+
+	/**
+	 * `ui.compass.north { geography? }` → core's `worldNorth`: `{ ok: true, value: { northYaw,
+	 * source } }` (`source` `georeference` or `default`) or `{ ok: false, refusal }`.
+	 */
+	'ui.compass.north': (args) => {
+		coded('invalid-input', () => northFactsArg('ui.compass.north', args.geography, 'geography'));
+		return plain(worldNorth(args.geography));
+	},
+
+	/** `ui.compass.heading { yaw, northYaw }` → `{ heading }`, core's `compassHeading` (degrees clockwise from north, [0, 360)). */
+	'ui.compass.heading': (args) => {
+		const m = 'ui.compass.heading';
+		const [yaw, north] = coded('invalid-input', () => [needNumber(m, args.yaw, 'yaw'), needNumber(m, args.northYaw, 'northYaw')]);
+		return { heading: compassHeading(yaw, north) };
+	},
+
+	/** `ui.compass.cardinal { degrees }` → `{ cardinal }`, core's `compassCardinal` (the nearest of the 8 points; half-way rounds clockwise). */
+	'ui.compass.cardinal': (args) => {
+		const degrees = coded('invalid-input', () => needNumber('ui.compass.cardinal', args.degrees, 'degrees'));
+		return { cardinal: compassCardinal(degrees) };
+	},
+
+	/**
+	 * `ui.compass.stripRelative { bearing, heading, mirrored? }` → `{ relative }`, core's
+	 * `stripRelative`: where a bearing sits on the strip, degrees from its centre in (-180, 180],
+	 * positive to the right as the player sees it. What an engine places its cardinal ticks with
+	 * (the corpus contract's `relativeRule`: "Cardinal ticks use the same rule").
+	 */
+	'ui.compass.stripRelative': (args) => {
+		const m = 'ui.compass.stripRelative';
+		const [bearing, heading, mirrored] = coded('invalid-input', () => [
+			needNumber(m, args.bearing, 'bearing'),
+			needNumber(m, args.heading, 'heading'),
+			args.mirrored === undefined ? false : needBoolean(m, args.mirrored, 'mirrored'),
+		]);
+		return { relative: stripRelative(bearing, heading, mirrored) };
+	},
+
+	// ── the HUD minimap (P2; PL.native-hud-rows, U143(2)) ──
+	// Core's `MinimapModel` (`ui/minimap-model`): the stateless projection, tone and size rows,
+	// and a session holding one model (the marker table, the live-feed fold, the visibility).
+
+	/**
+	 * `ui.minimap.contract {}` → `{ markerTypes, tones, unknownTypeTone, sizesPx,
+	 * unknownTypeSizePx, defaultWorldSize, feedOwnedIds }`, read from core's model as core's
+	 * corpus emitter reads it (`MINIMAP_MARKER_TYPES`, `toneFor`, `sizeFor`, a new model's
+	 * world size, `MINIMAP_FEED_OWNED`'s source).
+	 */
+	'ui.minimap.contract': () => {
+		const model = new MinimapModel();
+		const unknown = '';
+		return {
+			markerTypes: [...MINIMAP_MARKER_TYPES],
+			tones: Object.fromEntries(MINIMAP_MARKER_TYPES.map((t) => [t, model.toneFor(t)])),
+			unknownTypeTone: model.toneFor(unknown),
+			sizesPx: Object.fromEntries(MINIMAP_MARKER_TYPES.map((t) => [t, model.sizeFor(t)])),
+			unknownTypeSizePx: model.sizeFor(unknown),
+			defaultWorldSize: model.worldSize(),
+			feedOwnedIds: MINIMAP_FEED_OWNED.source,
+		};
+	},
+
+	/**
+	 * `ui.minimap.project { worldSize?, position, sizePx, northYaw?, mirrored? }` → `{ x, y }`:
+	 * a world position as an offset from the centre of a square map `sizePx` across, on a map
+	 * of a world `worldSize` across (core's `new MinimapModel(worldSize).project(…)`; absent,
+	 * null or not positive: 1024). With `northYaw` the map is north up, east right; `mirrored`
+	 * (with a `northYaw`) puts east left; without `northYaw`, Babylon's legacy rule.
+	 */
+	'ui.minimap.project': (args) => {
+		const m = 'ui.minimap.project';
+		coded('invalid-input', () => declared(m, args, 'args', MINIMAP_PROJECT_INPUT));
+		const model = args.worldSize === undefined ? new MinimapModel() : new MinimapModel(args.worldSize);
+		return plain(model.project(args.position, args.sizePx, args.northYaw, args.mirrored));
+	},
+
+	/** `ui.minimap.toneFor { type }` → `{ tone }`: the token role a marker type paints with (an unknown type: `text_primary`). */
+	'ui.minimap.toneFor': (args) => {
+		const type = coded('invalid-input', () => needString('ui.minimap.toneFor', args.type, 'type'));
+		return { tone: new MinimapModel().toneFor(type) };
+	},
+
+	/** `ui.minimap.sizeFor { type }` → `{ size }`: a marker type's diameter at the 2D overlay's scale (px; an unknown type: 4). */
+	'ui.minimap.sizeFor': (args) => {
+		const type = coded('invalid-input', () => needString('ui.minimap.sizeFor', args.type, 'type'));
+		return { size: new MinimapModel().sizeFor(type) };
+	},
+
+	/**
+	 * `ui.minimap.create { worldSize? }` → `{ session, view }` — one `MinimapModel`. view:
+	 * `{ worldSize, visible, markerCount, markers (insertion order), player (the 'player' marker or null) }`.
+	 */
+	'ui.minimap.create': (args) => {
+		const m = 'ui.minimap.create';
+		coded('invalid-input', () => declared(m, args, 'args', [['worldSize', tNum, OPT_NULL]]));
+		const model = args.worldSize === undefined ? new MinimapModel() : new MinimapModel(args.worldSize);
+		return { session: openSession('ui.minimap', { model }), view: minimapView(model) };
+	},
+
+	/**
+	 * `ui.minimap.apply { session, ops }` → `{ results, view }`. ops: `setWorldSize { size }` →
+	 * null (not positive: 1024) · `add { marker: { id, type, position: { x, y, z }, label?,
+	 * color?, shape? } }` → null (an id already there is replaced in place) · `remove { id }` →
+	 * removed · `clear` → null · `ingest { feed }` → null (core's live-feed fold: one marker per
+	 * feed entry, and the feed-owned ids it no longer reports retired) · `setVisible { visible }`
+	 * → null · `placed { sizePx, scale?, theme?, northYaw?, mirrored? }` → `[{ id, offsetX,
+	 * offsetY, size, color, tone }]` for every marker (`theme`: role → colour; with none, a
+	 * marker with no colour of its own has `color` null).
+	 */
+	'ui.minimap.apply': async (args) => {
+		const m = 'ui.minimap.apply';
+		const s = session(m, args, 'ui.minimap');
+		const check = (op, spec) => coded('invalid-input', () => declared(m, op, 'op', spec));
+		const results = await applyOps(m, s, args, {
+			setWorldSize: ({ model }, op) => {
+				check(op, [['size', tNum, REQ]]);
+				model.setWorldSize(op.size);
+				return null;
+			},
+			add: ({ model }, op) => {
+				check(op, [['marker', tObj(MINIMAP_MARKER), REQ]]);
+				model.addMarker(op.marker);
+				return null;
+			},
+			remove: ({ model }, op) => {
+				check(op, [['id', tStr, REQ]]);
+				return model.removeMarker(op.id);
+			},
+			clear: ({ model }) => model.clearMarkers(),
+			ingest: ({ model }, op) => {
+				check(op, [['feed', tObj(MINIMAP_FEED), REQ]]);
+				model.ingest(op.feed);
+				return null;
+			},
+			setVisible: ({ model }, op) => {
+				check(op, [['visible', tBool, REQ]]);
+				model.setVisible(op.visible);
+				return null;
+			},
+			placed: ({ model }, op) => {
+				check(op, MINIMAP_PLACED_INPUT);
+				const theme = op.theme === undefined ? undefined : minimapTheme(m, model, op.theme);
+				return model
+					.placed(op.sizePx, op.scale, theme, op.northYaw, op.mirrored)
+					.map((p) => ({ id: p.marker.id, offsetX: p.offsetX, offsetY: p.offsetY, size: p.size, color: p.color, tone: p.tone }));
+			},
+		});
+		return { results: plain(results), view: minimapView(s.model) };
 	},
 
 	/**
@@ -11026,6 +11291,127 @@ const METHODS = {
 
 function notificationsView(model) {
 	return { visible: plain(model.visible()), count: model.count() };
+}
+
+// ── the HUD rows' boundary (PL.native-hud-rows) ───────────────────────────────
+// The line the props rows draw: core's numbers (and the compass's `mirrored`) reach core as
+// they are, because core refuses them itself and its corpora pin those refusals (a yaw of
+// null is `not_finite`, a `mirrored` of 1 is `not_boolean`, a world size of 0 falls back to
+// 1024). What core cannot read (a position that is not an object, markers that are not an
+// array, a feed list that is a string) and the strings core declares are `[invalid-input]`.
+
+/** `GameNotification`'s members a push gives (NotificationStore.ts), and the op's clock. */
+const HISTORY_PUSH_INPUT = [
+	['title', tStr, REQ],
+	['description', tStr, OPT],
+	['icon', tStr, OPT],
+	['color', tStr, OPT],
+	['category', tStr, OPT],
+	['at', tNum, OPT],
+];
+
+const tObject = (m, v, n) => needObject(m, v, n);
+
+/** `CompassMarkerInput` (compass-model.ts): its id and its strings declared; its position's numbers are core's. */
+const COMPASS_MARKER_INPUT = [
+	['id', tStr, REQ],
+	['position', tObject, REQ],
+	['kind', tStr, OPT],
+	['label', tStr, OPT],
+];
+
+/** The members `compassView` and `worldCompassView` read without a check of their own: `position` and `markers`. */
+function compassViewArgs(method, args) {
+	return declared(method, args, 'args', [
+		['position', tObject, REQ],
+		['markers', tList(tObj(COMPASS_MARKER_INPUT)), REQ],
+	]);
+}
+
+/** `WorldNorthFacts` (compass-model.ts): absent or null states nothing; else an object whose `georeference` is absent, null or an object. */
+function northFactsArg(method, value, name) {
+	if (value === undefined || value === null) return value;
+	needObject(method, value, name);
+	const geo = value.georeference;
+	if (geo !== undefined && geo !== null) needObject(method, geo, `${name}.georeference`);
+	return value;
+}
+
+/** `MinimapVec3` (minimap-model.ts). */
+const MINIMAP_VEC3 = [['x', tNum, REQ], ['y', tNum, REQ], ['z', tNum, REQ]];
+/** A feed entry's ground position (`MinimapFeed`). */
+const MINIMAP_XZ = [['x', tNum, REQ], ['z', tNum, REQ]];
+const MINIMAP_SHAPES = ['diamond', 'circle'];
+
+const MINIMAP_PROJECT_INPUT = [
+	['worldSize', tNum, OPT_NULL],
+	['position', tObj(MINIMAP_VEC3), REQ],
+	['sizePx', tNum, REQ],
+	['northYaw', tNum, OPT],
+	['mirrored', tBool, OPT],
+];
+
+/** `MinimapMarker` (minimap-model.ts). `type` is any string: core paints an unknown one `text_primary`, size 4. */
+const MINIMAP_MARKER = [
+	['id', tStr, REQ],
+	['type', tStr, REQ],
+	['position', tObj(MINIMAP_VEC3), REQ],
+	['label', tStr, OPT],
+	['color', tStr, OPT],
+	['shape', tOneOf(MINIMAP_SHAPES), OPT],
+];
+
+/** `MinimapFeed` (minimap-model.ts), member for member. A list, the player and the world size may be null: core reads them with `??` and `Number.isFinite`. */
+const MINIMAP_FEED = [
+	['playerPosition', tObj(MINIMAP_XZ), OPT_NULL],
+	['worldSize', tNum, OPT_NULL],
+	['settlements', tList(tObj([['id', tStr, REQ], ['name', tStr, OPT], ['position', tObj(MINIMAP_XZ), REQ]])), OPT_NULL],
+	['npcPositions', tList(tObj([['id', tStr, REQ], ['name', tStr, OPT], ['position', tObj(MINIMAP_XZ), REQ]])), OPT_NULL],
+	['questMarkers', tList(tObj([['id', tStr, REQ], ['title', tStr, OPT], ['position', tObj(MINIMAP_XZ), REQ]])), OPT_NULL],
+	['questObjectiveMarkers', tList(tObj([
+		['id', tStr, REQ],
+		['questTitle', tStr, OPT],
+		['position', tObj(MINIMAP_XZ), REQ],
+		['color', tStr, OPT],
+		['shape', tOneOf(MINIMAP_SHAPES), OPT],
+	])), OPT_NULL],
+	['questItemMarkers', tList(tObj([['id', tStr, REQ], ['itemName', tStr, OPT], ['position', tObj(MINIMAP_XZ), REQ]])), OPT_NULL],
+	['noticeBoards', tList(tObj([['id', tStr, REQ], ['position', tObj(MINIMAP_XZ), REQ], ['questCount', tNum, REQ]])), OPT_NULL],
+];
+
+const MINIMAP_PLACED_INPUT = [
+	['sizePx', tNum, REQ],
+	['scale', tNum, OPT],
+	['theme', tObject, OPT],
+	['northYaw', tNum, OPT],
+	['mirrored', tBool, OPT],
+];
+
+/**
+ * A `placed` op's theme as core's `ColorRoleResolver`: role → colour as data (core's corpus
+ * runner's `themeOf`). Every colour a string, and a colour for every role a marker with no
+ * colour of its own paints with, or `[invalid-input]` before core is asked.
+ */
+function minimapTheme(method, model, theme) {
+	return coded('invalid-input', () => {
+		for (const [role, colour] of Object.entries(theme)) needString(method, colour, `op.theme.${role}`);
+		for (const marker of model.markers()) {
+			if (marker.color !== undefined && marker.color !== null) continue;
+			const tone = model.toneFor(marker.type);
+			if (!hasOwn(theme, tone)) throw refuse(method, `\`op.theme\` has no colour for role '${tone}' (marker ${JSON.stringify(marker.id)})`);
+		}
+		return { color: (role) => theme[role] };
+	});
+}
+
+function minimapView(model) {
+	return {
+		worldSize: model.worldSize(),
+		visible: model.isVisible(),
+		markerCount: model.markerCount(),
+		markers: plain(model.markers()),
+		player: plain(model.player()),
+	};
 }
 
 function pauseView(model) {

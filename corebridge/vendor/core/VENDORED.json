@@ -72,6 +72,7 @@
     "src/game-engine/logic/KeyboardMap.ts",
     "src/game-engine/logic/LocomotionDirector.ts",
     "src/game-engine/logic/NoticeGenerator.ts",
+    "src/game-engine/logic/NotificationStore.ts",
     "src/game-engine/logic/OnboardingManager.ts",
     "src/game-engine/logic/PlatformerDirector.ts",
     "src/game-engine/logic/PuzzleDirector.ts",
@@ -250,6 +251,7 @@
     "src/ui/genre-hud-model.ts",
     "src/ui/inventory-model.ts",
     "src/ui/loading-screen-model.ts",
+    "src/ui/minimap-model.ts",
     "src/ui/notifications.ts",
     "src/ui/pause-menu-model.ts",
     "src/ui/quest-journal-model.ts",
@@ -308,6 +310,11 @@
   "titleCorpus": [
     "conformance/quests/tutorial.json",
     "conformance/ui/title-flow.json"
+  ],
+  "hudCorpus": [
+    "conformance/ui/compass-cases.json",
+    "conformance/ui/minimap-cases.json",
+    "conformance/ui/notifications-cases.json"
   ],
   "cameraCorpus": [
     "conformance/camera/movement.json"
@@ -385,11 +392,11 @@
     "conformance/editor-operations/mint-play-grant.json",
     "conformance/editor-operations/reread-reference-texts.json"
   ],
-  "bundleBytes": 2760706,
-  "bundleSha256": "ae4713c2aa4a89c4a29175790a0fb1af2467ea43a47605df6e35030dcaa19b61",
+  "bundleBytes": 2791925,
+  "bundleSha256": "fa79958497871d636208a2c0ac54250a82a4c17710cac0cf95e6910675ff99ac",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "ae4713c2aa4a89c4a29175790a0fb1af2467ea43a47605df6e35030dcaa19b61",
-    "vendor/core/insimul_core_bundle.c": "bbbcf6cdaca9b441668065c68ff104f485c131da2141f4f38358260b22568c9e",
+    "vendor/core/insimul-core-bundle.js": "fa79958497871d636208a2c0ac54250a82a4c17710cac0cf95e6910675ff99ac",
+    "vendor/core/insimul_core_bundle.c": "b909bc0bd82f16e2bd40ead7b306fc48d0b73645c0739f69697258ec66172ec9",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genre-genre-pieces-build-plan.json": "60388e9cb5652085356059a515382be7ba5d98dd172677c025136c4f640d06ca",
     "vendor/core/cases/core-genre-genre-pieces-kinds.json": "07082aa01cf17b5ecf6154cbb738842e344c40fd5a6f256d3ca81d078f281c83",
@@ -422,7 +429,10 @@
     "vendor/core/cases/core-quests.json": "26e8e74f0eacfdeaa316ef1c8776668ebbd60dc74277eb07543ba1a29aa24b68",
     "vendor/core/cases/core-saves-village.json": "a1b3fe5d7b26dc21bb7b987864c8f6f314802a7304510d141e161d000f6e79bb",
     "vendor/core/cases/core-saves.json": "f3fd33fd1faa443e4b864f6c2275930ccc3b65695bfc78c3652a65b95f9bae17",
+    "vendor/core/cases/core-ui-compass.json": "ac723c3b0c1092ad3589e89d79205b1a8fb8d1aa47eea817b5400035b49f7278",
     "vendor/core/cases/core-ui-loading.json": "807fe1e7d4831b8c7de6fd0f57221846a8f1e14e1ad1930703c401e0ca6868cf",
+    "vendor/core/cases/core-ui-minimap.json": "1627849844d0662c3d99179c9a6cb249b81f328e8e3bbe5c184f52f196c4840e",
+    "vendor/core/cases/core-ui-notifications.json": "3008ae38cf7d569def5ba4c81c4d85d567086284dc236b7648214763f7996342",
     "vendor/core/cases/core-ui-pause-menu.json": "8572daac1e9f0babbf7498d72500b35c487b802d261205e48ed6e1d4f22b1d4a",
     "vendor/core/cases/core-ui-quest-journal.json": "bebadcd69186e755f5cb9cbb721f18ec9ceff01195194dcc930aa530d741af77",
     "vendor/core/cases/core-ui-save-slots.json": "ab6f21cfe152f53bf95d10af54f19366e282cc0945985410e01536dc3429afdb",
@@ -488,6 +498,9 @@
     "vendor/core/conformance/ui/inventory-cases.json": "042bf4c0ead5a6b115843756f4665507705597a950d0d8449e6485d12cbd8fb9",
     "vendor/core/conformance/quests/tutorial.json": "a54f55f8ab239e16cc1826d8226afa7355e8c692ee1de5bc2ca259c9a28567b9",
     "vendor/core/conformance/ui/title-flow.json": "741b49ea56cd15341c0333708efd8648c761f2ae4050a139fc85ee8cf943c494",
+    "vendor/core/conformance/ui/compass-cases.json": "ca29db0766df2fa676af008cb8af58cc56d71e34a1ee02d9d006a4c5a8996e69",
+    "vendor/core/conformance/ui/minimap-cases.json": "0d09d10e197cc3cc718787b75347800e4365b7fa30cd08b68119eeb1478708d7",
+    "vendor/core/conformance/ui/notifications-cases.json": "ebc61f0b7159f91c025ca81a0d988996e8df8b0e57a911fcb8dbcb9fc203bc04",
     "vendor/core/conformance/camera/movement.json": "2d4d9e31b81c67361d12c66512b12aa5f647fdd39c0ed6b530c4c83222c76f36",
     "vendor/core/conformance/audio/cues.json": "3ad59c4c3fc97bbf7629cbcdb45135df82459cbef2edef404be098efb94a1687",
     "vendor/core/conformance/audio/ground.json": "e0da12f66977b5cc69d6d75bed273949dbf0782e59c3d3d90de3c22e9eca3572",
@@ -544,13 +557,13 @@
     "vendor/core/conformance/editor-operations/get-world-ir-summary.json": "e782bd1a7d8cbd32fb95d07230fcaa70d4615cc43c67306d24ff66b11d927db0",
     "vendor/core/conformance/editor-operations/mint-play-grant.json": "941cb0a5c749b6594d9bf53080dd68c8d913e1d95dbf72044d587c03513d196e",
     "vendor/core/conformance/editor-operations/reread-reference-texts.json": "fb1d23e1a47b2df0be959d31f3cef619007fbc1ba15730f1e064a94d5cd305c1",
-    "js/entry.js": "25961accf828353589d17138c41f12e542302e14de0bd219dd5b635b739615c5",
+    "js/entry.js": "f20e42faa86823fbe794b451673dc655228b323ad473bafc2119f9092a9d5161",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
-    "tools/emit-bridge-cases.mjs": "e4ab0986b7ea52e5d57279e63a785333c4b9e18b86c5a0ab70aa8a01cc82be1e",
-    "core-pin.json": "d3bcdd6ce4525db6e82fb4ce193b2c549955ed2a2b6e10e4bff9fe629335ab30"
+    "tools/emit-bridge-cases.mjs": "991f15c57d00b4f28ba63a05498356298f63edab625f397fa160e2cb0a8a3ea4",
+    "core-pin.json": "80a5d38b279e2208bbed090aee6ecba95f140b9760dd10dff892c9cbf71be89e"
   }
 }

@@ -1,0 +1,2284 @@
+{
+ "area": "ui-minimap",
+ "description": "core's HUD shell corpus (conformance/ui/minimap-cases.json, P2.core) through the ui.minimap.* rows, each op the calls core's reference runner (src/ui/hud-corpus.ts) makes, through them; numbers held exactly (the corpus's tolerance is 1e-9; tests/ui_hud_corpus.cpp replays the file itself within it).",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "files": {
+   "conformance/ui/minimap-cases.json": "0d09d10e197cc3cc718787b75347800e4365b7fa30cd08b68119eeb1478708d7"
+  }
+ },
+ "cases": [
+  {
+   "name": "ui-minimap: the contract ui.minimap.contract states",
+   "steps": [
+    {
+     "call": "ui.minimap.contract",
+     "expect": {
+      "markerTypes": [
+       "player",
+       "settlement",
+       "npc",
+       "quest",
+       "quest_objective",
+       "building",
+       "exclamation",
+       "question",
+       "discovery"
+      ],
+      "tones": {
+       "player": "accent",
+       "settlement": "warning",
+       "npc": "success",
+       "quest": "quest",
+       "quest_objective": "quest",
+       "building": "text_disabled",
+       "exclamation": "quest",
+       "question": "quest",
+       "discovery": "success"
+      },
+      "unknownTypeTone": "text_primary",
+      "sizesPx": {
+       "player": 6,
+       "settlement": 8,
+       "npc": 4,
+       "quest": 7,
+       "quest_objective": 5,
+       "building": 3,
+       "exclamation": 14,
+       "question": 11,
+       "discovery": 6
+      },
+      "unknownTypeSizePx": 4,
+      "defaultWorldSize": 1024,
+      "feedOwnedIds": "^(player|settlement_|npc_|quest_|objective_|item_|board_)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project: the centre of the world is the centre of the map",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "sizePx": 200
+     },
+     "expect": {
+      "x": 0,
+      "y": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project: the far corner is the far corner",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 500,
+       "y": 0,
+       "z": 500
+      },
+      "sizePx": 200
+     },
+     "expect": {
+      "x": 100,
+      "y": 100
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project: the same corner at another map size",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 500,
+       "y": 0,
+       "z": 500
+      },
+      "sizePx": 520
+     },
+     "expect": {
+      "x": 260,
+      "y": 260
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project north up: with the default north (+Z), +z is up the page and +x right",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 500,
+       "y": 0,
+       "z": 500
+      },
+      "sizePx": 200,
+      "northYaw": 0
+     },
+     "expect": {
+      "x": 100,
+      "y": -100
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project north up: a point due north of the centre is straight above it",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 0,
+       "y": 0,
+       "z": 250
+      },
+      "sizePx": 200,
+      "northYaw": 0
+     },
+     "expect": {
+      "x": 0,
+      "y": -50
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project north up: with north at +X, +x is up and +z is left (west)",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 250,
+       "y": 0,
+       "z": 250
+      },
+      "sizePx": 200,
+      "northYaw": 1.5707963267948966
+     },
+     "expect": {
+      "x": -50,
+      "y": -50.00000000000001
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project north up: with north at -Z, the map turns half round",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 500,
+       "y": 0,
+       "z": 500
+      },
+      "sizePx": 200,
+      "northYaw": 3.141592653589793
+     },
+     "expect": {
+      "x": -100.00000000000001,
+      "y": 100
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project north up: a turned north rotates, never mirrors (30 degrees)",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 100,
+       "y": 0,
+       "z": 300
+      },
+      "sizePx": 520,
+      "northYaw": 0.5235987755982988
+     },
+     "expect": {
+      "x": -32.96667900320917,
+      "y": -161.09996299037243
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project mirrored level: north up, east LEFT, as the level shows it from above",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 250,
+       "y": 0,
+       "z": 250
+      },
+      "sizePx": 200,
+      "northYaw": 0,
+      "mirrored": true
+     },
+     "expect": {
+      "x": -50,
+      "y": -50
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project mirrored level with north at +X: +x is up and +z (west) is RIGHT",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 250,
+       "y": 0,
+       "z": 250
+      },
+      "sizePx": 200,
+      "northYaw": 1.5707963267948966,
+      "mirrored": true
+     },
+     "expect": {
+      "x": 50,
+      "y": -50.00000000000001
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project mirrored false is the north-up map",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 250,
+       "y": 0,
+       "z": 250
+      },
+      "sizePx": 200,
+      "northYaw": 0,
+      "mirrored": false
+     },
+     "expect": {
+      "x": 50,
+      "y": -50
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project: x goes right, z goes down the screen; y is ignored",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 1000,
+      "position": {
+       "x": 125,
+       "y": 77,
+       "z": -250
+      },
+      "sizePx": 200
+     },
+     "expect": {
+      "x": 25,
+      "y": -50
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project: the near corner, beyond the world, is not clamped",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 100,
+      "position": {
+       "x": -75,
+       "y": 0,
+       "z": -50
+      },
+      "sizePx": 100
+     },
+     "expect": {
+      "x": -75,
+      "y": -50
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap project: project: a world size of 0 falls back to 1024",
+   "steps": [
+    {
+     "call": "ui.minimap.project",
+     "args": {
+      "worldSize": 0,
+      "position": {
+       "x": 256,
+       "y": 0,
+       "z": 0
+      },
+      "sizePx": 1024
+     },
+     "expect": {
+      "x": 256,
+      "y": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap toneFor: toneFor: player",
+   "steps": [
+    {
+     "call": "ui.minimap.toneFor",
+     "args": {
+      "type": "player"
+     },
+     "expect": {
+      "tone": "accent"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap toneFor: toneFor: settlement",
+   "steps": [
+    {
+     "call": "ui.minimap.toneFor",
+     "args": {
+      "type": "settlement"
+     },
+     "expect": {
+      "tone": "warning"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap toneFor: toneFor: npc",
+   "steps": [
+    {
+     "call": "ui.minimap.toneFor",
+     "args": {
+      "type": "npc"
+     },
+     "expect": {
+      "tone": "success"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap toneFor: toneFor: quest",
+   "steps": [
+    {
+     "call": "ui.minimap.toneFor",
+     "args": {
+      "type": "quest"
+     },
+     "expect": {
+      "tone": "quest"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap toneFor: toneFor: quest_objective",
+   "steps": [
+    {
+     "call": "ui.minimap.toneFor",
+     "args": {
+      "type": "quest_objective"
+     },
+     "expect": {
+      "tone": "quest"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap toneFor: toneFor: building",
+   "steps": [
+    {
+     "call": "ui.minimap.toneFor",
+     "args": {
+      "type": "building"
+     },
+     "expect": {
+      "tone": "text_disabled"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap toneFor: toneFor: exclamation",
+   "steps": [
+    {
+     "call": "ui.minimap.toneFor",
+     "args": {
+      "type": "exclamation"
+     },
+     "expect": {
+      "tone": "quest"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap toneFor: toneFor: question",
+   "steps": [
+    {
+     "call": "ui.minimap.toneFor",
+     "args": {
+      "type": "question"
+     },
+     "expect": {
+      "tone": "quest"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap toneFor: toneFor: discovery",
+   "steps": [
+    {
+     "call": "ui.minimap.toneFor",
+     "args": {
+      "type": "discovery"
+     },
+     "expect": {
+      "tone": "success"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap toneFor: toneFor: nonsense",
+   "steps": [
+    {
+     "call": "ui.minimap.toneFor",
+     "args": {
+      "type": "nonsense"
+     },
+     "expect": {
+      "tone": "text_primary"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap sizeFor: sizeFor: player",
+   "steps": [
+    {
+     "call": "ui.minimap.sizeFor",
+     "args": {
+      "type": "player"
+     },
+     "expect": {
+      "size": 6
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap sizeFor: sizeFor: settlement",
+   "steps": [
+    {
+     "call": "ui.minimap.sizeFor",
+     "args": {
+      "type": "settlement"
+     },
+     "expect": {
+      "size": 8
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap sizeFor: sizeFor: npc",
+   "steps": [
+    {
+     "call": "ui.minimap.sizeFor",
+     "args": {
+      "type": "npc"
+     },
+     "expect": {
+      "size": 4
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap sizeFor: sizeFor: quest",
+   "steps": [
+    {
+     "call": "ui.minimap.sizeFor",
+     "args": {
+      "type": "quest"
+     },
+     "expect": {
+      "size": 7
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap sizeFor: sizeFor: quest_objective",
+   "steps": [
+    {
+     "call": "ui.minimap.sizeFor",
+     "args": {
+      "type": "quest_objective"
+     },
+     "expect": {
+      "size": 5
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap sizeFor: sizeFor: building",
+   "steps": [
+    {
+     "call": "ui.minimap.sizeFor",
+     "args": {
+      "type": "building"
+     },
+     "expect": {
+      "size": 3
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap sizeFor: sizeFor: exclamation",
+   "steps": [
+    {
+     "call": "ui.minimap.sizeFor",
+     "args": {
+      "type": "exclamation"
+     },
+     "expect": {
+      "size": 14
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap sizeFor: sizeFor: question",
+   "steps": [
+    {
+     "call": "ui.minimap.sizeFor",
+     "args": {
+      "type": "question"
+     },
+     "expect": {
+      "size": 11
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap sizeFor: sizeFor: discovery",
+   "steps": [
+    {
+     "call": "ui.minimap.sizeFor",
+     "args": {
+      "type": "discovery"
+     },
+     "expect": {
+      "size": 6
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap sizeFor: sizeFor: nonsense",
+   "steps": [
+    {
+     "call": "ui.minimap.sizeFor",
+     "args": {
+      "type": "nonsense"
+     },
+     "expect": {
+      "size": 4
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: a new map covers 1024, is hidden, and holds nothing",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "results": [],
+      "view": {
+       "worldSize": 1024,
+       "visible": false,
+       "markerCount": 0,
+       "markers": [],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: a world size given to the map is kept",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {
+      "worldSize": 640
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "results": [],
+      "view": {
+       "worldSize": 640,
+       "visible": false,
+       "markerCount": 0,
+       "markers": [],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: a non-positive world size falls back to 1024, not to the previous size",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {
+      "worldSize": 500
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setWorldSize",
+        "size": 300
+       },
+       {
+        "op": "setWorldSize",
+        "size": -1
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null
+      ],
+      "view": {
+       "worldSize": 1024,
+       "visible": false,
+       "markerCount": 0,
+       "markers": [],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: add keeps insertion order; re-adding an id replaces it in place",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "add",
+        "marker": {
+         "id": "a",
+         "type": "quest",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "b",
+         "type": "discovery",
+         "position": {
+          "x": 3,
+          "y": 0,
+          "z": 4
+         },
+         "label": "Old well"
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "a",
+         "type": "exclamation",
+         "position": {
+          "x": 5,
+          "y": 0,
+          "z": 6
+         },
+         "color": "#abcdef"
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null,
+       null
+      ],
+      "view": {
+       "worldSize": 1024,
+       "visible": false,
+       "markerCount": 2,
+       "markers": [
+        {
+         "id": "a",
+         "type": "exclamation",
+         "position": {
+          "x": 5,
+          "y": 0,
+          "z": 6
+         },
+         "color": "#abcdef"
+        },
+        {
+         "id": "b",
+         "type": "discovery",
+         "position": {
+          "x": 3,
+          "y": 0,
+          "z": 4
+         },
+         "label": "Old well"
+        }
+       ],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: remove reports whether a marker went; clear empties the map",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "add",
+        "marker": {
+         "id": "a",
+         "type": "npc",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "b",
+         "type": "npc",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 1
+         }
+        }
+       },
+       {
+        "op": "remove",
+        "id": "a"
+       },
+       {
+        "op": "remove",
+        "id": "a"
+       },
+       {
+        "op": "remove",
+        "id": "zzz"
+       },
+       {
+        "op": "clear"
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null,
+       true,
+       false,
+       false,
+       null
+      ],
+      "view": {
+       "worldSize": 1024,
+       "visible": false,
+       "markerCount": 0,
+       "markers": [],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: setVisible shows and hides; the last call wins",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setVisible",
+        "visible": true
+       },
+       {
+        "op": "setVisible",
+        "visible": false
+       },
+       {
+        "op": "setVisible",
+        "visible": true
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null,
+       null
+      ],
+      "view": {
+       "worldSize": 1024,
+       "visible": true,
+       "markerCount": 0,
+       "markers": [],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: ingest builds one marker per feed entry, in feed order, at y = 0",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "ingest",
+        "feed": {
+         "worldSize": 2048,
+         "playerPosition": {
+          "x": 10,
+          "z": 20
+         },
+         "settlements": [
+          {
+           "id": "s1",
+           "name": "Bergerac",
+           "position": {
+            "x": 5,
+            "z": 5
+           }
+          }
+         ],
+         "npcPositions": [
+          {
+           "id": "n1",
+           "name": "Odile",
+           "position": {
+            "x": 1,
+            "z": 2
+           }
+          },
+          {
+           "id": "n2",
+           "position": {
+            "x": 3,
+            "z": 4
+           }
+          }
+         ],
+         "questMarkers": [
+          {
+           "id": "q1",
+           "title": "The well",
+           "position": {
+            "x": -7,
+            "z": 8
+           }
+          }
+         ],
+         "questObjectiveMarkers": [
+          {
+           "id": "o1",
+           "questTitle": "The well",
+           "position": {
+            "x": 9,
+            "z": -9
+           },
+           "color": "#00ffff",
+           "shape": "diamond"
+          }
+         ],
+         "questItemMarkers": [
+          {
+           "id": "i1",
+           "itemName": "Bucket",
+           "position": {
+            "x": 2,
+            "z": 2
+           }
+          }
+         ],
+         "noticeBoards": [
+          {
+           "id": "b1",
+           "position": {
+            "x": 0,
+            "z": 0
+           },
+           "questCount": 2
+          },
+          {
+           "id": "b2",
+           "position": {
+            "x": 1,
+            "z": 0
+           },
+           "questCount": 0
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null
+      ],
+      "view": {
+       "worldSize": 2048,
+       "visible": false,
+       "markerCount": 9,
+       "markers": [
+        {
+         "id": "player",
+         "type": "player",
+         "position": {
+          "x": 10,
+          "y": 0,
+          "z": 20
+         }
+        },
+        {
+         "id": "settlement_s1",
+         "type": "settlement",
+         "position": {
+          "x": 5,
+          "y": 0,
+          "z": 5
+         },
+         "label": "Bergerac"
+        },
+        {
+         "id": "npc_n1",
+         "type": "npc",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+         },
+         "label": "Odile"
+        },
+        {
+         "id": "npc_n2",
+         "type": "npc",
+         "position": {
+          "x": 3,
+          "y": 0,
+          "z": 4
+         }
+        },
+        {
+         "id": "quest_q1",
+         "type": "quest",
+         "position": {
+          "x": -7,
+          "y": 0,
+          "z": 8
+         },
+         "label": "The well"
+        },
+        {
+         "id": "objective_o1",
+         "type": "quest_objective",
+         "position": {
+          "x": 9,
+          "y": 0,
+          "z": -9
+         },
+         "label": "The well",
+         "color": "#00ffff",
+         "shape": "diamond"
+        },
+        {
+         "id": "item_i1",
+         "type": "quest_objective",
+         "position": {
+          "x": 2,
+          "y": 0,
+          "z": 2
+         },
+         "label": "Bucket"
+        },
+        {
+         "id": "board_b1",
+         "type": "exclamation",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "id": "board_b2",
+         "type": "question",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "player": {
+        "id": "player",
+        "type": "player",
+        "position": {
+         "x": 10,
+         "y": 0,
+         "z": 20
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: ingest retires what the feed drops, keeps hand-added markers, and appends new ids",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {
+      "worldSize": 512
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "add",
+        "marker": {
+         "id": "hotspot",
+         "type": "exclamation",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 1
+         }
+        }
+       },
+       {
+        "op": "ingest",
+        "feed": {
+         "worldSize": 1024,
+         "playerPosition": {
+          "x": 10,
+          "z": 20
+         },
+         "npcPositions": [
+          {
+           "id": "n1",
+           "position": {
+            "x": 1,
+            "z": 2
+           }
+          },
+          {
+           "id": "n2",
+           "position": {
+            "x": 3,
+            "z": 4
+           }
+          }
+         ]
+        }
+       },
+       {
+        "op": "ingest",
+        "feed": {
+         "worldSize": 1024,
+         "playerPosition": {
+          "x": 11,
+          "z": 21
+         },
+         "npcPositions": [
+          {
+           "id": "n3",
+           "position": {
+            "x": 5,
+            "z": 5
+           }
+          },
+          {
+           "id": "n1",
+           "position": {
+            "x": 1,
+            "z": 3
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null,
+       null
+      ],
+      "view": {
+       "worldSize": 1024,
+       "visible": false,
+       "markerCount": 4,
+       "markers": [
+        {
+         "id": "hotspot",
+         "type": "exclamation",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 1
+         }
+        },
+        {
+         "id": "player",
+         "type": "player",
+         "position": {
+          "x": 11,
+          "y": 0,
+          "z": 21
+         }
+        },
+        {
+         "id": "npc_n1",
+         "type": "npc",
+         "position": {
+          "x": 1,
+          "y": 0,
+          "z": 3
+         }
+        },
+        {
+         "id": "npc_n3",
+         "type": "npc",
+         "position": {
+          "x": 5,
+          "y": 0,
+          "z": 5
+         }
+        }
+       ],
+       "player": {
+        "id": "player",
+        "type": "player",
+        "position": {
+         "x": 11,
+         "y": 0,
+         "z": 21
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: a hand-added marker whose id has a feed prefix is retired by the next ingest",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "add",
+        "marker": {
+         "id": "npc_custom",
+         "type": "npc",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "mine",
+         "type": "npc",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "ingest",
+        "feed": {}
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null,
+       null
+      ],
+      "view": {
+       "worldSize": 1024,
+       "visible": false,
+       "markerCount": 1,
+       "markers": [
+        {
+         "id": "mine",
+         "type": "npc",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: a feed with no player position removes the player marker",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "ingest",
+        "feed": {
+         "playerPosition": {
+          "x": 1,
+          "z": 1
+         }
+        }
+       },
+       {
+        "op": "ingest",
+        "feed": {
+         "settlements": []
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null
+      ],
+      "view": {
+       "worldSize": 1024,
+       "visible": false,
+       "markerCount": 0,
+       "markers": [],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: ingest ignores a missing or non-positive world size",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {
+      "worldSize": 700
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "ingest",
+        "feed": {}
+       },
+       {
+        "op": "ingest",
+        "feed": {
+         "worldSize": 0
+        }
+       },
+       {
+        "op": "ingest",
+        "feed": {
+         "worldSize": -5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null,
+       null
+      ],
+      "view": {
+       "worldSize": 700,
+       "visible": false,
+       "markerCount": 0,
+       "markers": [],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: placed with no theme: a marker with no colour of its own gets null and its tone",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {
+      "worldSize": 1000
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "add",
+        "marker": {
+         "id": "p",
+         "type": "player",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "q",
+         "type": "quest",
+         "position": {
+          "x": 250,
+          "y": 0,
+          "z": -250
+         },
+         "color": "#abcdef"
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "x",
+         "type": "nonsense",
+         "position": {
+          "x": 500,
+          "y": 0,
+          "z": 500
+         }
+        }
+       },
+       {
+        "op": "placed",
+        "sizePx": 200
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null,
+       null,
+       [
+        {
+         "id": "p",
+         "offsetX": 0,
+         "offsetY": 0,
+         "size": 6,
+         "color": null,
+         "tone": "accent"
+        },
+        {
+         "id": "q",
+         "offsetX": 50,
+         "offsetY": -50,
+         "size": 7,
+         "color": "#abcdef",
+         "tone": "quest"
+        },
+        {
+         "id": "x",
+         "offsetX": 100,
+         "offsetY": 100,
+         "size": 4,
+         "color": null,
+         "tone": "text_primary"
+        }
+       ]
+      ],
+      "view": {
+       "worldSize": 1000,
+       "visible": false,
+       "markerCount": 3,
+       "markers": [
+        {
+         "id": "p",
+         "type": "player",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "id": "q",
+         "type": "quest",
+         "position": {
+          "x": 250,
+          "y": 0,
+          "z": -250
+         },
+         "color": "#abcdef"
+        },
+        {
+         "id": "x",
+         "type": "nonsense",
+         "position": {
+          "x": 500,
+          "y": 0,
+          "z": 500
+         }
+        }
+       ],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: placed through a theme: tones resolve, an explicit colour still wins",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {
+      "worldSize": 1000
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "add",
+        "marker": {
+         "id": "p",
+         "type": "player",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "s",
+         "type": "settlement",
+         "position": {
+          "x": 100,
+          "y": 0,
+          "z": 100
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "n",
+         "type": "npc",
+         "position": {
+          "x": -100,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "b",
+         "type": "building",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 100
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "d",
+         "type": "discovery",
+         "position": {
+          "x": 10,
+          "y": 0,
+          "z": 10
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "q",
+         "type": "quest_objective",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": -100
+         },
+         "color": "#abcdef"
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "u",
+         "type": "unknown_type",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "placed",
+        "sizePx": 520,
+        "theme": {
+         "accent": "#000001",
+         "warning": "#000002",
+         "success": "#000003",
+         "quest": "#000004",
+         "text_disabled": "#000005",
+         "text_primary": "#000006"
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null,
+       null,
+       null,
+       null,
+       null,
+       null,
+       [
+        {
+         "id": "p",
+         "offsetX": 0,
+         "offsetY": 0,
+         "size": 6,
+         "color": "#000001",
+         "tone": "accent"
+        },
+        {
+         "id": "s",
+         "offsetX": 52,
+         "offsetY": 52,
+         "size": 8,
+         "color": "#000002",
+         "tone": "warning"
+        },
+        {
+         "id": "n",
+         "offsetX": -52,
+         "offsetY": 0,
+         "size": 4,
+         "color": "#000003",
+         "tone": "success"
+        },
+        {
+         "id": "b",
+         "offsetX": 0,
+         "offsetY": 52,
+         "size": 3,
+         "color": "#000005",
+         "tone": "text_disabled"
+        },
+        {
+         "id": "d",
+         "offsetX": 5.199999999999989,
+         "offsetY": 5.199999999999989,
+         "size": 6,
+         "color": "#000003",
+         "tone": "success"
+        },
+        {
+         "id": "q",
+         "offsetX": 0,
+         "offsetY": -52,
+         "size": 5,
+         "color": "#abcdef",
+         "tone": "quest"
+        },
+        {
+         "id": "u",
+         "offsetX": 0,
+         "offsetY": 0,
+         "size": 4,
+         "color": "#000006",
+         "tone": "text_primary"
+        }
+       ]
+      ],
+      "view": {
+       "worldSize": 1000,
+       "visible": false,
+       "markerCount": 7,
+       "markers": [
+        {
+         "id": "p",
+         "type": "player",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "id": "s",
+         "type": "settlement",
+         "position": {
+          "x": 100,
+          "y": 0,
+          "z": 100
+         }
+        },
+        {
+         "id": "n",
+         "type": "npc",
+         "position": {
+          "x": -100,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "id": "b",
+         "type": "building",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 100
+         }
+        },
+        {
+         "id": "d",
+         "type": "discovery",
+         "position": {
+          "x": 10,
+          "y": 0,
+          "z": 10
+         }
+        },
+        {
+         "id": "q",
+         "type": "quest_objective",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": -100
+         },
+         "color": "#abcdef"
+        },
+        {
+         "id": "u",
+         "type": "unknown_type",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: placed north up: the world's north orients every marker",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {
+      "worldSize": 1000
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "add",
+        "marker": {
+         "id": "p",
+         "type": "player",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "n",
+         "type": "npc",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 200
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "e",
+         "type": "quest",
+         "position": {
+          "x": 200,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "placed",
+        "sizePx": 200,
+        "northYaw": 0
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null,
+       null,
+       [
+        {
+         "id": "p",
+         "offsetX": 0,
+         "offsetY": 0,
+         "size": 6,
+         "color": null,
+         "tone": "accent"
+        },
+        {
+         "id": "n",
+         "offsetX": 0,
+         "offsetY": -40,
+         "size": 4,
+         "color": null,
+         "tone": "success"
+        },
+        {
+         "id": "e",
+         "offsetX": 40,
+         "offsetY": 0,
+         "size": 7,
+         "color": null,
+         "tone": "quest"
+        }
+       ]
+      ],
+      "view": {
+       "worldSize": 1000,
+       "visible": false,
+       "markerCount": 3,
+       "markers": [
+        {
+         "id": "p",
+         "type": "player",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "id": "n",
+         "type": "npc",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 200
+         }
+        },
+        {
+         "id": "e",
+         "type": "quest",
+         "position": {
+          "x": 200,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: placed mirrored level: every marker east of the player is drawn left of it",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {
+      "worldSize": 1000
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "add",
+        "marker": {
+         "id": "p",
+         "type": "player",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "n",
+         "type": "npc",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 200
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "e",
+         "type": "quest",
+         "position": {
+          "x": 200,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "placed",
+        "sizePx": 200,
+        "northYaw": 0,
+        "mirrored": true
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null,
+       null,
+       [
+        {
+         "id": "p",
+         "offsetX": 0,
+         "offsetY": 0,
+         "size": 6,
+         "color": null,
+         "tone": "accent"
+        },
+        {
+         "id": "n",
+         "offsetX": 0,
+         "offsetY": -40,
+         "size": 4,
+         "color": null,
+         "tone": "success"
+        },
+        {
+         "id": "e",
+         "offsetX": -40,
+         "offsetY": 0,
+         "size": 7,
+         "color": null,
+         "tone": "quest"
+        }
+       ]
+      ],
+      "view": {
+       "worldSize": 1000,
+       "visible": false,
+       "markerCount": 3,
+       "markers": [
+        {
+         "id": "p",
+         "type": "player",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         }
+        },
+        {
+         "id": "n",
+         "type": "npc",
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 200
+         }
+        },
+        {
+         "id": "e",
+         "type": "quest",
+         "position": {
+          "x": 200,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "player": null
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui-minimap session: placed scales the diameters, not the offsets",
+   "steps": [
+    {
+     "call": "ui.minimap.create",
+     "args": {
+      "worldSize": 1000
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.minimap.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "add",
+        "marker": {
+         "id": "e",
+         "type": "exclamation",
+         "position": {
+          "x": 250,
+          "y": 0,
+          "z": 250
+         }
+        }
+       },
+       {
+        "op": "add",
+        "marker": {
+         "id": "b",
+         "type": "building",
+         "position": {
+          "x": -250,
+          "y": 0,
+          "z": 0
+         }
+        }
+       },
+       {
+        "op": "placed",
+        "sizePx": 520,
+        "scale": 2.5
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       null,
+       null,
+       [
+        {
+         "id": "e",
+         "offsetX": 130,
+         "offsetY": 130,
+         "size": 35,
+         "color": null,
+         "tone": "quest"
+        },
+        {
+         "id": "b",
+         "offsetX": -130,
+         "offsetY": 0,
+         "size": 7.5,
+         "color": null,
+         "tone": "text_disabled"
+        }
+       ]
+      ],
+      "view": {
+       "worldSize": 1000,
+       "visible": false,
+       "markerCount": 2,
+       "markers": [
+        {
+         "id": "e",
+         "type": "exclamation",
+         "position": {
+          "x": 250,
+          "y": 0,
+          "z": 250
+         }
+        },
+        {
+         "id": "b",
+         "type": "building",
+         "position": {
+          "x": -250,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ],
+       "player": null
+      }
+     }
+    }
+   ]
+  }
+ ]
+}
