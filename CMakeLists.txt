@@ -1115,11 +1115,12 @@ set_tests_properties(audio_cues_corpus PROPERTIES
 # negative frame moving it back, the right foot first, an unknown surface marked
 # table, idle stepping) and a case of an op no row runs that is not on the
 # unreached list. It passes only when the runner reports each of them and the run
-# as failed, in that order. No two wildcards stand side by side in the regex.
+# as failed, in the file's order (the footstep cases come before the runs). No two
+# wildcards stand side by side in the regex.
 add_test(NAME audio_cues_corpus_negative COMMAND insimulcore_props_corpus
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/cues-wrong.json)
 set_tests_properties(audio_cues_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "contract.footsteps.gaits.run.intervalSec: 0.3 != 0.28.*expected WRONGLY the remainder dropped at a step [^\n]*ticks.3..elapsedSec: 0 != 0.09.*expected WRONGLY a long frame not folded below one interval [^\n]*ticks.0..elapsedSec: 0.6 != 0.19.*expected WRONGLY standing keeping the clock [^\n]*ticks.3..elapsedSec: 0.375 != 0.*expected WRONGLY a negative frame moving the clock back [^\n]*ticks.2..elapsedSec: -0.75 != 0.25.*expected WRONGLY the right foot first [^\n]*foot: .right. != .left.*expected WRONGLY an unknown surface marked table [^\n]*source: .table. != .default.*expected WRONGLY idle stepping [^\n]*cue: expected a object, got a null.*expected WRONGLY an op of no row taken as unreached [^\n]*op .footstepBurst. is not one of area audio-cues.s.*props_corpus: FAIL")
+  PASS_REGULAR_EXPRESSION "contract.footsteps.gaits.run.intervalSec: 0.3 != 0.28.*expected WRONGLY an unknown surface marked table [^\n]*source: .table. != .default.*expected WRONGLY idle stepping [^\n]*cue: expected a object, got a null.*expected WRONGLY the remainder dropped at a step [^\n]*ticks.3..elapsedSec: 0 != 0.09.*expected WRONGLY the right foot first [^\n]*foot: .right. != .left.*expected WRONGLY standing keeping the clock [^\n]*ticks.3..elapsedSec: 0.375 != 0.*expected WRONGLY a long frame not folded below one interval [^\n]*ticks.0..elapsedSec: 0.6 != 0.19.*expected WRONGLY a negative frame moving the clock back [^\n]*ticks.2..elapsedSec: -0.75 != 0.25.*expected WRONGLY an op of no row taken as unreached [^\n]*op .footstepBurst. is not one of area audio-cues.s.*props_corpus: FAIL")
 
 # survival_corpus (PL.native-survival-rows, rulings U106(1) and U36): core's P9c
 # logic (P9c.core and PL.core-survival-rules: src/survival/needs.ts,
