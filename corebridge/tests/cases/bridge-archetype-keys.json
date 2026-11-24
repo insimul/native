@@ -3,7 +3,7 @@
  "description": "Hand cases for the archetypes.* rows (PL.native-archetype-key-rows): core's archetype key grammar in src/archetypes/taxonomy.ts — parseArchetypeKey, matchArchetypeKey and archetypeSpecificity — which no core conformance corpus pins (core tests them only in __tests__/taxonomy.test.ts and the genre-pieces corpus test). Every branch: well-formed keys and patterns, every null parse, wildcard and plain patterns, a string prefix that is not a segment boundary, malformed sides and a wildcard query, -1 against the per-segment scores 2N and 2N-1 (the least match scores 1; nothing scores 0), Unreal's six stated values, a binding layer's ranking, and the [invalid-input] boundary. Every expectation is computed by core's own functions at the pin (gen-bridge-archetype-key-cases.mts, kept with the builder's record).",
  "cases": [
   {
-   "name": "archetypes.parseArchetypeKey: well-formed keys and patterns — segments, root and raw; a trailing .* stripped and marked; _ and - joiners; digits after the first letter; a root outside the five still parses",
+   "name": "archetypes.parseArchetypeKey: well-formed keys and patterns — segments, root and raw; a trailing .* stripped and marked; _ and - joiners; digits after the first letter, and a joined part that starts with a digit; a root outside the five still parses",
    "steps": [
     {
      "call": "archetypes.parseArchetypeKey",
@@ -112,6 +112,23 @@
     {
      "call": "archetypes.parseArchetypeKey",
      "args": {
+      "key": "prop.level-2"
+     },
+     "expect": {
+      "parsed": {
+       "raw": "prop.level-2",
+       "segments": [
+        "prop",
+        "level-2"
+       ],
+       "isWildcard": false,
+       "root": "prop"
+      }
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
       "key": "castle.keep"
      },
      "expect": {
@@ -129,7 +146,7 @@
    ]
   },
   {
-   "name": "archetypes.parseArchetypeKey: every null — empty; a leading, trailing or doubled dot; a bare, leading, inner, doubled or embedded *; upper case; a leading digit; a leading, trailing or doubled joiner; a space; a non-ASCII letter",
+   "name": "archetypes.parseArchetypeKey: every null — empty; a leading, trailing or doubled dot; a bare, leading, inner, doubled or embedded *; upper case, first letter or later; a leading digit; a leading, trailing or doubled joiner; a space; a non-ASCII letter",
    "steps": [
     {
      "call": "archetypes.parseArchetypeKey",
@@ -234,6 +251,15 @@
      "call": "archetypes.parseArchetypeKey",
      "args": {
       "key": "prop.Bad"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.bAd"
      },
      "expect": {
       "parsed": null

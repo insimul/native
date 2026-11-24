@@ -2650,7 +2650,7 @@ Stateless; no pin move.
   `pattern` is `[invalid-input]`; a malformed string is a value (null, false, -1).
 
 Core has no conformance corpus for these three functions (only its unit tests), so the hand
-cases `tests/cases/bridge-archetype-keys.json` (9 cases, 88 steps, both legs) are the replayable
+cases `tests/cases/bridge-archetype-keys.json` (9 cases, 90 steps, both legs) are the replayable
 data: every expectation computed by core's own functions at the pin. They cover every parse
 branch, wildcard and plain patterns, a string prefix that is not a segment boundary, malformed
 sides and a wildcard query, -1 against the per-segment scores, the six values Unreal's
