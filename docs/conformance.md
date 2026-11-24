@@ -18,8 +18,10 @@ byte for byte. Three legs run the identical corpus:
 | **WebAssembly** | `tests/wasm_conformance.mjs` (the `wasm_conformance` ctest) | `scripts/build_wasm.sh` |
 
 All three print the same `files / cases / passed / failed / amended` summary — currently
-**26 files, 513 cases, 513 passed, 1 amended** at core 45409ed (420 cases in 20 files before
-PL.native-prolog-mirror-full slice 3 added `mechanic-combat.json`, `mechanic-dialogue.json`,
+**32 files, 631 cases, 631 passed, 1 amended** at core 45409ed (513 cases in 26 files before
+PL.native-prolog-mirror-full slice 4 added `mechanic-routine.json`, `mechanic-skill.json`,
+`mechanic-stamina.json`, `mechanic-traversal.json`, `mechanic-volition.json` and
+`mechanic-weather.json`; 420 in 20 before slice 3 added `mechanic-combat.json`, `mechanic-dialogue.json`,
 `mechanic-fishing.json`, `mechanic-gameplay-state.json`, `mechanic-mining.json` and
 `mechanic-perception.json`; 261 in 15 before slice 2 added `mechanic-puzzle.json`, `mechanic-platformer.json`,
 `mechanic-business.json`, `mechanic-crafting.json` and `mechanic-equipment.json`; 181 in 12
@@ -91,7 +93,7 @@ scripts/conformance_parity.sh        # builds whatever leg is missing, then comp
 
 Because it compares the *raw* strings, it catches a divergence in solution order, error
 wording, or number formatting that each leg's own `expected` check would happily pass.
-Result today: **513/513 byte-identical**. The full record, and the non-vacuity gates each
+Result today: **631/631 byte-identical**. The full record, and the non-vacuity gates each
 verified by deliberately triggering them, live in
 [../conformance/WASM_PARITY.md](../conformance/WASM_PARITY.md).
 

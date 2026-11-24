@@ -21,7 +21,9 @@ pin must be exactly `files` + `notMirrored`, every mirrored file's sha256 its
 blob's). The checkout is `-DCORE_DIR`, else `INSIMUL_CORE_DIR`, else **by default
 the monorepo's sibling core** when it exists and holds the pin's commit, found from
 the mirror's path as the corpus resolver finds its sibling
-(`../babylon/packages/core`, then `../insimul-runtime/packages/core`); a sibling
+(`../babylon/packages/core`, then `../insimul-runtime/packages/core`, a list kept
+once in `tests/prolog_mirror_sibling.cmake`, which the script and CMakeLists.txt
+both include); a sibling
 without the pin's commit is named and set aside, and `-DCORE_DIR=` (empty) turns
 the record checks off. The PASS line says which check ran and where its core came
 from, or why none was used (no sibling holding the pin, a stale sibling, or the
@@ -33,7 +35,10 @@ CMake looks for the monorepo's sibling core itself at configure time, and when o
 holding the pin is there, `prolog_mirror_digest` must say it held the record to
 core's git objects and `prolog_mirror_digest_negative` must refuse **8 of 8**, so a
 script that lost its default lookup goes red instead of falling back to
-manifest-only and 6 of 6 (re-run cmake if that sibling goes away). It exists because a stale `pack-agreement.json` whose answers
+manifest-only and 6 of 6. Both use the one lookup in
+`tests/prolog_mirror_sibling.cmake`, so a location added there is required by the
+ctests too. If that sibling goes away after configure, the script says so (CMake
+hands it `-DEXPECT_SIBLING`) and the ctests go red until cmake is re-run. It exists because a stale `pack-agreement.json` whose answers
 had not changed stayed green on every leg (self-sweep M22). **Re-sync with the
 recorder, never a hand copy**: bump the pin, then
 
@@ -88,12 +93,22 @@ unchanged through the recorder (`ADD=`) — `mechanic-combat.json` (10 cases),
 `mechanic-perception.json` (12). No engine change and no new amendment: all 93 new
 cases pass on every leg under the order rule. The digest ctests now require the
 sibling core when CMake finds one holding the pin, and the PASS line says when the
-record checks were turned off (above). **26 files, 513 cases**, 513 passed, 1
-amended on all three legs. **Still missing** (11 of core's 37, 215 cases, listed in
-`PROLOG_MIRROR.json`'s `notMirrored` and held there by the digest gate): the other
-6 `mechanic-*` files (`routine`, `skill`, `stamina`, `traversal`, `volition`,
-`weather`), `agent-ai.json`, `alive-negation.json`, `death-readers.json`,
-`placement.json` and `scaffold.json`. They are later slices of the same row.
+record checks were turned off (above). 26 files, 513 cases, 513 passed, 1
+amended on all three legs.
+
+**Slice 4** (2026-11-23, same pin `45409ed`): the six remaining `mechanic-*` files
+added unchanged through the recorder (`ADD=`) — `mechanic-routine.json` (19 cases),
+`mechanic-skill.json` (14), `mechanic-stamina.json` (12),
+`mechanic-traversal.json` (22), `mechanic-volition.json` (24) and
+`mechanic-weather.json` (27). No engine change and no new amendment: all 118 new
+cases pass on every leg under the order rule. The configure-time sibling lookup
+and the script's default lookup are now one function in
+`tests/prolog_mirror_sibling.cmake` (above). **32 files, 631 cases**, 631 passed,
+1 amended on all three legs. **Still missing** (5 of core's 37, 97 cases, listed in
+`PROLOG_MIRROR.json`'s `notMirrored` and held there by the digest gate):
+`agent-ai.json` (15), `alive-negation.json` (8), `death-readers.json` (21),
+`placement.json` (21) and `scaffold.json` (32). They are later slices of the same
+row.
 
 Before that, synced at core `45409ed` (PL.native-bundle-core-r2,
 2026-11-19, the commit `corebridge/core-pin.json` pins): every one of the 12 files the
