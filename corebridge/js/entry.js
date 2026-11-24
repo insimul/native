@@ -1030,13 +1030,21 @@ import { STRATEGY_WRITTEN_PREDICATES, StrategyDirector } from '@insimul/core/gam
 // `entities.genrePieces`), and the build plan that stands them on the ground plane
 // (build-plan.ts: the anchors, the placement, the settle offset, the plan, its ground and
 // the writer). This slice completes the row.
+//
+// The same module's archetype key grammar (PL.native-archetype-key-rows, U128, U134(4)): the
+// parser, the matcher and the specificity score every binding layer ranks its rules by
+// (`parseArchetypeKey`, `matchArchetypeKey`, `archetypeSpecificity`), so an engine's binding
+// table and atelier's kit route answer a key the way core does instead of carrying a copy.
 import {
 	GENRE_PIECE_KINDS,
 	GENRE_PIECE_MODULES,
+	archetypeSpecificity,
 	genrePieceArchetype,
 	genrePieceArtSlots,
 	genrePieceKind,
 	isGenrePieceVariant,
+	matchArchetypeKey,
+	parseArchetypeKey,
 } from '@insimul/core/archetypes/taxonomy';
 import {
 	GENRE_PIECE_DEFINITIONS,
@@ -6678,6 +6686,35 @@ const METHODS = {
 	'strategy.save.blockOf': (args) => {
 		coded('invalid-input', () => declared('strategy.save.blockOf', args.block, 'block', STRATEGY_DIRECTOR_STATE));
 		return { block: plain(strategyBlockOf(args.block)) };
+	},
+
+	// ── the archetype key grammar (PL.native-archetype-key-rows; U128, U134(4)) ──
+	// Stateless. Core declares every argument a `string`, so anything else is
+	// [invalid-input] (core's own non-string guard is never reached through a row); a
+	// malformed string is a VALUE: null, false, -1.
+
+	/** `archetypes.parseArchetypeKey { key }` → `{ parsed }` — core's `parseArchetypeKey`: `{ raw, segments, isWildcard, root }` (a trailing `.*` stripped and marked), or null for a string that is not a well-formed key or pattern (empty, a leading, trailing or doubled dot, a bare `*`, a segment outside `[a-z][a-z0-9]*([-_][a-z0-9]+)*`). The root is not checked against the five taxonomy roots. */
+	'archetypes.parseArchetypeKey': (args) => {
+		coded('invalid-input', () => needString('archetypes.parseArchetypeKey', args.key, 'key'));
+		return { parsed: plain(parseArchetypeKey(args.key)) };
+	},
+
+	/** `archetypes.matchArchetypeKey { pattern, key }` → `{ matches }` — core's `matchArchetypeKey`: a `.*` pattern matches its base and every descendant, a plain pattern itself and every strict descendant, segment by segment (never a string prefix); false when either is malformed or the key is a pattern. */
+	'archetypes.matchArchetypeKey': (args) => {
+		coded('invalid-input', () => {
+			needString('archetypes.matchArchetypeKey', args.pattern, 'pattern');
+			needString('archetypes.matchArchetypeKey', args.key, 'key');
+		});
+		return { matches: matchArchetypeKey(args.pattern, args.key) };
+	},
+
+	/** `archetypes.archetypeSpecificity { pattern, key }` → `{ specificity }` — core's `archetypeSpecificity`: -1 when the pattern does not match the key, else 2N for an exact match on N segments and 2N-1 for a wildcard or ancestor match (so the least a match scores is 1, a one-segment wildcard). */
+	'archetypes.archetypeSpecificity': (args) => {
+		coded('invalid-input', () => {
+			needString('archetypes.archetypeSpecificity', args.pattern, 'pattern');
+			needString('archetypes.archetypeSpecificity', args.key, 'key');
+		});
+		return { specificity: archetypeSpecificity(args.pattern, args.key) };
 	},
 
 	// ── the genre pieces (PL.native-genre-rows slice 4; U103) ──

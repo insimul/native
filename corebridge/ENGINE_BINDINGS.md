@@ -1083,9 +1083,15 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   "a course needs libinsimulcore" error goes away: every step is now a row.
   **`InsimulGenrePieceRoute.cpp`** (363 lines) is ATELIER's route (`P9j.unreal.retire-genre-piece-route-copy`),
   not core's: only its `DeriveArchetype` is a genre piece rule, and it is `genrePieces.deriveArchetype`
-  above. Its other core helpers (`parseArchetypeKey`, `matchArchetypeKey`, `archetypeSpecificity`
-  from `src/archetypes/taxonomy.ts`) have no row here; atelier's kit profiles, licences and
-  entries are atelier's to state.
+  above. Its other core helpers from `src/archetypes/taxonomy.ts` are rows since
+  PL.native-archetype-key-rows: its `Parse` is `archetypes.parseArchetypeKey` (`{ parsed }`, null
+  where `Parse` answers false), its rule match `archetypes.matchArchetypeKey` (`{ matches }`) and
+  its `ArchetypeSpecificity` `archetypes.archetypeSpecificity` (`{ specificity }`: 2N exact, 2N-1
+  wildcard or ancestor, -1 no match; the six values `test_atelier_kinds_corpus.cpp` states are
+  among `tests/cases/bridge-archetype-keys.json`'s steps), so `LegalSegment`, `FParsed`, `Parse`,
+  `Prefix` and the score can go. `RuleFor`'s tie rule (the earlier rule keeps a tie) is the
+  caller's ranking over those scores, as core leaves it to each binding layer. Atelier's kit
+  profiles, licences and entries are atelier's to state.
 
   Re-vendor `conformance/genre-pieces/{kinds,build-plan}.json` from core at this library's pin
   and drive each case as `tests/genre_systems_corpus.cpp` does, every input member passed when

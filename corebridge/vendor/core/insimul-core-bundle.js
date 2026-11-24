@@ -46044,6 +46044,34 @@ Return JSON format:
     const parsed = parseArchetypeKey(key);
     return parsed !== null && !parsed.isWildcard && ARCHETYPE_ROOTS.includes(parsed.root);
   }
+  function matchArchetypeKey(pattern, key) {
+    const p = parseArchetypeKey(pattern);
+    const k = parseArchetypeKey(key);
+    if (!p || !k || k.isWildcard) return false;
+    if (p.isWildcard) {
+      return isSameOrDescendant(p.segments, k.segments);
+    }
+    if (segmentsEqual(p.segments, k.segments)) return true;
+    return isStrictDescendant(p.segments, k.segments);
+  }
+  function archetypeSpecificity(pattern, key) {
+    if (!matchArchetypeKey(pattern, key)) return -1;
+    const p = parseArchetypeKey(pattern);
+    const k = parseArchetypeKey(key);
+    const exact = !p.isWildcard && segmentsEqual(p.segments, k.segments);
+    return exact ? p.segments.length * 2 : p.segments.length * 2 - 1;
+  }
+  function segmentsEqual(a, b) {
+    return a.length === b.length && a.every((s, i) => s === b[i]);
+  }
+  function isStrictDescendant(ancestor, key) {
+    if (key.length <= ancestor.length) return false;
+    return ancestor.every((s, i) => s === key[i]);
+  }
+  function isSameOrDescendant(base, key) {
+    if (key.length < base.length) return false;
+    return base.every((s, i) => s === key[i]);
+  }
   var GENRE_PIECE_MODULES = ["platformer", "puzzle", "strategy"];
   var pieceKind = (root, module, kind, variants, source) => Object.freeze({
     module,
@@ -57450,6 +57478,31 @@ Return JSON format:
     "strategy.save.blockOf": (args) => {
       coded("invalid-input", () => declared("strategy.save.blockOf", args.block, "block", STRATEGY_DIRECTOR_STATE));
       return { block: plain(strategyBlockOf(args.block)) };
+    },
+    // ── the archetype key grammar (PL.native-archetype-key-rows; U128, U134(4)) ──
+    // Stateless. Core declares every argument a `string`, so anything else is
+    // [invalid-input] (core's own non-string guard is never reached through a row); a
+    // malformed string is a VALUE: null, false, -1.
+    /** `archetypes.parseArchetypeKey { key }` → `{ parsed }` — core's `parseArchetypeKey`: `{ raw, segments, isWildcard, root }` (a trailing `.*` stripped and marked), or null for a string that is not a well-formed key or pattern (empty, a leading, trailing or doubled dot, a bare `*`, a segment outside `[a-z][a-z0-9]*([-_][a-z0-9]+)*`). The root is not checked against the five taxonomy roots. */
+    "archetypes.parseArchetypeKey": (args) => {
+      coded("invalid-input", () => needString("archetypes.parseArchetypeKey", args.key, "key"));
+      return { parsed: plain(parseArchetypeKey(args.key)) };
+    },
+    /** `archetypes.matchArchetypeKey { pattern, key }` → `{ matches }` — core's `matchArchetypeKey`: a `.*` pattern matches its base and every descendant, a plain pattern itself and every strict descendant, segment by segment (never a string prefix); false when either is malformed or the key is a pattern. */
+    "archetypes.matchArchetypeKey": (args) => {
+      coded("invalid-input", () => {
+        needString("archetypes.matchArchetypeKey", args.pattern, "pattern");
+        needString("archetypes.matchArchetypeKey", args.key, "key");
+      });
+      return { matches: matchArchetypeKey(args.pattern, args.key) };
+    },
+    /** `archetypes.archetypeSpecificity { pattern, key }` → `{ specificity }` — core's `archetypeSpecificity`: -1 when the pattern does not match the key, else 2N for an exact match on N segments and 2N-1 for a wildcard or ancestor match (so the least a match scores is 1, a one-segment wildcard). */
+    "archetypes.archetypeSpecificity": (args) => {
+      coded("invalid-input", () => {
+        needString("archetypes.archetypeSpecificity", args.pattern, "pattern");
+        needString("archetypes.archetypeSpecificity", args.key, "key");
+      });
+      return { specificity: archetypeSpecificity(args.pattern, args.key) };
     },
     // ── the genre pieces (PL.native-genre-rows slice 4; U103) ──
     /**

@@ -1,0 +1,931 @@
+{
+ "area": "archetypes",
+ "description": "Hand cases for the archetypes.* rows (PL.native-archetype-key-rows): core's archetype key grammar in src/archetypes/taxonomy.ts — parseArchetypeKey, matchArchetypeKey and archetypeSpecificity — which no core conformance corpus pins (core tests them only in __tests__/taxonomy.test.ts and the genre-pieces corpus test). Every branch: well-formed keys and patterns, every null parse, wildcard and plain patterns, a string prefix that is not a segment boundary, malformed sides and a wildcard query, -1 against the per-segment scores 2N and 2N-1 (the least match scores 1; nothing scores 0), Unreal's six stated values, a binding layer's ranking, and the [invalid-input] boundary. Every expectation is computed by core's own functions at the pin (gen-bridge-archetype-key-cases.mts, kept with the builder's record).",
+ "cases": [
+  {
+   "name": "archetypes.parseArchetypeKey: well-formed keys and patterns — segments, root and raw; a trailing .* stripped and marked; _ and - joiners; digits after the first letter; a root outside the five still parses",
+   "steps": [
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "parsed": {
+       "raw": "building.commercial.bakery.medium",
+       "segments": [
+        "building",
+        "commercial",
+        "bakery",
+        "medium"
+       ],
+       "isWildcard": false,
+       "root": "building"
+      }
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "npc"
+     },
+     "expect": {
+      "parsed": {
+       "raw": "npc",
+       "segments": [
+        "npc"
+       ],
+       "isWildcard": false,
+       "root": "npc"
+      }
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "building.commercial.*"
+     },
+     "expect": {
+      "parsed": {
+       "raw": "building.commercial.*",
+       "segments": [
+        "building",
+        "commercial"
+       ],
+       "isWildcard": true,
+       "root": "building"
+      }
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "npc.*"
+     },
+     "expect": {
+      "parsed": {
+       "raw": "npc.*",
+       "segments": [
+        "npc"
+       ],
+       "isWildcard": true,
+       "root": "npc"
+      }
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.market_stall.two-story"
+     },
+     "expect": {
+      "parsed": {
+       "raw": "prop.market_stall.two-story",
+       "segments": [
+        "prop",
+        "market_stall",
+        "two-story"
+       ],
+       "isWildcard": false,
+       "root": "prop"
+      }
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.a1.b2c3"
+     },
+     "expect": {
+      "parsed": {
+       "raw": "prop.a1.b2c3",
+       "segments": [
+        "prop",
+        "a1",
+        "b2c3"
+       ],
+       "isWildcard": false,
+       "root": "prop"
+      }
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "castle.keep"
+     },
+     "expect": {
+      "parsed": {
+       "raw": "castle.keep",
+       "segments": [
+        "castle",
+        "keep"
+       ],
+       "isWildcard": false,
+       "root": "castle"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "archetypes.parseArchetypeKey: every null — empty; a leading, trailing or doubled dot; a bare, leading, inner, doubled or embedded *; upper case; a leading digit; a leading, trailing or doubled joiner; a space; a non-ASCII letter",
+   "steps": [
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": ""
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": ".prop"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop."
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop..x"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": ".*"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "*"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "*.prop"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.*.x"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.*.*"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.x*"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "Prop"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.Bad"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "1prop"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.-x"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.x-"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.x--y"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.x_-y"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop. x"
+     },
+     "expect": {
+      "parsed": null
+     }
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": "prop.café"
+     },
+     "expect": {
+      "parsed": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "archetypes.matchArchetypeKey: a .* pattern matches its base and every descendant, never a shorter key, a diverging one, or a key it is only a string prefix of",
+   "steps": [
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "building.commercial.*",
+      "key": "building.commercial"
+     },
+     "expect": {
+      "matches": true
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "building.commercial.*",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "matches": true
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "npc.*",
+      "key": "npc"
+     },
+     "expect": {
+      "matches": true
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "building.commercial.*",
+      "key": "building"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "building.commercial.*",
+      "key": "building.residential.house"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop.plat.*",
+      "key": "prop.platformer.ledge"
+     },
+     "expect": {
+      "matches": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "archetypes.matchArchetypeKey: a plain pattern matches itself and every strict descendant segment by segment, never its own ancestor, a sibling, a key differing mid-path, or a key it is only a string prefix of",
+   "steps": [
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop.platformer.goal",
+      "key": "prop.platformer.goal"
+     },
+     "expect": {
+      "matches": true
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "npc",
+      "key": "npc"
+     },
+     "expect": {
+      "matches": true
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop.platformer.goal",
+      "key": "prop.platformer.goal.home"
+     },
+     "expect": {
+      "matches": true
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "building",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "matches": true
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop.platformer.goal.home",
+      "key": "prop.platformer.goal"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop.platformer.goal",
+      "key": "prop.platformer.ledge"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop.platformer.goal",
+      "key": "prop.puzzle.goal"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop.plat",
+      "key": "prop.platformer"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop.plat",
+      "key": "prop.platformer.ledge"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "building.commercial",
+      "key": "building.commercialx"
+     },
+     "expect": {
+      "matches": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "archetypes.matchArchetypeKey: false when either side is malformed or empty, and for a wildcard query (a key can never be a pattern)",
+   "steps": [
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop.Bad",
+      "key": "prop.bad"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop",
+      "key": "prop..x"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "",
+      "key": "prop"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop",
+      "key": ""
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop.*",
+      "key": "prop.*"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop",
+      "key": "prop.*"
+     },
+     "expect": {
+      "matches": false
+     }
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "prop.x",
+      "key": "prop.*"
+     },
+     "expect": {
+      "matches": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "archetypes.archetypeSpecificity: Unreal's six stated values (test_atelier_kinds_corpus.cpp:265-267) — 2N exact, 2N-1 ancestor or wildcard, -1 malformed or a wildcard query",
+   "steps": [
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "prop.platformer.goal",
+      "key": "prop.platformer.goal.home"
+     },
+     "expect": {
+      "specificity": 5
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "prop.platformer.goal",
+      "key": "prop.platformer.goal"
+     },
+     "expect": {
+      "specificity": 6
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "npc.*",
+      "key": "npc.strategy.worker"
+     },
+     "expect": {
+      "specificity": 1
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "npc",
+      "key": "npc"
+     },
+     "expect": {
+      "specificity": 2
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "prop.Bad",
+      "key": "prop.bad"
+     },
+     "expect": {
+      "specificity": -1
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "prop.x",
+      "key": "prop.*"
+     },
+     "expect": {
+      "specificity": -1
+     }
+    }
+   ]
+  },
+  {
+   "name": "archetypes.archetypeSpecificity: per-segment scores — exact 2N at depth 4; a wildcard 2N-1 on a descendant and on its own base (below the exact rule of the same depth); an ancestor 2N-1; the least match scores 1 and nothing scores 0; every non-match -1 (sibling, string prefix, the key an ancestor, an empty pattern)",
+   "steps": [
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "building.commercial.bakery.medium",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "specificity": 8
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "building.commercial.*",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "specificity": 3
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "building.commercial.*",
+      "key": "building.commercial"
+     },
+     "expect": {
+      "specificity": 3
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "prop.platformer.goal.*",
+      "key": "prop.platformer.goal"
+     },
+     "expect": {
+      "specificity": 5
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "building",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "specificity": 1
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "npc.*",
+      "key": "npc"
+     },
+     "expect": {
+      "specificity": 1
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "prop.platformer.goal",
+      "key": "prop.platformer.ledge"
+     },
+     "expect": {
+      "specificity": -1
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "prop.plat",
+      "key": "prop.platformer"
+     },
+     "expect": {
+      "specificity": -1
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "prop.platformer.goal.home",
+      "key": "prop.platformer.goal"
+     },
+     "expect": {
+      "specificity": -1
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "",
+      "key": "npc"
+     },
+     "expect": {
+      "specificity": -1
+     }
+    }
+   ]
+  },
+  {
+   "name": "archetypes.archetypeSpecificity: seven rules against one key rank as core ranks them — deeper beats shallower, the exact rule beats every wildcard and ancestor, an unrelated root never selectable",
+   "steps": [
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "building.*",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "specificity": 1
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "building.commercial",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "specificity": 3
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "building.commercial.*",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "specificity": 3
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "building.commercial.bakery",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "specificity": 5
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "building.commercial.bakery.*",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "specificity": 5
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "building.commercial.bakery.medium",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "specificity": 8
+     }
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "npc.*",
+      "key": "building.commercial.bakery.medium"
+     },
+     "expect": {
+      "specificity": -1
+     }
+    }
+   ]
+  },
+  {
+   "name": "the archetypes.* boundary: every argument core declares a string, absent or of another type, is [invalid-input]",
+   "steps": [
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {},
+     "expectError": "[invalid-input] insimulcore: archetypes.parseArchetypeKey: `key` must be a string"
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": null
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.parseArchetypeKey: `key` must be a string"
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": 7
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.parseArchetypeKey: `key` must be a string"
+    },
+    {
+     "call": "archetypes.parseArchetypeKey",
+     "args": {
+      "key": [
+       "npc"
+      ]
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.parseArchetypeKey: `key` must be a string"
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "key": "npc"
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.matchArchetypeKey: `pattern` must be a string"
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": null,
+      "key": "npc"
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.matchArchetypeKey: `pattern` must be a string"
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": {
+       "segments": [
+        "npc"
+       ]
+      },
+      "key": "npc"
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.matchArchetypeKey: `pattern` must be a string"
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "npc"
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.matchArchetypeKey: `key` must be a string"
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "npc",
+      "key": 1
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.matchArchetypeKey: `key` must be a string"
+    },
+    {
+     "call": "archetypes.matchArchetypeKey",
+     "args": {
+      "pattern": "npc",
+      "key": false
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.matchArchetypeKey: `key` must be a string"
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "key": "npc"
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.archetypeSpecificity: `pattern` must be a string"
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": null,
+      "key": "npc"
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.archetypeSpecificity: `pattern` must be a string"
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": {
+       "segments": [
+        "npc"
+       ]
+      },
+      "key": "npc"
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.archetypeSpecificity: `pattern` must be a string"
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "npc"
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.archetypeSpecificity: `key` must be a string"
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "npc",
+      "key": 1
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.archetypeSpecificity: `key` must be a string"
+    },
+    {
+     "call": "archetypes.archetypeSpecificity",
+     "args": {
+      "pattern": "npc",
+      "key": false
+     },
+     "expectError": "[invalid-input] insimulcore: archetypes.archetypeSpecificity: `key` must be a string"
+    }
+   ]
+  }
+ ]
+}

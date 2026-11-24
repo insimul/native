@@ -361,6 +361,9 @@ game; **meta** = about the bridge itself.
 | `strategy.save.read` | `{ block? }` → `{ ok: true, value }` (null: no block) or `{ ok: false, keys }` | `strategy/strategy-save` `readStrategyBlock` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
 | `strategy.save.block` | `{ state? }` → `{ block }` (null for no state) | `strategy/strategy-save` `strategySaveBlock` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
 | `strategy.save.blockOf` | `{ block }` → `{ block }` (holders by business, stock by faction then resource, workers by worker) | `strategy/strategy-save` `strategyBlockOf` | P9j strategy (PL.native-genre-rows slice 3; core's P9j.core) |
+| `archetypes.parseArchetypeKey` | `{ key }` → `{ parsed }`: `{ raw, segments, isWildcard, root }`, or null for a string that is not a well-formed key or pattern | `archetypes/taxonomy` `parseArchetypeKey` | P9j genre piece route (PL.native-archetype-key-rows; core's US-UB1 taxonomy) |
+| `archetypes.matchArchetypeKey` | `{ pattern, key }` → `{ matches }` (segment by segment; false for a malformed side or a wildcard key) | `archetypes/taxonomy` `matchArchetypeKey` | P9j genre piece route (PL.native-archetype-key-rows; core's US-UB1 taxonomy) |
+| `archetypes.archetypeSpecificity` | `{ pattern, key }` → `{ specificity }`: 2N exact, 2N-1 wildcard or ancestor, -1 no match | `archetypes/taxonomy` `archetypeSpecificity` | P9j genre piece route (PL.native-archetype-key-rows; core's US-UB1 taxonomy) |
 | `genrePieces.contract` | `{}` → `{ modules, kinds, definitions, placement, anchorTables, settleStepM, settleDirections, groundModules, groundMarginM }` | `archetypes/taxonomy`, `genre-systems/genre-pieces`, `genre-systems/build-plan` constants | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
 | `genrePieces.kind` | `{ kind?, module? }` → `{ kind }` (null: none; `module` absent is any module, null none) | `archetypes/taxonomy` `genrePieceKind` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
 | `genrePieces.isVariant` | `{ spec, variant? }` → `{ allowed }` | `archetypes/taxonomy` `isGenrePieceVariant` | P9j genre pieces (PL.native-genre-rows slice 4; core's P9j.core-asset-kinds, P9j.core-build-plan) |
@@ -2623,6 +2626,35 @@ block's defaults, duplicates and refusals, ids naming `Object.prototype` members
 `[invalid-input]` boundary of every declared member, directors over their own KB, a restore
 mid-game, and a director's `kb` carrying the facts its verdicts read), every expectation
 computed by core's own functions at the pin.
+
+### The archetype key rows (PL.native-archetype-key-rows)
+
+Core's archetype key grammar (`archetypes/taxonomy.ts`, at the pin 45409ed): the parser, the
+matcher and the specificity score a binding layer ranks its rules by, so an engine's binding
+table and atelier's kit route (Unreal's `Portable/InsimulGenrePieceRoute.cpp`, retired by
+`P9j.unreal.retire-genre-piece-route-copy`) answer a key as core does instead of carrying a copy.
+Stateless; no pin move.
+
+- `archetypes.parseArchetypeKey` (`parseArchetypeKey`): `{ parsed }`, core's
+  `ParsedArchetypeKey` (`raw`, `segments`, `isWildcard`, `root`; a trailing `.*` stripped and
+  marked) or null (empty; a leading, trailing or doubled dot; a bare or inner `*`; a segment
+  outside `[a-z][a-z0-9]*([-_][a-z0-9]+)*`). The root is not checked against the five roots.
+- `archetypes.matchArchetypeKey` (`matchArchetypeKey`): `{ matches }`. A `.*` pattern matches its
+  base and every descendant, a plain pattern itself and every strict descendant, compared
+  segment by segment (`prop.plat` never matches `prop.platformer`); false when either side is
+  malformed or the key is itself a pattern.
+- `archetypes.archetypeSpecificity` (`archetypeSpecificity`): `{ specificity }`, -1 when the
+  pattern does not match, else 2N for an exact match on N segments and 2N-1 for a wildcard or
+  ancestor match. The least a match scores is 1 (`npc.*`); nothing scores 0.
+- **The boundary.** Core declares every argument a `string`: an absent or non-string `key` or
+  `pattern` is `[invalid-input]`; a malformed string is a value (null, false, -1).
+
+Core has no conformance corpus for these three functions (only its unit tests), so the hand
+cases `tests/cases/bridge-archetype-keys.json` (9 cases, 88 steps, both legs) are the replayable
+data: every expectation computed by core's own functions at the pin. They cover every parse
+branch, wildcard and plain patterns, a string prefix that is not a segment boundary, malformed
+sides and a wildcard query, -1 against the per-segment scores, the six values Unreal's
+`test_atelier_kinds_corpus` states, a binding layer's ranking, and the boundary.
 
 ### The genre systems rows: the genre pieces (PL.native-genre-rows, slice 4)
 

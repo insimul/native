@@ -1042,6 +1042,14 @@
   codec. `conformance/prolog/mechanic-{puzzle,platformer,strategy}.json`, the genre
   trio's Prolog cases, are in the mirror (PL.native-prolog-mirror-full, U120(9):
   strategy in its slice 1, puzzle and platformer in slice 2).
+- **The archetype key rows (PL.native-archetype-key-rows, U128, U134(4))** are core's
+  `parseArchetypeKey`, `matchArchetypeKey` and `archetypeSpecificity` (`archetypes/taxonomy.ts`)
+  as `archetypes.<same name>`, stateless; a non-string argument is `[invalid-input]` (core
+  declares `string`), a malformed string a value (null, false, -1). Core has NO conformance
+  corpus for them, so their replayable data is the hand case file
+  `tests/cases/bridge-archetype-keys.json`, every expectation computed by core's own functions
+  at the pin; if core ships a corpus, transcribe it and keep the hand cases only for what it
+  leaves unpinned.
 - **The villager pass-by rows (PL.native-pass-by-rows, U118, U128) run core's
   `conformance/villagers/pass-by.json` UNCHANGED**, copied as its own set
   (`PASS_BY_CORPUS_FILES`; 63 cases at 45409ed: floor 3, guard 15, plan 21, round 6,
