@@ -24,7 +24,7 @@
       },
       "targetLanguageName": "Ostrari",
       "lexiconReason": null,
-      "lexiconSize": 8,
+      "lexiconSize": 9,
       "hasMessages": true
      }
     },
@@ -47,7 +47,7 @@
       },
       "targetLanguageName": "Spanish",
       "lexiconReason": null,
-      "lexiconSize": 19,
+      "lexiconSize": 26,
       "hasMessages": true
      }
     },
@@ -93,7 +93,7 @@
       },
       "targetLanguageName": "Russian",
       "lexiconReason": null,
-      "lexiconSize": 4,
+      "lexiconSize": 5,
       "hasMessages": true
      }
     },

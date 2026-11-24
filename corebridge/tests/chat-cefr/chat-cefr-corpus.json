@@ -7,7 +7,7 @@
  "worlds": [
   {
    "name": "constructed-tongue",
-   "note": "A constructed language (no code): a two-word phrase (`tesh mira`), an apostrophe inside a word (`dor'ath`), an advanced word (`zhaltor`), an intermediate one (`varenn`), a word with an English alternative and a part of speech (`kesh`), a context note (`lune`), a capitalised source word (`Varo`), and sampleWords entries with no difficulty.",
+   "note": "A constructed language (no code): a two-word phrase (`tesh mira`), an apostrophe inside a word (`dor'ath`), an advanced word (`zhaltor`), an intermediate one (`varenn`), a word with an English alternative and a part of speech (`kesh`), a context note (`lune`), a capitalised source word (`Varo`), sampleWords entries with no difficulty, and one homograph (`tor`, tower) in a section with no `evidenceWords`.",
    "chatCefr": {
     "version": 1,
     "baseLanguage": "English",
@@ -195,6 +195,17 @@
        "alsoEnglish": false
       },
       {
+       "word": "tor",
+       "key": "tor",
+       "translation": "tower",
+       "alternatives": [],
+       "partOfSpeech": null,
+       "difficulty": "beginner",
+       "context": null,
+       "source": "sampleWords",
+       "alsoEnglish": true
+      },
+      {
        "word": "varenn",
        "key": "varenn",
        "translation": "harbour",
@@ -332,7 +343,7 @@
   },
   {
    "name": "spanish-real",
-   "note": "A real language with homographs: `once` (eleven), `sin` (without) and `red` (net) are English words too (`alsoEnglish`); accented keys (`dónde`, `mañana` with an alternative), a two-word phrase (`buenos días`), a two-letter gloss (`en`, in), a one-word key that also starts a phrase key (`buenos`, `buenos días`), a homograph with an English alternative (`fin`, end or finish), homographs whose translation is two words (`pie`, on foot) or opens with an article (`can`, a dog), an alternative of two words (`hora`, alt `the time`), a gloss with parentheses (`usted`, you (formal)), and the three difficulties.",
+   "note": "A real language with homographs: `once` (eleven), `sin` (without) and `red` (net) are English words too (`alsoEnglish`); accented keys (`dónde`, `mañana` with an alternative), a two-word phrase (`buenos días`), a two-letter gloss (`en`, in), a one-word key that also starts a phrase key (`buenos`, `buenos días`), a homograph with an English alternative (`fin`, end or finish), homographs whose translation is two words (`pie`, on foot) or opens with an article (`can`, a dog), an alternative of two words (`hora`, alt `the time`), a gloss with parentheses (`usted`, you (formal)), a gloss word outside ASCII (`ingenuo`, naïve), a homograph whose translation keys differently from its text (`sale`, Goes out.), a phrase whose second word is a key too (`mi amigo`), a homograph with an alternative that keys to nothing (`son`, are or `…`), a translation holding a no-break space (`hoy`, this day), an alternative of two code points outside the BMP (`runa`, alt `𐌰𐌱`), a key that ends in a number (`covid-19`), and the three difficulties.",
    "chatCefr": {
     "version": 1,
     "baseLanguage": "English",
@@ -540,6 +551,17 @@
        "alsoEnglish": true
       },
       {
+       "word": "covid-19",
+       "key": "covid-19",
+       "translation": "COVID-19",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
        "word": "desafortunadamente",
        "key": "desafortunadamente",
        "translation": "unfortunately",
@@ -599,6 +621,28 @@
        "alsoEnglish": false
       },
       {
+       "word": "hoy",
+       "key": "hoy",
+       "translation": "this day",
+       "alternatives": [],
+       "partOfSpeech": "adverb",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "ingenuo",
+       "key": "ingenuo",
+       "translation": "naïve",
+       "alternatives": [],
+       "partOfSpeech": "adjective",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
        "word": "mañana",
        "key": "mañana",
        "translation": "tomorrow",
@@ -606,6 +650,17 @@
         "morning"
        ],
        "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "mi amigo",
+       "key": "mi amigo",
+       "translation": "my friend",
+       "alternatives": [],
+       "partOfSpeech": null,
        "difficulty": "beginner",
        "context": null,
        "source": "wordTranslationCache",
@@ -656,11 +711,48 @@
        "alsoEnglish": true
       },
       {
+       "word": "runa",
+       "key": "runa",
+       "translation": "rune",
+       "alternatives": [
+        "𐌰𐌱"
+       ],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "sale",
+       "key": "sale",
+       "translation": "Goes out.",
+       "alternatives": [],
+       "partOfSpeech": "verb",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      },
+      {
        "word": "sin",
        "key": "sin",
        "translation": "without",
        "alternatives": [],
        "partOfSpeech": "preposition",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
+      },
+      {
+       "word": "son",
+       "key": "son",
+       "translation": "are",
+       "alternatives": [
+        "…"
+       ],
+       "partOfSpeech": "verb",
        "difficulty": "beginner",
        "context": null,
        "source": "wordTranslationCache",
@@ -1180,7 +1272,7 @@
   },
   {
    "name": "cyrillic-real",
-   "note": "A Cyrillic lexicon: keys keep every letter; a two-word phrase (`добрый день`).",
+   "note": "A Cyrillic lexicon: keys keep every letter; a two-word phrase (`добрый день`); a key written with its stress mark, which ends it (`вода́`, a combining U+0301).",
    "chatCefr": {
     "version": 1,
     "baseLanguage": "English",
@@ -1310,6 +1402,17 @@
      "reason": null,
      "maxPhraseWords": 2,
      "entries": [
+      {
+       "word": "вода́",
+       "key": "вода́",
+       "translation": "water",
+       "alternatives": [],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
       {
        "word": "добрый день",
        "key": "добрый день",
@@ -3788,6 +3891,66 @@
   },
   {
    "world": "constructed-tongue",
+   "why": "A left single quotation mark (U+2018) inside a word keys as an apostrophe too: `Dor‘ath` matches `dor'ath`.",
+   "level": "A1",
+   "line": "Dor‘ath ilo",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "dor'ath",
+     "translation": "gate"
+    },
+    {
+     "word": "ilo",
+     "translation": "friend"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "dor'ath",
+     "ilo"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "An underscore is a word character, so it is not stripped from a word's ends: `_ilo_` keys to `_ilo_`, which is no key, and nothing is hinted.",
+   "level": "A1",
+   "line": "Say _ilo_ to me",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "constructed-tongue",
+   "why": "A section with no `evidenceWords` has none: `The` and `stands` are no evidence, so the homograph `tor` has none and stays English.",
+   "level": "A1",
+   "line": "The tor stands",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "constructed-tongue",
    "why": "A line of punctuation only: no pieces.",
    "level": "A1",
    "line": "— … !!",
@@ -4195,6 +4358,501 @@
    "nextState": {
     "seen": [],
     "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A clause ends at `…` too: `el…` closes the first clause, so the nearest evidence in `red`'s own clause is the English `time`, not the evidence word `el` before it, and `red` is English.",
+   "level": "A1",
+   "line": "el… red time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A gloss word is English before it is foreign: `naïve` (the gloss of `ingenuo`) holds a character outside ASCII but is English evidence, so `red` beside it is English.",
+   "level": "A1",
+   "line": "naïve red now",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A match ends at its last token: after the phrase `Buenos días` the next piece follows with no separator, so `red` shares its clause, and the target phrase just before it makes `red` Spanish though the English `net` follows.",
+   "level": "A1",
+   "line": "Buenos días red net",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "buenos días",
+     "translation": "good morning",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "buenos días",
+     "red"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A gloss must equal the next pieces, not begin them: `— on footing` is no gloss of `pie` (on foot), and with no evidence anywhere in the line `pie` stays English.",
+   "level": "A1",
+   "line": "pie — on footing",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "English evidence needs at least three code points, and three is enough: `dog` (from `can`'s `a dog`) one unit before `red` is as near as the evidence word `el` after, and the one before decides, so `red` is English.",
+   "level": "A1",
+   "line": "dog red el",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "The gloss is read over the following pieces, tokens that key to nothing dropped: `— on — foot` still glosses `pie` (on foot).",
+   "level": "A1",
+   "line": "We walk pie — on — foot",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "pie",
+     "translation": "on foot",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "pie"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A gloss is compared by its key: `sale`'s translation `Goes out.` keys to `goes out`, so `— goes out —` glosses it.",
+   "level": "A1",
+   "line": "It is on sale — goes out — now",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "sale",
+     "translation": "Goes out.",
+     "partOfSpeech": "verb",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "sale"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A line splits on any whitespace, a newline too: `el` before the line break is the nearest evidence for `red`, which is Spanish.",
+   "level": "A1",
+   "line": "el\nred net",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "red"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A clause ends at `?`: `el?` closes the first clause, so the nearest evidence in `red`'s own clause is the English `time`, and `red` is English.",
+   "level": "A1",
+   "line": "el? red time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A clause ends at `:`: `el:` closes the first clause, so the nearest evidence in `red`'s own clause is the English `time`, and `red` is English.",
+   "level": "A1",
+   "line": "el: red time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A clause end may carry `)`: `el.)` closes the first clause, so `red` takes the English `time` of its own.",
+   "level": "A1",
+   "line": "el.) red time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A clause end may carry `]`: `el.]` closes the first clause, so `red` takes the English `time` of its own.",
+   "level": "A1",
+   "line": "el.] red time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A clause end may carry `”`: `el.”` closes the first clause, so `red` takes the English `time` of its own.",
+   "level": "A1",
+   "line": "el.” red time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A clause end may carry `'`: `el.'` closes the first clause, so `red` takes the English `time` of its own.",
+   "level": "A1",
+   "line": "el.' red time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A clause end may carry any number of closers: `el.)”` closes the first clause, so `red` takes the English `time` of its own.",
+   "level": "A1",
+   "line": "el.)” red time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A clause end is at a token's end: the `.` inside `e.g` ends no clause, so the evidence word `el` two units before `red` is as near as the English `time` two after, and the one before makes `red` Spanish.",
+   "level": "A1",
+   "line": "el e.g red now time",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "red"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A bracket waives the separator only when it opens the token: `net(` keys to `net` but does not open with `(`, so it is no gloss of `red`; as English evidence it makes `red` English.",
+   "level": "A1",
+   "line": "I see a red net( here",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "The gloss article `a` is read past: `— a net —` glosses `red`.",
+   "level": "A1",
+   "line": "red — a net —",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "red"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "The gloss article `an` is read past: `— an eleven —` glosses `once`, though the English `eleven` would otherwise make it English.",
+   "level": "A1",
+   "line": "Wait for once — an eleven — here",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "once",
+     "translation": "eleven",
+     "partOfSpeech": "number",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "once"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "At most one gloss article is read past: `— the a net —` is no gloss of `red`, and the English `the` just before makes it English.",
+   "level": "A1",
+   "line": "Bring the red — the a net — now",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A gloss that keys to nothing glosses nothing: `son`'s alternative `…` keys to nothing and so cannot match past the article `the` at the line's end; the English `the` makes `son` English.",
+   "level": "A1",
+   "line": "son — the",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A gloss splits into words on any whitespace, a no-break space too: `hoy`'s translation `this day` gives the English word `day`, one unit before `red`, as near as `el` after; the one before decides, so `red` is English.",
+   "level": "A1",
+   "line": "day red el",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [],
+   "nextState": {
+    "seen": [],
+    "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "English evidence counts code points, not UTF-16 units: `𐌰𐌱` (an alternative of `runa`) is two code points, too short to be English evidence; it holds characters outside ASCII, so it is foreign evidence and `red` is Spanish.",
+   "level": "A1",
+   "line": "𐌰𐌱 red now",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "red"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "The scan resumes after a match: `mi amigo` is one match and `amigo`, a key too, is not met again inside it.",
+   "level": "A1",
+   "line": "Hola mi amigo",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "mi amigo",
+     "translation": "my friend",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "mi amigo"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A number is a word character, so a key may end in one: `covid-19` keys to `covid-19`.",
+   "level": "A1",
+   "line": "Hay covid-19 aquí",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "covid-19",
+     "translation": "COVID-19",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "covid-19"
+    ],
+    "newWordIndex": 1
    }
   },
   {
@@ -4794,6 +5452,31 @@
      "хлеб"
     ],
     "newWordIndex": 3
+   }
+  },
+  {
+   "world": "cyrillic-real",
+   "why": "A combining mark is a word character, so it is not stripped from a word's end: `Вода́` keys to `вода́`, its stress mark kept.",
+   "level": "A1",
+   "line": "Вода́ здесь",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "вода́",
+     "translation": "water",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "вода́"
+    ],
+    "newWordIndex": 1
    }
   },
   {
