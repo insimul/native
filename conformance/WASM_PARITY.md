@@ -1,18 +1,21 @@
 # three-leg conformance parity (native ⟷ wasm ⟷ Rust)
 
 **Status: no divergences.** The native build, the Emscripten/wasm32 build and the
-Rust wrapper produce **byte-identical** results on all **420** cases of the golden
+Rust wrapper produce **byte-identical** results on all **513** cases of the golden
 Prolog corpus — same pass/fail, same solution count, same solution *text* from
 `insimul_query_next()`, in the same order.
 
 | leg | command | result |
 |---|---|---|
-| native (C ABI) | `ctest --test-dir build -R conformance` | 20 files, 420 cases, 420 passed, 0 failed, 1 amended |
-| **Rust wrapper** | `cargo test --manifest-path rust/Cargo.toml` | 20 files, 420 cases, 420 passed, 0 failed, 1 amended |
-| **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 20 files, 420 cases, 420 passed, 0 failed, 1 amended |
-| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 420/420 records identical on all three |
+| native (C ABI) | `ctest --test-dir build -R conformance` | 26 files, 513 cases, 513 passed, 0 failed, 1 amended |
+| **Rust wrapper** | `cargo test --manifest-path rust/Cargo.toml` | 26 files, 513 cases, 513 passed, 0 failed, 1 amended |
+| **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 26 files, 513 cases, 513 passed, 0 failed, 1 amended |
+| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 513/513 records identical on all three |
 
-(420 since PL.native-prolog-mirror-full slice 2 added core's `mechanic-puzzle.json` (38),
+(513 since PL.native-prolog-mirror-full slice 3 added core's `mechanic-combat.json` (10),
+`mechanic-dialogue.json` (32), `mechanic-fishing.json` (15), `mechanic-gameplay-state.json`
+(9), `mechanic-mining.json` (15) and `mechanic-perception.json` (12) at the same pin, with no
+engine change and no new amendment. 420 since slice 2 added core's `mechanic-puzzle.json` (38),
 `mechanic-platformer.json` (28), `mechanic-business.json` (39), `mechanic-crafting.json`
 (25) and `mechanic-equipment.json` (29) at the same pin, with no engine change and no new
 amendment. 261 since slice 1 added core's `geo-map.json` (15),

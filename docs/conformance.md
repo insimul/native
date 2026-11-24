@@ -18,8 +18,10 @@ byte for byte. Three legs run the identical corpus:
 | **WebAssembly** | `tests/wasm_conformance.mjs` (the `wasm_conformance` ctest) | `scripts/build_wasm.sh` |
 
 All three print the same `files / cases / passed / failed / amended` summary — currently
-**20 files, 420 cases, 420 passed, 1 amended** at core 45409ed (261 cases in 15 files before
-PL.native-prolog-mirror-full slice 2 added `mechanic-puzzle.json`, `mechanic-platformer.json`,
+**26 files, 513 cases, 513 passed, 1 amended** at core 45409ed (420 cases in 20 files before
+PL.native-prolog-mirror-full slice 3 added `mechanic-combat.json`, `mechanic-dialogue.json`,
+`mechanic-fishing.json`, `mechanic-gameplay-state.json`, `mechanic-mining.json` and
+`mechanic-perception.json`; 261 in 15 before slice 2 added `mechanic-puzzle.json`, `mechanic-platformer.json`,
 `mechanic-business.json`, `mechanic-crafting.json` and `mechanic-equipment.json`; 181 in 12
 before slice 1 added `geo-map.json`, `mechanic-farming.json` and `mechanic-strategy.json`; 76 before core d88b6f0's `quest-count-goals.json` and
 `pack-agreement.json` joined the mirror) — so a divergence between the C ABI and any
@@ -89,7 +91,7 @@ scripts/conformance_parity.sh        # builds whatever leg is missing, then comp
 
 Because it compares the *raw* strings, it catches a divergence in solution order, error
 wording, or number formatting that each leg's own `expected` check would happily pass.
-Result today: **420/420 byte-identical**. The full record, and the non-vacuity gates each
+Result today: **513/513 byte-identical**. The full record, and the non-vacuity gates each
 verified by deliberately triggering them, live in
 [../conformance/WASM_PARITY.md](../conformance/WASM_PARITY.md).
 

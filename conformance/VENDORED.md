@@ -24,8 +24,16 @@ the mirror's path as the corpus resolver finds its sibling
 (`../babylon/packages/core`, then `../insimul-runtime/packages/core`); a sibling
 without the pin's commit is named and set aside, and `-DCORE_DIR=` (empty) turns
 the record checks off. The PASS line says which check ran and where its core came
-from. `prolog_mirror_digest_negative` perturbs a copy six ways (eight with a core
-checkout) and passes only when each is refused for its own named reason. It exists because a stale `pack-agreement.json` whose answers
+from, or why none was used (no sibling holding the pin, a stale sibling, or the
+checks turned off by `-DCORE_DIR=`; the ctest `prolog_mirror_digest_optout` holds
+that last wording). `prolog_mirror_digest_negative` perturbs a copy six ways (eight
+with a core checkout) and passes only when each is refused for its own named
+reason. The ctests do not take the script's word for whether a core was found:
+CMake looks for the monorepo's sibling core itself at configure time, and when one
+holding the pin is there, `prolog_mirror_digest` must say it held the record to
+core's git objects and `prolog_mirror_digest_negative` must refuse **8 of 8**, so a
+script that lost its default lookup goes red instead of falling back to
+manifest-only and 6 of 6 (re-run cmake if that sibling goes away). It exists because a stale `pack-agreement.json` whose answers
 had not changed stayed green on every leg (self-sweep M22). **Re-sync with the
 recorder, never a hand copy**: bump the pin, then
 
@@ -70,14 +78,22 @@ unchanged through the recorder (`ADD=`) — `mechanic-puzzle.json` (38 cases) an
 trio with strategy (see CLAUDE.md's genre rows), plus `mechanic-business.json` (39),
 `mechanic-crafting.json` (25) and `mechanic-equipment.json` (29). No engine change
 and no new amendment: all 159 new cases pass on every leg under the order rule.
-The record checks now run by default inside the monorepo (above). **20 files, 420
-cases**, 420 passed, 1 amended on all three legs. **Still missing** (17 of core's
-37, 308 cases, listed in `PROLOG_MIRROR.json`'s `notMirrored` and held there by the
-digest gate): the other 12 `mechanic-*` files (`combat`, `dialogue`, `fishing`,
-`gameplay-state`, `mining`, `perception`, `routine`, `skill`, `stamina`,
-`traversal`, `volition`, `weather`), `agent-ai.json`, `alive-negation.json`,
-`death-readers.json`, `placement.json` and `scaffold.json`. They are later slices
-of the same row.
+The record checks now run by default inside the monorepo (above). 20 files, 420
+cases, 420 passed, 1 amended on all three legs.
+
+**Slice 3** (2026-11-23, same pin `45409ed`): six more of core's files added
+unchanged through the recorder (`ADD=`) — `mechanic-combat.json` (10 cases),
+`mechanic-dialogue.json` (32), `mechanic-fishing.json` (15),
+`mechanic-gameplay-state.json` (9), `mechanic-mining.json` (15) and
+`mechanic-perception.json` (12). No engine change and no new amendment: all 93 new
+cases pass on every leg under the order rule. The digest ctests now require the
+sibling core when CMake finds one holding the pin, and the PASS line says when the
+record checks were turned off (above). **26 files, 513 cases**, 513 passed, 1
+amended on all three legs. **Still missing** (11 of core's 37, 215 cases, listed in
+`PROLOG_MIRROR.json`'s `notMirrored` and held there by the digest gate): the other
+6 `mechanic-*` files (`routine`, `skill`, `stamina`, `traversal`, `volition`,
+`weather`), `agent-ai.json`, `alive-negation.json`, `death-readers.json`,
+`placement.json` and `scaffold.json`. They are later slices of the same row.
 
 Before that, synced at core `45409ed` (PL.native-bundle-core-r2,
 2026-11-19, the commit `corebridge/core-pin.json` pins): every one of the 12 files the

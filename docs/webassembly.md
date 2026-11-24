@@ -133,7 +133,7 @@ here — never a real disk).
   subset. It drives them through `wasm/insimul-api.mjs`, i.e. through the public ABI a
   browser consumer uses.
 
-Both legs currently report `20 files, 420 cases, 420 passed, 0 failed, 1 amended`.
+Both legs currently report `26 files, 513 cases, 513 passed, 0 failed, 1 amended`.
 
 ## Native ⟷ wasm parity
 
@@ -147,7 +147,7 @@ scripts/conformance_parity.sh        # builds whatever leg is missing, then comp
 ```
 
 It fails loudly if the wasm leg runs fewer cases than native, if the summary lines differ,
-or if any case record differs by a byte. Current result: **PASS, 420/420 identical — no
+or if any case record differs by a byte. Current result: **PASS, 513/513 identical — no
 divergences.** See [../conformance/WASM_PARITY.md](../conformance/WASM_PARITY.md) for the
 full parity record, the non-vacuity gates (each verified by deliberately triggering it),
 and the one documented amendment. The corpus itself is covered in

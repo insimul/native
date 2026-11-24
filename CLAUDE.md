@@ -294,13 +294,16 @@
   what makes the parity gates runnable from a fresh checkout with no sibling
   submodule. Re-sync it with the recorder (`tests/prolog_mirror_digest.cmake`
   `MODE=record`, from core's git objects at `corebridge/core-pin.json`'s
-  `coreCommit`), never a hand copy; see `conformance/VENDORED.md`. It holds 20 of
+  `coreCommit`), never a hand copy; see `conformance/VENDORED.md`. It holds 26 of
   core's 37 files at 45409ed (PL.native-prolog-mirror-full slice 1 added `geo-map`,
   `mechanic-farming` and `mechanic-strategy`; slice 2 `mechanic-puzzle`,
   `mechanic-platformer`, `mechanic-business`, `mechanic-crafting` and
-  `mechanic-equipment`); the other 17 (agent-ai, alive-negation, death-readers,
-  placement, scaffold and 12 `mechanic-*` files) are that row's later slices, named
-  in `conformance/PROLOG_MIRROR.json`'s `notMirrored`.
+  `mechanic-equipment`; slice 3 `mechanic-combat`, `mechanic-dialogue`,
+  `mechanic-fishing`, `mechanic-gameplay-state`, `mechanic-mining` and
+  `mechanic-perception`); the other 11 (agent-ai, alive-negation, death-readers,
+  placement, scaffold and the `mechanic-*` files routine, skill, stamina, traversal,
+  volition and weather) are that row's later slices, named in
+  `conformance/PROLOG_MIRROR.json`'s `notMirrored`.
 - **The mirror's BYTES are a gate, not only its answers.** `prolog_mirror_digest`
   holds every mirrored file to the sha256 of core's bytes at the pin recorded in
   `conformance/PROLOG_MIRROR.json`, refuses an extra, missing, renamed or changed
@@ -310,8 +313,13 @@
   monorepo's sibling core (`../babylon/packages/core`, then
   `../insimul-runtime/packages/core`, found from the mirror's path) when it holds
   the pin's commit; a stale sibling is named and set aside, and the PASS line names
-  where the core came from. `prolog_mirror_digest_negative` proves each refusal
-  (six, eight with a core checkout). A stale `pack-agreement.json`
+  where the core came from, or why none was used (`-DCORE_DIR=` empty says the
+  checks were turned off; `prolog_mirror_digest_optout` holds that wording).
+  `prolog_mirror_digest_negative` proves each refusal (six, eight with a core
+  checkout). CMake looks for that sibling itself at configure time, and when one
+  holding the pin is there the ctests require it: the digest must say it held the
+  record to core's objects and the negative must refuse 8 of 8, so a script that
+  lost its default lookup goes red rather than passing manifest-only with 6 of 6. A stale `pack-agreement.json`
   whose answers had not changed stayed green on every leg (self-sweep M22): grading
   answers cannot see stale bytes.
 - **Every leg follows core's order rule** (core's `conformance/README.md`,
@@ -338,8 +346,9 @@
   conformance.rs` and `tests/wasm_conformance.mjs` must stay in lockstep; all three
   print an `[AMEND]` line and the same
   `files / cases / passed / failed / amended` summary, so the legs are
-  directly comparable (currently 20 files, 420 cases, 420 passed, 1 amended, since
-  PL.native-prolog-mirror-full slice 2; 15 files and 261 cases after slice 1;
+  directly comparable (currently 26 files, 513 cases, 513 passed, 1 amended, since
+  PL.native-prolog-mirror-full slice 3; 20 files and 420 cases after slice 2;
+  15 files and 261 cases after slice 1;
   12 files and 181 cases before it; 10 files
   and 76 cases until PL.native-bundle-core re-copied the mirror at core d88b6f0;
   PL.native-bundle-core-r2 re-copied the same 12 at core 45409ed). The
@@ -354,7 +363,7 @@
   wording or number formatting fails even when every leg still satisfies
   `expected`. A missing toolchain is a hard failure, not a skip (`--no-rust`
   makes skipping explicit). A new leg should emit the same records. Result
-  today: 420/420 byte-identical on all three — see `conformance/WASM_PARITY.md`,
+  today: 513/513 byte-identical on all three — see `conformance/WASM_PARITY.md`,
   which is where any future divergence gets documented (never skipped).
 - The corpus carries the **KINP identity layer** (`identity.json`,
   `equivalence.json`, `worlds.json`, and a rewritten `gameplay.json`): entity
