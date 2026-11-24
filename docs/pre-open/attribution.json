@@ -1,11 +1,11 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-native-dock-operations-rows",
-    "gitHead": "e527bb837a28e9dc0a2c718e05e77255093db57e"
+    "root": "native-native-archetype-key-rows",
+    "gitHead": "cc6bc327b78fc4dc5d0c198af4ae6e34c5c8dec3"
   },
   "coverage": {
-    "trackedFiles": 549,
+    "trackedFiles": 578,
     "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,
