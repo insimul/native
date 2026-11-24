@@ -2,7 +2,7 @@
   "tool": "scripts/check-attribution.mjs",
   "repository": {
     "root": "native-native-chat-cefr-rows-s1-line-rule-table",
-    "gitHead": "8b9a5ac005a3b91137b44d3b0869528e61f2441c"
+    "gitHead": "d30e73a6d0326c8ffa091e4bb3e4629057adc9fb"
   },
   "coverage": {
     "trackedFiles": 585,
