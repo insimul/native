@@ -1141,6 +1141,24 @@
   Unreal's `Portable/InsimulVehicleRules` is the interim copy these rows (with the
   interactables, rider and session rows already here) retire
   (`P9e.unreal.retire-vehicle-rules-copy`; `corebridge/ENGINE_BINDINGS.md` maps it).
+- **The live NPC chat's CEFR rows (PL.native-chat-cefr-rows slice 1, U118, U128) read a
+  section this library never builds.** The World IR's `chatCefr` section is the export's
+  data (U110(3), U113(1)); `chatCefr.<fn>` takes it as `section` on every call, holds it to
+  its declared shape (`CHAT_CEFR_SECTION`; `chatCefr.section` answers an unreadable one as
+  `valid: false` and why, every other row refuses it `[invalid-input]`) and replays the
+  export's rule over it. Two steps are core's and are CALLED: `npcHash` and `wordKey`. The
+  corpus is NOT core's and NOT the export's: the export's own corpus is not open data, so it
+  is never vendored here. `corebridge/tests/chat-cefr/chat-cefr-corpus.json` holds
+  hand-written sections and cases in the section's conformance families, every expectation
+  computed by the export's rule (its description states the rule in full, so an engine
+  runner replays it from the data alone). `tools/chat-cefr-cases.mjs --write` transcribes
+  it into `tests/cases/chat-cefr-corpus.json` (sections named by `$file`) for both case legs
+  and parity; `chat_cefr_cases` holds the transcription to the corpus, and
+  `chat_cefr_cases_negative` must see sixteen perturbations named. To compare with the
+  export's own corpus, `--emit <dir> --corpus <file>` transcribes it OUTSIDE this tree for a
+  local run; never commit what it writes. Slice 2 (the grammar check, the strips, the speech
+  steps, the marker-only rule) is still to come; Unreal's `Portable/InsimulChatCefr` is the
+  interim copy both slices retire (`ENGINE_BINDINGS.md` maps slice 1's part).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

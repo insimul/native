@@ -668,6 +668,18 @@ game; **meta** = about the bridge itself.
 | `passBy.planRound` | `{ here, next, player, villagerRadius?, playerRadius? }` → `{ way }` (three points, or null) | `pass-by/pass-by` `planRoundPlayer` | P4 villager pass-by (PL.native-pass-by-rows; core's PL.pass-by-core) |
 | `passBy.distanceToSegment` | `{ p, a, b }` → `{ distanceM }` | `pass-by/pass-by` `passByDistanceToSegment` | P4 villager pass-by (PL.native-pass-by-rows; core's PL.pass-by-core) |
 | `passBy.replay` | `{ scene: { dt?, seconds, obstacles?, player: { at, radius?, legs? }, villagers: [{ id, at, path, speed?, radius? }], controls? } }` → core's `PassByReplay` (`{ frames, guardFloorM, villagers, player }`) | `pass-by/pass-by-replay` `replayPassBy` | P4 villager pass-by (PL.native-pass-by-rows; core's PL.pass-by-core) |
+| `chatCefr.section` | `{ section? }` → `{ valid, why, targetLanguage, targetLanguageName, lexiconReason, lexiconSize, hasMessages }` (an absent, null or malformed section answers `valid: false` and why, never a refusal) | the World IR's `chatCefr` section, held to its declared shape | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1; U110(3), U118) |
+| `chatCefr.levelRow` | `{ section, level }` → `{ row }` (`level` one of A1-C2, exactly) | the section's `levels` | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1) |
+| `chatCefr.lineRule` | `{}` → `{ englishEvidenceMinLength, glossArticles, clauseEndPattern }` | the line rule's constants (the corpus's `lineLanguageRule`) | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1) |
+| `chatCefr.normalizeWord` | `{ text }` → `{ key }` (NFC, curly apostrophes, whitespace runs, then core's word key) | `language-learning/word-key` `wordKey` | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1) |
+| `chatCefr.npcMode` | `{ section, level, npcId }` → `{ hash, bucket, mode }` | `language-learning/adaptation` `npcHash`; the section's `npcLanguageModes` | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1) |
+| `chatCefr.translateWord` | `{ section, word }` → `{ translation }` (`{ word, translation, alternatives, partOfSpeech, difficulty, context, source }`, or null) | the section's `lexicon` | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1) |
+| `chatCefr.vocabHintFor` | `{ section, word }` → `{ hint }` (`{ word, translation, context?, partOfSpeech?, difficulty? }`, or null) | the section's `lexicon` | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1) |
+| `chatCefr.shouldShowVocabHint` | `{ section, level, newWordIndex, difficulty, mastered }` → `{ show }` (`difficulty` may be null: beginner) | the section's `levels[level].hints` | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1) |
+| `chatCefr.vocabHintsForLine` | `{ section, line, level, state?, mastered? }` → `{ hints, state }` (only target-language words: a homograph by its gloss or the nearest evidence) | the section's `levels` and `lexicon` | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1; PL.pipelines-hint-language-filter) |
+| `chatCefr.messageKind` | `{ section, message: { role, content? } }` → `{ row }` (the kind row, or null) | the section's `messages.kinds` | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1) |
+| `chatCefr.messageGetsHints` | `{ section, message }` → `{ hints }` | the section's `messages.kinds` and `messages.hints` | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1) |
+| `chatCefr.messageHints` | `{ section, message, level, state?, mastered? }` → `{ hints, state }` (a line not read for hints: none, the state unchanged) | the section's `messages`, `levels` and `lexicon` | P9h live NPC chat CEFR adaptation (PL.native-chat-cefr-rows slice 1) |
 | `modules.activate` | `{ ir }` or `{ genre }` or `{}` → `{ source, active, predicatePacks, hostInterfaces, reason }` | `modules/module-activation` | P9 (Godot's fork has the same row) |
 | `modules.table` | `{}` → core's `moduleActivationTable()` | same | P9 |
 | `prolog.packs` | `{ areas? }` → `{ packs: [{ area, prolog, runtimePredicates }], order, unknown }` | `prolog/predicate-packs` | P9 |
@@ -2961,6 +2973,56 @@ the corpus (V8's answer exactly, the row's within the tolerance). Hand cases:
 `tests/cases/bridge-vehicle.json`, every expectation computed by core's own functions at
 the pin. Unreal's interim `Portable/InsimulVehicleRules` (`ParkVehicle`, `StreetProbes`)
 is what these rows retire (`P9e.unreal.retire-vehicle-rules-copy`; `ENGINE_BINDINGS.md`).
+### The live NPC chat's CEFR rows: lookups, hints and message kinds (PL.native-chat-cefr-rows, slice 1)
+
+The World IR's `chatCefr` section is the export's data for the live NPC chat's CEFR
+adaptation (U110(3), U113(1)): a table per CEFR level, the world's lexicon (target-language
+words with their English glosses) and the chat's message kinds. These rows replay the rules
+an engine applies over it, with no model call and no key, so an engine binds them instead of
+keeping a copy (Unreal's interim `Portable/InsimulChatCefr`, which
+`P9h.unreal.retire-chat-cefr-copy` retires; `ENGINE_BINDINGS.md` maps it). Nothing here
+builds a section: every row but `chatCefr.lineRule` and `chatCefr.normalizeWord` takes one as `section`. Slice 1 is the vocabulary
+half; the grammar check, the strips and the speech steps (the section's `grammar` and
+`messages.speech`) are slice 2's and pass through unread.
+
+- **`chatCefr.section`** says whether a section is readable and why not (absent or null: the
+  world states none; otherwise the first member that breaks its declared shape), and reads
+  the lexicon's language record, its name, why it is empty when the world is the reason
+  (`no-target-language`, `target-is-base-language`, `no-language-record`), its size, and
+  whether the section states the message kinds (a section written before them does not).
+  It never refuses a section; every other row refuses an unreadable one as `[invalid-input]`.
+- **`chatCefr.levelRow`** is the section's row for a level (`A1` … `C2`, exactly).
+  **`chatCefr.npcMode`** is the language an NPC speaks at a level: core's `npcHash` of its
+  id, mod 100, against the level's percentages. **`chatCefr.shouldShowVocabHint`** is the
+  level's hint rule for one new word.
+- **`chatCefr.translateWord`** and **`chatCefr.vocabHintFor`** answer one hovered or clicked
+  word or phrase from the lexicon (null when it does not know it), keyed as
+  **`chatCefr.normalizeWord`** keys it: NFC, curly apostrophes made straight, whitespace
+  runs made one space, then core's `wordKey`.
+- **`chatCefr.vocabHintsForLine`** is the hint cards for one NPC line and the conversation's
+  next hint state (`{ seen, newWordIndex }`, which the engine keeps between lines). Only
+  target-language words are hinted (U118(10)): a lexicon word that is also an English word
+  (`alsoEnglish`) counts when the line glosses it, or else when the nearest evidence in its
+  clause (or in the line) is the target language; **`chatCefr.lineRule`** states the rule's
+  constants.
+- **`chatCefr.messageKind`**, **`chatCefr.messageGetsHints`** and **`chatCefr.messageHints`**
+  read the kind table: a message's kind row (its colour among it), whether it is read for
+  hints, and the hints of a line that is (a line that is not meets no word).
+
+Evidence: the corpus `tests/chat-cefr/chat-cefr-corpus.json` is replayable data in the
+section's own conformance families (9 hand-written sections; `levelCases` 6,
+`npcModeCases` 21, `lookupCases` 38, `lineCases` 53, `lineLanguageRule`,
+`messageKindCases` 18, `messageHintCases` 10), every expectation computed by the export's
+own rule. `tools/chat-cefr-cases.mjs --write` transcribes it into
+`tests/cases/chat-cefr-corpus.json` (147 cases, each section named by `$file`), which both
+case legs run and `corebridge_cases_parity` diffs byte for byte; `chat_cefr_cases` holds the
+transcription to the corpus and `chat_cefr_cases_negative` names sixteen perturbations.
+Hand cases: `tests/cases/bridge-chat-cefr.json` (every declared member of the section answered
+unreadable, the refusal by every other row, the level names, a section's own table, a key held
+twice, the hint rule over every level, absent state and mastered words, the whole kind row, a
+section with no kinds, and the `[invalid-input]` boundary of every argument). The export's own
+corpus is NOT vendored here (it is not open data): `chat-cefr-cases.mjs --emit <dir> --corpus
+<file>` transcribes it for a local run of both legs from a checkout of the export.
 
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 
