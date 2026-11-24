@@ -258,7 +258,7 @@ function(check_mirror mirror manifest pin core out summary)
   # The mirror is complete (slice 5): every core file is mirrored, so a name left in
   # `notMirrored` (a core file new at a moved pin, or a slice reverted) is refused.
   foreach(f IN LISTS M_NOT)
-    list(APPEND problems "incomplete mirror: ${f} is listed as not mirrored; the mirror holds every core file, so record it with -DADD=${f} (MODE=record)")
+    list(APPEND problems "incomplete mirror: ${f} is listed as not mirrored, but the mirror holds every core file: record it with -DADD=${f} (MODE=record)")
   endforeach()
 
   list(LENGTH M_NAMES nm)
