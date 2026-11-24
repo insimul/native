@@ -294,17 +294,20 @@
   what makes the parity gates runnable from a fresh checkout with no sibling
   submodule. Re-sync it with the recorder (`tests/prolog_mirror_digest.cmake`
   `MODE=record`, from core's git objects at `corebridge/core-pin.json`'s
-  `coreCommit`), never a hand copy; see `conformance/VENDORED.md`. It holds 32 of
-  core's 37 files at 45409ed (PL.native-prolog-mirror-full slice 1 added `geo-map`,
+  `coreCommit`), never a hand copy; see `conformance/VENDORED.md`. It holds **all 37
+  of core's files** at 45409ed (728 cases; the row is complete) (PL.native-prolog-mirror-full slice 1 added `geo-map`,
   `mechanic-farming` and `mechanic-strategy`; slice 2 `mechanic-puzzle`,
   `mechanic-platformer`, `mechanic-business`, `mechanic-crafting` and
   `mechanic-equipment`; slice 3 `mechanic-combat`, `mechanic-dialogue`,
   `mechanic-fishing`, `mechanic-gameplay-state`, `mechanic-mining` and
   `mechanic-perception`; slice 4 `mechanic-routine`, `mechanic-skill`,
   `mechanic-stamina`, `mechanic-traversal`, `mechanic-volition` and
-  `mechanic-weather`); the other 5 (agent-ai, alive-negation, death-readers,
-  placement and scaffold, 97 cases) are that row's later slices, named in
-  `conformance/PROLOG_MIRROR.json`'s `notMirrored`.
+  `mechanic-weather`; slice 5, the last, `agent-ai`, `alive-negation`,
+  `death-readers`, `placement` and `scaffold`, 97 cases).
+  `conformance/PROLOG_MIRROR.json`'s `notMirrored` is `[]` and the digest gate
+  refuses any name there ("incomplete mirror"), so a core file new at a moved pin
+  must be recorded with `ADD=` in the same change, and the mirror cannot shrink
+  back to a subset while staying green.
 - **The mirror's BYTES are a gate, not only its answers.** `prolog_mirror_digest`
   holds every mirrored file to the sha256 of core's bytes at the pin recorded in
   `conformance/PROLOG_MIRROR.json`, refuses an extra, missing, renamed or changed
@@ -317,11 +320,11 @@
   the pin's commit; a stale sibling is named and set aside, and the PASS line names
   where the core came from, or why none was used (`-DCORE_DIR=` empty says the
   checks were turned off; `prolog_mirror_digest_optout` holds that wording).
-  `prolog_mirror_digest_negative` proves each refusal (six, eight with a core
+  `prolog_mirror_digest_negative` proves each refusal (seven, nine with a core
   checkout). CMake looks for that sibling itself at configure time, and when one
   holding the pin is there the ctests require it: the digest must say it held the
-  record to core's objects and the negative must refuse 8 of 8, so a script that
-  lost its default lookup goes red rather than passing manifest-only with 6 of 6
+  record to core's objects and the negative must refuse 9 of 9, so a script that
+  lost its default lookup goes red rather than passing manifest-only with 7 of 7
   (a sibling gone after configure is named by the script from `-DEXPECT_SIBLING`;
   re-run cmake). A stale `pack-agreement.json`
   whose answers had not changed stayed green on every leg (self-sweep M22): grading
@@ -350,8 +353,9 @@
   conformance.rs` and `tests/wasm_conformance.mjs` must stay in lockstep; all three
   print an `[AMEND]` line and the same
   `files / cases / passed / failed / amended` summary, so the legs are
-  directly comparable (currently 32 files, 631 cases, 631 passed, 1 amended, since
-  PL.native-prolog-mirror-full slice 4; 26 files and 513 cases after slice 3;
+  directly comparable (currently 37 files, 728 cases, 728 passed, 1 amended, since
+  PL.native-prolog-mirror-full slice 5, the whole of core's corpus at the pin;
+  32 files and 631 cases after slice 4; 26 files and 513 cases after slice 3;
   20 files and 420 cases after slice 2;
   15 files and 261 cases after slice 1;
   12 files and 181 cases before it; 10 files
@@ -368,7 +372,7 @@
   wording or number formatting fails even when every leg still satisfies
   `expected`. A missing toolchain is a hard failure, not a skip (`--no-rust`
   makes skipping explicit). A new leg should emit the same records. Result
-  today: 631/631 byte-identical on all three — see `conformance/WASM_PARITY.md`,
+  today: 728/728 byte-identical on all three — see `conformance/WASM_PARITY.md`,
   which is where any future divergence gets documented (never skipped).
 - The corpus carries the **KINP identity layer** (`identity.json`,
   `equivalence.json`, `worlds.json`, and a rewritten `gameplay.json`): entity

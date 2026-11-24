@@ -12,10 +12,15 @@ here, or the two engines stop testing the same thing.
 **The bytes are held, not only the answers.** `PROLOG_MIRROR.json` (beside this
 file, deliberately outside `prolog/` so no leg reads it as a corpus file) records
 the sha256 of core's bytes at `corebridge/core-pin.json`'s `coreCommit` for every
-mirrored file (`files`) and names every core file not mirrored yet (`notMirrored`).
-The ctest `prolog_mirror_digest` (`tests/prolog_mirror_digest.cmake`, plain
-`cmake -P`, no node and no skip) refuses an extra, missing, renamed or changed
-file and a record taken at any other commit than the pin. With a core checkout it
+mirrored file (`files`) and names every core file not mirrored (`notMirrored`).
+**The mirror is complete** (slice 5 below): it holds all of core's files at the pin,
+so `notMirrored` is `[]` and must stay so. The ctest `prolog_mirror_digest`
+(`tests/prolog_mirror_digest.cmake`, plain `cmake -P`, no node and no skip) refuses
+an extra, missing, renamed or changed file, a record taken at any other commit than
+the pin, and any name in `notMirrored` ("incomplete mirror": a core file new at a
+moved pin, which the recorder lists there with a warning, is refused until it is
+recorded with `ADD=`; so is a reverted slice, whose files would be listed there
+again). With a core checkout it
 also holds the record to core's git objects (core's `conformance/prolog/` at the
 pin must be exactly `files` + `notMirrored`, every mirrored file's sha256 its
 blob's). The checkout is `-DCORE_DIR`, else `INSIMUL_CORE_DIR`, else **by default
@@ -28,14 +33,14 @@ without the pin's commit is named and set aside, and `-DCORE_DIR=` (empty) turns
 the record checks off. The PASS line says which check ran and where its core came
 from, or why none was used (no sibling holding the pin, a stale sibling, or the
 checks turned off by `-DCORE_DIR=`; the ctest `prolog_mirror_digest_optout` holds
-that last wording). `prolog_mirror_digest_negative` perturbs a copy six ways (eight
+that last wording). `prolog_mirror_digest_negative` perturbs a copy seven ways (nine
 with a core checkout) and passes only when each is refused for its own named
 reason. The ctests do not take the script's word for whether a core was found:
 CMake looks for the monorepo's sibling core itself at configure time, and when one
 holding the pin is there, `prolog_mirror_digest` must say it held the record to
-core's git objects and `prolog_mirror_digest_negative` must refuse **8 of 8**, so a
+core's git objects and `prolog_mirror_digest_negative` must refuse **9 of 9**, so a
 script that lost its default lookup goes red instead of falling back to
-manifest-only and 6 of 6. Both use the one lookup in
+manifest-only and 7 of 7. Both use the one lookup in
 `tests/prolog_mirror_sibling.cmake`, so a location added there is required by the
 ctests too. If that sibling goes away after configure, the script says so (CMake
 hands it `-DEXPECT_SIBLING`) and the ctests go red until cmake is re-run. It exists because a stale `pack-agreement.json` whose answers
@@ -104,11 +109,20 @@ added unchanged through the recorder (`ADD=`) — `mechanic-routine.json` (19 ca
 cases pass on every leg under the order rule. The configure-time sibling lookup
 and the script's default lookup are now one function in
 `tests/prolog_mirror_sibling.cmake` (above). **32 files, 631 cases**, 631 passed,
-1 amended on all three legs. **Still missing** (5 of core's 37, 97 cases, listed in
-`PROLOG_MIRROR.json`'s `notMirrored` and held there by the digest gate):
-`agent-ai.json` (15), `alive-negation.json` (8), `death-readers.json` (21),
-`placement.json` (21) and `scaffold.json` (32). They are later slices of the same
-row.
+1 amended on all three legs. Still missing then: the 5 files slice 5 added.
+
+**Slice 5, the last** (2026-11-24, same pin `45409ed`): the five remaining files
+added unchanged through the recorder (`ADD=`) — `agent-ai.json` (15 cases),
+`alive-negation.json` (8), `death-readers.json` (21), `placement.json` (21) and
+`scaffold.json` (32), 97 cases. `alive-negation` and `death-readers` hold the death
+reading in which a recorded `deceased/3` outranks an unretractable `alive/1`
+(U126(1)). No engine change and no new amendment: all 97 new cases pass on every
+leg under the order rule. **The mirror now holds all 37 of core's files at the pin:
+37 files, 728 cases**, 728 passed, 1 amended on all three legs, and
+`notMirrored` is `[]`. The digest gate now refuses any name there (above), so the
+mirror cannot fall back to a subset without going red, which closes slice 4's m1
+(a full revert of a slice stayed green). **PL.native-prolog-mirror-full's row is
+complete.**
 
 Before that, synced at core `45409ed` (PL.native-bundle-core-r2,
 2026-11-19, the commit `corebridge/core-pin.json` pins): every one of the 12 files the

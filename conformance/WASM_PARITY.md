@@ -1,18 +1,21 @@
 # three-leg conformance parity (native ⟷ wasm ⟷ Rust)
 
 **Status: no divergences.** The native build, the Emscripten/wasm32 build and the
-Rust wrapper produce **byte-identical** results on all **631** cases of the golden
+Rust wrapper produce **byte-identical** results on all **728** cases of the golden
 Prolog corpus — same pass/fail, same solution count, same solution *text* from
 `insimul_query_next()`, in the same order.
 
 | leg | command | result |
 |---|---|---|
-| native (C ABI) | `ctest --test-dir build -R conformance` | 32 files, 631 cases, 631 passed, 0 failed, 1 amended |
-| **Rust wrapper** | `cargo test --manifest-path rust/Cargo.toml` | 32 files, 631 cases, 631 passed, 0 failed, 1 amended |
-| **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 32 files, 631 cases, 631 passed, 0 failed, 1 amended |
-| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 631/631 records identical on all three |
+| native (C ABI) | `ctest --test-dir build -R conformance` | 37 files, 728 cases, 728 passed, 0 failed, 1 amended |
+| **Rust wrapper** | `cargo test --manifest-path rust/Cargo.toml` | 37 files, 728 cases, 728 passed, 0 failed, 1 amended |
+| **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 37 files, 728 cases, 728 passed, 0 failed, 1 amended |
+| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 728/728 records identical on all three |
 
-(631 since PL.native-prolog-mirror-full slice 4 added core's `mechanic-routine.json` (19),
+(728 since PL.native-prolog-mirror-full slice 5, the last, added core's `agent-ai.json` (15),
+`alive-negation.json` (8), `death-readers.json` (21), `placement.json` (21) and `scaffold.json`
+(32) at the same pin, with no engine change and no new amendment: the mirror now holds all 37
+of core's files, and the row is complete. 631 since slice 4 added core's `mechanic-routine.json` (19),
 `mechanic-skill.json` (14), `mechanic-stamina.json` (12), `mechanic-traversal.json` (22),
 `mechanic-volition.json` (24) and `mechanic-weather.json` (27) at the same pin, with no
 engine change and no new amendment. 513 since slice 3 added core's `mechanic-combat.json` (10),
