@@ -1,0 +1,254 @@
+{
+  "area": "mechanic-gameplay-state",
+  "description": "The nine runtime gameplay-state predicates (packages/core/docs/mechanic-predicates.md §10.1) the mechanic rules read: health/3, energy/3, has_equipped/3, has_status/3, has_ability/2, near/3, at_location_type/2, level/2 and xp/3. The pack mirrored in each kb (packages/core/src/prolog/mechanics/gameplay-state-predicates.ts) declares them and defines nothing — so the contract these cases pin is that a world carrying none of them makes a query FAIL rather than raise existence_error, which is what lets an authored rule ask about state a save has not written yet. All nine are per-playthrough: they belong in save.currentState.prologFacts and never on a world template (§3).",
+  "cases": [
+    {
+      "name": "reads-current-and-maximum-health",
+      "kb": [
+        ":- dynamic(health/3).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(has_equipped/3).",
+        ":- dynamic(has_status/3).",
+        ":- dynamic(has_ability/2).",
+        ":- dynamic(near/3).",
+        ":- dynamic(at_location_type/2).",
+        ":- dynamic(level/2).",
+        ":- dynamic(xp/3).",
+        ":- dynamic(gold/2).",
+        "health(hero, 12, 30).",
+        "energy(hero, 40, 100).",
+        "has_equipped(hero, weapon, iron_sword).",
+        "has_status(hero, poisoned, 30).",
+        "has_ability(hero, second_wind).",
+        "near(hero, wolf, 4).",
+        "at_location_type(hero, cave).",
+        "level(hero, 3).",
+        "xp(hero, 250, 1000)."
+      ],
+      "query": "health(hero, C, M)",
+      "expected": [
+        {
+          "C": 12,
+          "M": 30
+        }
+      ]
+    },
+    {
+      "name": "reads-the-item-in-a-slot",
+      "kb": [
+        ":- dynamic(health/3).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(has_equipped/3).",
+        ":- dynamic(has_status/3).",
+        ":- dynamic(has_ability/2).",
+        ":- dynamic(near/3).",
+        ":- dynamic(at_location_type/2).",
+        ":- dynamic(level/2).",
+        ":- dynamic(xp/3).",
+        ":- dynamic(gold/2).",
+        "health(hero, 12, 30).",
+        "energy(hero, 40, 100).",
+        "has_equipped(hero, weapon, iron_sword).",
+        "has_status(hero, poisoned, 30).",
+        "has_ability(hero, second_wind).",
+        "near(hero, wolf, 4).",
+        "at_location_type(hero, cave).",
+        "level(hero, 3).",
+        "xp(hero, 250, 1000)."
+      ],
+      "query": "has_equipped(hero, weapon, I)",
+      "expected": [
+        {
+          "I": "iron_sword"
+        }
+      ]
+    },
+    {
+      "name": "reads-a-status-and-its-remaining-duration",
+      "kb": [
+        ":- dynamic(health/3).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(has_equipped/3).",
+        ":- dynamic(has_status/3).",
+        ":- dynamic(has_ability/2).",
+        ":- dynamic(near/3).",
+        ":- dynamic(at_location_type/2).",
+        ":- dynamic(level/2).",
+        ":- dynamic(xp/3).",
+        ":- dynamic(gold/2).",
+        "health(hero, 12, 30).",
+        "energy(hero, 40, 100).",
+        "has_equipped(hero, weapon, iron_sword).",
+        "has_status(hero, poisoned, 30).",
+        "has_ability(hero, second_wind).",
+        "near(hero, wolf, 4).",
+        "at_location_type(hero, cave).",
+        "level(hero, 3).",
+        "xp(hero, 250, 1000)."
+      ],
+      "query": "has_status(hero, poisoned, D)",
+      "expected": [
+        {
+          "D": 30
+        }
+      ]
+    },
+    {
+      "name": "reads-distance-to-another-entity",
+      "kb": [
+        ":- dynamic(health/3).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(has_equipped/3).",
+        ":- dynamic(has_status/3).",
+        ":- dynamic(has_ability/2).",
+        ":- dynamic(near/3).",
+        ":- dynamic(at_location_type/2).",
+        ":- dynamic(level/2).",
+        ":- dynamic(xp/3).",
+        ":- dynamic(gold/2).",
+        "health(hero, 12, 30).",
+        "energy(hero, 40, 100).",
+        "has_equipped(hero, weapon, iron_sword).",
+        "has_status(hero, poisoned, 30).",
+        "has_ability(hero, second_wind).",
+        "near(hero, wolf, 4).",
+        "at_location_type(hero, cave).",
+        "level(hero, 3).",
+        "xp(hero, 250, 1000)."
+      ],
+      "query": "near(hero, wolf, D)",
+      "expected": [
+        {
+          "D": 4
+        }
+      ]
+    },
+    {
+      "name": "reads-level-and-banked-xp-together",
+      "kb": [
+        ":- dynamic(health/3).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(has_equipped/3).",
+        ":- dynamic(has_status/3).",
+        ":- dynamic(has_ability/2).",
+        ":- dynamic(near/3).",
+        ":- dynamic(at_location_type/2).",
+        ":- dynamic(level/2).",
+        ":- dynamic(xp/3).",
+        ":- dynamic(gold/2).",
+        "health(hero, 12, 30).",
+        "energy(hero, 40, 100).",
+        "has_equipped(hero, weapon, iron_sword).",
+        "has_status(hero, poisoned, 30).",
+        "has_ability(hero, second_wind).",
+        "near(hero, wolf, 4).",
+        "at_location_type(hero, cave).",
+        "level(hero, 3).",
+        "xp(hero, 250, 1000)."
+      ],
+      "query": "level(hero, L), xp(hero, X, Next)",
+      "expected": [
+        {
+          "L": 3,
+          "X": 250,
+          "Next": 1000
+        }
+      ]
+    },
+    {
+      "name": "refuses-a-status-the-playthrough-has-not-applied",
+      "kb": [
+        ":- dynamic(health/3).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(has_equipped/3).",
+        ":- dynamic(has_status/3).",
+        ":- dynamic(has_ability/2).",
+        ":- dynamic(near/3).",
+        ":- dynamic(at_location_type/2).",
+        ":- dynamic(level/2).",
+        ":- dynamic(xp/3).",
+        ":- dynamic(gold/2).",
+        "health(hero, 12, 30).",
+        "energy(hero, 40, 100).",
+        "has_equipped(hero, weapon, iron_sword).",
+        "has_status(hero, poisoned, 30).",
+        "has_ability(hero, second_wind).",
+        "near(hero, wolf, 4).",
+        "at_location_type(hero, cave).",
+        "level(hero, 3).",
+        "xp(hero, 250, 1000)."
+      ],
+      "query": "has_status(hero, burning, D)",
+      "expected": []
+    },
+    {
+      "name": "refuses-an-ability-nobody-has-been-given",
+      "kb": [
+        ":- dynamic(health/3).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(has_equipped/3).",
+        ":- dynamic(has_status/3).",
+        ":- dynamic(has_ability/2).",
+        ":- dynamic(near/3).",
+        ":- dynamic(at_location_type/2).",
+        ":- dynamic(level/2).",
+        ":- dynamic(xp/3).",
+        ":- dynamic(gold/2).",
+        "health(hero, 12, 30).",
+        "energy(hero, 40, 100).",
+        "has_equipped(hero, weapon, iron_sword).",
+        "has_status(hero, poisoned, 30).",
+        "has_ability(hero, second_wind).",
+        "near(hero, wolf, 4).",
+        "at_location_type(hero, cave).",
+        "level(hero, 3).",
+        "xp(hero, 250, 1000)."
+      ],
+      "query": "has_ability(hero, flight)",
+      "expected": []
+    },
+    {
+      "name": "fails-rather-than-raises-for-an-actor-the-save-knows-nothing-about",
+      "kb": [
+        ":- dynamic(health/3).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(has_equipped/3).",
+        ":- dynamic(has_status/3).",
+        ":- dynamic(has_ability/2).",
+        ":- dynamic(near/3).",
+        ":- dynamic(at_location_type/2).",
+        ":- dynamic(level/2).",
+        ":- dynamic(xp/3).",
+        ":- dynamic(gold/2).",
+        "health(hero, 12, 30).",
+        "energy(hero, 40, 100).",
+        "has_equipped(hero, weapon, iron_sword).",
+        "has_status(hero, poisoned, 30).",
+        "has_ability(hero, second_wind).",
+        "near(hero, wolf, 4).",
+        "at_location_type(hero, cave).",
+        "level(hero, 3).",
+        "xp(hero, 250, 1000)."
+      ],
+      "query": "health(stranger, C, M)",
+      "expected": []
+    },
+    {
+      "name": "fails-rather-than-raises-on-a-save-carrying-no-state-at-all",
+      "kb": [
+        ":- dynamic(health/3).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(has_equipped/3).",
+        ":- dynamic(has_status/3).",
+        ":- dynamic(has_ability/2).",
+        ":- dynamic(near/3).",
+        ":- dynamic(at_location_type/2).",
+        ":- dynamic(level/2).",
+        ":- dynamic(xp/3).",
+        ":- dynamic(gold/2)."
+      ],
+      "query": "health(anyone, C, M)",
+      "expected": []
+    }
+  ]
+}
