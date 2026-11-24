@@ -465,40 +465,40 @@ set(INSIMUL_PROLOG_MIRROR_ARGS
 # digest must say it held the record to core's git objects and the negative must
 # refuse all 8 perturbations. Without that, a script that lost its default lookup
 # would fall back to manifest-only and 6 of 6 and stay green. Re-run cmake if the
-# sibling goes away; the pin is a configure dependency, so a pin move re-checks.
+# sibling goes away (the script then says so, from -DEXPECT_SIBLING); the pin is a
+# configure dependency, so a pin move re-checks.
 set(INSIMUL_PROLOG_MIRROR_SIBLING "")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
   ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/core-pin.json)
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/core-pin.json _insimul_pin_json)
 string(JSON _insimul_pin ERROR_VARIABLE _insimul_pin_err GET "${_insimul_pin_json}" coreCommit)
-foreach(_c ${CMAKE_CURRENT_SOURCE_DIR}/../babylon/packages/core
-           ${CMAKE_CURRENT_SOURCE_DIR}/../insimul-runtime/packages/core)
-  get_filename_component(_c "${_c}" ABSOLUTE)
-  if(EXISTS "${_c}/.git" AND EXISTS "${_c}/conformance/prolog")
-    if(NOT _insimul_pin_err)
-      execute_process(COMMAND git -C "${_c}" cat-file -e "${_insimul_pin}^{commit}"
-        RESULT_VARIABLE _r OUTPUT_QUIET ERROR_QUIET)
-      if(_r EQUAL 0)
-        set(INSIMUL_PROLOG_MIRROR_SIBLING "${_c}")
-      endif()
-    endif()
-    break()
-  endif()
-endforeach()
+if(_insimul_pin_err)
+  set(_insimul_pin "")
+endif()
+# The lookup and its candidate list are the script's own, from one shared file
+# (slice 4, settling slice 3's m1): a location added there is required here too.
+include(${CMAKE_CURRENT_SOURCE_DIR}/tests/prolog_mirror_sibling.cmake)
+insimul_prolog_mirror_sibling(${CMAKE_CURRENT_SOURCE_DIR} "${_insimul_pin}"
+  _insimul_sibling _insimul_sibling_holds)
+if(_insimul_sibling AND _insimul_sibling_holds)
+  set(INSIMUL_PROLOG_MIRROR_SIBLING "${_insimul_sibling}")
+endif()
 if(INSIMUL_PROLOG_MIRROR_SIBLING)
   message(STATUS "prolog_mirror_digest: the sibling core ${INSIMUL_PROLOG_MIRROR_SIBLING} holds the pin; the digest pair must use it (8 of 8)")
   set(_insimul_digest_against "core's git objects at [0-9a-f]+ in [^\n]* [(]from (the monorepo's sibling core|INSIMUL_CORE_DIR)[)]")
   set(_insimul_negative_count "8 of 8")
+  set(_insimul_expect_sibling -DEXPECT_SIBLING=${INSIMUL_PROLOG_MIRROR_SIBLING})
 else()
+  set(_insimul_expect_sibling "")
   set(_insimul_digest_against "[^\n]*")
   set(_insimul_negative_count "[68] of [68]")
 endif()
 add_test(NAME prolog_mirror_digest COMMAND ${CMAKE_COMMAND} ${INSIMUL_PROLOG_MIRROR_ARGS}
-  -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/prolog_mirror_digest.cmake)
+  ${_insimul_expect_sibling} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/prolog_mirror_digest.cmake)
 set_tests_properties(prolog_mirror_digest PROPERTIES
   PASS_REGULAR_EXPRESSION "prolog_mirror_digest: [1-9][0-9]* mirrored file[(]s[)] [^\n]*, held to ${_insimul_digest_against}\nprolog_mirror_digest: PASS")
 add_test(NAME prolog_mirror_digest_negative COMMAND ${CMAKE_COMMAND} ${INSIMUL_PROLOG_MIRROR_ARGS}
-  -DMODE=negative -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/prolog_mirror_digest.cmake)
+  ${_insimul_expect_sibling} -DMODE=negative -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/prolog_mirror_digest.cmake)
 set_tests_properties(prolog_mirror_digest_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "prolog_mirror_digest --negative: ${_insimul_negative_count} perturbation[(]s[)] refused for their named reason\nprolog_mirror_digest --negative: PASS")
 # An empty -DCORE_DIR= turns the record checks off; the PASS line must say so rather

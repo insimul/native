@@ -24,7 +24,8 @@
 # record checks off), env INSIMUL_CORE_DIR, else the monorepo's sibling core when it
 # exists, found from the mirror's own path the way the corpus resolver finds its
 # sibling: <native>/../babylon/packages/core (the insimul workspace), then
-# <native>/../insimul-runtime/packages/core. So a checkout inside the monorepo runs
+# <native>/../insimul-runtime/packages/core, a list kept once in
+# prolog_mirror_sibling.cmake (slice 4). So a checkout inside the monorepo runs
 # them by default (slice 2, settling slice 1's m1). A sibling that does not hold the
 # pin's commit is named and set aside (fetch core there); an explicit one is used
 # as given, so a missing commit there is refused. Without a core checkout the
@@ -37,6 +38,8 @@
 #
 # Modes (cmake -P, all paths absolute):
 #   check     -DMIRROR_DIR=… -DMANIFEST=… -DPIN=… [-DCORE_DIR=…] [-DWORK_DIR=…]
+#             [-DEXPECT_SIBLING=…] (CMakeLists.txt's configure-time sibling, for the
+#             message when the run then has no core; it changes no verdict)
 #   negative  -DMODE=negative -DMIRROR_DIR=… -DMANIFEST=… -DPIN=… [-DCORE_DIR=…] -DWORK_DIR=…
 #             copies the mirror and perturbs it six ways (a whitespace-only edit to
 #             pack-agreement.json that every leg would still pass, an extra file, a
@@ -66,6 +69,7 @@ foreach(v MIRROR_DIR MANIFEST PIN)
 endforeach()
 
 set(CORE_PATH "conformance/prolog")
+include("${CMAKE_CURRENT_LIST_DIR}/prolog_mirror_sibling.cmake")
 
 # Where the core checkout for the record checks comes from (see the header).
 set(CORE_FROM "")
@@ -83,29 +87,37 @@ elseif(DEFINED ENV{INSIMUL_CORE_DIR} AND NOT "$ENV{INSIMUL_CORE_DIR}" STREQUAL "
 else()
   set(CORE_DIR "")
   get_filename_component(_native "${MIRROR_DIR}/../.." ABSOLUTE)
-  foreach(_c "${_native}/../babylon/packages/core" "${_native}/../insimul-runtime/packages/core")
-    get_filename_component(_c "${_c}" ABSOLUTE)
-    if(EXISTS "${_c}/.git" AND EXISTS "${_c}/${CORE_PATH}")
-      # The sibling is only used when it holds the pin's commit: a stale checkout
-      # is named, never trusted and never a red the mirror did not earn.
+  # The candidate list lives in prolog_mirror_sibling.cmake, which CMakeLists.txt
+  # includes too, so the ctests require exactly the sibling this lookup uses.
+  set(_pc "")
+  if(EXISTS "${PIN}")
+    file(READ "${PIN}" _pj)
+    string(JSON _pc ERROR_VARIABLE _pe GET "${_pj}" coreCommit)
+    if(_pe)
       set(_pc "")
-      if(EXISTS "${PIN}")
-        file(READ "${PIN}" _pj)
-        string(JSON _pc ERROR_VARIABLE _pe GET "${_pj}" coreCommit)
-      endif()
-      execute_process(COMMAND git -C "${_c}" cat-file -e "${_pc}^{commit}"
-        RESULT_VARIABLE _r OUTPUT_QUIET ERROR_QUIET)
-      if(_pc AND _r EQUAL 0)
-        set(CORE_DIR "${_c}")
-        set(CORE_FROM "the monorepo's sibling core")
-      else()
-        message("prolog_mirror_digest: the sibling core ${_c} does not hold the pin's commit ${_pc}; "
-                "the record checks need it there (git -C <core> fetch origin) or INSIMUL_CORE_DIR")
-        set(CORE_NONE "no core checkout: the sibling core does not hold the pin's commit ${_pc}; fetch it there or set INSIMUL_CORE_DIR to also hold the record to core's git objects")
-      endif()
-      break()
     endif()
-  endforeach()
+  endif()
+  insimul_prolog_mirror_sibling("${_native}" "${_pc}" _c _holds)
+  if(_c AND _holds)
+    # The sibling is only used when it holds the pin's commit: a stale checkout
+    # is named, never trusted and never a red the mirror did not earn.
+    set(CORE_DIR "${_c}")
+    set(CORE_FROM "the monorepo's sibling core")
+  elseif(_c)
+    message("prolog_mirror_digest: the sibling core ${_c} does not hold the pin's commit ${_pc}; "
+            "the record checks need it there (git -C <core> fetch origin) or INSIMUL_CORE_DIR")
+    set(CORE_NONE "no core checkout: the sibling core does not hold the pin's commit ${_pc}; fetch it there or set INSIMUL_CORE_DIR to also hold the record to core's git objects")
+  endif()
+endif()
+# CMakeLists.txt passes -DEXPECT_SIBLING=<dir> to the digest ctests when it found a
+# sibling holding the pin at configure time, so their regexes require the record
+# checks. If this run then has no core (the sibling moved or went away after
+# configure), say why here rather than leave only a bare regex mismatch (slice 4,
+# slice 3's m1).
+if(DEFINED EXPECT_SIBLING AND NOT EXPECT_SIBLING STREQUAL "" AND CORE_FROM STREQUAL "")
+  message("prolog_mirror_digest: CMake found the sibling core ${EXPECT_SIBLING} holding the pin at "
+          "configure time, but this run has none (${CORE_NONE}); the digest ctests require it: "
+          "re-run cmake if the sibling moved or went away")
 endif()
 
 # The pin's coreCommit, or "" when the pin cannot be read.
