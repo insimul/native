@@ -1,0 +1,335 @@
+{
+  "area": "mechanic-stamina",
+  "description": "Stamina (packages/core/docs/mechanic-predicates.md §9): can this actor afford this action, what state is their stamina in, and what does it regenerate at. Each kb mirrors packages/core/src/prolog/mechanics/stamina-predicates.ts verbatim. There is no stamina_cost predicate: action/4's fourth argument already IS the energy cost. The threshold NAMES are core's and the percentages are the world's, and both comparisons are integer arithmetic (C * 100 =< M * P) so no float rounding can make two engines disagree about who is winded.",
+  "cases": [
+    {
+      "name": "affords-an-action-the-actor-has-the-energy-for",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).",
+        "stamina_threshold(winded, 40).",
+        "stamina_threshold(exhausted, 15).",
+        "stamina_regen_base(runner, 6).",
+        "stamina_regen_base(fighter, 6).",
+        "energy(runner, 100, 100).",
+        "energy(fighter, 30, 100).",
+        "energy(spent, 10, 100).",
+        "in_combat(fighter).",
+        "action(power_attack, 'Power attack', combat, 25)."
+      ],
+      "query": "can_afford_stamina(runner, power_attack)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "refuses-an-action-costlier-than-the-actors-energy",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).",
+        "stamina_threshold(winded, 40).",
+        "stamina_threshold(exhausted, 15).",
+        "stamina_regen_base(runner, 6).",
+        "stamina_regen_base(fighter, 6).",
+        "energy(runner, 100, 100).",
+        "energy(fighter, 30, 100).",
+        "energy(spent, 10, 100).",
+        "in_combat(fighter).",
+        "action(power_attack, 'Power attack', combat, 25)."
+      ],
+      "query": "can_afford_stamina(spent, power_attack)",
+      "expected": []
+    },
+    {
+      "name": "enumerates-everyone-who-could-pay-for-the-action",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).",
+        "stamina_threshold(winded, 40).",
+        "stamina_threshold(exhausted, 15).",
+        "stamina_regen_base(runner, 6).",
+        "stamina_regen_base(fighter, 6).",
+        "energy(runner, 100, 100).",
+        "energy(fighter, 30, 100).",
+        "energy(spent, 10, 100).",
+        "in_combat(fighter).",
+        "action(power_attack, 'Power attack', combat, 25)."
+      ],
+      "query": "can_afford_stamina(A, power_attack)",
+      "expected": [
+        {
+          "A": "runner"
+        },
+        {
+          "A": "fighter"
+        }
+      ]
+    },
+    {
+      "name": "calls-an-actor-under-the-worlds-winded-threshold-winded",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).",
+        "stamina_threshold(winded, 40).",
+        "stamina_threshold(exhausted, 15).",
+        "stamina_regen_base(runner, 6).",
+        "stamina_regen_base(fighter, 6).",
+        "energy(runner, 100, 100).",
+        "energy(fighter, 30, 100).",
+        "energy(spent, 10, 100).",
+        "in_combat(fighter).",
+        "action(power_attack, 'Power attack', combat, 25)."
+      ],
+      "query": "winded(fighter)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "refuses-exhausted-for-an-actor-above-that-threshold",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).",
+        "stamina_threshold(winded, 40).",
+        "stamina_threshold(exhausted, 15).",
+        "stamina_regen_base(runner, 6).",
+        "stamina_regen_base(fighter, 6).",
+        "energy(runner, 100, 100).",
+        "energy(fighter, 30, 100).",
+        "energy(spent, 10, 100).",
+        "in_combat(fighter).",
+        "action(power_attack, 'Power attack', combat, 25)."
+      ],
+      "query": "exhausted(fighter)",
+      "expected": []
+    },
+    {
+      "name": "refuses-winded-for-an-actor-at-full-energy",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).",
+        "stamina_threshold(winded, 40).",
+        "stamina_threshold(exhausted, 15).",
+        "stamina_regen_base(runner, 6).",
+        "stamina_regen_base(fighter, 6).",
+        "energy(runner, 100, 100).",
+        "energy(fighter, 30, 100).",
+        "energy(spent, 10, 100).",
+        "in_combat(fighter).",
+        "action(power_attack, 'Power attack', combat, 25)."
+      ],
+      "query": "winded(runner)",
+      "expected": []
+    },
+    {
+      "name": "calls-an-almost-empty-actor-exhausted",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).",
+        "stamina_threshold(winded, 40).",
+        "stamina_threshold(exhausted, 15).",
+        "stamina_regen_base(runner, 6).",
+        "stamina_regen_base(fighter, 6).",
+        "energy(runner, 100, 100).",
+        "energy(fighter, 30, 100).",
+        "energy(spent, 10, 100).",
+        "in_combat(fighter).",
+        "action(power_attack, 'Power attack', combat, 25)."
+      ],
+      "query": "exhausted(spent)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "gives-no-regeneration-mid-fight-first-matching-clause-wins",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).",
+        "stamina_threshold(winded, 40).",
+        "stamina_threshold(exhausted, 15).",
+        "stamina_regen_base(runner, 6).",
+        "stamina_regen_base(fighter, 6).",
+        "energy(runner, 100, 100).",
+        "energy(fighter, 30, 100).",
+        "energy(spent, 10, 100).",
+        "in_combat(fighter).",
+        "action(power_attack, 'Power attack', combat, 25)."
+      ],
+      "query": "stamina_regen(fighter, R)",
+      "expected": [
+        {
+          "R": 0
+        }
+      ]
+    },
+    {
+      "name": "regenerates-at-the-worlds-base-rate-out-of-combat",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).",
+        "stamina_threshold(winded, 40).",
+        "stamina_threshold(exhausted, 15).",
+        "stamina_regen_base(runner, 6).",
+        "stamina_regen_base(fighter, 6).",
+        "energy(runner, 100, 100).",
+        "energy(fighter, 30, 100).",
+        "energy(spent, 10, 100).",
+        "in_combat(fighter).",
+        "action(power_attack, 'Power attack', combat, 25)."
+      ],
+      "query": "stamina_regen(runner, R)",
+      "expected": [
+        {
+          "R": 6
+        }
+      ]
+    },
+    {
+      "name": "fails-rather-than-raises-on-a-world-carrying-no-stamina-facts",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate)."
+      ],
+      "query": "can_afford_stamina(anyone, anything)",
+      "expected": []
+    },
+    {
+      "name": "regenerates-an-exhausted-actor-out-of-combat-at-its-base-rate-there-is-no-at-rest-condition",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).",
+        "stamina_threshold(winded, 40).",
+        "stamina_threshold(exhausted, 15).",
+        "stamina_regen_base(jumper, 5).",
+        "energy(jumper, 12, 100).",
+        "action(jump, 'Jump', movement, 3)."
+      ],
+      "query": "exhausted(jumper), stamina_regen(jumper, R)",
+      "expected": [
+        {
+          "R": 5
+        }
+      ]
+    },
+    {
+      "name": "a-rate-is-per-tick-of-one-second-so-ten-seconds-of-play-recover-ten-times-it-and-combat-stops-it",
+      "kb": [
+        ":- dynamic(stamina_regen_base/2).",
+        ":- dynamic(stamina_threshold/2).",
+        ":- dynamic(energy/3).",
+        ":- dynamic(in_combat/1).",
+        ":- dynamic(action/4).",
+        "winded(A) :- energy(A, C, M), M > 0, stamina_threshold(winded, P), C * 100 =< M * P.",
+        "exhausted(A) :- energy(A, C, M), M > 0, stamina_threshold(exhausted, P), C * 100 =< M * P.",
+        "can_afford_stamina(A, ActionId) :- action(ActionId, _, _, Cost), energy(A, C, _), C >= Cost.",
+        "stamina_regen(A, 0) :- in_combat(A), !.",
+        "stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).",
+        "stamina_threshold(winded, 40).",
+        "stamina_threshold(exhausted, 15).",
+        "stamina_regen_base(runner, 5).",
+        "stamina_regen_base(fighter, 5).",
+        "energy(runner, 30, 100).",
+        "energy(fighter, 30, 100).",
+        "in_combat(fighter)."
+      ],
+      "query": "stamina_regen(runner, R1), Ten1 is R1 * 10, stamina_regen(fighter, R2), Ten2 is R2 * 10",
+      "expected": [
+        {
+          "R1": 5,
+          "Ten1": 50,
+          "R2": 0,
+          "Ten2": 0
+        }
+      ]
+    }
+  ]
+}
