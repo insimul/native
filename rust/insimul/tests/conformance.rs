@@ -565,9 +565,14 @@ fn wrong_expectation_fails_the_gate() {
 
 /// Core's order rule (its `conformance/README.md`, "Order-independence"; U120(9)):
 /// `expected` is an unordered MULTISET. A reordered solution list passes; the right
-/// count with the wrong multiplicity, a missing member or an extra one fails. In
-/// lockstep with the C leg's `order_rule_self_check` and the wasm leg's
-/// `orderRuleSelfCheck`, which run the same five probes before grading a corpus.
+/// count with the wrong multiplicity, a missing member or an extra one fails. Six
+/// probes, each a one-case scratch corpus run through the real engine by `run_case`:
+/// the engine's answers to `p(X)` are fixed (`a`, then `b`) and only `expected`
+/// varies — its own order and the reverse pass; `[a,a]`, `[b,b]` (wrong
+/// multiplicity, each way), `[c,a]` (a member never bound) and `[b,a,a]` (one too
+/// many) fail. The C leg's `order_rule_self_check` and the wasm leg's
+/// `orderRuleSelfCheck` cover the same four properties with five probes of another
+/// shape: both lists given, straight to the comparator, run before grading a corpus.
 #[test]
 fn order_is_not_significant_but_multiplicity_is() {
     let scratch = |tag: usize, expected: &str| -> Vec<Case> {

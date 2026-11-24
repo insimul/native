@@ -294,23 +294,36 @@
   what makes the parity gates runnable from a fresh checkout with no sibling
   submodule. Re-sync it with the recorder (`tests/prolog_mirror_digest.cmake`
   `MODE=record`, from core's git objects at `corebridge/core-pin.json`'s
-  `coreCommit`), never a hand copy; see `conformance/VENDORED.md`. It holds 15 of
+  `coreCommit`), never a hand copy; see `conformance/VENDORED.md`. It holds 20 of
   core's 37 files at 45409ed (PL.native-prolog-mirror-full slice 1 added `geo-map`,
-  `mechanic-farming` and `mechanic-strategy`); the other 22 are that row's later
-  slices, named in `conformance/PROLOG_MIRROR.json`'s `notMirrored`.
+  `mechanic-farming` and `mechanic-strategy`; slice 2 `mechanic-puzzle`,
+  `mechanic-platformer`, `mechanic-business`, `mechanic-crafting` and
+  `mechanic-equipment`); the other 17 (agent-ai, alive-negation, death-readers,
+  placement, scaffold and 12 `mechanic-*` files) are that row's later slices, named
+  in `conformance/PROLOG_MIRROR.json`'s `notMirrored`.
 - **The mirror's BYTES are a gate, not only its answers.** `prolog_mirror_digest`
   holds every mirrored file to the sha256 of core's bytes at the pin recorded in
   `conformance/PROLOG_MIRROR.json`, refuses an extra, missing, renamed or changed
-  file and a record taken at another commit than the pin, and (with
-  `INSIMUL_CORE_DIR`) holds the record itself to core's objects;
-  `prolog_mirror_digest_negative` proves each refusal. A stale `pack-agreement.json`
+  file and a record taken at another commit than the pin, and with a core checkout
+  holds the record itself to core's objects (record drift, an unlisted core file).
+  The checkout is `-DCORE_DIR`, else `INSIMUL_CORE_DIR`, else by default the
+  monorepo's sibling core (`../babylon/packages/core`, then
+  `../insimul-runtime/packages/core`, found from the mirror's path) when it holds
+  the pin's commit; a stale sibling is named and set aside, and the PASS line names
+  where the core came from. `prolog_mirror_digest_negative` proves each refusal
+  (six, eight with a core checkout). A stale `pack-agreement.json`
   whose answers had not changed stayed green on every leg (self-sweep M22): grading
   answers cannot see stale bytes.
 - **Every leg follows core's order rule** (core's `conformance/README.md`,
   "Order-independence"; U120(9)): `expected` is an unordered multiset — the same
   count, each solution matched once — in the C leg (`solutions_match`), the wasm
-  leg (`solutionsMatch`) and the Rust leg (`solutions_match`), each checked against
-  the same five probes before it grades anything. There is no `"unordered"` key
+  leg (`solutionsMatch`) and the Rust leg (`solutions_match`). C
+  (`order_rule_self_check`) and wasm (`orderRuleSelfCheck`) put five probes straight
+  to the comparator, both lists given, and refuse to grade (exit 2) if one fails; the
+  Rust test `order_is_not_significant_but_multiplicity_is` runs six one-case corpora
+  through the engine (`run_case`), its answers fixed at `a, b` and only `expected`
+  varied. Both cover the same four properties: a reordered list matches; a wrong
+  multiplicity, a member never bound and an extra one do not. There is no `"unordered"` key
   (core never states one). Solution ORDER across legs stays held by
   `scripts/conformance_parity.sh`'s raw diff.
 - `conformance/radiant/` is vendored the same way, for the **second** library —
@@ -325,8 +338,9 @@
   conformance.rs` and `tests/wasm_conformance.mjs` must stay in lockstep; all three
   print an `[AMEND]` line and the same
   `files / cases / passed / failed / amended` summary, so the legs are
-  directly comparable (currently 15 files, 261 cases, 261 passed, 1 amended, since
-  PL.native-prolog-mirror-full slice 1; 12 files and 181 cases before it; 10 files
+  directly comparable (currently 20 files, 420 cases, 420 passed, 1 amended, since
+  PL.native-prolog-mirror-full slice 2; 15 files and 261 cases after slice 1;
+  12 files and 181 cases before it; 10 files
   and 76 cases until PL.native-bundle-core re-copied the mirror at core d88b6f0;
   PL.native-bundle-core-r2 re-copied the same 12 at core 45409ed). The
   legs compare a binding's JSON numbers as NUMBERS (C `jv_equal`, wasm `deepEqual`,
@@ -340,7 +354,7 @@
   wording or number formatting fails even when every leg still satisfies
   `expected`. A missing toolchain is a hard failure, not a skip (`--no-rust`
   makes skipping explicit). A new leg should emit the same records. Result
-  today: 261/261 byte-identical on all three — see `conformance/WASM_PARITY.md`,
+  today: 420/420 byte-identical on all three — see `conformance/WASM_PARITY.md`,
   which is where any future divergence gets documented (never skipped).
 - The corpus carries the **KINP identity layer** (`identity.json`,
   `equivalence.json`, `worlds.json`, and a rewritten `gameplay.json`): entity
@@ -1007,9 +1021,9 @@
   place's `position`, a level's `goalKind`, a walked piece's `module`, `place`'s `anchors`), never
   silently. Core's writer calls `structuredClone`, which QuickJS lacks:
   `js/host-structured-clone.js` installs it only when absent, imported first with the text
-  codec. `conformance/prolog/mechanic-{puzzle,platformer}.json` stay with
-  PL.native-prolog-mirror-full (U120(9)); `mechanic-strategy.json` joined the mirror in
-  its slice 1.
+  codec. `conformance/prolog/mechanic-{puzzle,platformer,strategy}.json`, the genre
+  trio's Prolog cases, are in the mirror (PL.native-prolog-mirror-full, U120(9):
+  strategy in its slice 1, puzzle and platformer in slice 2).
 - **The villager pass-by rows (PL.native-pass-by-rows, U118, U128) run core's
   `conformance/villagers/pass-by.json` UNCHANGED**, copied as its own set
   (`PASS_BY_CORPUS_FILES`; 63 cases at 45409ed: floor 3, guard 15, plan 21, round 6,

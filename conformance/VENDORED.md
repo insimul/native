@@ -15,17 +15,22 @@ the sha256 of core's bytes at `corebridge/core-pin.json`'s `coreCommit` for ever
 mirrored file (`files`) and names every core file not mirrored yet (`notMirrored`).
 The ctest `prolog_mirror_digest` (`tests/prolog_mirror_digest.cmake`, plain
 `cmake -P`, no node and no skip) refuses an extra, missing, renamed or changed
-file and a record taken at any other commit than the pin; with `INSIMUL_CORE_DIR`
-pointing at a core checkout it also holds the record to core's git objects (core's
-`conformance/prolog/` at the pin must be exactly `files` + `notMirrored`, every
-mirrored file's sha256 its blob's). `prolog_mirror_digest_negative` perturbs a copy
-six ways (eight with `INSIMUL_CORE_DIR`) and passes only when each is refused for
-its own named reason. It exists because a stale `pack-agreement.json` whose answers
+file and a record taken at any other commit than the pin. With a core checkout it
+also holds the record to core's git objects (core's `conformance/prolog/` at the
+pin must be exactly `files` + `notMirrored`, every mirrored file's sha256 its
+blob's). The checkout is `-DCORE_DIR`, else `INSIMUL_CORE_DIR`, else **by default
+the monorepo's sibling core** when it exists and holds the pin's commit, found from
+the mirror's path as the corpus resolver finds its sibling
+(`../babylon/packages/core`, then `../insimul-runtime/packages/core`); a sibling
+without the pin's commit is named and set aside, and `-DCORE_DIR=` (empty) turns
+the record checks off. The PASS line says which check ran and where its core came
+from. `prolog_mirror_digest_negative` perturbs a copy six ways (eight with a core
+checkout) and passes only when each is refused for its own named reason. It exists because a stale `pack-agreement.json` whose answers
 had not changed stayed green on every leg (self-sweep M22). **Re-sync with the
 recorder, never a hand copy**: bump the pin, then
 
 ```
-cmake -DMODE=record -DCORE_DIR=<core checkout> \
+cmake -DMODE=record [-DCORE_DIR=<core checkout>] \
   -DMIRROR_DIR=$PWD/conformance/prolog -DMANIFEST=$PWD/conformance/PROLOG_MIRROR.json \
   -DPIN=$PWD/corebridge/core-pin.json [-DADD="new-file.json;…"] \
   -P tests/prolog_mirror_digest.cmake
@@ -40,25 +45,39 @@ rewrites the record; then run the three legs and update the counts here.
 (`sameSolutionSet`) does — the C leg (`tests/conformance.c`) and the wasm leg
 (`tests/wasm_conformance.mjs`) were order-sensitive unless a case said
 `"unordered": true` (a key core never states) and now compare as the Rust leg
-always did (U120(9)). Each leg checks its comparator against the same five probes
-before grading anything (C `order_rule_self_check`, wasm `orderRuleSelfCheck`,
-Rust `order_is_not_significant_but_multiplicity_is`). The order the legs enumerate
-in is still held, across legs, by `scripts/conformance_parity.sh`'s raw diff.
+always did (U120(9)). The C leg (`order_rule_self_check`) and the wasm leg
+(`orderRuleSelfCheck`) put five probes straight to the comparator, both solution
+lists given, and refuse to grade a corpus (exit 2) if one fails. The Rust leg's
+test `order_is_not_significant_but_multiplicity_is` runs six probes of another
+shape: six one-case corpora through the real engine (`run_case`), the engine's
+answers to `p(X)` fixed at `a, b` and only `expected` varied (its own order and the
+reverse pass; `[a,a]`, `[b,b]`, `[c,a]` and `[b,a,a]` fail). Both cover the same
+four properties: a reordered list matches, and a wrong multiplicity, a member never
+bound and an extra one do not. The order the legs enumerate in is still held,
+across legs, by `scripts/conformance_parity.sh`'s raw diff.
 
 **Slice 1 of PL.native-prolog-mirror-full** (2026-11-21, U120(9), U128, U131): at
 core `45409ed` (unchanged pin), three of core's files added unchanged —
 `geo-map.json` (15 cases, `region_at`), `mechanic-farming.json` (29, `plot_yields`)
 and `mechanic-strategy.json` (36, `strategy_can_claim`), the three predicates the
 order rule clears — and the 12 already here re-recorded from core's objects (all 12
-byte-identical to core at the pin). **15 files, 261 cases**, 261 passed, 1 amended
-on all three legs. **Still missing** (22 of core's 37, listed in
-`PROLOG_MIRROR.json`'s `notMirrored` and held there by the digest gate):
-`mechanic-puzzle.json` and `mechanic-platformer.json` (held for this row, see
-CLAUDE.md's genre rows), the other `mechanic-*` files (`business`, `combat`,
-`crafting`, `dialogue`, `equipment`, `fishing`, `gameplay-state`, `mining`,
-`perception`, `routine`, `skill`, `stamina`, `traversal`, `volition`, `weather`),
-`agent-ai.json`, `alive-negation.json`, `death-readers.json`, `placement.json` and
-`scaffold.json`. They are later slices of the same row.
+byte-identical to core at the pin). 15 files, 261 cases, 261 passed, 1 amended
+on all three legs.
+
+**Slice 2** (2026-11-23, same pin `45409ed`): five more of core's files added
+unchanged through the recorder (`ADD=`) — `mechanic-puzzle.json` (38 cases) and
+`mechanic-platformer.json` (28), the two held for this row, which finish the genre
+trio with strategy (see CLAUDE.md's genre rows), plus `mechanic-business.json` (39),
+`mechanic-crafting.json` (25) and `mechanic-equipment.json` (29). No engine change
+and no new amendment: all 159 new cases pass on every leg under the order rule.
+The record checks now run by default inside the monorepo (above). **20 files, 420
+cases**, 420 passed, 1 amended on all three legs. **Still missing** (17 of core's
+37, 308 cases, listed in `PROLOG_MIRROR.json`'s `notMirrored` and held there by the
+digest gate): the other 12 `mechanic-*` files (`combat`, `dialogue`, `fishing`,
+`gameplay-state`, `mining`, `perception`, `routine`, `skill`, `stamina`,
+`traversal`, `volition`, `weather`), `agent-ai.json`, `alive-negation.json`,
+`death-readers.json`, `placement.json` and `scaffold.json`. They are later slices
+of the same row.
 
 Before that, synced at core `45409ed` (PL.native-bundle-core-r2,
 2026-11-19, the commit `corebridge/core-pin.json` pins): every one of the 12 files the

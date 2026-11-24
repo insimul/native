@@ -18,9 +18,10 @@ byte for byte. Three legs run the identical corpus:
 | **WebAssembly** | `tests/wasm_conformance.mjs` (the `wasm_conformance` ctest) | `scripts/build_wasm.sh` |
 
 All three print the same `files / cases / passed / failed / amended` summary — currently
-**15 files, 261 cases, 261 passed, 1 amended** at core 45409ed (181 cases in 12 files before
-PL.native-prolog-mirror-full slice 1 added `geo-map.json`, `mechanic-farming.json` and
-`mechanic-strategy.json`; 76 before core d88b6f0's `quest-count-goals.json` and
+**20 files, 420 cases, 420 passed, 1 amended** at core 45409ed (261 cases in 15 files before
+PL.native-prolog-mirror-full slice 2 added `mechanic-puzzle.json`, `mechanic-platformer.json`,
+`mechanic-business.json`, `mechanic-crafting.json` and `mechanic-equipment.json`; 181 in 12
+before slice 1 added `geo-map.json`, `mechanic-farming.json` and `mechanic-strategy.json`; 76 before core d88b6f0's `quest-count-goals.json` and
 `pack-agreement.json` joined the mirror) — so a divergence between the C ABI and any
 binding shows up immediately as a differing count.
 
@@ -41,10 +42,15 @@ For every case the harness creates a fresh KB, consults the `kb` clauses, runs `
 through the ABI, and compares the collected [binding sets](c-abi.md#binding-set-json-format)
 against `expected` as an **unordered multiset**, as core's `conformance/README.md`
 ("Order-independence") and core's own runner say: the same number of solutions, each matched
-once, in any order (U120(9)). Each leg checks its comparator against the same five probes
-before it grades anything. The order the legs enumerate in is still compared, across legs,
-by the parity diff below. The mirror's bytes are held to core's at the pin by the
-`prolog_mirror_digest` ctest (see [../conformance/VENDORED.md](../conformance/VENDORED.md)).
+once, in any order (U120(9)). The C and wasm legs put five probes straight to their
+comparator, both solution lists given, and refuse to grade a corpus if one fails. The Rust
+leg's `order_is_not_significant_but_multiplicity_is` runs six probes through the engine
+instead: its answers to `p(X)` are fixed at `a, b` and only `expected` varies. Both cover the
+same four properties: a reordered list matches, and a wrong multiplicity, a member never
+bound and an extra one do not. The order the legs enumerate in is still compared, across
+legs, by the parity diff below. The mirror's bytes are held to core's at the pin by the
+`prolog_mirror_digest` ctest, and inside the monorepo, by default, the record itself is held
+to the sibling core's git objects (see [../conformance/VENDORED.md](../conformance/VENDORED.md)).
 
 The corpus also carries the identity layer used by the wider platform — entity atoms are
 CURIEs such as `'insimul:ent:<id>'` and world-scoped `'insimul:world:<w>:ent:<id>'`, and
@@ -83,7 +89,7 @@ scripts/conformance_parity.sh        # builds whatever leg is missing, then comp
 
 Because it compares the *raw* strings, it catches a divergence in solution order, error
 wording, or number formatting that each leg's own `expected` check would happily pass.
-Result today: **261/261 byte-identical**. The full record, and the non-vacuity gates each
+Result today: **420/420 byte-identical**. The full record, and the non-vacuity gates each
 verified by deliberately triggering them, live in
 [../conformance/WASM_PARITY.md](../conformance/WASM_PARITY.md).
 

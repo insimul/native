@@ -1,18 +1,21 @@
 # three-leg conformance parity (native ⟷ wasm ⟷ Rust)
 
 **Status: no divergences.** The native build, the Emscripten/wasm32 build and the
-Rust wrapper produce **byte-identical** results on all **261** cases of the golden
+Rust wrapper produce **byte-identical** results on all **420** cases of the golden
 Prolog corpus — same pass/fail, same solution count, same solution *text* from
 `insimul_query_next()`, in the same order.
 
 | leg | command | result |
 |---|---|---|
-| native (C ABI) | `ctest --test-dir build -R conformance` | 15 files, 261 cases, 261 passed, 0 failed, 1 amended |
-| **Rust wrapper** | `cargo test --manifest-path rust/Cargo.toml` | 15 files, 261 cases, 261 passed, 0 failed, 1 amended |
-| **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 15 files, 261 cases, 261 passed, 0 failed, 1 amended |
-| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 261/261 records identical on all three |
+| native (C ABI) | `ctest --test-dir build -R conformance` | 20 files, 420 cases, 420 passed, 0 failed, 1 amended |
+| **Rust wrapper** | `cargo test --manifest-path rust/Cargo.toml` | 20 files, 420 cases, 420 passed, 0 failed, 1 amended |
+| **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 20 files, 420 cases, 420 passed, 0 failed, 1 amended |
+| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 420/420 records identical on all three |
 
-(261 since PL.native-prolog-mirror-full slice 1 added core's `geo-map.json` (15),
+(420 since PL.native-prolog-mirror-full slice 2 added core's `mechanic-puzzle.json` (38),
+`mechanic-platformer.json` (28), `mechanic-business.json` (39), `mechanic-crafting.json`
+(25) and `mechanic-equipment.json` (29) at the same pin, with no engine change and no new
+amendment. 261 since slice 1 added core's `geo-map.json` (15),
 `mechanic-farming.json` (29) and `mechanic-strategy.json` (36) at the same pin, and the C
 and wasm legs began comparing `expected` as core's order rule says, an unordered multiset,
 as the Rust leg always had (U120(9)). Before that, 181 since PL.native-bundle-core re-copied the mirror at core `d88b6f0`, and still 181
