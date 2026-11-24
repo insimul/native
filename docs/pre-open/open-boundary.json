@@ -3,20 +3,20 @@
   "rules": "scripts/open-boundary.rules.json",
   "rulesVersion": 1,
   "repository": {
-    "root": "native-native-step-clock-row",
-    "gitHead": "b2aa467acd429f8a1073d71daa2e7564ffcee193"
+    "root": "native-native-chat-cefr-rows-s1-line-rule-table",
+    "gitHead": "26e623f26e941a324ffa8ad0971841beff1a6a83"
   },
   "coverage": {
-    "files": 580,
-    "packScanned": 321,
+    "files": 585,
+    "packScanned": 325,
     "packDocuments": [],
-    "importFiles": 21,
-    "importSpecifiers": 221,
+    "importFiles": 22,
+    "importSpecifiers": 224,
     "cargoManifests": 3,
     "cargoDependencies": 3,
     "cFiles": 157,
     "cIncludes": 952,
-    "buildFiles": 23
+    "buildFiles": 24
   },
   "content": [
     {
