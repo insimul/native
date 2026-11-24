@@ -8,7 +8,8 @@
 #
 # conformance/PROLOG_MIRROR.json records, against core's bytes at the commit
 # corebridge/core-pin.json pins (`coreCommit`), the sha256 of every mirrored file
-# (`files`) and the name of every core file NOT yet mirrored (`notMirrored`). The
+# (`files`) and the name of every core file NOT mirrored (`notMirrored`, empty since
+# slice 5: the mirror holds all of core's files). The
 # gate refuses (exit non-zero, every problem named) when:
 #   - the manifest's coreCommit is not core-pin.json's coreCommit (the pin moved and
 #     the mirror was not re-recorded);
@@ -16,7 +17,10 @@
 #     entry has no file (a missing one);
 #   - a file's sha256 is not the recorded one (a hand-edit, or bytes from another
 #     core commit);
-#   - a name is both mirrored and listed as not mirrored.
+#   - a name is both mirrored and listed as not mirrored;
+#   - any name is listed as not mirrored (an incomplete mirror: slice 5 made the
+#     mirror whole, so a core file new at a moved pin, or a reverted slice, is
+#     refused until it is recorded with ADD=; slice 4's m1).
 # With a core checkout it ALSO holds the record itself to core: core's
 # conformance/prolog/ at coreCommit must hold exactly `files` + `notMirrored`, and
 # every mirrored file's sha256 must be the sha256 of core's blob at that commit.
@@ -34,20 +38,21 @@
 # sibling holding the pin, a stale sibling, or the checks turned off by an empty
 # -DCORE_DIR=; slice 3, settling slice 2's m2). CMakeLists.txt looks for the sibling
 # itself at configure time and, when one holding the pin is there, requires the
-# check to have used it and the negative to refuse 8 of 8 (slice 3, slice 2's m1).
+# check to have used it and the negative to refuse 9 of 9 (slice 3, slice 2's m1).
 #
 # Modes (cmake -P, all paths absolute):
 #   check     -DMIRROR_DIR=… -DMANIFEST=… -DPIN=… [-DCORE_DIR=…] [-DWORK_DIR=…]
 #             [-DEXPECT_SIBLING=…] (CMakeLists.txt's configure-time sibling, for the
 #             message when the run then has no core; it changes no verdict)
 #   negative  -DMODE=negative -DMIRROR_DIR=… -DMANIFEST=… -DPIN=… [-DCORE_DIR=…] -DWORK_DIR=…
-#             copies the mirror and perturbs it six ways (a whitespace-only edit to
+#             copies the mirror and perturbs it seven ways (a whitespace-only edit to
 #             pack-agreement.json that every leg would still pass, an extra file, a
-#             missing file, a renamed file, a pin that moved, and a name both
-#             mirrored and not); passes only when each perturbation is refused for
-#             its own named reason. With a core checkout it adds two more (the
-#             whitespace edit with the record hand-rewritten to match it, and a core
-#             file dropped from `notMirrored`), which only core's objects can catch.
+#             missing file, a renamed file, a pin that moved, a name both mirrored
+#             and not, and a file moved from the mirror to `notMirrored`); passes
+#             only when each perturbation is refused for its own named reason. With
+#             a core checkout it adds two more (the whitespace edit with the record
+#             hand-rewritten to match it, and a file dropped from the mirror and from
+#             the whole record), which only core's objects can catch.
 #   record    -DMODE=record -DMIRROR_DIR=… -DMANIFEST=… -DPIN=… [-DCORE_DIR=…]
 #             [-DADD="a.json;b.json"] [-DWORK_DIR=…]
 #             re-syncs the mirror FROM CORE'S GIT OBJECTS at the pin (never from the
@@ -250,6 +255,12 @@ function(check_mirror mirror manifest pin core out summary)
     endif()
   endforeach()
 
+  # The mirror is complete (slice 5): every core file is mirrored, so a name left in
+  # `notMirrored` (a core file new at a moved pin, or a slice reverted) is refused.
+  foreach(f IN LISTS M_NOT)
+    list(APPEND problems "incomplete mirror: ${f} is listed as not mirrored; the mirror holds every core file, so record it with -DADD=${f} (MODE=record)")
+  endforeach()
+
   list(LENGTH M_NAMES nm)
   list(LENGTH M_NOT nn)
   set(against "the manifest as recorded (${CORE_NONE})")
@@ -326,7 +337,7 @@ if(MODE STREQUAL "negative")
 
   set(named 0)
   set(total 0)
-  set(probes whitespace extra missing renamed pin both)
+  set(probes whitespace extra missing renamed pin both incomplete)
   if(CORE_DIR)
     # With a core checkout, two more: M22's shape with the record re-written by hand
     # to match the stale bytes (only core's git objects can catch it), and a core
@@ -366,6 +377,15 @@ if(MODE STREQUAL "negative")
       string(JSON t SET "${manifest_text}" notMirrored 0 "\"${first}\"")
       file(WRITE "${man}" "${t}")
       set(want "both: ${first} is recorded as mirrored and as not mirrored")
+    elseif(probe STREQUAL "incomplete")
+      # A file taken out of the mirror and moved to `notMirrored`, the record
+      # otherwise consistent: the shape of a slice reverted (slice 4's m1).
+      file(REMOVE "${d}/prolog/${first}")
+      set(man "${d}/PROLOG_MIRROR.json")
+      string(JSON t REMOVE "${manifest_text}" files "${first}")
+      string(JSON t SET "${t}" notMirrored 0 "\"${first}\"")
+      file(WRITE "${man}" "${t}")
+      set(want "incomplete mirror: ${first} is listed as not mirrored")
     elseif(probe STREQUAL "recorddrift")
       set(target pack-agreement.json)
       if(NOT EXISTS "${d}/prolog/${target}")
@@ -378,11 +398,15 @@ if(MODE STREQUAL "negative")
       file(WRITE "${man}" "${t}")
       set(want "record drift: core's ${target} at ${M_COMMIT} is sha256")
     elseif(probe STREQUAL "unlisted")
+      # A file the record forgot entirely: out of the mirror and out of `files`,
+      # and not listed as not mirrored. The mirror is consistent with its record,
+      # so only core's names can see it. (Before slice 5 this dropped a name from
+      # `notMirrored`, which is now empty.)
+      file(REMOVE "${d}/prolog/${first}")
       set(man "${d}/PROLOG_MIRROR.json")
-      list(GET M_NOT 0 dropped)
-      string(JSON t REMOVE "${manifest_text}" notMirrored 0)
+      string(JSON t REMOVE "${manifest_text}" files "${first}")
       file(WRITE "${man}" "${t}")
-      set(want "unlisted core file: core holds ${CORE_PATH}/${dropped}")
+      set(want "unlisted core file: core holds ${CORE_PATH}/${first}")
     endif()
     set(probe_core "")
     if(probe STREQUAL "recorddrift" OR probe STREQUAL "unlisted")
@@ -458,11 +482,19 @@ if(MODE STREQUAL "record")
       string(APPEND not_json "    \"${f}\"")
     endif()
   endforeach()
-  set(desc "The digest record of conformance/prolog/, the vendored mirror of @insimul/core's conformance/prolog/. `files` is the sha256 of core's bytes at `coreCommit` (which must equal corebridge/core-pin.json's) for every mirrored file; `notMirrored` names every core file at that commit the mirror does not hold yet. Written by tests/prolog_mirror_digest.cmake MODE=record from core's git objects, never by hand; the prolog_mirror_digest ctest refuses any drift.")
-  file(WRITE "${MANIFEST}" "{\n  \"description\": \"${desc}\",\n  \"source\": \"@insimul/core ${CORE_PATH}/\",\n  \"coreCommit\": \"${commit}\",\n  \"files\": {\n${files_json}\n  },\n  \"notMirrored\": [\n${not_json}\n  ]\n}\n")
+  set(desc "The digest record of conformance/prolog/, the vendored mirror of @insimul/core's conformance/prolog/. `files` is the sha256 of core's bytes at `coreCommit` (which must equal corebridge/core-pin.json's) for every mirrored file; `notMirrored` names every core file at that commit the mirror does not hold, and must be empty: the mirror holds all of core's files, and the prolog_mirror_digest ctest refuses a name there (a core file new at a moved pin) until it is recorded with ADD=. Written by tests/prolog_mirror_digest.cmake MODE=record from core's git objects, never by hand; the prolog_mirror_digest ctest refuses any drift.")
+  if(not_json)
+    set(not_block "[\n${not_json}\n  ]")
+  else()
+    set(not_block "[]")
+  endif()
+  file(WRITE "${MANIFEST}" "{\n  \"description\": \"${desc}\",\n  \"source\": \"@insimul/core ${CORE_PATH}/\",\n  \"coreCommit\": \"${commit}\",\n  \"files\": {\n${files_json}\n  },\n  \"notMirrored\": ${not_block}\n}\n")
   list(LENGTH keep nk)
   list(LENGTH cnames nc)
   message("prolog_mirror_digest record: ${nk} of core's ${nc} file(s) at ${commit} mirrored and recorded in ${MANIFEST}")
+  if(not_json)
+    message("prolog_mirror_digest record: WARNING: core holds file(s) the mirror does not (listed in notMirrored); the check refuses an incomplete mirror: re-run with them in -DADD=")
+  endif()
   return()
 endif()
 

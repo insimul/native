@@ -1,11 +1,14 @@
 {
-  "description": "The digest record of conformance/prolog/, the vendored mirror of @insimul/core's conformance/prolog/. `files` is the sha256 of core's bytes at `coreCommit` (which must equal corebridge/core-pin.json's) for every mirrored file; `notMirrored` names every core file at that commit the mirror does not hold yet. Written by tests/prolog_mirror_digest.cmake MODE=record from core's git objects, never by hand; the prolog_mirror_digest ctest refuses any drift.",
+  "description": "The digest record of conformance/prolog/, the vendored mirror of @insimul/core's conformance/prolog/. `files` is the sha256 of core's bytes at `coreCommit` (which must equal corebridge/core-pin.json's) for every mirrored file; `notMirrored` names every core file at that commit the mirror does not hold, and must be empty: the mirror holds all of core's files, and the prolog_mirror_digest ctest refuses a name there (a core file new at a moved pin) until it is recorded with ADD=. Written by tests/prolog_mirror_digest.cmake MODE=record from core's git objects, never by hand; the prolog_mirror_digest ctest refuses any drift.",
   "source": "@insimul/core conformance/prolog/",
   "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
   "files": {
+    "agent-ai.json": "88e7444c4b943da2b4146a72974fdae7c14928a3bef921e0bf72d91834ab52c5",
+    "alive-negation.json": "9a10dfb2d2363293b892ba7db0c1b4d573f39e721ab6390b34195cabc449150e",
     "arithmetic.json": "4e0aadde7f1ab8a48c7f41c6b8a6fcb4e867885ea87e21ba294b18126c7c77a6",
     "assert-retract.json": "a7d3fd3ba9ecec524861e973e2c7348825ab72036488e862c0fe09a7f52f2fd2",
     "backtracking.json": "c7139dc10a5b82e44c2d76446d9ca87f9ab2cc80752503362bbd1ae5470ef593",
+    "death-readers.json": "64e22d134db8af3894950b0a4dd0ae4070fd59955030be020fea6e0cc7dac008",
     "equivalence.json": "d3f523757106b1ce69617b5f5b1e6e59a5c7b18b76fe7d506eb990c04a288493",
     "gameplay.json": "1f28337548979ff01c5a35e7ee38e83b092834900468db1262829c833ae3fad4",
     "geo-map.json": "10366e40bbd0249a471f77d081105c225633fd0c7012a52eff814573a55f958f",
@@ -32,15 +35,11 @@
     "mechanic-weather.json": "cf5b171215127e7a6b52cad7bc37b577c6f56d308c9a33cc53f5b40c6a683198",
     "negation.json": "1daddfa746eb631314cd6f78bc4764b1e7253ae42aaac694f60c46a1921fb8d4",
     "pack-agreement.json": "317a14651b1263909f75cf5e4f5508ca9a59682ec84b6d69d8988508c9bc4cab",
+    "placement.json": "bc504dae6bd3c7952a89785459a19fcaf2325fb75281a2afd7fc813d69d04d71",
     "quest-count-goals.json": "6d3c04b94777315abaedf9d4d59cda5dee5d0cdfb8a2db059ac5ecf9bb4d8182",
+    "scaffold.json": "bebf582ce162e29fe14fdb1115b81438913edb3da1ddc726a41192f67f783798",
     "unification.json": "303c47669f1b4dc64d666704862a2842ce55373db6c7ddd715f432aaf970c708",
     "worlds.json": "a3ced7efcaedb218f02c4ff89530acd327c447ead1ab8fbf87f247ae94970c09"
   },
-  "notMirrored": [
-    "agent-ai.json",
-    "alive-negation.json",
-    "death-readers.json",
-    "placement.json",
-    "scaffold.json"
-  ]
+  "notMirrored": []
 }

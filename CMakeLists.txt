@@ -446,12 +446,13 @@ add_test(NAME conformance COMMAND insimul_conformance)
 # had not changed stayed green on all three, self-sweep M22). It holds
 # conformance/prolog/ to conformance/PROLOG_MIRROR.json — the sha256 of core's
 # bytes at corebridge/core-pin.json's coreCommit for every mirrored file, and every
-# core file not mirrored yet — and refuses an extra, missing, renamed or changed
-# file and a record taken at another commit than the pin. With a git checkout of
+# core file not mirrored (none since slice 5) — and refuses an extra, missing,
+# renamed or changed file, a record taken at another commit than the pin, and any
+# name listed as not mirrored (the mirror holds all of core's files). With a git checkout of
 # @insimul/core (INSIMUL_CORE_DIR, else by default the monorepo's sibling core when
 # it holds the pin's commit; the script resolves it) it also holds the record itself
 # to core's git objects at the pin. Plain cmake -P: no node, no skip. Its negative
-# control perturbs a copy six ways (eight with a core checkout) and passes only when
+# control perturbs a copy seven ways (nine with a core checkout) and passes only when
 # every perturbation is refused for its own named reason.
 set(INSIMUL_PROLOG_MIRROR_ARGS
   -DMIRROR_DIR=${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog
@@ -463,8 +464,8 @@ set(INSIMUL_PROLOG_MIRROR_ARGS
 # independently of the script (slice 3, settling slice 2's m1): when a sibling that
 # holds the pin's commit is present, the script must find it by default, so the
 # digest must say it held the record to core's git objects and the negative must
-# refuse all 8 perturbations. Without that, a script that lost its default lookup
-# would fall back to manifest-only and 6 of 6 and stay green. Re-run cmake if the
+# refuse all 9 perturbations. Without that, a script that lost its default lookup
+# would fall back to manifest-only and 7 of 7 and stay green. Re-run cmake if the
 # sibling goes away (the script then says so, from -DEXPECT_SIBLING); the pin is a
 # configure dependency, so a pin move re-checks.
 set(INSIMUL_PROLOG_MIRROR_SIBLING "")
@@ -484,14 +485,14 @@ if(_insimul_sibling AND _insimul_sibling_holds)
   set(INSIMUL_PROLOG_MIRROR_SIBLING "${_insimul_sibling}")
 endif()
 if(INSIMUL_PROLOG_MIRROR_SIBLING)
-  message(STATUS "prolog_mirror_digest: the sibling core ${INSIMUL_PROLOG_MIRROR_SIBLING} holds the pin; the digest pair must use it (8 of 8)")
+  message(STATUS "prolog_mirror_digest: the sibling core ${INSIMUL_PROLOG_MIRROR_SIBLING} holds the pin; the digest pair must use it (9 of 9)")
   set(_insimul_digest_against "core's git objects at [0-9a-f]+ in [^\n]* [(]from (the monorepo's sibling core|INSIMUL_CORE_DIR)[)]")
-  set(_insimul_negative_count "8 of 8")
+  set(_insimul_negative_count "9 of 9")
   set(_insimul_expect_sibling -DEXPECT_SIBLING=${INSIMUL_PROLOG_MIRROR_SIBLING})
 else()
   set(_insimul_expect_sibling "")
   set(_insimul_digest_against "[^\n]*")
-  set(_insimul_negative_count "[68] of [68]")
+  set(_insimul_negative_count "[79] of [79]")
 endif()
 add_test(NAME prolog_mirror_digest COMMAND ${CMAKE_COMMAND} ${INSIMUL_PROLOG_MIRROR_ARGS}
   ${_insimul_expect_sibling} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/prolog_mirror_digest.cmake)
