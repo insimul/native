@@ -29,7 +29,11 @@
 # pin's commit is named and set aside (fetch core there); an explicit one is used
 # as given, so a missing commit there is refused. Without a core checkout the
 # manifest is trusted as recorded — say so, never skip silently: the line printed
-# names which check ran and where its core came from.
+# names which check ran and where its core came from, or why none was used (no
+# sibling holding the pin, a stale sibling, or the checks turned off by an empty
+# -DCORE_DIR=; slice 3, settling slice 2's m2). CMakeLists.txt looks for the sibling
+# itself at configure time and, when one holding the pin is there, requires the
+# check to have used it and the negative to refuse 8 of 8 (slice 3, slice 2's m1).
 #
 # Modes (cmake -P, all paths absolute):
 #   check     -DMIRROR_DIR=… -DMANIFEST=… -DPIN=… [-DCORE_DIR=…] [-DWORK_DIR=…]
@@ -65,9 +69,13 @@ set(CORE_PATH "conformance/prolog")
 
 # Where the core checkout for the record checks comes from (see the header).
 set(CORE_FROM "")
+# Why there is no core checkout, for the PASS line when there is none.
+set(CORE_NONE "no core checkout: no sibling core holding the pin; set INSIMUL_CORE_DIR to also hold the record to core's git objects")
 if(DEFINED CORE_DIR)
   if(NOT CORE_DIR STREQUAL "")
     set(CORE_FROM "-DCORE_DIR")
+  else()
+    set(CORE_NONE "the record checks against core's git objects were turned off by an empty -DCORE_DIR=")
   endif()
 elseif(DEFINED ENV{INSIMUL_CORE_DIR} AND NOT "$ENV{INSIMUL_CORE_DIR}" STREQUAL "")
   set(CORE_DIR "$ENV{INSIMUL_CORE_DIR}")
@@ -93,6 +101,7 @@ else()
       else()
         message("prolog_mirror_digest: the sibling core ${_c} does not hold the pin's commit ${_pc}; "
                 "the record checks need it there (git -C <core> fetch origin) or INSIMUL_CORE_DIR")
+        set(CORE_NONE "no core checkout: the sibling core does not hold the pin's commit ${_pc}; fetch it there or set INSIMUL_CORE_DIR to also hold the record to core's git objects")
       endif()
       break()
     endif()
@@ -231,7 +240,7 @@ function(check_mirror mirror manifest pin core out summary)
 
   list(LENGTH M_NAMES nm)
   list(LENGTH M_NOT nn)
-  set(against "the manifest as recorded (no core checkout: no sibling core holding the pin; set INSIMUL_CORE_DIR to also hold the record to core's git objects)")
+  set(against "the manifest as recorded (${CORE_NONE})")
   if(core)
     set(against "core's git objects at ${M_COMMIT} in ${core} (from ${CORE_FROM})")
     core_names("${core}" "${M_COMMIT}" cnames cerr)

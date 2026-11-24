@@ -458,14 +458,55 @@ set(INSIMUL_PROLOG_MIRROR_ARGS
   -DMANIFEST=${CMAKE_CURRENT_SOURCE_DIR}/conformance/PROLOG_MIRROR.json
   -DPIN=${CMAKE_CURRENT_SOURCE_DIR}/corebridge/core-pin.json
   -DWORK_DIR=${CMAKE_CURRENT_BINARY_DIR}/prolog-mirror-digest)
+#
+# The tests also look for the monorepo's sibling core here, at configure time and
+# independently of the script (slice 3, settling slice 2's m1): when a sibling that
+# holds the pin's commit is present, the script must find it by default, so the
+# digest must say it held the record to core's git objects and the negative must
+# refuse all 8 perturbations. Without that, a script that lost its default lookup
+# would fall back to manifest-only and 6 of 6 and stay green. Re-run cmake if the
+# sibling goes away; the pin is a configure dependency, so a pin move re-checks.
+set(INSIMUL_PROLOG_MIRROR_SIBLING "")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/core-pin.json)
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/core-pin.json _insimul_pin_json)
+string(JSON _insimul_pin ERROR_VARIABLE _insimul_pin_err GET "${_insimul_pin_json}" coreCommit)
+foreach(_c ${CMAKE_CURRENT_SOURCE_DIR}/../babylon/packages/core
+           ${CMAKE_CURRENT_SOURCE_DIR}/../insimul-runtime/packages/core)
+  get_filename_component(_c "${_c}" ABSOLUTE)
+  if(EXISTS "${_c}/.git" AND EXISTS "${_c}/conformance/prolog")
+    if(NOT _insimul_pin_err)
+      execute_process(COMMAND git -C "${_c}" cat-file -e "${_insimul_pin}^{commit}"
+        RESULT_VARIABLE _r OUTPUT_QUIET ERROR_QUIET)
+      if(_r EQUAL 0)
+        set(INSIMUL_PROLOG_MIRROR_SIBLING "${_c}")
+      endif()
+    endif()
+    break()
+  endif()
+endforeach()
+if(INSIMUL_PROLOG_MIRROR_SIBLING)
+  message(STATUS "prolog_mirror_digest: the sibling core ${INSIMUL_PROLOG_MIRROR_SIBLING} holds the pin; the digest pair must use it (8 of 8)")
+  set(_insimul_digest_against "core's git objects at [0-9a-f]+ in [^\n]* [(]from (the monorepo's sibling core|INSIMUL_CORE_DIR)[)]")
+  set(_insimul_negative_count "8 of 8")
+else()
+  set(_insimul_digest_against "[^\n]*")
+  set(_insimul_negative_count "[68] of [68]")
+endif()
 add_test(NAME prolog_mirror_digest COMMAND ${CMAKE_COMMAND} ${INSIMUL_PROLOG_MIRROR_ARGS}
   -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/prolog_mirror_digest.cmake)
 set_tests_properties(prolog_mirror_digest PROPERTIES
-  PASS_REGULAR_EXPRESSION "prolog_mirror_digest: [1-9][0-9]* mirrored file[(]s[)] [^\n]*\nprolog_mirror_digest: PASS")
+  PASS_REGULAR_EXPRESSION "prolog_mirror_digest: [1-9][0-9]* mirrored file[(]s[)] [^\n]*, held to ${_insimul_digest_against}\nprolog_mirror_digest: PASS")
 add_test(NAME prolog_mirror_digest_negative COMMAND ${CMAKE_COMMAND} ${INSIMUL_PROLOG_MIRROR_ARGS}
   -DMODE=negative -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/prolog_mirror_digest.cmake)
 set_tests_properties(prolog_mirror_digest_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "prolog_mirror_digest --negative: [68] of [68] perturbation[(]s[)] refused for their named reason\nprolog_mirror_digest --negative: PASS")
+  PASS_REGULAR_EXPRESSION "prolog_mirror_digest --negative: ${_insimul_negative_count} perturbation[(]s[)] refused for their named reason\nprolog_mirror_digest --negative: PASS")
+# An empty -DCORE_DIR= turns the record checks off; the PASS line must say so rather
+# than blame a missing sibling (slice 3, settling slice 2's m2).
+add_test(NAME prolog_mirror_digest_optout COMMAND ${CMAKE_COMMAND} ${INSIMUL_PROLOG_MIRROR_ARGS}
+  -DCORE_DIR= -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/prolog_mirror_digest.cmake)
+set_tests_properties(prolog_mirror_digest_optout PROPERTIES
+  PASS_REGULAR_EXPRESSION "held to the manifest as recorded [(]the record checks against core's git objects were turned off by an empty -DCORE_DIR=[)]\nprolog_mirror_digest: PASS")
 
 # Snapshot/restore (US-LI4). The `snapshot` ctest is a pure consumer of insimul.h;
 # its golden fixture (an exact snapshot image) is baked as an absolute path so the
