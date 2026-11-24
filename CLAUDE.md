@@ -656,7 +656,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival, traversal (vehicles-only among them), headless build, progression, village save, villager pass-by, world-vehicle parking and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, audio cues, survival, traversal (vehicles-only among them), headless build, progression, village save, villager pass-by, world-vehicle parking and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -813,8 +813,8 @@
   `solids`, `exclude` and `running` are type-checked.
 - **The ground reading rows (PL.native-ground-row, U97(3)) run core's
   `conformance/audio/ground.json` UNCHANGED**, copied as their own set
-  (`AUDIO_CORPUS_FILES`; P5.core's `cues.json` beside it is not copied, no row
-  runs it) and driven by the same runner as `audio_ground_corpus` (+
+  (`AUDIO_CORPUS_FILES`, which since PL.native-step-clock-row holds P5.core's
+  `cues.json` too) and driven by the same runner as `audio_ground_corpus` (+
   `audio_ground_corpus_negative`). `audio.ground.{placeAt, groundSurfaceAt,
   footstepAt}` are stateless, one core function of `audio/ground-from-ir` each,
   taking a case's `input` (`world`, `at`, `gait`) as their args and checking
@@ -832,6 +832,28 @@
   (its comparator is the save-file code). IR metres on `{x, z}`, nothing converted
   (Unreal's `Portable/InsimulAudioPlace` maps centimetres and its level offset in,
   then binds these rows in place of its interim reading).
+- **The step clock row (PL.native-step-clock-row, U122(1)) runs the footstep cases
+  of core's `conformance/audio/cues.json` UNCHANGED**, copied into the audio set
+  (`AUDIO_CORPUS_FILES`) and driven by the same runner as `audio_cues_corpus` (+
+  `audio_cues_corpus_negative`). `audio.stepFootsteps { state, dtSec, gait?,
+  surface? }` → `{ state, step }` is core's `stepFootsteps` whole and STATELESS:
+  the host keeps one `state` per body and sends back the one the last answer
+  carried; the first is `audio.footsteps.contract`'s `initialState` (core's
+  `INITIAL_FOOTSTEP_STATE`). The runner does the same: each `footstepRun` step is
+  one call, and each `footstep` case is one call from the initial state with a
+  frame of the longest gait interval (the step less its `foot` is `footstepCue`'s
+  cue; no step must leave the initial state). The file's ambient and music ops
+  reach no row: the runner counts and reports them as not reached (`Area::unreached`),
+  and any other op still fails. `[invalid-input]` is the row's own boundary, not
+  core's: a `state` that is not an object with a finite `elapsedSec` and a
+  `nextFoot` of `left`/`right`, and a `dtSec` that is absent or not a finite number
+  (core would read the last as 0); zero and negative frames, an unknown gait and an
+  unknown or silent surface are core's answers. `audio.footsteps.contract` states
+  the `footsteps` table's data keys (`gaits`, `surfaces`, `defaultSurface`) from
+  core's constants, held to the file on those keys. Import `audio/footsteps` only,
+  never `audio/audio-cues-corpus` (its comparator is the save-file code). Unreal's
+  `insimul::audio::StepFootsteps` (`Portable/InsimulAudioCues`) is the P5 copy
+  these rows retire.
 - **The survival rows (PL.native-survival-rows, U106(1)) run core's P9c corpora
   UNCHANGED**, `conformance/survival/{needs,hud,stamina}.json` copied as their own
   set (`SURVIVAL_CORPUS_FILES`) and driven by their own runner,

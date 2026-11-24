@@ -1,7 +1,8 @@
 // props_corpus.cpp — core's P6 corpora, driven through libinsimulcore's
 // `props.*` and `inventory.*` rows, core's movement contract corpus through
-// its `camera.movement.*` rows, and core's ground reading corpus through its
-// `audio.ground.*` rows.
+// its `camera.movement.*` rows, core's ground reading corpus through its
+// `audio.ground.*` rows, and the footstep cases of core's audio cue corpus
+// through its `audio.stepFootsteps` row.
 //
 // PL.native-props-rows (rulings U89(2) and U36). Core's P6 logic (P6.core,
 // src/props/{containers,documents,doors,notice-board}.ts, src/ui/inventory-model.ts
@@ -33,6 +34,11 @@
 //                                placeAt, groundSurfaceAt, footstepAt
 //                                (PL.native-ground-row, U97(3): core's
 //                                PL.ground-from-ir, src/audio/ground-from-ir.ts)
+//   audio/cues.json              area audio-cues
+//                                footstep, footstepRun (ambient, ambientIssues,
+//                                ambientRun, music and musicRun reach no row here)
+//                                (PL.native-step-clock-row, U122(1): core's
+//                                P5.core, src/audio/footsteps.ts)
 //
 // Nothing here re-writes a case or computes an answer: every answer comes out of
 // a row. How each op is driven (core's runner, src/props/props-corpus.ts, is the
@@ -132,6 +138,25 @@
 //   table is held to the file's on the keys the row states (`keyed_tables`; a key
 //   the row states that the file does not is still a difference), plus
 //   `defaultFootstepSurface` whole.
+//   audio-cues footstep/footstepRun (core's runner, src/audio/audio-cues-corpus.ts
+//   `runFootsteps` and `footstepCue`, is the reference): `audio.stepFootsteps` is
+//   STATELESS, so the runner keeps the state as a host does. footstepRun {steps}:
+//   from `audio.footsteps.contract`'s `initialState` (core's INITIAL_FOOTSTEP_STATE,
+//   where core's runner starts), one row call per step with the step's fields as
+//   the args beside the state the last answer carried → `{ticks: [{elapsedSec,
+//   nextFoot, step}]}`, as core's runner records them. footstep {surface?, gait?}:
+//   the row reaches core's `footstepCue` through ONE call from the initial state
+//   with a frame of the longest gait interval the contract states (so any gait
+//   that steps steps once) → `{cue}`, the step less its `foot`; that step must fall
+//   on the initial state's foot, and where no step falls the answered state must
+//   be the initial one (a body that does not step resets). Every answer must be
+//   exactly `{state: {elapsedSec, nextFoot}, step}`. The file's other five ops
+//   have no row here: their cases are counted and reported as not reached, never
+//   failed and never passed (an op neither driven nor listed as unreached still
+//   fails). Its order rule (ambience and bindings reversed) touches no footstep
+//   input, so there is no second run. Its contract's `footsteps` table mixes data
+//   and prose: `audio.footsteps.contract` states `gaits`, `surfaces` and
+//   `defaultSurface`, held to the file's on those keys (`keyed_tables`).
 //
 // Each file's `contract` tables (the data ones) are held to its area's contract
 // row (`props.contract`, or the area's own) for its area: every table the row
@@ -400,8 +425,22 @@ bool numerics_double(const JsonValue &doc, std::string &stated) {
 }
 
 // The comparator (and the one projection this runner makes) is the gate; it must be able to fail.
+JsonValuePtr cue_of_step(const JsonValue &step);
+
 bool self_test() {
 	auto parse = [](const char *t) { return insimul::parse_json(t).root; };
+	// The footstep projection: a step less its foot, every other key kept; null stays null.
+	{
+		auto step = parse("{\"key\":\"terrain.footstep.stone\",\"intervalSec\":0.4,\"foot\":\"left\"}");
+		auto want = parse("{\"key\":\"terrain.footstep.stone\",\"intervalSec\":0.4}");
+		auto none = parse("null");
+		auto got = step ? cue_of_step(*step) : nullptr;
+		auto got_none = none ? cue_of_step(*none) : nullptr;
+		if (!got || compare(*want, *got, 0.0, "$") != "" || !got_none || got_none->type != JsonType::Null) {
+			std::printf("  [FAIL] footstep self-test: a step less its foot should be the cue, and no step no cue\n");
+			return false;
+		}
+	}
 	struct Probe {
 		const char *expected, *actual;
 		bool agree;
@@ -576,6 +615,9 @@ struct Area {
 	Order order = Order::None;
 	// Tables that mix data and prose: held to the file's on the keys the row states.
 	std::vector<std::string> keyed_tables = {};
+	// Ops of core's corpus that no row here runs: their cases are counted and reported
+	// as not reached, neither failed nor passed (audio-cues: the ambient and music ops).
+	std::vector<std::string> unreached = {};
 };
 
 const std::vector<Area> &areas() {
@@ -638,6 +680,16 @@ const std::vector<Area> &areas() {
 	     "audio.ground.contract",
 	     Order::WorldLists,
 	     {"ground"}},
+	    {"audio-cues",
+	     {"footstep", "footstepRun"},
+	     {"audio.stepFootsteps", "audio.footsteps.contract"},
+	     {"footsteps"},
+	     {},
+	     false,
+	     "audio.footsteps.contract",
+	     Order::None,
+	     {"footsteps"},
+	     {"ambient", "ambientIssues", "ambientRun", "music", "musicRun"}},
 	};
 	return all;
 }
@@ -1064,6 +1116,109 @@ JsonValuePtr reversed_world(const JsonValue &input, bool &changed) {
 	return make_object(std::move(items));
 }
 
+// ── the step clock (audio-cues) ───────────────────────────────────────────────
+
+// Where core's runner starts a body's clock and the frame a `footstep` case is sent
+// with, both read from `audio.footsteps.contract` (itself held to the file's contract).
+struct FootstepClock {
+	JsonValuePtr initial;  // `initialState`
+	JsonValuePtr longest;  // the longest gait `intervalSec`: a frame that lets any stepping gait step once
+	bool ok = false;
+};
+FootstepClock g_footstep_clock;
+
+bool footstep_clock(Caller &c, std::string &why) {
+	FootstepClock &fc = g_footstep_clock;
+	if (fc.ok) return true;
+	auto r = c.call("audio.footsteps.contract", "{}");
+	if (!r) return why = c.error, false;
+	const JsonValue *init = r->find("initialState");
+	const JsonValue *area = r->find("audio-cues");
+	const JsonValue *fs = area ? area->find("footsteps") : nullptr;
+	const JsonValue *gaits = fs ? fs->find("gaits") : nullptr;
+	if (!init || !init->is_object() || !init->find("nextFoot") || !gaits || !gaits->is_object() || gaits->object_items.empty())
+		return why = "audio.footsteps.contract states no initialState and gaits: " + json_of(*r), false;
+	for (const auto &kv : gaits->object_items) {
+		const JsonValue *iv = kv.second->find("intervalSec");
+		if (!iv || !iv->is_number() || !(iv->number_value > 0)) return why = "gait " + kv.first + " states no positive intervalSec", false;
+		if (!fc.longest || iv->number_value > fc.longest->number_value) fc.longest = copy_of(*iv);
+	}
+	fc.initial = copy_of(*init);
+	fc.ok = true;
+	return true;
+}
+
+// A step less its `foot`: the cue core's `footstepCue` answers (null stays null).
+JsonValuePtr cue_of_step(const JsonValue &step) {
+	if (!step.is_object()) return copy_of(step);
+	std::vector<std::pair<std::string, JsonValuePtr>> items;
+	for (const auto &kv : step.object_items) {
+		if (kv.first != "foot") items.emplace_back(kv.first, copy_of(*kv.second));
+	}
+	return make_object(std::move(items));
+}
+
+// One `audio.stepFootsteps` call: the state, then the tick's fields as sent. Its
+// answer must be exactly `{state: {elapsedSec, nextFoot}, step}`.
+JsonValuePtr step_once(Caller &c, const JsonValue &state, const JsonValue &tick, std::string &why) {
+	ObjectText args;
+	args.add("state", state);
+	for (const auto &kv : tick.object_items) {
+		if (kv.first != "state") args.add(kv.first, *kv.second);
+	}
+	auto r = c.call("audio.stepFootsteps", args.done());
+	if (!r) return why = c.error, nullptr;
+	const JsonValue *st = r->find("state");
+	if (r->object_items.size() != 2 || !r->find("step") || !st || !st->is_object() || st->object_items.size() != 2 ||
+	    !st->find("elapsedSec") || !st->find("nextFoot")) {
+		why = "audio.stepFootsteps answered no {state: {elapsedSec, nextFoot}, step}: " + json_of(*r);
+		return nullptr;
+	}
+	return r;
+}
+
+bool drive_footsteps(Caller &c, const std::string &op, const JsonValue &input, JsonValuePtr &out, std::string &why) {
+	if (!footstep_clock(c, why)) return false;
+	const FootstepClock &fc = g_footstep_clock;
+	if (op == "footstepRun") {
+		const JsonValue *steps = input.find("steps");
+		if (steps && !steps->is_array()) return why = "steps is not an array", false;
+		JsonValuePtr state = fc.initial;
+		std::vector<JsonValuePtr> ticks;
+		if (steps) {
+			for (const auto &st : steps->array_items) {
+				if (!st->is_object()) return why = "a step is not an object", false;
+				auto r = step_once(c, *state, *st, why);
+				if (!r) return false;
+				state = copy_of(*r->find("state"));
+				ticks.push_back(make_object({{"elapsedSec", copy_of(*state->find("elapsedSec"))},
+				                             {"nextFoot", copy_of(*state->find("nextFoot"))},
+				                             {"step", copy_of(*r->find("step"))}}));
+			}
+		}
+		out = make_object({{"ticks", make_array(std::move(ticks))}});
+		return true;
+	}
+	// footstep {surface?, gait?}: one tick from the initial state, a frame of the longest interval.
+	std::vector<std::pair<std::string, JsonValuePtr>> tick = {{"dtSec", fc.longest}};
+	for (const char *k : {"surface", "gait"}) {
+		if (const JsonValue *v = input.find(k)) tick.emplace_back(k, copy_of(*v));
+	}
+	auto r = step_once(c, *fc.initial, *make_object(std::move(tick)), why);
+	if (!r) return false;
+	const JsonValue &step = *r->find("step");
+	if (step.type == JsonType::Null) {
+		const std::string kept = compare(*fc.initial, *r->find("state"), 0.0, "state");
+		if (!kept.empty()) return why = "no step fell but the clock was not reset to the initial state: " + kept, false;
+	} else {
+		const JsonValue *foot = step.is_object() ? step.find("foot") : nullptr;
+		if (!foot || compare(*fc.initial->find("nextFoot"), *foot, 0.0, "foot") != "")
+			return why = "the first step from the initial state did not fall on its nextFoot: " + json_of(step), false;
+	}
+	out = make_object({{"cue", cue_of_step(step)}});
+	return true;
+}
+
 bool drive(Caller &c, const std::string &area, const std::string &op, const JsonValue &input, JsonValuePtr &out,
            std::string &why) {
 	if (area == "props-containers") {
@@ -1163,6 +1318,7 @@ bool drive(Caller &c, const std::string &area, const std::string &op, const Json
 		out = r;
 		return true;
 	}
+	if (area == "audio-cues") return drive_footsteps(c, op, input, out, why);
 	why = "area " + area + " is not one this runner drives";
 	return false;
 }
@@ -1302,7 +1458,7 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		std::map<std::string, int> driven;
+		std::map<std::string, int> driven, unreached;
 		int file_undriven = 0, reversed_runs = 0;
 		for (const auto &cp : case_list->array_items) {
 			const JsonValue &cs = *cp;
@@ -1316,8 +1472,13 @@ int main(int argc, char **argv) {
 				file_undriven++;
 				continue;
 			}
-			bool known = false;
+			bool known = false, no_row = false;
 			for (const std::string &o : area->ops) known = known || o == op;
+			for (const std::string &o : area->unreached) no_row = no_row || o == op;
+			if (!known && no_row) {
+				unreached[op]++;
+				continue;
+			}
 			if (!known) {
 				std::printf("  [FAIL] %s — op '%s' is not one of area %s's\n", name.c_str(), op.c_str(), area_name.c_str());
 				failed++;
@@ -1373,6 +1534,16 @@ int main(int argc, char **argv) {
 		            file_undriven);
 		if (area->order != Order::None) {
 			std::printf("  order: %d case(s) driven again with %s reversed, the same answer\n", reversed_runs, order_lists(area->order));
+		}
+		if (!area->unreached.empty()) {
+			std::string by_unreached;
+			int n = 0;
+			for (const std::string &o : area->unreached) {
+				const int k = unreached.count(o) ? unreached[o] : 0;
+				n += k;
+				by_unreached += (by_unreached.empty() ? "" : ", ") + o + " " + std::to_string(k);
+			}
+			std::printf("  not reached: %d case(s) of ops no row here runs (%s), neither passed nor failed\n", n, by_unreached.c_str());
 		}
 		if (area_name == "props-interactables") {
 			// The rows' own contract (U126): this runner sends a stand's `at` as given, so the

@@ -1093,6 +1093,34 @@ add_test(NAME audio_ground_corpus_negative COMMAND insimulcore_props_corpus
 set_tests_properties(audio_ground_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "contract.ground.kindDefaults.footpath: .terrain.texture.sidewalk. != .terrain.texture.path.*expected WRONGLY the wilderness for a position that is not finite [^\n]*reading: expected a object, got a null.*expected WRONGLY no reading where the world states no ground [^\n]*reading: expected a null, got a object.*expected WRONGLY a stated road id ignored [^\n]*shapeId: .road.a.b. != .road.map.lane-7.*expected WRONGLY a footpath with no archetype read as sidewalk [^\n]*surface: .terrain.texture.sidewalk. != .terrain.texture.path.*expected WRONGLY the first listed road on a tie [^\n]*surface: .terrain.texture.road. != .terrain.texture.gravel.*expected WRONGLY the road of width 0 read [^\n]*surface: .terrain.texture.road. != .terrain.texture.ground.*op footstepAt of area audio-ground: no case of it was driven.*props_corpus: FAIL")
 
+# PL.native-step-clock-row (U122(1), U128): core's step clock (P5.core's
+# stepFootsteps, src/audio/footsteps.ts) through the stateless audio.stepFootsteps
+# row, by the same runner, over core's audio cue corpus conformance/audio/cues.json
+# (copied byte for byte with ground.json): every footstepRun case one row call per
+# step from audio.footsteps.contract's initialState, the state the last answer
+# carried sent back each time; every footstep case one call from that state with
+# a frame of the longest gait interval (the step less its foot is footstepCue's
+# cue; no step must reset the clock); the contract's footsteps data held to
+# audio.footsteps.contract. The file's ambient and music cases reach no row here:
+# the regex demands they are reported as not reached, and 0 undriven of the two
+# footstep ops. Unreal's P5 StepFootsteps (Portable/InsimulAudioCues) is the
+# interim copy this row retires. The regex holds no ';' except the runner's own.
+add_test(NAME audio_cues_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/audio/cues.json)
+set_tests_properties(audio_cues_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract: 1 table[(]s[)] are audio.footsteps.contract's\n.*audio-cues: [0-9]+ case[(]s[)], driven footstep [1-9][0-9]*, footstepRun [1-9][0-9]*. 0 undriven\n  not reached: [1-9][0-9]* case[(]s[)] of ops no row here runs [(]ambient [0-9]+, ambientIssues [0-9]+, ambientRun [0-9]+, music [0-9]+, musicRun [0-9]+[)], neither passed nor failed\n.*props_corpus: PASS")
+# Its negative control (tests/props-negative/cues-wrong.json, made from the
+# vendored file): the run gait's interval moved in the contract, seven footstep
+# cases given the answer a wrong step clock would give (Godot's template dropping
+# the remainder at a step, a long frame not folded, standing keeping the clock, a
+# negative frame moving it back, the right foot first, an unknown surface marked
+# table, idle stepping) and a case of an op no row runs that is not on the
+# unreached list. It passes only when the runner reports each of them and the run
+# as failed, in that order. No two wildcards stand side by side in the regex.
+add_test(NAME audio_cues_corpus_negative COMMAND insimulcore_props_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/cues-wrong.json)
+set_tests_properties(audio_cues_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract.footsteps.gaits.run.intervalSec: 0.3 != 0.28.*expected WRONGLY the remainder dropped at a step [^\n]*ticks.3..elapsedSec: 0 != 0.09.*expected WRONGLY a long frame not folded below one interval [^\n]*ticks.0..elapsedSec: 0.6 != 0.19.*expected WRONGLY standing keeping the clock [^\n]*ticks.3..elapsedSec: 0.375 != 0.*expected WRONGLY a negative frame moving the clock back [^\n]*ticks.2..elapsedSec: -0.75 != 0.25.*expected WRONGLY the right foot first [^\n]*foot: .right. != .left.*expected WRONGLY an unknown surface marked table [^\n]*source: .table. != .default.*expected WRONGLY idle stepping [^\n]*cue: expected a object, got a null.*expected WRONGLY an op of no row taken as unreached [^\n]*op .footstepBurst. is not one of area audio-cues.s.*props_corpus: FAIL")
+
 # survival_corpus (PL.native-survival-rows, rulings U106(1) and U36): core's P9c
 # logic (P9c.core and PL.core-survival-rules: src/survival/needs.ts,
 # survival-hud.ts, survival-systems.ts, src/stamina/stamina.ts and

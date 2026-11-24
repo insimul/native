@@ -479,6 +479,8 @@ game; **meta** = about the bridge itself.
 | `audio.ground.placeAt` | `{ world, at }` → `{ reading }`: `{ place: settlement, settlementId, settlementName }`, `{ place: wilderness, settlementId: null, settlementName: null }`, or null (no position) | `audio/ground-from-ir` `placeAt` | P5 ground |
 | `audio.ground.groundSurfaceAt` | `{ world, at }` → `{ reading }`: `{ surface, tier, shapeId }` (tier `road`, `closed`, `open`, or `ground`: the open ground `terrain.texture.ground`, a default), or null (no position) | `audio/ground-from-ir` `groundSurfaceAt` | P5 ground |
 | `audio.ground.footstepAt` | `{ world, at, gait }` → `{ cue }`: `{ key, surface, gait, volume, intervalSec, source }`, or null (no step) | `audio/ground-from-ir` `footstepAt` | P5 ground |
+| `audio.footsteps.contract` | `{}` → `{ 'audio-cues': { footsteps: { gaits, surfaces, defaultSurface } }, initialState }` — the data of core's `conformance/audio/cues.json` `contract.footsteps`, and the state a body's clock starts from | `audio/footsteps` `GAIT_FOOTSTEPS`, `SURFACE_FOOTSTEPS`, `DEFAULT_FOOTSTEP_SURFACE`, `INITIAL_FOOTSTEP_STATE` | P5 step clock (PL.native-step-clock-row, U122(1)) |
+| `audio.stepFootsteps` | `{ state, dtSec, gait?, surface? }` → `{ state, step }`: one tick of a body's step clock, stateless (send back the `state` the last answer carried); `step` is `{ key, surface, gait, volume, intervalSec, source, foot }` or null; `[invalid-input]` for a `state` that is not a clock state or a `dtSec` absent or not finite | `audio/footsteps` `stepFootsteps` | P5 step clock |
 | `survival.needs.tuning` | `{ survival?, params? }` → `{ ok, value: SurvivalTuning }` | `survival/needs` `survivalTuningFromIR` | P9c survival (PL.native-survival-rows, U106(1); core's P9c.core, PL.core-survival-rules) |
 | `survival.needs.initial` | `{ survival?, params?, at? }` → `{ ok, value: SurvivalState }` | `survival/needs` `initialSurvival` | P9c survival |
 | `survival.needs.advance` | `{ survival?, params?, state, at }` → `{ state, ticks, skipped, events, expired, hurt }` | `survival/needs` `advanceSurvival` | P9c survival |
@@ -1532,7 +1534,7 @@ settlement, and an `at` that is absent or not a finite point has no reading (nul
 
 **The evidence** is core's `conformance/audio/ground.json` (48 cases over `placeAt`
 13, `groundSurfaceAt` 27, `footstepAt` 8), copied byte for byte as its own set
-(`AUDIO_CORPUS_FILES`; `cues.json` beside it is not copied) and driven by
+(`AUDIO_CORPUS_FILES`, which also holds `cues.json` for the step clock row below) and driven by
 `tests/props_corpus.cpp` as the ctest `audio_ground_corpus`, 0 undriven. Every case
 whose world lists two or more settlements, ground surfaces or roads is driven a
 second time with those lists reversed (the file's order rule, as core's
@@ -1552,6 +1554,65 @@ pin the bundle goes from 1,649,195 bytes (the pin and the movement repoint alone
 1,659,828 (+10,633: core's three modules 7,253, the rows and their comments the
 rest). Against the 431c95b pin's 1,652,390 that is +7,438. The 48 cases, with their
 31 reversed runs, take about 5 ms under QuickJS.
+
+### The step clock row: when each footstep falls (PL.native-step-clock-row)
+
+Core states the footstep **step clock** (P5.core, `src/audio/footsteps.ts`
+`stepFootsteps`): how often a gait steps and on which frame each step falls. A host
+that kept its own clock (Unreal's interim `insimul::audio::StepFootsteps` in
+`Portable/InsimulAudioCues`, the P5 port U122(1) lets stand until this row lands)
+binds this row instead. The row is **stateless**: it holds nothing between calls;
+the host keeps one `state` per body and hands back the one the last answer carried.
+
+- **`audio.stepFootsteps { state, dtSec, gait?, surface? }`** → `{ state, step }`
+  (core's `stepFootsteps`, its answer whole). `gait` is the locomotion intent the
+  body plays and `surface` what is under the foot (`audio.ground.groundSurfaceAt`'s
+  `reading.surface`, or a floor material). A body that does not step (any gait but
+  `walk`, `run` or `crouch`, or a silent surface such as water) **resets** the clock
+  to `{ elapsedSec: 0, nextFoot: 'left' }` with `step` null, so the first step after
+  it starts moving falls one full interval later. While it steps, `dtSec` is added
+  (zero or negative adds nothing); when the elapsed time reaches the gait's interval
+  ONE step falls — `step` is `footstepCue`'s cue `{ key, surface, gait, volume,
+  intervalSec, source }` plus its `foot` — the interval is taken off, and a remainder
+  still past an interval is folded below one, so a long frame never bursts. The feet
+  alternate, left first. Gaits: `walk` every 0.4 s at 0.8, `run` every 0.28 s at 1,
+  `crouch` every 0.6 s at 0.4 (`GAIT_FOOTSTEPS`).
+- **`audio.footsteps.contract`** → `{ 'audio-cues': { footsteps: { gaits, surfaces,
+  defaultSurface } }, initialState }`: the data of the corpus contract's `footsteps`
+  table from core's constants (its `match` and `clock` keys are rules written out,
+  and stay in the corpus), and `initialState`, core's `INITIAL_FOOTSTEP_STATE`, the
+  `state` a binding sends on a body's first tick.
+
+**Errors.** An unknown gait or an unknown or silent surface is core's answer (no
+step, or the default surface `stone` marked `source: 'default'`), never a refusal.
+The row's own boundary, coded `[invalid-input]`: a `state` that is not a JSON object
+with a finite `elapsedSec` and a `nextFoot` of `left` or `right`, and a `dtSec` that
+is absent or not a finite number (null, a string, a JSON number past the double
+range). Core itself would read a non-finite `dtSec` as 0; the row refuses it so a
+host's broken frame time is seen rather than silently freezing the clock.
+
+**The evidence** is core's `conformance/audio/cues.json`, copied byte for byte into
+the audio set and driven by `tests/props_corpus.cpp` as the ctest
+`audio_cues_corpus`: its 7 `footstepRun` cases one row call per step from the
+contract's `initialState` (the state the last answer carried sent back each time,
+recorded as core's runner records `{ elapsedSec, nextFoot, step }`), and its 26
+`footstep` cases one call each from the initial state with a frame of the longest
+gait interval (the step less its `foot` is `footstepCue`'s cue; a body that does not
+step must come back at the initial state). The file's 63 ambient and music cases
+reach no row here and are reported as not reached. The contract's `footsteps` data
+is held to `audio.footsteps.contract`. `audio_cues_corpus_negative`
+(`tests/props-negative/cues-wrong.json`) must see a wrong run interval in the
+contract and seven wrong clocks — the remainder dropped at a step (Godot's
+template), a long frame not folded, standing keeping the clock, a negative frame
+moving it, the right foot first, an unknown surface marked `table`, idle stepping —
+and an op that is neither driven nor listed as unreached, each reported. The hand
+cases in `tests/cases/bridge-audio.json` pin the contract, a long frame spanning
+several intervals, idle resetting the state, unknown gaits and surfaces as values,
+the row holding nothing between calls, and the boundary.
+
+**Cost.** No new core module (`audio/footsteps` was already in for the ground rows):
+at the 45409ed pin the bundle goes from 2,757,224 bytes to 2,760,706 (+3,482, the two
+rows and their comments); the corpus file adds 115 KB of tracked data (63 of its 96 cases are the ambient and music ones no row runs).
 
 ### The title, tutorial and onboarding rows (PL.native-title-rows)
 
@@ -3018,6 +3079,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `core_vendor_vehicle_placement_negative` | the vehicle-placement transcription guard alone, over thirteen in-memory perturbations of `cases/core-props-vehicle-placement.json` (a dropped case, an invented one, a call changed, an argument dropped, an answer weakened to a subset, a number changed, a refusal code changed, a case on one leg, a contract constant dropped, the deviations weakened, a tier reworded, a declared answer outside the corpus's tolerance, a declaration whose V8 answer is not the corpus's): passes only when the guard names all thirteen |
 | `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (73 cases at 45409ed with 8 `press`, 53 at d88b6f0, 33 at 431c95b, 27 at 72c658c; 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does, a press through target, examinePick and press; its contract's data tables held to `props.contract`; the stands sent with no `y` counted against `props.interactables.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give, two runner controls (a case's `ranges`, a lone `prop`), a stand with no `y` read as floor 0, a pick acting over the target and a stand's dropped `objects` seen as wrong |
 | `audio_ground_corpus`, `audio_ground_corpus_negative` | core's ground reading corpus driven whole through the `audio.ground.*` rows (48 cases, 0 undriven; every case whose world lists two or more settlements, ground surfaces or roads driven again with them reversed; its contract's data held to `audio.ground.contract`), and Unreal's sidewalk for a footpath in the contract, an undriven op and six answers an engine keeping one of its interim readings would give seen as wrong |
+| `audio_cues_corpus`, `audio_cues_corpus_negative` | the footstep cases of core's audio cue corpus (`conformance/audio/cues.json` at 45409ed: footstepRun 7, footstep 26) driven through the stateless `audio.stepFootsteps` row (0 undriven; the runner keeps the state as a host does; its contract's `footsteps` data held to `audio.footsteps.contract`; the 63 ambient and music cases reported as not reached), and a wrong run interval, seven wrong clocks and an op on no list seen as wrong |
 | `camera_movement_corpus`, `camera_movement_corpus_negative` | core's movement contract corpus driven whole through the `camera.movement.*` rows (95 cases at 6cd4b4e, 0 undriven; every case with more than one solid or exclusion driven again with them reversed; its contract's data tables held to `camera.movement.contract`), and Unreal's step in the contract, an undriven op and six answers an engine keeping one of its interim rules would give seen as wrong |
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 | `survival_corpus`, `survival_corpus_negative` | core's three P9c corpora (`needs.json`, `hud.json`, `stamina.json`; 89 cases at 6cd4b4e) driven whole through the `survival.*` rows by `tests/survival_corpus.cpp` (0 undriven per file; a `run` one row per step over the state the last answer carried, a `pool` one `survival.stamina.pool.apply` per step; each file's catalog and op list held to core's), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `survival_corpus_negative` does |

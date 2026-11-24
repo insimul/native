@@ -313,7 +313,8 @@
     "conformance/camera/movement.json"
   ],
   "audioCorpus": [
-    "conformance/audio/ground.json"
+    "conformance/audio/ground.json",
+    "conformance/audio/cues.json"
   ],
   "survivalCorpus": [
     "conformance/survival/hud.json",
@@ -384,11 +385,11 @@
     "conformance/editor-operations/mint-play-grant.json",
     "conformance/editor-operations/reread-reference-texts.json"
   ],
-  "bundleBytes": 2757224,
-  "bundleSha256": "d50fb82dbba002c1cc4345a7c9cd3b3ba12f788ff571b582c49c35d0549cd349",
+  "bundleBytes": 2760706,
+  "bundleSha256": "ae4713c2aa4a89c4a29175790a0fb1af2467ea43a47605df6e35030dcaa19b61",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "d50fb82dbba002c1cc4345a7c9cd3b3ba12f788ff571b582c49c35d0549cd349",
-    "vendor/core/insimul_core_bundle.c": "a2dc63ee61b9976aaea31504d9a9773d27253fad45657a17642a6cb71a5dcb13",
+    "vendor/core/insimul-core-bundle.js": "ae4713c2aa4a89c4a29175790a0fb1af2467ea43a47605df6e35030dcaa19b61",
+    "vendor/core/insimul_core_bundle.c": "bbbcf6cdaca9b441668065c68ff104f485c131da2141f4f38358260b22568c9e",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genre-genre-pieces-build-plan.json": "60388e9cb5652085356059a515382be7ba5d98dd172677c025136c4f640d06ca",
     "vendor/core/cases/core-genre-genre-pieces-kinds.json": "07082aa01cf17b5ecf6154cbb738842e344c40fd5a6f256d3ca81d078f281c83",
@@ -488,6 +489,7 @@
     "vendor/core/conformance/quests/tutorial.json": "a54f55f8ab239e16cc1826d8226afa7355e8c692ee1de5bc2ca259c9a28567b9",
     "vendor/core/conformance/ui/title-flow.json": "741b49ea56cd15341c0333708efd8648c761f2ae4050a139fc85ee8cf943c494",
     "vendor/core/conformance/camera/movement.json": "2d4d9e31b81c67361d12c66512b12aa5f647fdd39c0ed6b530c4c83222c76f36",
+    "vendor/core/conformance/audio/cues.json": "3ad59c4c3fc97bbf7629cbcdb45135df82459cbef2edef404be098efb94a1687",
     "vendor/core/conformance/audio/ground.json": "e0da12f66977b5cc69d6d75bed273949dbf0782e59c3d3d90de3c22e9eca3572",
     "vendor/core/conformance/survival/hud.json": "cf22c30a868b1c2542523bdce0471e684da92ba164e8245f3f629785e39e269a",
     "vendor/core/conformance/survival/needs.json": "46c1d92c08a900ea65d1b9f0cea338a17ed30ef39a175014a6238f7e8492e578",
@@ -542,13 +544,13 @@
     "vendor/core/conformance/editor-operations/get-world-ir-summary.json": "e782bd1a7d8cbd32fb95d07230fcaa70d4615cc43c67306d24ff66b11d927db0",
     "vendor/core/conformance/editor-operations/mint-play-grant.json": "941cb0a5c749b6594d9bf53080dd68c8d913e1d95dbf72044d587c03513d196e",
     "vendor/core/conformance/editor-operations/reread-reference-texts.json": "fb1d23e1a47b2df0be959d31f3cef619007fbc1ba15730f1e064a94d5cd305c1",
-    "js/entry.js": "10c4cabae919b318ea10538b1a769e12575c8cf39a950a7a5f184bcaae75d0af",
+    "js/entry.js": "25961accf828353589d17138c41f12e542302e14de0bd219dd5b635b739615c5",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
     "tools/emit-bridge-cases.mjs": "e4ab0986b7ea52e5d57279e63a785333c4b9e18b86c5a0ab70aa8a01cc82be1e",
-    "core-pin.json": "dc400cff1f599fc2c4e1cd6912767c49aca62e452fa28b19af0fe13fecc51df8"
+    "core-pin.json": "d3bcdd6ce4525db6e82fb4ce193b2c549955ed2a2b6e10e4bff9fe629335ab30"
   }
 }

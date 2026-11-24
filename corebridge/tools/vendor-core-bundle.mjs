@@ -65,7 +65,9 @@
 // U95(5)): `conformance/camera/movement.json`; tests/props_corpus.cpp drives it
 // through the `camera.movement.*` rows. So is core's ground reading corpus
 // (PL.native-ground-row, U97(3)): `conformance/audio/ground.json`, driven by the
-// same runner through the `audio.ground.*` rows. Core's four dock-operation row
+// same runner through the `audio.ground.*` rows, and P5.core's audio cue corpus
+// (PL.native-step-clock-row, U122(1)): `conformance/audio/cues.json`, whose footstep
+// cases the same runner drives through the `audio.stepFootsteps` row. Core's four dock-operation row
 // files `conformance/editor-operations/{get-world-ir-summary,reread-reference-texts,
 // mint-play-grant,get-entity-neighbourhood}.json` and the area's MANIFEST.json are
 // copied the same way as their own set (PL.native-dock-operations-rows, U132);
@@ -249,11 +251,12 @@ const TITLE_CORPUS_FILES = ['conformance/quests/tutorial.json', 'conformance/ui/
 const CAMERA_CORPUS_FILES = ['conformance/camera/movement.json'];
 
 // core's ground reading corpus (PL.native-ground-row, U97(3); core's
-// PL.ground-from-ir, U94(5)), copied verbatim the same way. Only `ground.json` of
-// `conformance/audio/`: P5.core's audio cue corpus (`cues.json`) beside it has no
-// rows here, so it is not copied; any other file found in
-// vendor/core/conformance/audio/ is a stray the next write removes.
-const AUDIO_CORPUS_FILES = ['conformance/audio/ground.json'];
+// PL.ground-from-ir, U94(5)) and P5.core's audio cue corpus (PL.native-step-clock-row,
+// U122(1): its `footstep` and `footstepRun` cases run through the `audio.stepFootsteps`
+// row; its ambient and music cases reach no row here and the runner says so), copied
+// verbatim the same way. `conformance/audio/` is this set's alone: any other file
+// found in vendor/core/conformance/audio/ is a stray the next write removes.
+const AUDIO_CORPUS_FILES = ['conformance/audio/ground.json', 'conformance/audio/cues.json'];
 
 // core's P9c survival corpora (PL.native-survival-rows, U106(1); core's P9c.core and
 // PL.core-survival-rules), copied verbatim the same way: the needs, HUD and stamina
@@ -2113,9 +2116,9 @@ function cameraFilesAtPin(src) {
   return filesAtPin(src, CAMERA_CORPUS_FILES, 'the camera.movement rows');
 }
 
-/** core's ground reading corpus at the pin, as { 'vendor/core/<path>': Buffer }. */
+/** core's ground reading and audio cue corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
 function audioFilesAtPin(src) {
-  return filesAtPin(src, AUDIO_CORPUS_FILES, 'the audio.ground rows');
+  return filesAtPin(src, AUDIO_CORPUS_FILES, 'the audio.ground and audio.stepFootsteps rows');
 }
 
 /** core's survival corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
@@ -2707,7 +2710,7 @@ async function write(coreDir) {
     console.log(`  P6 props and inventory corpus files (${Object.keys(props).length}), copied unchanged`);
     console.log(`  P8 title-flow and tutorial corpus files (${Object.keys(title).length}), copied unchanged`);
     console.log(`  camera movement corpus files (${Object.keys(camera).length}), copied unchanged`);
-    console.log(`  audio ground reading corpus files (${Object.keys(audio).length}), copied unchanged`);
+    console.log(`  audio ground reading and audio cue corpus files (${Object.keys(audio).length}), copied unchanged`);
     console.log(`  survival corpus files (${Object.keys(survival).length}), copied unchanged`);
     console.log(`  traversal corpus files (${Object.keys(traversal).length}), copied unchanged`);
     console.log(`  headless build corpus files (${Object.keys(build).length}), copied unchanged`);
@@ -2782,7 +2785,7 @@ async function check(coreDir) {
   }
   const audioFiles = audioFilesOnDisk();
   for (const rel of AUDIO_CORPUS_FILES) {
-    if (!audioFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the audio ground corpus gate would run nothing`);
+    if (!audioFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the audio corpus gates would run nothing`);
   }
   const survivalFiles = survivalFilesOnDisk();
   for (const rel of SURVIVAL_CORPUS_FILES) {
@@ -2885,7 +2888,7 @@ async function check(coreDir) {
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
       `${savesFiles.length} saves (slots, tutorial progress, village state), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ` +
-      `${cameraFiles.length} camera movement, ${audioFiles.length} audio ground, ${survivalFiles.length} survival, ` +
+      `${cameraFiles.length} camera movement, ${audioFiles.length} audio (ground, cues), ${survivalFiles.length} survival, ` +
       `${traversalFiles.length} traversal, ${buildFiles.length} headless build, ${progressionFiles.length} progression/skill and ` +
       `${languageFiles.length} language corpus file(s), ${genreFiles.length} genre systems corpus file(s) (the world slice among them), ` +
       `${passByFiles.length} villager pass-by corpus file(s), ` +
@@ -3046,7 +3049,7 @@ async function check(coreDir) {
       const audio = audioFilesAtPin(src);
       const wantAudio = Object.keys(audio).sort();
       if (JSON.stringify(wantAudio) !== JSON.stringify(audioFiles)) {
-        fail(`DRIFT: core ${pin.coreCommit}'s audio ground corpus is ${wantAudio.join(', ')} but vendor/core/ holds ${audioFiles.join(', ')}`);
+        fail(`DRIFT: core ${pin.coreCommit}'s audio corpus set is ${wantAudio.join(', ')} but vendor/core/ holds ${audioFiles.join(', ')}`);
       }
       for (const rel of wantAudio) {
         if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(audio[rel])) {
@@ -3143,7 +3146,7 @@ async function check(coreDir) {
           `all ${want.length} layout corpus file(s), all ${wantPacks.length} pack corpus/catalog file(s), all ` +
           `${wantP9a.length} P9a corpus file(s), all ${wantSaves.length} save (slots, tutorial progress, village state) corpus file(s), all ` +
           `${wantProps.length} P6 props/inventory corpus file(s), all ${wantTitle.length} P8 title/tutorial ` +
-          `corpus file(s), all ${wantCamera.length} camera movement corpus file(s), all ${wantAudio.length} audio ground ` +
+          `corpus file(s), all ${wantCamera.length} camera movement corpus file(s), all ${wantAudio.length} audio (ground, cues) ` +
           `corpus file(s), all ${wantSurvival.length} survival corpus file(s), all ${wantTraversal.length} traversal ` +
           `corpus file(s), all ${wantBuild.length} headless build corpus file(s), all ${wantProgression.length} progression/skill ` +
           `corpus file(s), all ${wantLanguage.length} language corpus file(s), all ${wantGenre.length} genre systems corpus ` +

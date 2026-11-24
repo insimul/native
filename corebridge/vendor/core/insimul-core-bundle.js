@@ -12721,6 +12721,20 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     return Object.freeze({ key: footstepKey(surface), surface, gait: input.gait, volume: g.volume, intervalSec: g.intervalSec, source });
   }
   var INITIAL_FOOTSTEP_STATE = Object.freeze({ elapsedSec: 0, nextFoot: "left" });
+  function stepFootsteps(state, tick) {
+    const cue = footstepCue(tick);
+    const dt = typeof tick.dtSec === "number" && Number.isFinite(tick.dtSec) && tick.dtSec > 0 ? tick.dtSec : 0;
+    if (cue === null) return { state: INITIAL_FOOTSTEP_STATE, step: null };
+    let elapsed = state.elapsedSec + dt;
+    if (elapsed < cue.intervalSec) return { state: Object.freeze({ elapsedSec: elapsed, nextFoot: state.nextFoot }), step: null };
+    elapsed -= cue.intervalSec;
+    if (elapsed >= cue.intervalSec) elapsed %= cue.intervalSec;
+    const foot = state.nextFoot;
+    return {
+      state: Object.freeze({ elapsedSec: elapsed, nextFoot: foot === "left" ? "right" : "left" }),
+      step: Object.freeze({ ...cue, foot })
+    };
+  }
 
   // @insimul/core/src/audio/ground-from-ir.ts
   var OPEN_GROUND_SURFACE = "terrain.texture.ground";
@@ -53679,6 +53693,27 @@ Return JSON format:
       }
     });
   }
+  function footstepsContract() {
+    return plain({
+      "audio-cues": {
+        footsteps: {
+          gaits: GAIT_FOOTSTEPS,
+          surfaces: SURFACE_FOOTSTEPS,
+          defaultSurface: DEFAULT_FOOTSTEP_SURFACE
+        }
+      },
+      initialState: INITIAL_FOOTSTEP_STATE
+    });
+  }
+  function footstepTickOf(method, args) {
+    return coded("invalid-input", () => {
+      const state = needObject(method, args.state, "state");
+      needNumber(method, state.elapsedSec, "state.elapsedSec");
+      oneOf(method, state.nextFoot, ["left", "right"], "state.nextFoot");
+      needNumber(method, args.dtSec, "dtSec");
+      return { state: { elapsedSec: state.elapsedSec, nextFoot: state.nextFoot }, tick: { dtSec: args.dtSec, gait: args.gait, surface: args.surface } };
+    });
+  }
   function survivalTuningOf(args) {
     return survivalTuningFromIR(args.survival, args.params);
   }
@@ -59327,6 +59362,33 @@ Return JSON format:
      * surface's (`source: 'default'`).
      */
     "audio.ground.footstepAt": (args) => ({ cue: plain(footstepAt(args.world, args.at ?? null, args.gait ?? null)) }),
+    // ── the step clock (P5; PL.native-step-clock-row, U122(1)) ─────────────────
+    // Core's `stepFootsteps`, one tick of a body's step clock, STATELESS: the row
+    // holds nothing between calls; the host keeps one `state` per body and sends
+    // the one the last answer carried (the first tick sends the contract's
+    // `initialState`, core's `INITIAL_FOOTSTEP_STATE`). Core's
+    // `conformance/audio/cues.json` drives it: each `footstepRun` step is one call,
+    // and each `footstep` case is one call from the initial state with a frame of
+    // the longest gait interval (tests/props_corpus.cpp, area `audio-cues`).
+    /** `audio.footsteps.contract` → `{ 'audio-cues': { footsteps: { gaits, surfaces, defaultSurface } }, initialState }`. */
+    "audio.footsteps.contract": () => footstepsContract(),
+    /**
+     * `audio.stepFootsteps { state, dtSec, gait?, surface? }` → `{ state, step }` —
+     * core's `stepFootsteps`, its answer whole. A body that does not step (a gait
+     * other than `walk`, `run` or `crouch`, or a silent surface such as water)
+     * resets the clock (`{ elapsedSec: 0, nextFoot: 'left' }`, `step` null). While
+     * it steps, `dtSec` is added (zero or negative adds nothing); when the elapsed
+     * time reaches the gait's interval one step falls (`step`: core's cue `{ key,
+     * surface, gait, volume, intervalSec, source }` and its `foot`), the interval is
+     * taken off and a remainder still past an interval is folded below one, so a
+     * long frame lets ONE step fall, never a burst. The feet alternate, left first.
+     * `[invalid-input]`: `state` not an object with a finite `elapsedSec` and a
+     * `nextFoot` of `left` or `right`, or `dtSec` absent or not a finite number.
+     */
+    "audio.stepFootsteps": (args) => {
+      const { state, tick } = footstepTickOf("audio.stepFootsteps", args);
+      return plain(stepFootsteps(state, tick));
+    },
     // ── survival: the needs, the HUD bars and stamina (P9c; PL.native-survival-rows, U106(1)) ──
     // One row per core function of `survival/needs`, `survival/survival-hud`,
     // `survival/survival-systems`, `stamina/stamina` and `StaminaPool`, named

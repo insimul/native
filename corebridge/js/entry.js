@@ -159,7 +159,16 @@ import {
 	groundSurfaceAt,
 	placeAt,
 } from '@insimul/core/audio/ground-from-ir';
-import { DEFAULT_FOOTSTEP_SURFACE } from '@insimul/core/audio/footsteps';
+// The step clock (PL.native-step-clock-row, U122(1)): core's `stepFootsteps` and the
+// constants it steps by, from the same module; never `audio/audio-cues-corpus`, whose
+// comparator import is the save-file code UNBUNDLED_CORE_MODULES refuses.
+import {
+	DEFAULT_FOOTSTEP_SURFACE,
+	GAIT_FOOTSTEPS,
+	INITIAL_FOOTSTEP_STATE,
+	SURFACE_FOOTSTEPS,
+	stepFootsteps,
+} from '@insimul/core/audio/footsteps';
 
 // ── survival: the needs, the HUD bars and stamina (P9c; PL.native-survival-rows,
 // U106(1); core's P9c.core and PL.core-survival-rules) ────────────────────────────
@@ -1920,6 +1929,55 @@ function groundContract() {
 			},
 			defaultFootstepSurface: DEFAULT_FOOTSTEP_SURFACE,
 		},
+	});
+}
+
+// ── the step clock (PL.native-step-clock-row) ─────────────────────────────────
+
+/**
+ * The data of core's `conformance/audio/cues.json` `contract.footsteps`, built from
+ * core's exported constants exactly as core's emitter
+ * (`scripts/emit-audio-cues-corpus.ts`) builds them, keyed by the file's `area`:
+ * `gaits` (`GAIT_FOOTSTEPS`: each stepping gait's interval and volume), `surfaces`
+ * (`SURFACE_FOOTSTEPS`: a surface to atelier's step surface, null for none) and
+ * `defaultSurface` (`DEFAULT_FOOTSTEP_SURFACE`). The table's `match` and `clock`
+ * keys are rules written out, not data, and are not here (tests/props_corpus.cpp
+ * holds `footsteps` to the file's on the keys stated here); neither are the file's
+ * ambient, music and keys tables, which no row here runs. `initialState` beside the
+ * area is core's `INITIAL_FOOTSTEP_STATE`, the `state` a binding sends on a body's
+ * first tick.
+ */
+function footstepsContract() {
+	return plain({
+		'audio-cues': {
+			footsteps: {
+				gaits: GAIT_FOOTSTEPS,
+				surfaces: SURFACE_FOOTSTEPS,
+				defaultSurface: DEFAULT_FOOTSTEP_SURFACE,
+			},
+		},
+		initialState: INITIAL_FOOTSTEP_STATE,
+	});
+}
+
+/**
+ * The step clock row's own checks, coded `[invalid-input]`: `state` is the state
+ * the last answer carried (or the contract's `initialState`), so a JSON object
+ * whose `elapsedSec` is a finite number and whose `nextFoot` is `left` or `right`
+ * (core adds `dtSec` to the first and hands the second on unread); `dtSec` is a
+ * finite number (absent, null, a string or a JSON number past the double range is
+ * refused). Zero and negative are numbers: core's clock moves nothing for them, as
+ * its corpus pins. `gait` and `surface` go to core as sent: an intent that does
+ * not step, an unknown surface (the default, `source: 'default'`) and a silent one
+ * are core's answers, never refusals.
+ */
+function footstepTickOf(method, args) {
+	return coded('invalid-input', () => {
+		const state = needObject(method, args.state, 'state');
+		needNumber(method, state.elapsedSec, 'state.elapsedSec');
+		oneOf(method, state.nextFoot, ['left', 'right'], 'state.nextFoot');
+		needNumber(method, args.dtSec, 'dtSec');
+		return { state: { elapsedSec: state.elapsedSec, nextFoot: state.nextFoot }, tick: { dtSec: args.dtSec, gait: args.gait, surface: args.surface } };
 	});
 }
 
@@ -8689,6 +8747,36 @@ const METHODS = {
 	 * surface's (`source: 'default'`).
 	 */
 	'audio.ground.footstepAt': (args) => ({ cue: plain(footstepAt(args.world, args.at ?? null, args.gait ?? null)) }),
+
+	// ── the step clock (P5; PL.native-step-clock-row, U122(1)) ─────────────────
+	// Core's `stepFootsteps`, one tick of a body's step clock, STATELESS: the row
+	// holds nothing between calls; the host keeps one `state` per body and sends
+	// the one the last answer carried (the first tick sends the contract's
+	// `initialState`, core's `INITIAL_FOOTSTEP_STATE`). Core's
+	// `conformance/audio/cues.json` drives it: each `footstepRun` step is one call,
+	// and each `footstep` case is one call from the initial state with a frame of
+	// the longest gait interval (tests/props_corpus.cpp, area `audio-cues`).
+
+	/** `audio.footsteps.contract` → `{ 'audio-cues': { footsteps: { gaits, surfaces, defaultSurface } }, initialState }`. */
+	'audio.footsteps.contract': () => footstepsContract(),
+
+	/**
+	 * `audio.stepFootsteps { state, dtSec, gait?, surface? }` → `{ state, step }` —
+	 * core's `stepFootsteps`, its answer whole. A body that does not step (a gait
+	 * other than `walk`, `run` or `crouch`, or a silent surface such as water)
+	 * resets the clock (`{ elapsedSec: 0, nextFoot: 'left' }`, `step` null). While
+	 * it steps, `dtSec` is added (zero or negative adds nothing); when the elapsed
+	 * time reaches the gait's interval one step falls (`step`: core's cue `{ key,
+	 * surface, gait, volume, intervalSec, source }` and its `foot`), the interval is
+	 * taken off and a remainder still past an interval is folded below one, so a
+	 * long frame lets ONE step fall, never a burst. The feet alternate, left first.
+	 * `[invalid-input]`: `state` not an object with a finite `elapsedSec` and a
+	 * `nextFoot` of `left` or `right`, or `dtSec` absent or not a finite number.
+	 */
+	'audio.stepFootsteps': (args) => {
+		const { state, tick } = footstepTickOf('audio.stepFootsteps', args);
+		return plain(stepFootsteps(state, tick));
+	},
 
 	// ── survival: the needs, the HUD bars and stamina (P9c; PL.native-survival-rows, U106(1)) ──
 	// One row per core function of `survival/needs`, `survival/survival-hud`,

@@ -473,6 +473,27 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   case as `tests/props_corpus.cpp` does: the case's `input` is the row's args, and
   every case is driven again with the world's `settlements`, `groundSurfaces` and
   `roads` reversed.
+- **The step clock (U122(1): P5's retire covers it, after PL.native-step-clock-row).**
+  Core's `stepFootsteps` is the `audio.stepFootsteps` row (`README.md`, "The step
+  clock row"), so the P5 retire binds it in place of Unreal's interim step clock.
+  Read at unreal main `30521cf1` (read only); the copy is core's rule line for line
+  (the same reset, carry and fold; `std::fmod` for `%` on positive operands), and
+  its runner `Tests/test_audio_cues.cpp:344` replays the same `cues.json` cases:
+
+  | Unreal today | Row (and what the binding sends or reads) |
+  |---|---|
+  | `insimul::audio::StepFootsteps(State, DtSec, Gait, Surface, OutStep)` (`Portable/InsimulAudioCues.cpp:552`, called at `Private/InsimulAudioDirector.cpp:517`), mutating `FFootstepState` in place | `audio.stepFootsteps { state, dtSec, gait, surface }` → `{ state, step }`: keep the answered `state` per body and send it back next tick; `step` null is no step |
+  | `FFootstepState{}` (`ElapsedSec` 0, `bNextLeft`) | `audio.footsteps.contract` → `initialState` (`{ elapsedSec: 0, nextFoot: 'left' }`); `bNextLeft` is `nextFoot == 'left'` |
+  | `FFootstepStep{ Cue, bLeft }` | `step`: the cue's `key`, `surface`, `gait`, `volume`, `intervalSec`, `source` and `foot` (`left`/`right`) |
+  | `GaitFootsteps()`, `SurfaceFootsteps()`, `kDefaultFootstepSurface` | `audio.footsteps.contract` → `audio-cues.footsteps.gaits`, `.surfaces`, `.defaultSurface` (the row reads them itself; a binding needs them only to show them) |
+  | a non-finite `DtSec` moves nothing (core's reading; the runner sends NaN for a missing one) | `[invalid-input]`: send a finite `dtSec` (Unreal's `DeltaTime` always is); zero and negative still move nothing |
+
+  `FootstepCue` stays reachable through `audio.ground.footstepAt` (with a world and
+  a position) or as this row's `step` less its `foot`. Re-vendor
+  `conformance/audio/cues.json` from core at this library's pin and drive each
+  `footstepRun` case one row call per step from `initialState`, and each `footstep`
+  case as one call from `initialState` with a frame of the longest gait interval,
+  as `tests/props_corpus.cpp` does.
 - **Survival: needs, the HUD bars and stamina (Unreal's
   `P9c.unreal.retire-survival-copy`, after PL.native-survival-rows; U106(1)).**
   Core's P9c logic is the `survival.*` rows (`README.md`, "The survival rows"), so

@@ -1,6 +1,6 @@
 {
   "area": "audio",
-  "description": "Hand-written: the audio.ground.* rows' own contract (PL.native-ground-row, U97(3); core's ground reading, PL.ground-from-ir, U94(5)) — the contract row's data, each row's answer shape, what core reads itself going to core unchecked (an absent world or a world that is not an object, an absent or non-finite position, an absent or unknown gait), the open ground a default and never a refusal, and an archetype read by its ancestor for the step. Core's own corpus (conformance/audio/ground.json, 48 cases) is driven whole through these rows by the audio_ground_corpus ctest (tests/props_corpus.cpp), not transcribed here.",
+  "description": "Hand-written: the audio.ground.* rows' own contract (PL.native-ground-row, U97(3); core's ground reading, PL.ground-from-ir, U94(5)) — the contract row's data, each row's answer shape, what core reads itself going to core unchecked (an absent world or a world that is not an object, an absent or non-finite position, an absent or unknown gait), the open ground a default and never a refusal, and an archetype read by its ancestor for the step. Core's own corpus (conformance/audio/ground.json, 48 cases) is driven whole through these rows by the audio_ground_corpus ctest (tests/props_corpus.cpp), not transcribed here. Then the step clock (PL.native-step-clock-row, U122(1); core's stepFootsteps, P5.core): audio.footsteps.contract's data and initial state; audio.stepFootsteps stateless over the state it is sent, with a witness for a long frame spanning several intervals (one step, the remainder folded) and one for idle resetting the state; an unknown gait or surface a value as core answers it; zero and negative frames moving nothing; and the row's [invalid-input] boundary (a missing or non-finite dtSec, a state that is not a clock state). Those expectations are core's own answers at the pin (gen-bridge-step-clock-cases.mts, kept with the builder's record). Core's cue corpus (conformance/audio/cues.json: its 7 footstepRun and 26 footstep cases) is driven through the row by the audio_cues_corpus ctest, not transcribed here.",
   "cases": [
     {
       "name": "audio.ground.contract: the ground corpus's data, from core's constants",
@@ -1484,6 +1484,863 @@
           "expect": {
             "cue": null
           }
+        }
+      ]
+    },
+    {
+      "name": "audio.footsteps.contract: the cue corpus footstep data and the initial state, from core constants",
+      "steps": [
+        {
+          "call": "audio.footsteps.contract",
+          "expect": {
+            "audio-cues": {
+              "footsteps": {
+                "gaits": {
+                  "walk": {
+                    "intervalSec": 0.4,
+                    "volume": 0.8
+                  },
+                  "run": {
+                    "intervalSec": 0.28,
+                    "volume": 1
+                  },
+                  "crouch": {
+                    "intervalSec": 0.6,
+                    "volume": 0.4
+                  }
+                },
+                "surfaces": {
+                  "terrain.texture.road": "stone",
+                  "terrain.texture.sidewalk": "stone",
+                  "terrain.texture.gravel": "stone",
+                  "terrain.texture.path": "grass",
+                  "terrain.texture.dirt": "grass",
+                  "terrain.texture.grass": "grass",
+                  "terrain.texture.ground": "grass",
+                  "terrain.texture.water": null,
+                  "terrain.water": null,
+                  "stone": "stone",
+                  "grass": "grass",
+                  "wood": "wood",
+                  "snow": "snow",
+                  "carpet": "carpet"
+                },
+                "defaultSurface": "stone"
+              }
+            },
+            "initialState": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "audio.stepFootsteps: a long frame spanning several intervals lets ONE step fall and folds the remainder below one interval (witness)",
+      "steps": [
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "dtSec": 1.7,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.09999999999999976,
+              "nextFoot": "right"
+            },
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "left"
+            }
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.09999999999999976,
+              "nextFoot": "right"
+            },
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.22499999999999976,
+              "nextFoot": "right"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.22499999999999976,
+              "nextFoot": "right"
+            },
+            "dtSec": 0.2,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.024999999999999745,
+              "nextFoot": "left"
+            },
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "right"
+            }
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "dtSec": 2,
+            "gait": "run",
+            "surface": "grass"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.039999999999999813,
+              "nextFoot": "right"
+            },
+            "step": {
+              "key": "terrain.footstep.grass",
+              "surface": "grass",
+              "gait": "run",
+              "volume": 1,
+              "intervalSec": 0.28,
+              "source": "table",
+              "foot": "left"
+            }
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.5,
+              "nextFoot": "right"
+            },
+            "dtSec": 3.1,
+            "gait": "crouch",
+            "surface": "wood"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 1.1102230246251565e-16,
+              "nextFoot": "left"
+            },
+            "step": {
+              "key": "terrain.footstep.wood",
+              "surface": "wood",
+              "gait": "crouch",
+              "volume": 0.4,
+              "intervalSec": 0.6,
+              "source": "table",
+              "foot": "right"
+            }
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.8,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "right"
+            },
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "left"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "audio.stepFootsteps: idle resets the state to the initial one (witness), as does every body that does not step",
+      "steps": [
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.3,
+              "nextFoot": "right"
+            },
+            "dtSec": 0.125,
+            "gait": "idle",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.3,
+              "nextFoot": "right"
+            },
+            "dtSec": 5,
+            "gait": "idle",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.3,
+              "nextFoot": "right"
+            },
+            "dtSec": 0.125,
+            "gait": "swim",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.3,
+              "nextFoot": "right"
+            },
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.water"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.3,
+              "nextFoot": "right"
+            },
+            "dtSec": 0.125,
+            "gait": "run",
+            "surface": "terrain.water.river"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.3,
+              "nextFoot": "right"
+            },
+            "dtSec": 0.125,
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.3,
+              "nextFoot": "right"
+            },
+            "dtSec": 0.125,
+            "gait": null,
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.375,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.375,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.375,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.025,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "right"
+            },
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "left"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "audio.stepFootsteps: an unknown gait or surface is a value, as core answers it: no step, or the default surface marked default",
+      "steps": [
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.375,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.125,
+            "gait": "sprint",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.375,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.125,
+            "gait": 7,
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.375,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.125,
+            "gait": "Walk",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.375,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.sand"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.09999999999999998,
+              "nextFoot": "right"
+            },
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "default",
+              "foot": "left"
+            }
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.375,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": 42
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.09999999999999998,
+              "nextFoot": "right"
+            },
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "default",
+              "foot": "left"
+            }
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.375,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": null
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.09999999999999998,
+              "nextFoot": "right"
+            },
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "default",
+              "foot": "left"
+            }
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.375,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.125,
+            "gait": "walk"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.09999999999999998,
+              "nextFoot": "right"
+            },
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "default",
+              "foot": "left"
+            }
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.375,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road.cobbles"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.09999999999999998,
+              "nextFoot": "right"
+            },
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "left"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "audio.stepFootsteps: a zero or negative frame moves nothing; the same call twice answers the same (the row holds no state)",
+      "steps": [
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.25,
+              "nextFoot": "right"
+            },
+            "dtSec": 0,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.25,
+              "nextFoot": "right"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0.25,
+              "nextFoot": "right"
+            },
+            "dtSec": -1,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.25,
+              "nextFoot": "right"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.3,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.3,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.3,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.3,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "dtSec": 0.3,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          "expect": {
+            "state": {
+              "elapsedSec": 0.3,
+              "nextFoot": "left"
+            },
+            "step": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "the audio.stepFootsteps boundary: a missing or non-finite dtSec, or a state that is not a clock state, is [invalid-input]",
+      "steps": [
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "gait": "walk",
+            "surface": "stone"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `dtSec` must be a finite number"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "dtSec": null,
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `dtSec` must be a finite number"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "dtSec": "0.1",
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `dtSec` must be a finite number"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "dtSec": true,
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `dtSec` must be a finite number"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "argsText": "{\"state\":{\"elapsedSec\":0,\"nextFoot\":\"left\"},\"dtSec\":1e999,\"gait\":\"walk\"}",
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `dtSec` must be a finite number"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "argsText": "{\"state\":{\"elapsedSec\":0,\"nextFoot\":\"left\"},\"dtSec\":-1e999,\"gait\":\"walk\"}",
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `dtSec` must be a finite number"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "left"
+            },
+            "gait": "idle"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `dtSec` must be a finite number"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "dtSec": 0.1,
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `state` must be a JSON object"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": null,
+            "dtSec": 0.1,
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `state` must be a JSON object"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": [
+              0,
+              "left"
+            ],
+            "dtSec": 0.1,
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `state` must be a JSON object"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": 0,
+            "dtSec": 0.1,
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `state` must be a JSON object"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": "left",
+            "dtSec": 0.1,
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `state` must be a JSON object"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {},
+            "dtSec": 0.1,
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `state.elapsedSec` must be a finite number"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": "0",
+              "nextFoot": "left"
+            },
+            "dtSec": 0.1,
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `state.elapsedSec` must be a finite number"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "argsText": "{\"state\":{\"elapsedSec\":1e999,\"nextFoot\":\"left\"},\"dtSec\":0.1,\"gait\":\"walk\"}",
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `state.elapsedSec` must be a finite number"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0
+            },
+            "dtSec": 0.1,
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `state.nextFoot` must be one of left, right (got undefined)"
+        },
+        {
+          "call": "audio.stepFootsteps",
+          "args": {
+            "state": {
+              "elapsedSec": 0,
+              "nextFoot": "middle"
+            },
+            "dtSec": 0.1,
+            "gait": "walk"
+          },
+          "expectError": "[invalid-input] insimulcore: audio.stepFootsteps: `state.nextFoot` must be one of left, right (got \"middle\")"
         }
       ]
     }

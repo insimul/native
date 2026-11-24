@@ -1,0 +1,4585 @@
+{
+  "area": "audio-cues",
+  "description": "Audio cue selection (Features WV2, P5.core; CROSS-ENGINE-FEATURES §4, 5. Audio): inputs in, the cue set and volumes out, no audio bytes. Ambient cues: the world's stated ambience (theme.ambience) at the volume the place, the hour and the weather give it (AmbientSoundSystem's cue mode runs it). Footsteps: a surface to atelier's step key, a gait to its interval and volume, and when each step falls. Music: a state by place, time and event, the key a world binds to it, the crossfade intent between states, the duck under an NPC's voice, and stingers. Every key a cue names is atelier's (terrain.ambience.*, terrain.footstep.*); core names no music key. Runner: src/audio/audio-cues-corpus.ts; every case is also re-run with its ambience and bindings reversed and must agree. Regenerate with npm run audio-cues-corpus; npm run audio-cues-corpus:check fails on any difference.",
+  "version": 1,
+  "sources": [
+    "keys: atelier origin/main 043657c: src/audio/ambience.ts AMBIENCE_VOICES, src/kit/media.ts FOOTSTEP_SURFACES.",
+    "ambience statements: pipelines origin/main pipelines/game-export/settlement-dressing.ts worldAmbienceFor (birds 0.5, wind 0.35, murmur 0.7 at each market, radius 45 m).",
+    "band and place gains: the ratios between the layers of core's old AmbientSoundSystem default profiles (now LEGACY_AMBIENT_PROFILES). Weather gains are core's own.",
+    "footstep intervals walk 0.4 s and run 0.28 s, and the 3 s crossfade: godot origin/main templates/scripts/systems/audio_manager.gd FOOTSTEP_INTERVAL, FOOTSTEP_RUN_INTERVAL, CROSSFADE_DURATION. The rest is core's own.",
+    "Every expected is core's answer; src/audio/__tests__/ pins the same rules independently."
+  ],
+  "tolerance": 1e-9,
+  "contract": {
+    "keys": {
+      "ambiencePrefix": "terrain.ambience",
+      "ambienceVoices": [
+        "birds",
+        "wind",
+        "murmur"
+      ],
+      "footstepPrefix": "terrain.footstep",
+      "footstepSurfaces": [
+        "stone",
+        "grass",
+        "wood",
+        "snow",
+        "carpet"
+      ],
+      "all": [
+        "terrain.ambience.birds",
+        "terrain.ambience.murmur",
+        "terrain.ambience.wind",
+        "terrain.footstep.carpet",
+        "terrain.footstep.grass",
+        "terrain.footstep.snow",
+        "terrain.footstep.stone",
+        "terrain.footstep.wood"
+      ],
+      "music": "none: atelier has no music key family; a music state plays the key a world or pack binds to it, or silence"
+    },
+    "ambient": {
+      "volume": "Math.round((clamp01(level) * band * place * weather) / 1000) / 1000, the three gains whole percentages from the voice's row; a missing weather column, or no sky, is 100",
+      "dropped": "a cue whose volume is 0 is not in the set",
+      "muffled": "true exactly when the place is indoor",
+      "ids": "<key>#<n>, n counting the statements of that key in canonical order (key; everywhere before positioned; then x, z, y, radius; louder first)",
+      "statements": "unusable ones dropped (a key outside terrain.ambience.<voice>, a level that is not a number); a key stated twice everywhere is kept once, at its loudest; a position without a positive radius is everywhere",
+      "gains": {
+        "birds": {
+          "band": {
+            "dawn": 140,
+            "morning": 100,
+            "midday": 60,
+            "afternoon": 80,
+            "evening": 0,
+            "night": 0
+          },
+          "place": {
+            "wilderness": 100,
+            "settlement": 40,
+            "indoor": 20
+          },
+          "weather": {
+            "clear": 100,
+            "cloudy": 80,
+            "overcast": 60,
+            "rain": 20,
+            "storm": 0
+          }
+        },
+        "wind": {
+          "band": {
+            "dawn": 100,
+            "morning": 100,
+            "midday": 130,
+            "afternoon": 100,
+            "evening": 100,
+            "night": 130
+          },
+          "place": {
+            "wilderness": 100,
+            "settlement": 50,
+            "indoor": 20
+          },
+          "weather": {
+            "clear": 100,
+            "cloudy": 110,
+            "overcast": 120,
+            "rain": 140,
+            "storm": 180
+          }
+        },
+        "murmur": {
+          "band": {
+            "dawn": 40,
+            "morning": 70,
+            "midday": 100,
+            "afternoon": 70,
+            "evening": 60,
+            "night": 0
+          },
+          "place": {
+            "wilderness": 0,
+            "settlement": 100,
+            "indoor": 40
+          },
+          "weather": {
+            "clear": 100,
+            "cloudy": 100,
+            "overcast": 90,
+            "rain": 50,
+            "storm": 20
+          }
+        }
+      },
+      "defaultGains": {
+        "band": {
+          "dawn": 100,
+          "morning": 100,
+          "midday": 100,
+          "afternoon": 100,
+          "evening": 100,
+          "night": 100
+        },
+        "place": {
+          "wilderness": 100,
+          "settlement": 100,
+          "indoor": 20
+        },
+        "weather": {}
+      }
+    },
+    "footsteps": {
+      "gaits": {
+        "walk": {
+          "intervalSec": 0.4,
+          "volume": 0.8
+        },
+        "run": {
+          "intervalSec": 0.28,
+          "volume": 1
+        },
+        "crouch": {
+          "intervalSec": 0.6,
+          "volume": 0.4
+        }
+      },
+      "surfaces": {
+        "terrain.texture.road": "stone",
+        "terrain.texture.sidewalk": "stone",
+        "terrain.texture.gravel": "stone",
+        "terrain.texture.path": "grass",
+        "terrain.texture.dirt": "grass",
+        "terrain.texture.grass": "grass",
+        "terrain.texture.ground": "grass",
+        "terrain.texture.water": null,
+        "terrain.water": null,
+        "stone": "stone",
+        "grass": "grass",
+        "wood": "wood",
+        "snow": "snow",
+        "carpet": "carpet"
+      },
+      "defaultSurface": "stone",
+      "match": "exact, then by ancestor (drop the last dot segment); no row at all is the default surface, source default; a null row is no step",
+      "clock": "not stepping (no stepping gait, or a silent surface) resets to 0 and the left foot; otherwise add dtSec (non-finite or <= 0 adds nothing); at >= interval one step falls, the interval is subtracted, and a remainder still >= interval is folded with %; feet alternate"
+    },
+    "music": {
+      "states": {
+        "explore": 0.6,
+        "explore_night": 0.4,
+        "settlement": 0.6,
+        "settlement_night": 0.4,
+        "interior": 0.45,
+        "tension": 0.7,
+        "combat": 0.9
+      },
+      "precedence": "combat, then tension (alert), then the place: indoor is interior; settlement and wilderness (explore) each have a _night state in the clock's night band",
+      "duckPercent": 35,
+      "duck": "Math.round(volume * duckPercent / 100 * 1000) / 1000 while an NPC speaks",
+      "fades": {
+        "fadeIn": 2,
+        "crossfade": 3,
+        "intoCombat": 1,
+        "outOfCombat": 4,
+        "tension": 2,
+        "volume": 0.5
+      },
+      "transition": "nothing playing yet: fade_in; same state and key: none, or volume when only the volume moved; otherwise crossfade, intoCombat into combat, outOfCombat out of it, tension into or out of tension, else crossfade",
+      "binding": "the binding for this settlement, then the one with no settlement; two for one state take the smallest key; a binding with no state or an empty key is ignored",
+      "stingers": {
+        "level_up": "level_up",
+        "quest_completed": "quest_complete",
+        "quest_failed": "quest_failed"
+      },
+      "stingerVolume": 0.8,
+      "stingerBinding": "state stinger.<id>, by the same rule"
+    }
+  },
+  "cases": [
+    {
+      "name": "ambient: the village, in the settlement, dawn (6:00), clear",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 6,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "dawn",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.28,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.28,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.175,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the village, in the settlement, morning (8:00), clear",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 8,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "morning",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.2,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.49,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.175,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the village, in the settlement, midday (12:00), clear",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 12,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "midday",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.12,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.7,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.228,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the village, in the settlement, afternoon (15:00), clear",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 15,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "afternoon",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.16,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.49,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.175,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the village, in the settlement, evening (18:00), clear",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 18,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "evening",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.42,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.175,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the village, in the settlement, night (22:00), clear",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 22,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "night",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.228,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the village's sounds from the wilderness, dawn",
+      "note": "The talk is a settlement's: wilderness 0, so the market's murmur is not in the set.",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "wilderness",
+        "hour": 6,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "dawn",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.7,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.35,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the village's sounds from the wilderness, midday",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "wilderness",
+        "hour": 12,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "midday",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.3,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.455,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the village's sounds from the wilderness, night",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "wilderness",
+        "hour": 22,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "night",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.455,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: indoors at midday every cue is muffled and about a fifth as loud",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "indoor",
+        "hour": 12,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "indoor",
+          "band": "midday",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.06,
+              "loop": true,
+              "muffled": true
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.28,
+              "loop": true,
+              "muffled": true,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.091,
+              "loop": true,
+              "muffled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: indoors at night only the wind is left",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "indoor",
+        "hour": 23,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "indoor",
+          "band": "night",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.091,
+              "loop": true,
+              "muffled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the settlement at midday under cloudy",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 12,
+        "condition": "cloudy"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "midday",
+          "condition": "cloudy",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.096,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.7,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.25,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the settlement at midday under overcast",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 12,
+        "condition": "overcast"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "midday",
+          "condition": "overcast",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.072,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.63,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.273,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the settlement at midday under rain",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 12,
+        "condition": "rain"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "midday",
+          "condition": "rain",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.024,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.35,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.319,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the settlement at midday under storm",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 12,
+        "condition": "storm"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "midday",
+          "condition": "storm",
+          "cues": [
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.14,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.41,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: the wilderness at dawn in a storm: no birds, the wind at 1.8×",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "wilderness",
+        "hour": 6,
+        "condition": "storm"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "dawn",
+          "condition": "storm",
+          "cues": [
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.63,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: an authored condition with no column (blizzard) changes nothing",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 12,
+        "condition": "blizzard"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "midday",
+          "condition": "blizzard",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.12,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.7,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.228,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: no sky (condition null) changes nothing",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 12,
+        "condition": null
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "midday",
+          "condition": null,
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.12,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.7,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.228,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: no condition given is no sky",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 12
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "midday",
+          "condition": null,
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.12,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.7,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.228,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: a world that states nothing is silent",
+      "note": "pipelines states nothing for a world type it has no sound for (\"silence is what an engine did before\"). Core never guesses a soundscape.",
+      "op": "ambient",
+      "input": {
+        "ambience": [],
+        "place": "wilderness",
+        "hour": 12,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "midday",
+          "condition": "clear",
+          "cues": []
+        }
+      }
+    },
+    {
+      "name": "ambient: a world with no theme.ambience is silent",
+      "op": "ambient",
+      "input": {
+        "place": "settlement",
+        "hour": 12,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "midday",
+          "condition": "clear",
+          "cues": []
+        }
+      }
+    },
+    {
+      "name": "ambient: hour boundaries: 4.99 is night",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "wilderness",
+        "hour": 4.99,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "night",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.455,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: hour boundaries: 5 is dawn",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "wilderness",
+        "hour": 5,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "dawn",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.7,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.35,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: hour 24 wraps to 00:00, night",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "wilderness",
+        "hour": 24,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "night",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.455,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: hour -1 wraps to 23:00, night",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "wilderness",
+        "hour": -1,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "night",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.455,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: two markets are two murmurs, numbered in canonical order (x, then z)",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 100,
+              "y": 2,
+              "z": 100
+            },
+            "radius": 45
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "place": "settlement",
+        "hour": 12,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "midday",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.12,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.7,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            },
+            {
+              "id": "terrain.ambience.murmur#1",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.7,
+              "loop": true,
+              "muffled": false,
+              "at": {
+                "x": 100,
+                "y": 2,
+                "z": 100
+              },
+              "radius": 45
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: a key stated twice everywhere plays once, at its louder level",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.3
+          },
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          }
+        ],
+        "place": "wilderness",
+        "hour": 8,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "morning",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 0.5,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: a voice atelier does not make plays unchanged by band and weather",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.surf",
+            "level": 0.6
+          },
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          }
+        ],
+        "place": "wilderness",
+        "hour": 22,
+        "condition": "storm"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "night",
+          "condition": "storm",
+          "cues": [
+            {
+              "id": "terrain.ambience.surf#0",
+              "key": "terrain.ambience.surf",
+              "voice": "surf",
+              "volume": 0.6,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: a voice atelier does not make is a fifth as loud indoors",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.surf",
+            "level": 0.6
+          }
+        ],
+        "place": "indoor",
+        "hour": 12,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "indoor",
+          "band": "midday",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.surf#0",
+              "key": "terrain.ambience.surf",
+              "voice": "surf",
+              "volume": 0.12,
+              "loop": true,
+              "muffled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: unusable statements are dropped; a level over 1 is clamped",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "prop.furniture.stall",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.birds.dawn",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": "loud"
+          },
+          {
+            "level": 0.5
+          },
+          "terrain.ambience.birds",
+          {
+            "key": "terrain.ambience.birds",
+            "level": 3
+          }
+        ],
+        "place": "wilderness",
+        "hour": 8,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "morning",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.birds#0",
+              "key": "terrain.ambience.birds",
+              "voice": "birds",
+              "volume": 1,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: a position without a positive radius is heard everywhere",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            }
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35,
+            "radius": 0
+          }
+        ],
+        "place": "settlement",
+        "hour": 12,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "settlement",
+          "band": "midday",
+          "condition": "clear",
+          "cues": [
+            {
+              "id": "terrain.ambience.murmur#0",
+              "key": "terrain.ambience.murmur",
+              "voice": "murmur",
+              "volume": 0.7,
+              "loop": true,
+              "muffled": false
+            },
+            {
+              "id": "terrain.ambience.wind#0",
+              "key": "terrain.ambience.wind",
+              "voice": "wind",
+              "volume": 0.228,
+              "loop": true,
+              "muffled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ambient: a negative level is silent",
+      "op": "ambient",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": -0.5
+          }
+        ],
+        "place": "wilderness",
+        "hour": 8,
+        "condition": "clear"
+      },
+      "expected": {
+        "answer": {
+          "place": "wilderness",
+          "band": "morning",
+          "condition": "clear",
+          "cues": []
+        }
+      }
+    },
+    {
+      "name": "ambientIssues: the village under core's five conditions is sound",
+      "op": "ambientIssues",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "conditions": [
+          "clear",
+          "cloudy",
+          "overcast",
+          "rain",
+          "storm"
+        ]
+      },
+      "expected": {
+        "issues": []
+      }
+    },
+    {
+      "name": "ambientIssues: a declared condition with no column is named",
+      "op": "ambientIssues",
+      "input": {
+        "ambience": [
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": 0.35
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            },
+            "radius": 45
+          }
+        ],
+        "conditions": [
+          "clear",
+          "rain",
+          "blizzard",
+          "ash_fall"
+        ]
+      },
+      "expected": {
+        "issues": [
+          "condition \"ash_fall\" has no ambience column, so it changes nothing heard",
+          "condition \"blizzard\" has no ambience column, so it changes nothing heard"
+        ]
+      }
+    },
+    {
+      "name": "ambientIssues: every way a statement can be wrong",
+      "op": "ambientIssues",
+      "input": {
+        "ambience": [
+          {
+            "key": "prop.furniture.stall",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.wind",
+            "level": "loud"
+          },
+          {
+            "level": 0.5
+          },
+          "terrain.ambience.birds",
+          {
+            "key": "terrain.ambience.birds",
+            "level": 3
+          },
+          {
+            "key": "terrain.ambience.birds",
+            "level": 0.5
+          },
+          {
+            "key": "terrain.ambience.surf",
+            "level": 0.6
+          },
+          {
+            "key": "terrain.ambience.murmur",
+            "level": 0.7,
+            "at": {
+              "x": 15,
+              "y": 2,
+              "z": 2
+            }
+          }
+        ],
+        "conditions": []
+      },
+      "expected": {
+        "issues": [
+          "\"prop.furniture.stall\" is not a terrain.ambience.<voice> key, so it is ignored",
+          "\"terrain.ambience.birds\" is stated everywhere 2 times, so only the loudest is heard",
+          "\"terrain.ambience.birds\" level 3 is outside 0..1, so it is clamped",
+          "\"terrain.ambience.murmur\" states a position without a positive radius (or the reverse), so it is heard everywhere",
+          "\"terrain.ambience.surf\": voice \"surf\" is not one atelier makes, so no pack binds it and it is not changed by band or weather",
+          "\"terrain.ambience.wind\" level is not a number, so it is ignored",
+          "a statement is not an object, so it is ignored",
+          "a statement names no key, so it is ignored"
+        ]
+      }
+    },
+    {
+      "name": "ambientIssues: an ambience that is not a list",
+      "op": "ambientIssues",
+      "input": {
+        "ambience": "birds"
+      },
+      "expected": {
+        "issues": [
+          "the ambience is not a list, so nothing is heard"
+        ]
+      }
+    },
+    {
+      "name": "ambientIssues: no ambience at all has nothing wrong and nothing a condition changes",
+      "op": "ambientIssues",
+      "input": {
+        "conditions": [
+          "blizzard"
+        ]
+      },
+      "expected": {
+        "issues": []
+      }
+    },
+    {
+      "name": "ambientRun: a day in the village: hours, rain, indoors, out to the wilderness, night, stop",
+      "note": "An hour inside a band changes nothing (9:00 is still morning). Going indoors muffles every playing cue and changes its volume; coming out unmuffles it. The wilderness has no talk, so the murmur stops; night has no birds.",
+      "op": "ambientRun",
+      "input": {
+        "options": {
+          "ambience": [
+            {
+              "key": "terrain.ambience.birds",
+              "level": 0.5
+            },
+            {
+              "key": "terrain.ambience.wind",
+              "level": 0.35
+            },
+            {
+              "key": "terrain.ambience.murmur",
+              "level": 0.7,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            }
+          ],
+          "hour": 8,
+          "condition": "clear"
+        },
+        "steps": [
+          {
+            "op": "start",
+            "place": "settlement"
+          },
+          {
+            "op": "hour",
+            "hour": 9
+          },
+          {
+            "op": "hour",
+            "hour": 12
+          },
+          {
+            "op": "weather",
+            "condition": "rain"
+          },
+          {
+            "op": "place",
+            "place": "indoor"
+          },
+          {
+            "op": "place",
+            "place": "settlement"
+          },
+          {
+            "op": "weather",
+            "condition": "clear"
+          },
+          {
+            "op": "place",
+            "place": "wilderness"
+          },
+          {
+            "op": "hour",
+            "hour": 22
+          },
+          {
+            "op": "stop"
+          }
+        ]
+      },
+      "expected": {
+        "events": [
+          [
+            {
+              "type": "start",
+              "layer": {
+                "id": "terrain.ambience.birds#0",
+                "volume": 0.2,
+                "loop": true,
+                "key": "terrain.ambience.birds",
+                "muffled": false
+              }
+            },
+            {
+              "type": "start",
+              "layer": {
+                "id": "terrain.ambience.murmur#0",
+                "volume": 0.49,
+                "loop": true,
+                "key": "terrain.ambience.murmur",
+                "muffled": false,
+                "at": {
+                  "x": 15,
+                  "y": 2,
+                  "z": 2
+                },
+                "radius": 45
+              }
+            },
+            {
+              "type": "start",
+              "layer": {
+                "id": "terrain.ambience.wind#0",
+                "volume": 0.175,
+                "loop": true,
+                "key": "terrain.ambience.wind",
+                "muffled": false
+              }
+            }
+          ],
+          [],
+          [
+            {
+              "type": "volume",
+              "id": "terrain.ambience.birds#0",
+              "volume": 0.12
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.murmur#0",
+              "volume": 0.7
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.wind#0",
+              "volume": 0.228
+            }
+          ],
+          [
+            {
+              "type": "volume",
+              "id": "terrain.ambience.birds#0",
+              "volume": 0.024
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.murmur#0",
+              "volume": 0.35
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.wind#0",
+              "volume": 0.319
+            }
+          ],
+          [
+            {
+              "type": "volume",
+              "id": "terrain.ambience.birds#0",
+              "volume": 0.012
+            },
+            {
+              "type": "muffled",
+              "id": "terrain.ambience.birds#0",
+              "muffled": true
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.murmur#0",
+              "volume": 0.14
+            },
+            {
+              "type": "muffled",
+              "id": "terrain.ambience.murmur#0",
+              "muffled": true
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.wind#0",
+              "volume": 0.127
+            },
+            {
+              "type": "muffled",
+              "id": "terrain.ambience.wind#0",
+              "muffled": true
+            }
+          ],
+          [
+            {
+              "type": "volume",
+              "id": "terrain.ambience.birds#0",
+              "volume": 0.024
+            },
+            {
+              "type": "muffled",
+              "id": "terrain.ambience.birds#0",
+              "muffled": false
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.murmur#0",
+              "volume": 0.35
+            },
+            {
+              "type": "muffled",
+              "id": "terrain.ambience.murmur#0",
+              "muffled": false
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.wind#0",
+              "volume": 0.319
+            },
+            {
+              "type": "muffled",
+              "id": "terrain.ambience.wind#0",
+              "muffled": false
+            }
+          ],
+          [
+            {
+              "type": "volume",
+              "id": "terrain.ambience.birds#0",
+              "volume": 0.12
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.murmur#0",
+              "volume": 0.7
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.wind#0",
+              "volume": 0.228
+            }
+          ],
+          [
+            {
+              "type": "stop",
+              "id": "terrain.ambience.murmur#0"
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.birds#0",
+              "volume": 0.3
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.wind#0",
+              "volume": 0.455
+            }
+          ],
+          [
+            {
+              "type": "stop",
+              "id": "terrain.ambience.birds#0"
+            }
+          ],
+          [
+            {
+              "type": "stop",
+              "id": "terrain.ambience.wind#0"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ambientRun: nothing plays before start, and setters before start only set",
+      "note": "Defaults: wilderness, hour 8, no sky. Here the setters moved the sky to storm and the hour to 22 first, so start plays the night storm.",
+      "op": "ambientRun",
+      "input": {
+        "options": {
+          "ambience": [
+            {
+              "key": "terrain.ambience.birds",
+              "level": 0.5
+            },
+            {
+              "key": "terrain.ambience.wind",
+              "level": 0.35
+            },
+            {
+              "key": "terrain.ambience.murmur",
+              "level": 0.7,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            }
+          ]
+        },
+        "steps": [
+          {
+            "op": "weather",
+            "condition": "storm"
+          },
+          {
+            "op": "hour",
+            "hour": 22
+          },
+          {
+            "op": "start"
+          }
+        ]
+      },
+      "expected": {
+        "events": [
+          [],
+          [],
+          [
+            {
+              "type": "start",
+              "layer": {
+                "id": "terrain.ambience.wind#0",
+                "volume": 0.819,
+                "loop": true,
+                "key": "terrain.ambience.wind",
+                "muffled": false
+              }
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ambientRun: a band-only setter moves the hour to the band's first hour",
+      "note": "start with a band moves the hour to 5 (dawn); band night moves it to 20. Setting the band it is already in changes nothing.",
+      "op": "ambientRun",
+      "input": {
+        "options": {
+          "ambience": [
+            {
+              "key": "terrain.ambience.birds",
+              "level": 0.5
+            },
+            {
+              "key": "terrain.ambience.wind",
+              "level": 0.35
+            },
+            {
+              "key": "terrain.ambience.murmur",
+              "level": 0.7,
+              "at": {
+                "x": 15,
+                "y": 2,
+                "z": 2
+              },
+              "radius": 45
+            }
+          ],
+          "hour": 12
+        },
+        "steps": [
+          {
+            "op": "start",
+            "place": "settlement",
+            "band": "dawn"
+          },
+          {
+            "op": "band",
+            "band": "night"
+          },
+          {
+            "op": "band",
+            "band": "night"
+          }
+        ]
+      },
+      "expected": {
+        "events": [
+          [
+            {
+              "type": "start",
+              "layer": {
+                "id": "terrain.ambience.birds#0",
+                "volume": 0.28,
+                "loop": true,
+                "key": "terrain.ambience.birds",
+                "muffled": false
+              }
+            },
+            {
+              "type": "start",
+              "layer": {
+                "id": "terrain.ambience.murmur#0",
+                "volume": 0.28,
+                "loop": true,
+                "key": "terrain.ambience.murmur",
+                "muffled": false,
+                "at": {
+                  "x": 15,
+                  "y": 2,
+                  "z": 2
+                },
+                "radius": 45
+              }
+            },
+            {
+              "type": "start",
+              "layer": {
+                "id": "terrain.ambience.wind#0",
+                "volume": 0.175,
+                "loop": true,
+                "key": "terrain.ambience.wind",
+                "muffled": false
+              }
+            }
+          ],
+          [
+            {
+              "type": "stop",
+              "id": "terrain.ambience.birds#0"
+            },
+            {
+              "type": "stop",
+              "id": "terrain.ambience.murmur#0"
+            },
+            {
+              "type": "volume",
+              "id": "terrain.ambience.wind#0",
+              "volume": 0.228
+            }
+          ],
+          []
+        ]
+      }
+    },
+    {
+      "name": "ambientRun: the world's statements change while playing",
+      "op": "ambientRun",
+      "input": {
+        "options": {
+          "ambience": [
+            {
+              "key": "terrain.ambience.birds",
+              "level": 0.5
+            }
+          ]
+        },
+        "steps": [
+          {
+            "op": "start",
+            "place": "wilderness"
+          },
+          {
+            "op": "ambience",
+            "ambience": [
+              {
+                "key": "terrain.ambience.birds",
+                "level": 0.5
+              },
+              {
+                "key": "terrain.ambience.wind",
+                "level": 0.35
+              },
+              {
+                "key": "terrain.ambience.murmur",
+                "level": 0.7,
+                "at": {
+                  "x": 15,
+                  "y": 2,
+                  "z": 2
+                },
+                "radius": 45
+              }
+            ]
+          },
+          {
+            "op": "ambience",
+            "ambience": []
+          }
+        ]
+      },
+      "expected": {
+        "events": [
+          [
+            {
+              "type": "start",
+              "layer": {
+                "id": "terrain.ambience.birds#0",
+                "volume": 0.5,
+                "loop": true,
+                "key": "terrain.ambience.birds",
+                "muffled": false
+              }
+            }
+          ],
+          [
+            {
+              "type": "start",
+              "layer": {
+                "id": "terrain.ambience.wind#0",
+                "volume": 0.35,
+                "loop": true,
+                "key": "terrain.ambience.wind",
+                "muffled": false
+              }
+            }
+          ],
+          [
+            {
+              "type": "stop",
+              "id": "terrain.ambience.birds#0"
+            },
+            {
+              "type": "stop",
+              "id": "terrain.ambience.wind#0"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ambientRun: no ambience stated is silence",
+      "op": "ambientRun",
+      "input": {
+        "options": {},
+        "steps": [
+          {
+            "op": "start",
+            "place": "settlement"
+          },
+          {
+            "op": "hour",
+            "hour": 12
+          },
+          {
+            "op": "stop"
+          }
+        ]
+      },
+      "expected": {
+        "events": [
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "footstep: walking on terrain.texture.road",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.road",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.stone",
+          "surface": "stone",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: walking on terrain.texture.sidewalk",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.sidewalk",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.stone",
+          "surface": "stone",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: walking on terrain.texture.gravel",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.gravel",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.stone",
+          "surface": "stone",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: walking on terrain.texture.path",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.path",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.grass",
+          "surface": "grass",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: walking on terrain.texture.dirt",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.dirt",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.grass",
+          "surface": "grass",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: walking on terrain.texture.grass",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.grass",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.grass",
+          "surface": "grass",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: walking on terrain.texture.ground",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.ground",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.grass",
+          "surface": "grass",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: walking on stone",
+      "op": "footstep",
+      "input": {
+        "surface": "stone",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.stone",
+          "surface": "stone",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: walking on grass",
+      "op": "footstep",
+      "input": {
+        "surface": "grass",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.grass",
+          "surface": "grass",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: walking on wood",
+      "op": "footstep",
+      "input": {
+        "surface": "wood",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.wood",
+          "surface": "wood",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: walking on snow",
+      "op": "footstep",
+      "input": {
+        "surface": "snow",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.snow",
+          "surface": "snow",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: walking on carpet",
+      "op": "footstep",
+      "input": {
+        "surface": "carpet",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.carpet",
+          "surface": "carpet",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: water makes no step",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.water",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": null
+      }
+    },
+    {
+      "name": "footstep: a river (terrain.water.river) makes no step, by its ancestor",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.water.river",
+        "gait": "run"
+      },
+      "expected": {
+        "cue": null
+      }
+    },
+    {
+      "name": "footstep: a child surface steps as its ancestor (road.cobbles is a road)",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.road.cobbles",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.stone",
+          "surface": "stone",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: an unknown surface steps as stone, marked default",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.sand",
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.stone",
+          "surface": "stone",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "default"
+        }
+      }
+    },
+    {
+      "name": "footstep: no surface steps as stone, marked default",
+      "op": "footstep",
+      "input": {
+        "surface": null,
+        "gait": "walk"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.stone",
+          "surface": "stone",
+          "gait": "walk",
+          "volume": 0.8,
+          "intervalSec": 0.4,
+          "source": "default"
+        }
+      }
+    },
+    {
+      "name": "footstep: running is louder and quicker",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.road",
+        "gait": "run"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.stone",
+          "surface": "stone",
+          "gait": "run",
+          "volume": 1,
+          "intervalSec": 0.28,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: crouching is quieter and slower",
+      "op": "footstep",
+      "input": {
+        "surface": "wood",
+        "gait": "crouch"
+      },
+      "expected": {
+        "cue": {
+          "key": "terrain.footstep.wood",
+          "surface": "wood",
+          "gait": "crouch",
+          "volume": 0.4,
+          "intervalSec": 0.6,
+          "source": "table"
+        }
+      }
+    },
+    {
+      "name": "footstep: idle takes no steps",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.road",
+        "gait": "idle"
+      },
+      "expected": {
+        "cue": null
+      }
+    },
+    {
+      "name": "footstep: swim takes no steps",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.road",
+        "gait": "swim"
+      },
+      "expected": {
+        "cue": null
+      }
+    },
+    {
+      "name": "footstep: climb takes no steps",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.road",
+        "gait": "climb"
+      },
+      "expected": {
+        "cue": null
+      }
+    },
+    {
+      "name": "footstep: ride takes no steps",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.road",
+        "gait": "ride"
+      },
+      "expected": {
+        "cue": null
+      }
+    },
+    {
+      "name": "footstep: sit takes no steps",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.road",
+        "gait": "sit"
+      },
+      "expected": {
+        "cue": null
+      }
+    },
+    {
+      "name": "footstep: sprint takes no steps",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.road",
+        "gait": "sprint"
+      },
+      "expected": {
+        "cue": null
+      }
+    },
+    {
+      "name": "footstep: no gait takes no steps",
+      "op": "footstep",
+      "input": {
+        "surface": "terrain.texture.road",
+        "gait": null
+      },
+      "expected": {
+        "cue": null
+      }
+    },
+    {
+      "name": "footstepRun: walking on the road in 0.125 s frames: the first step after one interval, then the remainder carries",
+      "note": "Steps fall at 0.5 s (0.1 s carried), 0.875 s and 1.25 s: every 0.4 s on average, never earlier than one interval after the body started. Left foot first.",
+      "op": "footstepRun",
+      "input": {
+        "steps": [
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          }
+        ]
+      },
+      "expected": {
+        "ticks": [
+          {
+            "elapsedSec": 0.125,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.25,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.375,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.09999999999999998,
+            "nextFoot": "right",
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "left"
+            }
+          },
+          {
+            "elapsedSec": 0.22499999999999998,
+            "nextFoot": "right",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.35,
+            "nextFoot": "right",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.07499999999999996,
+            "nextFoot": "left",
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "right"
+            }
+          },
+          {
+            "elapsedSec": 0.19999999999999996,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.32499999999999996,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.04999999999999993,
+            "nextFoot": "right",
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "left"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "footstepRun: running in 0.0625 s frames",
+      "op": "footstepRun",
+      "input": {
+        "steps": [
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.0625,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          }
+        ]
+      },
+      "expected": {
+        "ticks": [
+          {
+            "elapsedSec": 0.0625,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.125,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.1875,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.25,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.03249999999999997,
+            "nextFoot": "right",
+            "step": {
+              "key": "terrain.footstep.grass",
+              "surface": "grass",
+              "gait": "run",
+              "volume": 1,
+              "intervalSec": 0.28,
+              "source": "table",
+              "foot": "left"
+            }
+          },
+          {
+            "elapsedSec": 0.09499999999999997,
+            "nextFoot": "right",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.15749999999999997,
+            "nextFoot": "right",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.21999999999999997,
+            "nextFoot": "right",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.0024999999999999467,
+            "nextFoot": "left",
+            "step": {
+              "key": "terrain.footstep.grass",
+              "surface": "grass",
+              "gait": "run",
+              "volume": 1,
+              "intervalSec": 0.28,
+              "source": "table",
+              "foot": "right"
+            }
+          },
+          {
+            "elapsedSec": 0.06499999999999995,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.12749999999999995,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.18999999999999995,
+            "nextFoot": "left",
+            "step": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "footstepRun: stopping resets the clock; starting again waits a full interval",
+      "op": "footstepRun",
+      "input": {
+        "steps": [
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "idle",
+            "surface": "stone"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "stone"
+          }
+        ]
+      },
+      "expected": {
+        "ticks": [
+          {
+            "elapsedSec": 0.125,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.25,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.375,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.125,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.25,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.375,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.09999999999999998,
+            "nextFoot": "right",
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "left"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "footstepRun: water resets the clock as standing does",
+      "op": "footstepRun",
+      "input": {
+        "steps": [
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.path"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.path"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.path"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.water"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.path"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.path"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.path"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.path"
+          }
+        ]
+      },
+      "expected": {
+        "ticks": [
+          {
+            "elapsedSec": 0.125,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.25,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.375,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.125,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.25,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.375,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.09999999999999998,
+            "nextFoot": "right",
+            "step": {
+              "key": "terrain.footstep.grass",
+              "surface": "grass",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "left"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "footstepRun: a long frame lets one step fall, not a burst",
+      "note": "1 s at 0.4 s per step: one step, and 0.6 s left is folded below one interval (0.2 s).",
+      "op": "footstepRun",
+      "input": {
+        "steps": [
+          {
+            "dtSec": 1,
+            "gait": "walk",
+            "surface": "wood"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "wood"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "wood"
+          }
+        ]
+      },
+      "expected": {
+        "ticks": [
+          {
+            "elapsedSec": 0.19999999999999996,
+            "nextFoot": "right",
+            "step": {
+              "key": "terrain.footstep.wood",
+              "surface": "wood",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "left"
+            }
+          },
+          {
+            "elapsedSec": 0.32499999999999996,
+            "nextFoot": "right",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.04999999999999993,
+            "nextFoot": "left",
+            "step": {
+              "key": "terrain.footstep.wood",
+              "surface": "wood",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "right"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "footstepRun: changing gait keeps the clock; the surface changes the key of the next step",
+      "op": "footstepRun",
+      "input": {
+        "steps": [
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "walk",
+            "surface": "terrain.texture.road"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "run",
+            "surface": "terrain.texture.grass"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "crouch",
+            "surface": "carpet"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "crouch",
+            "surface": "carpet"
+          },
+          {
+            "dtSec": 0.125,
+            "gait": "crouch",
+            "surface": "carpet"
+          }
+        ]
+      },
+      "expected": {
+        "ticks": [
+          {
+            "elapsedSec": 0.125,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.25,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.375,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.21999999999999997,
+            "nextFoot": "right",
+            "step": {
+              "key": "terrain.footstep.grass",
+              "surface": "grass",
+              "gait": "run",
+              "volume": 1,
+              "intervalSec": 0.28,
+              "source": "table",
+              "foot": "left"
+            }
+          },
+          {
+            "elapsedSec": 0.06499999999999995,
+            "nextFoot": "left",
+            "step": {
+              "key": "terrain.footstep.grass",
+              "surface": "grass",
+              "gait": "run",
+              "volume": 1,
+              "intervalSec": 0.28,
+              "source": "table",
+              "foot": "right"
+            }
+          },
+          {
+            "elapsedSec": 0.18999999999999995,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.31499999999999995,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.43999999999999995,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.565,
+            "nextFoot": "left",
+            "step": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "footstepRun: a zero or negative frame moves nothing",
+      "op": "footstepRun",
+      "input": {
+        "steps": [
+          {
+            "dtSec": 0.25,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          {
+            "dtSec": 0,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          {
+            "dtSec": -1,
+            "gait": "walk",
+            "surface": "stone"
+          },
+          {
+            "dtSec": 0.25,
+            "gait": "walk",
+            "surface": "stone"
+          }
+        ]
+      },
+      "expected": {
+        "ticks": [
+          {
+            "elapsedSec": 0.25,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.25,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.25,
+            "nextFoot": "left",
+            "step": null
+          },
+          {
+            "elapsedSec": 0.09999999999999998,
+            "nextFoot": "right",
+            "step": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table",
+              "foot": "left"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "music: wilderness at 12:00",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "wilderness",
+          "hour": 12
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "explore",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.6,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: wilderness at 22:00",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "wilderness",
+          "hour": 22
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "explore_night",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.4,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: settlement at 12:00",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "settlement",
+          "hour": 12
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "settlement",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.6,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: settlement at 4:00",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "settlement",
+          "hour": 4
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "settlement_night",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.4,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: indoor at 12:00",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "indoor",
+          "hour": 12
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "interior",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.45,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: indoor at 22:00",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "indoor",
+          "hour": 22
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "interior",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.45,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: evening (19:00) is still the day state; night starts at 20:00",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "settlement",
+          "hour": 19.99
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "settlement",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.6,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: night starts at 20:00",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "settlement",
+          "hour": 20
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "settlement_night",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.4,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: an alert is tension, over the place",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "indoor",
+          "hour": 12,
+          "alert": true
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "tension",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.7,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: a fight is combat, over an alert",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "settlement",
+          "hour": 22,
+          "alert": true,
+          "combat": true
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "combat",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.9,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: an NPC speaking ducks the music to 35%",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "settlement",
+          "hour": 12,
+          "speaking": true
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "settlement",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.21,
+          "ducked": true
+        }
+      }
+    },
+    {
+      "name": "music: ducked combat",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "wilderness",
+          "hour": 12,
+          "combat": true,
+          "speaking": true
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "combat",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.315,
+          "ducked": true
+        }
+      }
+    },
+    {
+      "name": "music: no bindings: every state is unbound and plays silence",
+      "note": "atelier has no music key family, so core binds none. A host plays nothing for an unbound state; it does not pick a track.",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "settlement",
+          "hour": 12,
+          "settlementId": "brightwater"
+        }
+      },
+      "expected": {
+        "decision": {
+          "state": "settlement",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.6,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: a settlement's own track wins",
+      "note": "The binding keys in this corpus are fixtures, not atelier keys: a world or pack names its own.",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "settlement",
+          "hour": 12,
+          "settlementId": "brightwater"
+        },
+        "bindings": [
+          {
+            "state": "settlement",
+            "key": "fixture:settlement-any"
+          },
+          {
+            "state": "settlement",
+            "settlementId": "brightwater",
+            "key": "fixture:settlement-brightwater"
+          },
+          {
+            "state": "combat",
+            "key": "fixture:combat"
+          },
+          {
+            "state": "stinger.quest_complete",
+            "key": "fixture:quest-complete"
+          }
+        ]
+      },
+      "expected": {
+        "decision": {
+          "state": "settlement",
+          "key": "fixture:settlement-brightwater",
+          "source": "settlement",
+          "volume": 0.6,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: another settlement takes the every-settlement track",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "settlement",
+          "hour": 12,
+          "settlementId": "thistlecombe"
+        },
+        "bindings": [
+          {
+            "state": "settlement",
+            "key": "fixture:settlement-any"
+          },
+          {
+            "state": "settlement",
+            "settlementId": "brightwater",
+            "key": "fixture:settlement-brightwater"
+          },
+          {
+            "state": "combat",
+            "key": "fixture:combat"
+          },
+          {
+            "state": "stinger.quest_complete",
+            "key": "fixture:quest-complete"
+          }
+        ]
+      },
+      "expected": {
+        "decision": {
+          "state": "settlement",
+          "key": "fixture:settlement-any",
+          "source": "state",
+          "volume": 0.6,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: a state bound for every settlement plays anywhere",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "wilderness",
+          "hour": 12,
+          "combat": true
+        },
+        "bindings": [
+          {
+            "state": "settlement",
+            "key": "fixture:settlement-any"
+          },
+          {
+            "state": "settlement",
+            "settlementId": "brightwater",
+            "key": "fixture:settlement-brightwater"
+          },
+          {
+            "state": "combat",
+            "key": "fixture:combat"
+          },
+          {
+            "state": "stinger.quest_complete",
+            "key": "fixture:quest-complete"
+          }
+        ]
+      },
+      "expected": {
+        "decision": {
+          "state": "combat",
+          "key": "fixture:combat",
+          "source": "state",
+          "volume": 0.9,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: a state with no binding is unbound even when others are bound",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "settlement",
+          "hour": 22,
+          "settlementId": "brightwater"
+        },
+        "bindings": [
+          {
+            "state": "settlement",
+            "key": "fixture:settlement-any"
+          },
+          {
+            "state": "settlement",
+            "settlementId": "brightwater",
+            "key": "fixture:settlement-brightwater"
+          },
+          {
+            "state": "combat",
+            "key": "fixture:combat"
+          },
+          {
+            "state": "stinger.quest_complete",
+            "key": "fixture:quest-complete"
+          }
+        ]
+      },
+      "expected": {
+        "decision": {
+          "state": "settlement_night",
+          "key": null,
+          "source": "unbound",
+          "volume": 0.4,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "music: two bindings for one state take the smaller key; a malformed binding is ignored",
+      "op": "music",
+      "input": {
+        "input": {
+          "place": "indoor",
+          "hour": 12
+        },
+        "bindings": [
+          {
+            "state": "interior",
+            "key": "fixture:interior-b"
+          },
+          {
+            "state": "interior",
+            "key": "fixture:interior-a"
+          },
+          {
+            "state": "interior",
+            "key": ""
+          },
+          {
+            "state": "interior"
+          },
+          "interior"
+        ]
+      },
+      "expected": {
+        "decision": {
+          "state": "interior",
+          "key": "fixture:interior-a",
+          "source": "state",
+          "volume": 0.45,
+          "ducked": false
+        }
+      }
+    },
+    {
+      "name": "musicRun: a session: fade in, a voice line, into a settlement, a fight, out of it, a quest done",
+      "note": "fade_in 2 s; the same state is none; a duck and its release are volume 0.5 s; a change of state or track is a crossfade: 3 s, 2 s into or out of tension, 1 s into combat, 4 s out of it. Stingers play by the same binding rule; an event with no stinger plays none.",
+      "op": "musicRun",
+      "input": {
+        "bindings": [
+          {
+            "state": "settlement",
+            "key": "fixture:settlement-any"
+          },
+          {
+            "state": "settlement",
+            "settlementId": "brightwater",
+            "key": "fixture:settlement-brightwater"
+          },
+          {
+            "state": "combat",
+            "key": "fixture:combat"
+          },
+          {
+            "state": "stinger.quest_complete",
+            "key": "fixture:quest-complete"
+          }
+        ],
+        "steps": [
+          {
+            "op": "update",
+            "input": {
+              "place": "wilderness",
+              "hour": 8
+            }
+          },
+          {
+            "op": "update",
+            "input": {
+              "place": "wilderness",
+              "hour": 9
+            }
+          },
+          {
+            "op": "update",
+            "input": {
+              "place": "wilderness",
+              "hour": 9,
+              "speaking": true
+            }
+          },
+          {
+            "op": "update",
+            "input": {
+              "place": "wilderness",
+              "hour": 9
+            }
+          },
+          {
+            "op": "update",
+            "input": {
+              "place": "settlement",
+              "hour": 10,
+              "settlementId": "brightwater"
+            }
+          },
+          {
+            "op": "update",
+            "input": {
+              "place": "settlement",
+              "hour": 10,
+              "settlementId": "brightwater",
+              "alert": true
+            }
+          },
+          {
+            "op": "update",
+            "input": {
+              "place": "settlement",
+              "hour": 10,
+              "settlementId": "brightwater",
+              "alert": true,
+              "combat": true
+            }
+          },
+          {
+            "op": "update",
+            "input": {
+              "place": "settlement",
+              "hour": 11,
+              "settlementId": "brightwater"
+            }
+          },
+          {
+            "op": "event",
+            "event": "quest_completed"
+          },
+          {
+            "op": "event",
+            "event": "level_up"
+          },
+          {
+            "op": "event",
+            "event": "item_collected"
+          },
+          {
+            "op": "update",
+            "input": {
+              "place": "settlement",
+              "hour": 21,
+              "settlementId": "brightwater"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "decision": {
+              "state": "explore",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.6,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "fade_in",
+              "fadeSec": 2
+            }
+          },
+          {
+            "decision": {
+              "state": "explore",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.6,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "none",
+              "fadeSec": 0
+            }
+          },
+          {
+            "decision": {
+              "state": "explore",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.21,
+              "ducked": true
+            },
+            "transition": {
+              "kind": "volume",
+              "fadeSec": 0.5
+            }
+          },
+          {
+            "decision": {
+              "state": "explore",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.6,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "volume",
+              "fadeSec": 0.5
+            }
+          },
+          {
+            "decision": {
+              "state": "settlement",
+              "key": "fixture:settlement-brightwater",
+              "source": "settlement",
+              "volume": 0.6,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "crossfade",
+              "fadeSec": 3
+            }
+          },
+          {
+            "decision": {
+              "state": "tension",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.7,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "crossfade",
+              "fadeSec": 2
+            }
+          },
+          {
+            "decision": {
+              "state": "combat",
+              "key": "fixture:combat",
+              "source": "state",
+              "volume": 0.9,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "crossfade",
+              "fadeSec": 1
+            }
+          },
+          {
+            "decision": {
+              "state": "settlement",
+              "key": "fixture:settlement-brightwater",
+              "source": "settlement",
+              "volume": 0.6,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "crossfade",
+              "fadeSec": 4
+            }
+          },
+          {
+            "stinger": {
+              "event": "quest_completed",
+              "stinger": "quest_complete",
+              "key": "fixture:quest-complete",
+              "source": "state",
+              "volume": 0.8
+            }
+          },
+          {
+            "stinger": {
+              "event": "level_up",
+              "stinger": "level_up",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.8
+            }
+          },
+          {
+            "stinger": null
+          },
+          {
+            "decision": {
+              "state": "settlement_night",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.4,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "crossfade",
+              "fadeSec": 3
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "musicRun: moving between settlements with their own tracks crossfades in the same state",
+      "op": "musicRun",
+      "input": {
+        "bindings": [
+          {
+            "state": "settlement",
+            "key": "fixture:settlement-any"
+          },
+          {
+            "state": "settlement",
+            "settlementId": "brightwater",
+            "key": "fixture:settlement-brightwater"
+          },
+          {
+            "state": "combat",
+            "key": "fixture:combat"
+          },
+          {
+            "state": "stinger.quest_complete",
+            "key": "fixture:quest-complete"
+          }
+        ],
+        "steps": [
+          {
+            "op": "update",
+            "input": {
+              "place": "settlement",
+              "hour": 12,
+              "settlementId": "brightwater"
+            }
+          },
+          {
+            "op": "update",
+            "input": {
+              "place": "settlement",
+              "hour": 12,
+              "settlementId": "thistlecombe"
+            }
+          },
+          {
+            "op": "event",
+            "event": "quest_failed"
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "decision": {
+              "state": "settlement",
+              "key": "fixture:settlement-brightwater",
+              "source": "settlement",
+              "volume": 0.6,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "fade_in",
+              "fadeSec": 2
+            }
+          },
+          {
+            "decision": {
+              "state": "settlement",
+              "key": "fixture:settlement-any",
+              "source": "state",
+              "volume": 0.6,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "crossfade",
+              "fadeSec": 3
+            }
+          },
+          {
+            "stinger": {
+              "event": "quest_failed",
+              "stinger": "quest_failed",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.8
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "musicRun: with nothing bound the states still change, and the host fades to and from silence",
+      "op": "musicRun",
+      "input": {
+        "steps": [
+          {
+            "op": "update",
+            "input": {
+              "place": "indoor",
+              "hour": 12
+            }
+          },
+          {
+            "op": "update",
+            "input": {
+              "place": "wilderness",
+              "hour": 12
+            }
+          },
+          {
+            "op": "update",
+            "input": {
+              "place": "wilderness",
+              "hour": 12,
+              "combat": true
+            }
+          },
+          {
+            "op": "event",
+            "event": "quest_completed"
+          }
+        ]
+      },
+      "expected": {
+        "results": [
+          {
+            "decision": {
+              "state": "interior",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.45,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "fade_in",
+              "fadeSec": 2
+            }
+          },
+          {
+            "decision": {
+              "state": "explore",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.6,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "crossfade",
+              "fadeSec": 3
+            }
+          },
+          {
+            "decision": {
+              "state": "combat",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.9,
+              "ducked": false
+            },
+            "transition": {
+              "kind": "crossfade",
+              "fadeSec": 1
+            }
+          },
+          {
+            "stinger": {
+              "event": "quest_completed",
+              "stinger": "quest_complete",
+              "key": null,
+              "source": "unbound",
+              "volume": 0.8
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
