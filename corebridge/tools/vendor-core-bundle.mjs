@@ -64,6 +64,9 @@
 // corpora are copied the same way (PL.native-hud-rows, U143(2)):
 // `conformance/ui/{notifications,compass,minimap}-cases.json`; tests/ui_hud_corpus.cpp
 // drives them through the `ui.notifications.*`, `ui.compass.*` and `ui.minimap.*` rows. Core's
+// quest lifecycle corpus is copied the same way (PL.native-quest-lifecycle-rows, U143(2)):
+// `conformance/quests/lifecycle.json`; tests/quests_lifecycle_corpus.cpp drives it through the
+// `quest.lifecycle.*` rows. Core's
 // movement contract corpus is copied the same way (PL.native-camera-movement,
 // U95(5)): `conformance/camera/movement.json`; tests/props_corpus.cpp drives it
 // through the `camera.movement.*` rows. So is core's ground reading corpus
@@ -243,7 +246,8 @@ const PROPS_CORPUS_FILES = [
 // core's P8 corpora (PL.native-title-rows, U92(1); P8.core), copied verbatim the
 // same way: the title menu's cases and the tutorial/onboarding cases. The title
 // file shares `conformance/ui/` with the P9a and P6 sets, so it belongs to this
-// list there; `conformance/quests/` is this set's alone.
+// list there; the tutorial file shares `conformance/quests/` with the quest lifecycle
+// set (SHARED_COPY_DIRS), so it belongs to this list there too.
 const TITLE_CORPUS_FILES = ['conformance/quests/tutorial.json', 'conformance/ui/title-flow.json'];
 
 // core's P2 HUD shell corpora (PL.native-hud-rows, U143(2); core's P2.core and
@@ -257,6 +261,23 @@ const HUD_CORPUS_FILES = [
   'conformance/ui/minimap-cases.json',
   'conformance/ui/notifications-cases.json',
 ];
+
+// core's quest lifecycle corpus (PL.native-quest-lifecycle-rows, U143(2); core's P3.core
+// with PL.collect-target, PL.criteria-quests, PL.read-clue-events, PL.find-text-events,
+// PL.core-language-host-event, PL.core-grammar-objective-type and
+// PL.core-lifecycle-completed-at), copied verbatim the same way: offer -> accept -> events
+// -> complete -> reward as fact deltas, driven through the `quest.lifecycle.*` rows by
+// tests/quests_lifecycle_corpus.cpp and transcribed by emit-bridge-cases.mjs into
+// cases/core-quests-lifecycle.json. Only this file of `conformance/quests/`, which it
+// shares with the P8 set's tutorial.json: the rest of that directory is core's marker,
+// progress-rule, conversion, hydration and radiant corpora (emit-bridge-cases.mjs
+// transcribes the last two, read from core at the pin, never copied).
+const QUEST_LIFECYCLE_CORPUS_FILES = ['conformance/quests/lifecycle.json'];
+
+// The copied directories more than one set copies into: a file under one belongs to the one
+// set that lists it (the P9a roots, which the P6, P8 and P2 HUD sets share, and
+// `conformance/quests/`, which the P8 and quest lifecycle sets share).
+const SHARED_COPY_DIRS = [...P9A_COPY_ROOTS, 'conformance/quests'];
 
 // core's movement contract corpus (PL.native-camera-movement, U95(5); core's
 // PL.movement-contract and PL.movement-followups), copied verbatim the same way.
@@ -935,6 +956,116 @@ function hudTranscriptionNegative() {
   }
   console.log(`vendor-core-bundle: HUD transcription negative — ${named} of ${perturbations.length} perturbed transcription(s) named`);
   if (named !== perturbations.length) fail('the HUD transcription guard missed a perturbation');
+}
+
+// The quest lifecycle transcription (PL.native-quest-lifecycle-rows): cases/core-quests-lifecycle.json must carry one
+// case per case of the vendored conformance/quests/lifecycle.json, by name (`quests-lifecycle <op>: <name>`), and nothing
+// else but the contract case; no case on one leg only; and each case's calls exactly the ones core's runner
+// (src/quests/quest-corpus.ts, runQuestOp op session) makes through the rows, with every answer stated: a refused set ONE
+// quest.lifecycle.create of the case's input but its steps, answered with the corpus's refusal as it stands; an accepted
+// one that create, answered { ok: true, session: 1, state, facts } (the corpus's initial), then ONE quest.lifecycle.apply
+// per step, the step exactly as the corpus gives it, answered { results: [the step's result], state: the state after it }.
+// Derived here independently of the emitter, so a self-consistent re-vendor with an emitter that dropped, merged or
+// weakened a case would not pass `--check --core`.
+const LIFECYCLE_TRANSCRIPTION = {
+  area: 'quests-lifecycle',
+  corpus: 'conformance/quests/lifecycle.json',
+  cases: 'core-quests-lifecycle.json',
+  contractRow: 'quest.lifecycle.contract',
+  rowKeys: ['statuses', 'ops', 'hostEventDispatch', 'refusalCodes', 'defaultPlayer', 'predicates', 'criteriaTypes'],
+};
+
+/** The steps core's runner's answer to lifecycle case `c` is, through the rows; null for an op it does not have. */
+function lifecycleCallsOf(c) {
+  if (c.op !== 'session' || c.input === null || typeof c.input !== 'object') return null;
+  const args = Object.fromEntries(Object.entries(c.input).filter(([k]) => k !== 'steps'));
+  const steps = Array.isArray(c.input.steps) ? c.input.steps : [];
+  if (c.expected?.ok === false) return [{ call: 'quest.lifecycle.create', args, expect: c.expected }];
+  if (c.expected?.ok !== true || !Array.isArray(c.expected.steps) || c.expected.steps.length !== steps.length) return null;
+  const calls = [{ call: 'quest.lifecycle.create', args, expect: { ok: true, session: 1, state: c.expected.initial.state, facts: c.expected.initial.facts } }];
+  steps.forEach((step, i) => {
+    calls.push({ call: 'quest.lifecycle.apply', args: { session: 1, ops: [step] }, expect: { results: [c.expected.steps[i].result], state: c.expected.steps[i].state } });
+  });
+  return calls;
+}
+
+function lifecycleTranscriptionProblems(doc = null) {
+  const t = LIFECYCLE_TRANSCRIPTION;
+  const problems = [];
+  const file = JSON.parse(fs.readFileSync(path.join(OUT_DIR, t.corpus), 'utf8'));
+  const got = doc ?? JSON.parse(fs.readFileSync(path.join(CASES_DIR, t.cases), 'utf8'));
+  const byName = new Map(got.cases.map((c) => [c.name, c]));
+  const missing = [];
+  const wrong = [];
+  for (const c of file.cases) {
+    const g = byName.get(`${t.area} ${c.op}: ${c.name}`);
+    if (!g) {
+      missing.push(c.name);
+      continue;
+    }
+    const want = lifecycleCallsOf(c);
+    if (want === null || g.legs !== undefined || canonJson(g.steps) !== canonJson(want)) wrong.push(c.name);
+  }
+  if (missing.length) problems.push(`${t.cases}: ${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
+  if (wrong.length) problems.push(`${t.cases}: ${wrong.length} case(s) not transcribed as core's runner calls and answers them, first: ${wrong[0]}`);
+  const contract = byName.get(`${t.area}: the contract ${t.contractRow} states`);
+  const wantContract = Object.fromEntries(t.rowKeys.map((k) => [k, file.contract[k]]));
+  if (!contract || contract.steps?.length !== 1 || contract.steps[0].call !== t.contractRow || canonJson(contract.steps[0].expect) !== canonJson(wantContract) || contract.legs !== undefined) {
+    problems.push(`${t.cases}: the contract case does not hold ${t.contractRow} to the corpus's ${t.rowKeys.join(', ')}`);
+  }
+  if (got.cases.length !== file.cases.length + 1 || byName.size !== got.cases.length) {
+    problems.push(`${t.cases}: it carries ${got.cases.length} case(s), not the corpus's ${file.cases.length} and the contract case`);
+  }
+  return { problems, count: file.cases.length };
+}
+
+/** The lifecycle guard's negative control: each perturbation of the transcription must be named. */
+function lifecycleTranscriptionNegative() {
+  const read = () => JSON.parse(fs.readFileSync(path.join(CASES_DIR, LIFECYCLE_TRANSCRIPTION.cases), 'utf8'));
+  const accepted = (d) => d.cases.find((c) => c.steps.length > 2);
+  const stepWith = (d, pred) => d.cases.flatMap((c) => c.steps).find(pred);
+  const perturbations = [
+    ['a dropped case', (d) => d.cases.splice(7, 1), 'corpus case(s) not transcribed'],
+    ['a case no corpus case names', (d) => d.cases.push({ ...accepted(d), name: 'quests-lifecycle session: invented' }), 'case(s), not the corpus'],
+    ['a call changed (a step answered by create)', (d) => { accepted(d).steps[1].call = 'quest.lifecycle.create'; }, "not transcribed as core's runner"],
+    ['two steps merged into one apply', (d) => {
+      const c = accepted(d);
+      const [a, b] = [c.steps[1], c.steps[2]];
+      a.args.ops.push(...b.args.ops);
+      a.expect.results.push(...b.expect.results);
+      a.expect.state = b.expect.state;
+      c.steps.splice(2, 1);
+    }, "not transcribed as core's runner"],
+    ["a step's atMs dropped", (d) => { delete stepWith(d, (s) => s.call === 'quest.lifecycle.apply' && 'atMs' in s.args.ops[0]).args.ops[0].atMs; }, "not transcribed as core's runner"],
+    ["a step's result weakened to a subset", (d) => {
+      const s = stepWith(d, (x) => x.call === 'quest.lifecycle.apply' && x.expect.results[0].ok === true && x.expect.results[0].deltas.length > 0);
+      s.expect.results[0] = { $subset: { ok: true } };
+    }, "not transcribed as core's runner"],
+    ['the state after a step dropped', (d) => { delete accepted(d).steps[1].expect.state; }, "not transcribed as core's runner"],
+    ['the initial facts dropped', (d) => { delete accepted(d).steps[0].expect.facts; }, "not transcribed as core's runner"],
+    ["a refusal's field changed", (d) => {
+      stepWith(d, (s) => s.call === 'quest.lifecycle.create' && s.expect.ok === false).expect.refusal.field += '.id';
+    }, "not transcribed as core's runner"],
+    ['a completedAtMs changed', (d) => {
+      const s = stepWith(d, (x) => x.call === 'quest.lifecycle.apply' && Object.values(x.expect.state).some((q) => 'completedAtMs' in q));
+      const q = Object.values(s.expect.state).find((x) => 'completedAtMs' in x);
+      q.completedAtMs += 1;
+    }, "not transcribed as core's runner"],
+    ['a case put on one leg only', (d) => { Object.assign(accepted(d), { legs: ['c'], why: 'perturbed' }); }, "not transcribed as core's runner"],
+    ['a contract key dropped', (d) => { delete d.cases[0].steps[0].expect.predicates; }, 'the contract case'],
+    ['a contract value changed', (d) => { d.cases[0].steps[0].expect.defaultPlayer = 'hero'; }, 'the contract case'],
+  ];
+  let named = 0;
+  for (const [what, perturb, want] of perturbations) {
+    const doc = read();
+    perturb(doc);
+    const { problems } = lifecycleTranscriptionProblems(doc);
+    const hit = problems.find((p) => p.includes(want));
+    console.log(`  ${hit ? 'named' : 'MISSED'}: ${what} -> ${(hit ?? problems.join('; ')) || 'no problem'}`);
+    if (hit) named++;
+  }
+  console.log(`vendor-core-bundle: quest lifecycle transcription negative — ${named} of ${perturbations.length} perturbed transcription(s) named`);
+  if (named !== perturbations.length) fail('the quest lifecycle transcription guard missed a perturbation');
 }
 
 /** `a` and `b` the same JSON but for numbers, each within `tol` (core's compareVillageState), key sets included. */
@@ -2295,6 +2426,11 @@ function hudFilesOnDisk() {
   return listedFilesOnDisk(HUD_CORPUS_FILES);
 }
 
+/** The vendored quest lifecycle corpus files on disk, sorted (the same rule as the P6 set's). */
+function lifecycleFilesOnDisk() {
+  return listedFilesOnDisk(QUEST_LIFECYCLE_CORPUS_FILES);
+}
+
 /**
  * The files on disk of a set copied as a `files` list: every file under a
  * directory no other set copies into, and only the listed files in a directory
@@ -2303,7 +2439,7 @@ function hudFilesOnDisk() {
 function listedFilesOnDisk(files) {
   const out = [];
   for (const dir of new Set(files.map((rel) => path.dirname(rel)))) {
-    const shared = P9A_COPY_ROOTS.includes(dir);
+    const shared = SHARED_COPY_DIRS.includes(dir);
     for (const f of jsonFilesUnder(path.join(OUT_DIR, dir))) {
       if (!shared || files.includes(`${dir}/${f}`)) out.push(`vendor/core/${dir}/${f}`);
     }
@@ -2324,6 +2460,11 @@ function titleFilesAtPin(src) {
 /** core's P2 HUD corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
 function hudFilesAtPin(src) {
   return filesAtPin(src, HUD_CORPUS_FILES, 'the ui.notifications, ui.compass and ui.minimap rows');
+}
+
+/** core's quest lifecycle corpus at the pin, as { 'vendor/core/<path>': Buffer }. */
+function lifecycleFilesAtPin(src) {
+  return filesAtPin(src, QUEST_LIFECYCLE_CORPUS_FILES, 'the quest.lifecycle.* rows');
 }
 
 /**
@@ -2810,6 +2951,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The quest lifecycle corpus: the same exact-set replacement.
+    const lifecycleSet = lifecycleFilesAtPin(src);
+    for (const rel of lifecycleFilesOnDisk()) if (!(rel in lifecycleSet)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(lifecycleSet)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     // The camera corpus: the same exact-set replacement (only the listed files).
     const camera = cameraFilesAtPin(src);
     for (const rel of cameraFilesOnDisk()) if (!(rel in camera)) fs.rmSync(path.join(BRIDGE, rel));
@@ -2911,6 +3060,7 @@ async function write(coreDir) {
       propsCorpus: PROPS_CORPUS_FILES,
       titleCorpus: TITLE_CORPUS_FILES,
       hudCorpus: HUD_CORPUS_FILES,
+      questLifecycleCorpus: QUEST_LIFECYCLE_CORPUS_FILES,
       cameraCorpus: CAMERA_CORPUS_FILES,
       audioCorpus: AUDIO_CORPUS_FILES,
       survivalCorpus: SURVIVAL_CORPUS_FILES,
@@ -2938,6 +3088,7 @@ async function write(coreDir) {
       ...propsFilesOnDisk(),
       ...titleFilesOnDisk(),
       ...hudFilesOnDisk(),
+      ...lifecycleFilesOnDisk(),
       ...cameraFilesOnDisk(),
       ...audioFilesOnDisk(),
       ...survivalFilesOnDisk(),
@@ -2963,6 +3114,7 @@ async function write(coreDir) {
     console.log(`  P6 props and inventory corpus files (${Object.keys(props).length}), copied unchanged`);
     console.log(`  P8 title-flow and tutorial corpus files (${Object.keys(title).length}), copied unchanged`);
     console.log(`  P2 HUD corpus files, notifications, compass and minimap (${Object.keys(hudSet).length}), copied unchanged`);
+    console.log(`  quest lifecycle corpus files (${Object.keys(lifecycleSet).length}), copied unchanged`);
     console.log(`  camera movement corpus files (${Object.keys(camera).length}), copied unchanged`);
     console.log(`  audio ground reading and audio cue corpus files (${Object.keys(audio).length}), copied unchanged`);
     console.log(`  survival corpus files (${Object.keys(survival).length}), copied unchanged`);
@@ -3037,6 +3189,10 @@ async function check(coreDir) {
   for (const rel of HUD_CORPUS_FILES) {
     if (!hudFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the HUD corpus gate would run nothing`);
   }
+  const lifecycleFiles = lifecycleFilesOnDisk();
+  for (const rel of QUEST_LIFECYCLE_CORPUS_FILES) {
+    if (!lifecycleFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the quest lifecycle corpus gate would run nothing`);
+  }
   const cameraFiles = cameraFilesOnDisk();
   for (const rel of CAMERA_CORPUS_FILES) {
     if (!cameraFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the camera movement corpus gate would run nothing`);
@@ -3084,6 +3240,9 @@ async function check(coreDir) {
   if (titleClaimedTwice.length) fail(`${titleClaimedTwice.join(', ')} is listed as a P8 corpus file and in another set`);
   const hudClaimedTwice = hudFiles.filter((rel) => p9aFiles.includes(rel) || propsFiles.includes(rel) || titleFiles.includes(rel));
   if (hudClaimedTwice.length) fail(`${hudClaimedTwice.join(', ')} is listed as a P2 HUD corpus file and in another set`);
+  // conformance/quests/ is shared by the P8 and quest lifecycle sets: a file belongs to exactly one.
+  const lifecycleClaimedTwice = lifecycleFiles.filter((rel) => titleFiles.includes(rel));
+  if (lifecycleClaimedTwice.length) fail(`${lifecycleClaimedTwice.join(', ')} is listed as a quest lifecycle corpus file and in another set`);
   const expectedList = [
     ...GENERATED_FIXED,
     ...caseFiles,
@@ -3094,6 +3253,7 @@ async function check(coreDir) {
     ...propsFiles,
     ...titleFiles,
     ...hudFiles,
+    ...lifecycleFiles,
     ...cameraFiles,
     ...audioFiles,
     ...survivalFiles,
@@ -3148,7 +3308,7 @@ async function check(coreDir) {
     `vendor-core-bundle: ${expectedList.length} file(s) match their recorded sha256 ` +
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
-      `${savesFiles.length} saves (slots, tutorial progress, village state), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ${hudFiles.length} P2 HUD, ` +
+      `${savesFiles.length} saves (slots, tutorial progress, village state), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ${hudFiles.length} P2 HUD, ${lifecycleFiles.length} quest lifecycle, ` +
       `${cameraFiles.length} camera movement, ${audioFiles.length} audio (ground, cues), ${survivalFiles.length} survival, ` +
       `${traversalFiles.length} traversal, ${buildFiles.length} headless build, ${progressionFiles.length} progression/skill and ` +
       `${languageFiles.length} language corpus file(s), ${genreFiles.length} genre systems corpus file(s) (the world slice among them), ` +
@@ -3205,6 +3365,13 @@ async function check(coreDir) {
     `vendor-core-bundle: HUD — cases/core-ui-{notifications,compass,minimap}.json transcribe all ${hudGuard.count} case(s) of ` +
       "the vendored conformance/ui/{notifications,compass,minimap}-cases.json, by name, by the calls core's runner makes through the rows, " +
       `with every answer stated (${hudGuard.declared.length} declared library-version answer(s), each within the corpus's tolerance), and each contract row held to the keys it states`,
+  );
+  const lifecycleGuard = lifecycleTranscriptionProblems();
+  if (lifecycleGuard.problems.length) fail(`the quest lifecycle transcription does not hold the vendored lifecycle corpus: ${lifecycleGuard.problems.join('; ')}`);
+  console.log(
+    `vendor-core-bundle: quest lifecycle — cases/core-quests-lifecycle.json transcribes all ${lifecycleGuard.count} case(s) of ` +
+      "the vendored conformance/quests/lifecycle.json, by name, by the calls core's runner makes through the rows (create, then one apply per step), " +
+      'with every answer stated, and the contract row held to the keys it states',
   );
   const genreGuard = genreTranscriptionProblems();
   if (genreGuard.problems.length) fail(`the genre transcription does not hold the vendored genre systems corpora: ${genreGuard.problems.join('; ')}`);
@@ -3311,6 +3478,16 @@ async function check(coreDir) {
       }
       for (const rel of wantHud) {
         if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(hudAtPin[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
+      const lifecycleAtPin = lifecycleFilesAtPin(src);
+      const wantLifecycle = Object.keys(lifecycleAtPin).sort();
+      if (JSON.stringify(wantLifecycle) !== JSON.stringify(lifecycleFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s quest lifecycle corpus is ${wantLifecycle.join(', ')} but vendor/core/ holds ${lifecycleFiles.join(', ')}`);
+      }
+      for (const rel of wantLifecycle) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(lifecycleAtPin[rel])) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
@@ -3448,6 +3625,8 @@ if (args.includes('--check-language-transcription-negative')) {
   vehiclePlacementTranscriptionNegative();
 } else if (args.includes('--check-hud-transcription-negative')) {
   hudTranscriptionNegative();
+} else if (args.includes('--check-quest-lifecycle-transcription-negative')) {
+  lifecycleTranscriptionNegative();
 } else if (args.includes('--check-genre-transcription-negative')) {
   genreTranscriptionNegative();
 } else if (argValue('--check-extension-keys')) {

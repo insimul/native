@@ -106,8 +106,9 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   unwired" — wire it to `save.encode`/`save.decode` instead of its own envelope),
   P2 `ui.notifications.*`, `ui.pause.*` (the genre path: `ui.pause.create { genre }`),
   `ui.compass.*`, `ui.minimap.*` (the HUD rows, below),
-  P3 `ui.journal.*` (the journal port), `quest.completion.*`, `quest.markers`,
-  `quest.minimapMarkers`, `quest.waypoints`, P4 `clock.*`, `weather.*`.
+  P3 `ui.journal.*` (the journal port), `quest.lifecycle.*` (the lifecycle rows, below),
+  `quest.completion.*`, `quest.markers`, `quest.minimapMarkers`, `quest.waypoints`, P4 `clock.*`,
+  `weather.*`.
 - Update `InsimulMechanicSurface.h`'s "FIVE methods" comment and any test pinning it.
 - **The HUD view-models, P2 (Unreal's `P2.unreal.retire-hud-copy`, after PL.native-hud-rows;
   U143(2), U85(3), U128).** Core's three HUD view-models are rows (`README.md`, "The HUD rows"):
@@ -141,6 +142,37 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   Re-vendor `conformance/ui/{notifications,compass,minimap}-cases.json` from core at this
   library's pin and drive each case as `tests/ui_hud_corpus.cpp` does (core's runner
   `ui/hud-corpus.ts` through the rows; numbers within the file's `tolerance`).
+- **The quest lifecycle, P3 (Unreal's `P9h.unreal.retire-lifecycle-copy`, after
+  PL.native-quest-lifecycle-rows; U143(2), U128).** Core's quest lifecycle host contract is rows
+  (`README.md`, "The quest lifecycle rows"): `quest.lifecycle.create` opens one quest set for one
+  player, `quest.lifecycle.apply` takes core's steps (offer, accept and the thirteen reported events
+  talk_to, reach, pick_up, deliver, read, find_clue, find_text, read_sign, use_word, pronounce,
+  identify, answer_listening, use_grammar, each with an optional `atMs`) and answers each step's
+  fact deltas, completions and openings with the state after the batch; `quest.lifecycle.facts` and
+  `quest.lifecycle.quests` read the session. Every refusal core states is a VALUE. The retirement
+  row binds them in place of the interim copy on unreal main (`ffe479fd`, read only):
+  `Portable/InsimulQuestLifecycle.{h,cpp}` (350 + 1887 lines, with the mapping tables
+  `Portable/InsimulQuestTables.generated.inl`, 330) and the lifecycle half of its corpus runner
+  `Tests/test_quest_lifecycle.cpp` (719 lines).
+
+  | Unreal's interim copy (`insimul::quests`, `InsimulQuestLifecycle.h`) | Row |
+  |---|---|
+  | `kLifecycleStatuses`, `kLifecycleOps`, `kLifecycleRefusals`, `kLifecyclePredicates`, `kCompletionCriteriaTypes`, `kDefaultQuestPlayer`, `QuestHostEventDispatch` | `quest.lifecycle.contract {}` → `{ statuses, ops, hostEventDispatch, refusalCodes, defaultPlayer, predicates, criteriaTypes }` |
+  | `FQuestLifecycle::Create`, `FQuestRefusal` | `quest.lifecycle.create { quests, player? }` → `{ ok: true, session, state, facts }` or core's refusal VALUE `{ ok: false, refusal: { code, field } }` (no session) |
+  | `FQuestLifecycle::Step` and the typed steps (`Offer`, `Accept`, `TalkTo`, `Reach`, `PickUp`, `Deliver`, `Read`, `FindClue`, `FindText`, `ReadSign`, `UseWord`, `Pronounce`, `Identify`, `AnswerListening`, `UseGrammar`), `FQuestStepResult`, `FQuestDelta` | `quest.lifecycle.apply { session, ops: [step] }` → `{ results, state }`: each op is core's step (`{ op, … , atMs? }`) exactly as sent, each result core's `{ ok: true, deltas: [{ op, predicate, args }], completed, opened: [{ quest, status }] }` or `{ ok: false, refusal }`. `kQuestPickUpMaxCount` (`bad_count`) and `kQuestPronounceScoreMax` (`bad_score`) are core's checks inside the step |
+  | `FQuestLifecycle::State`, `FQuestStateView`, `FObjectiveProgress` | the `state` that `create` and every `apply` answer: quest → `{ status, done, progress: [{ index, current, required }], offeredBy?, criteria?, completedAtMs? }` |
+  | `FQuestLifecycle::Facts`, `FQuestFact` | `quest.lifecycle.facts { session }` → `{ facts: [{ predicate, args }] }` (also `create`'s `facts`) |
+  | `FQuestLifecycle::QuestsJson` | `quest.lifecycle.quests { session }` → `{ quests }` (core's `quests()`: the records `quest.markers`, `quest.waypoints` and a learning history read) |
+  | `FQuestLifecycle::StatusOf`, `ObjectiveLocked`, `Player` | no row of their own: a quest's status is in `state`; the player is the one the binding gave `create` (`defaultPlayer` when none); the lifecycle answers no lock (`quest.completion.*`'s view answers `locked` per objective for a binding that draws one) |
+  | `FCompletionEngine`, `NormalizeObjectiveType`, `ProgressRuleOf`, `QuantityRuleFor`, `DifficultyPassThreshold`, `kPronunciationRetryThreshold`, `DiffFacts`, `FactKey`, the mapping tables (`InsimulQuestTables.generated.inl`) | no row: core's internals behind `step` (QuestCompletionEngine, the quest-action mapping, the pronunciation helpers, `diffFacts`); the bundle carries them, so the binding drops them with the copy |
+  | `FQuestLifecycle::RestoreFromFacts` | no row: core's lifecycle states no restore from a fact set (the copy's own, for the game's save path). A session re-opened with `create` over the records `quest.lifecycle.quests` answered keeps each quest's status, its objectives' completion, counters and ledgers and `completedAtMs` (checked against core at the pin); an open offer, a `conversation_turns` quest's turn count and the grant facts (`experience_granted`, `item_granted`) are not carried that way. Whether core states a restore is core's to decide |
+  | `QuestMarkerTargets`, `FQuestMarkerTarget`, `FQuestMarkerTargets`, `kWaypointSources`, `kConversationObjectiveTypes`, `kGrammarConversationType` | no row here: core's `quests/quest-markers.ts` and its corpus `conformance/quests/markers.json` are not this library's yet; the marker half of the copy stays until a row binds them |
+  | `InsimulQuestHost.h` (`ToPrologFact`, `FromPrologFact`, `PrologArgText`, `QuestFactProlog`, `LifecycleFactsOf`, `DescribeFact`, `DocumentQuestSteps`, `DescribeStep`) | no row: the engine's glue between the deltas and its own runtime KB, its save and its game log; it reads the rows' deltas and facts in place of the copy's |
+
+  Re-vendor `conformance/quests/lifecycle.json` from core at this library's pin and drive each
+  case as `tests/quests_lifecycle_corpus.cpp` does (core's runner `quests/quest-corpus.ts`, op
+  `session`: `create` with the case's input but its steps, then one `apply` per step, the step as
+  given; numbers within the file's `tolerance`).
 - **Layout (L.portable-binding, after L.native-layout).** The `layout.*` rows
   (`README.md`, "The layout rows") answer every op of core's layout corpora, the
   same ops `Tests/layout_corpus_ops.h` maps onto `Portable/`. The binding replaces

@@ -895,6 +895,75 @@ function hud(root, coreCommit) {
 	return out;
 }
 
+// ── the quest lifecycle: conformance/quests/lifecycle.json (src/quests/quest-corpus.ts) ──
+//
+// Core's reference runner is src/quests/quest-corpus.ts (`runQuestOp`, op `session`). Each case
+// becomes the calls the quest.lifecycle.* rows (PL.native-quest-lifecycle-rows) make for it, the
+// same mapping tests/quests_lifecycle_corpus.cpp drives over the vendored file:
+//
+//   session -> quest.lifecycle.create { quests?, player? } (the case's input but its steps):
+//                a refused set is core's answer as it stands ({ ok: false, refusal }); an
+//                accepted one answers { ok: true, session: 1, state, facts }, the corpus's
+//                `initial` with the session handle;
+//              then ONE quest.lifecycle.apply per step, { session: 1, ops: [step] }, the step
+//                exactly as the corpus gives it (atMs, a step core refuses, an op core does
+//                not know, all as given): { results: [the step's result], state: the state
+//                after it }, the corpus's `steps[i]`.
+//
+// Nothing here computes an answer: every expectation is the corpus's own value, moved into the
+// shape of a bridge call. One case holds the contract row to the contract keys it states.
+
+/** The contract keys quest.lifecycle.contract states (core's exports); the rest of the contract block is pinned by the cases. */
+export const LIFECYCLE_CONTRACT_ROW_KEYS = ['statuses', 'ops', 'hostEventDispatch', 'refusalCodes', 'defaultPlayer', 'predicates', 'criteriaTypes'];
+export const LIFECYCLE_CASE_FILE = { area: 'quests-lifecycle', corpus: 'conformance/quests/lifecycle.json', cases: 'core-quests-lifecycle.json' };
+
+/** One lifecycle corpus case as bridge steps. */
+export function lifecycleCaseSteps(c) {
+	const where = `quests-lifecycle ${c.op}: ${c.name}`;
+	if (c.op !== 'session') throw new Error(`emit-bridge-cases: ${where}: no row for op ${c.op}`);
+	const { steps = [], ...args } = c.input;
+	const e = c.expected;
+	if (e.ok === false) {
+		if (Object.keys(e).sort().join(',') !== 'ok,refusal') throw new Error(`emit-bridge-cases: ${where}: a refused session is not { ok, refusal }`);
+		return [{ call: 'quest.lifecycle.create', args, expect: e }];
+	}
+	if (e.ok !== true || !e.initial || !Array.isArray(e.steps) || e.steps.length !== steps.length) {
+		throw new Error(`emit-bridge-cases: ${where}: ${steps.length} step(s) but the answer is not { ok: true, initial, steps } with one per step`);
+	}
+	return [
+		{ call: 'quest.lifecycle.create', args, expect: { ok: true, session: 1, state: e.initial.state, facts: e.initial.facts } },
+		...steps.map((step, i) => ({
+			call: 'quest.lifecycle.apply',
+			args: { session: 1, ops: [step] },
+			expect: { results: [e.steps[i].result], state: e.steps[i].state },
+		})),
+	];
+}
+
+function questLifecycle(root, coreCommit) {
+	const { area, corpus, cases: name } = LIFECYCLE_CASE_FILE;
+	const r = reader(root);
+	const file = r.json(corpus);
+	if (file.area !== area) throw new Error(`emit-bridge-cases: ${corpus} is not the ${area} corpus`);
+	const contract = Object.fromEntries(LIFECYCLE_CONTRACT_ROW_KEYS.map((k) => {
+		if (!Object.prototype.hasOwnProperty.call(file.contract, k)) throw new Error(`emit-bridge-cases: ${corpus}'s contract has no ${k}`);
+		return [k, file.contract[k]];
+	}));
+	const cases = [{ name: `${area}: the contract quest.lifecycle.contract states`, steps: [{ call: 'quest.lifecycle.contract', expect: contract }] }];
+	for (const c of file.cases) cases.push({ name: `${area} ${c.op}: ${c.name}`, steps: lifecycleCaseSteps(c) });
+	return {
+		[name]: caseFile(
+			area,
+			`core's quest lifecycle corpus (${corpus}, P3.core) through the quest.lifecycle.* rows, each session the calls core's ` +
+				'reference runner (src/quests/quest-corpus.ts) makes, through them: create, then one apply per step; numbers held exactly ' +
+				`(the corpus's tolerance is ${file.tolerance}; tests/quests_lifecycle_corpus.cpp replays the file itself within it).`,
+			coreCommit,
+			r.files,
+			cases,
+		),
+	};
+}
+
 // ── weather: conformance/weather/progression.json (weather-corpus.test.ts)
 
 function weather(root, coreCommit) {
@@ -2682,6 +2751,7 @@ export function emitBridgeCases(root, coreCommit) {
 		'core-ui-loading.json': loading(root, coreCommit),
 		'core-ui-trade.json': trade(root, coreCommit),
 		...hud(root, coreCommit),
+		...questLifecycle(root, coreCommit),
 		'core-weather-progression.json': weather(root, coreCommit),
 		...genres(root, coreCommit),
 		...language(root, coreCommit),

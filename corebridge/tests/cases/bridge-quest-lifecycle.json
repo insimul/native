@@ -1,0 +1,1138 @@
+{
+  "area": "quests-lifecycle-rows",
+  "description": "Hand cases for the quest lifecycle rows (PL.native-quest-lifecycle-rows): what core's corpus conformance/quests/lifecycle.json leaves unpinned — the contract row whole against core's exports, a batch of several steps in one apply (one result per op, in order, a refused step inside it changing nothing), the facts and quests rows, the default player and an empty batch, core's own refusals as values through the rows, the [invalid-input] boundary of the members core reads unchecked (only where core does not refuse the same set itself), and the session's kind, handle and ops checks. Every expectation is computed by core's own lifecycle at the pin (gen-bridge-lifecycle-cases.mts, kept with the builder's record); each boundary expectation is asserted to be a set core does not refuse as a value.",
+  "cases": [
+    {
+      "name": "quest.lifecycle.contract states core's exported tables: the statuses, the step ops, the host-event dispatch, the refusal codes, the default player, the fact predicates and the completion criteria types",
+      "steps": [
+        {
+          "call": "quest.lifecycle.contract",
+          "args": {},
+          "expect": {
+            "statuses": [
+              "unavailable",
+              "available",
+              "active",
+              "completed"
+            ],
+            "ops": [
+              "offer",
+              "accept",
+              "talk_to",
+              "reach",
+              "pick_up",
+              "deliver",
+              "read",
+              "find_clue",
+              "find_text",
+              "read_sign",
+              "use_word",
+              "pronounce",
+              "identify",
+              "answer_listening",
+              "use_grammar"
+            ],
+            "hostEventDispatch": {
+              "talk_to": [
+                "npc_talked",
+                "npc_conversation"
+              ],
+              "reach": [
+                "location_visited",
+                "location_discovered"
+              ],
+              "pick_up": [
+                "item_collected"
+              ],
+              "deliver": [
+                "item_delivered"
+              ],
+              "read": [
+                "text_read"
+              ],
+              "find_clue": [
+                "clue_discovered"
+              ],
+              "find_text": [
+                "text_found"
+              ],
+              "read_sign": [
+                "sign_read"
+              ],
+              "use_word": [
+                "vocabulary_usage"
+              ],
+              "pronounce": [
+                "pronunciation_attempt"
+              ],
+              "identify": [
+                "object_identified"
+              ],
+              "answer_listening": [
+                "listening_graded"
+              ],
+              "use_grammar": [
+                "grammar_demonstrated"
+              ]
+            },
+            "refusalCodes": [
+              "missing_field",
+              "duplicate_quest",
+              "duplicate_objective",
+              "bad_status",
+              "unknown_op",
+              "unknown_quest",
+              "not_available",
+              "prerequisites_unmet",
+              "not_giver",
+              "bad_count",
+              "bad_criteria",
+              "bad_score",
+              "bad_time"
+            ],
+            "defaultPlayer": "player",
+            "predicates": [
+              "quest_status",
+              "quest_offered",
+              "objective_complete",
+              "objective_progress",
+              "quest_progress",
+              "experience_granted",
+              "item_granted"
+            ],
+            "criteriaTypes": [
+              "all_objectives",
+              "conversation_turns"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "one session through every row: a batch of five ops answers one result each in order (an offer, the accept that clears it, a pick-up stack of two, a step core refuses as a value, which changes nothing, and a talk the lock holds), a second batch completes the quest at its atMs and activates the follow-up; the facts and quests rows read the session; a disposed session is gone",
+      "steps": [
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "player": "hero",
+            "quests": [
+              {
+                "id": "q_herbs",
+                "status": "available",
+                "title": "Herbs for the healer",
+                "assignedByCharacterId": "npc_healer",
+                "experienceReward": 40,
+                "itemRewards": [
+                  {
+                    "itemId": "potion",
+                    "quantity": 2,
+                    "name": "Potion"
+                  }
+                ],
+                "objectives": [
+                  {
+                    "id": "o_collect",
+                    "type": "collect_item",
+                    "itemName": "herb",
+                    "itemCount": 3
+                  },
+                  {
+                    "id": "o_return",
+                    "type": "talk_to_npc",
+                    "npcId": "npc_healer",
+                    "dependsOn": [
+                      "o_collect"
+                    ]
+                  }
+                ],
+                "activatesQuestIds": [
+                  "q_next"
+                ]
+              },
+              {
+                "id": "q_next",
+                "status": "unavailable",
+                "prerequisiteQuestIds": [
+                  "q_herbs"
+                ],
+                "objectives": [
+                  {
+                    "id": "o_next",
+                    "type": "visit_location",
+                    "locationId": "mill"
+                  }
+                ]
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "session": 1,
+            "state": {
+              "q_herbs": {
+                "status": "available",
+                "done": [],
+                "progress": []
+              },
+              "q_next": {
+                "status": "unavailable",
+                "done": [],
+                "progress": []
+              }
+            },
+            "facts": [
+              {
+                "predicate": "quest_status",
+                "args": [
+                  "hero",
+                  "q_herbs",
+                  "available"
+                ]
+              },
+              {
+                "predicate": "quest_status",
+                "args": [
+                  "hero",
+                  "q_next",
+                  "unavailable"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "call": "quest.lifecycle.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "offer",
+                "quest": "q_herbs",
+                "npc": "npc_healer"
+              },
+              {
+                "op": "accept",
+                "quest": "q_herbs"
+              },
+              {
+                "op": "pick_up",
+                "item": "herb",
+                "count": 2
+              },
+              {
+                "op": "accept",
+                "quest": "q_nowhere"
+              },
+              {
+                "op": "talk_to",
+                "npc": "npc_healer"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "deltas": [
+                  {
+                    "op": "assert",
+                    "predicate": "quest_offered",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      "npc_healer"
+                    ]
+                  }
+                ],
+                "completed": [],
+                "opened": []
+              },
+              {
+                "ok": true,
+                "deltas": [
+                  {
+                    "op": "retract",
+                    "predicate": "quest_status",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      "available"
+                    ]
+                  },
+                  {
+                    "op": "retract",
+                    "predicate": "quest_offered",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      "npc_healer"
+                    ]
+                  },
+                  {
+                    "op": "assert",
+                    "predicate": "quest_status",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      "active"
+                    ]
+                  }
+                ],
+                "completed": [],
+                "opened": []
+              },
+              {
+                "ok": true,
+                "deltas": [
+                  {
+                    "op": "assert",
+                    "predicate": "objective_progress",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      0,
+                      2,
+                      3
+                    ]
+                  }
+                ],
+                "completed": [],
+                "opened": []
+              },
+              {
+                "ok": false,
+                "refusal": {
+                  "code": "unknown_quest",
+                  "field": "quest"
+                }
+              },
+              {
+                "ok": true,
+                "deltas": [],
+                "completed": [],
+                "opened": []
+              }
+            ],
+            "state": {
+              "q_herbs": {
+                "status": "active",
+                "done": [],
+                "progress": [
+                  {
+                    "index": 0,
+                    "current": 2,
+                    "required": 3
+                  }
+                ]
+              },
+              "q_next": {
+                "status": "unavailable",
+                "done": [],
+                "progress": []
+              }
+            }
+          }
+        },
+        {
+          "call": "quest.lifecycle.facts",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "facts": [
+              {
+                "predicate": "quest_status",
+                "args": [
+                  "hero",
+                  "q_herbs",
+                  "active"
+                ]
+              },
+              {
+                "predicate": "objective_progress",
+                "args": [
+                  "hero",
+                  "q_herbs",
+                  0,
+                  2,
+                  3
+                ]
+              },
+              {
+                "predicate": "quest_status",
+                "args": [
+                  "hero",
+                  "q_next",
+                  "unavailable"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "call": "quest.lifecycle.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "pick_up",
+                "item": "herb",
+                "atMs": 1000
+              },
+              {
+                "op": "talk_to",
+                "npc": "npc_healer",
+                "atMs": 2500
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "deltas": [
+                  {
+                    "op": "retract",
+                    "predicate": "objective_progress",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      0,
+                      2,
+                      3
+                    ]
+                  },
+                  {
+                    "op": "assert",
+                    "predicate": "objective_complete",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      0
+                    ]
+                  }
+                ],
+                "completed": [],
+                "opened": []
+              },
+              {
+                "ok": true,
+                "deltas": [
+                  {
+                    "op": "retract",
+                    "predicate": "quest_status",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      "active"
+                    ]
+                  },
+                  {
+                    "op": "retract",
+                    "predicate": "quest_status",
+                    "args": [
+                      "hero",
+                      "q_next",
+                      "unavailable"
+                    ]
+                  },
+                  {
+                    "op": "assert",
+                    "predicate": "quest_status",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      "completed"
+                    ]
+                  },
+                  {
+                    "op": "assert",
+                    "predicate": "objective_complete",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      1
+                    ]
+                  },
+                  {
+                    "op": "assert",
+                    "predicate": "experience_granted",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      44
+                    ]
+                  },
+                  {
+                    "op": "assert",
+                    "predicate": "item_granted",
+                    "args": [
+                      "hero",
+                      "q_herbs",
+                      "potion",
+                      2
+                    ]
+                  },
+                  {
+                    "op": "assert",
+                    "predicate": "quest_status",
+                    "args": [
+                      "hero",
+                      "q_next",
+                      "active"
+                    ]
+                  }
+                ],
+                "completed": [
+                  "q_herbs"
+                ],
+                "opened": [
+                  {
+                    "quest": "q_next",
+                    "status": "active"
+                  }
+                ]
+              }
+            ],
+            "state": {
+              "q_herbs": {
+                "status": "completed",
+                "done": [
+                  0,
+                  1
+                ],
+                "progress": [],
+                "completedAtMs": 2500
+              },
+              "q_next": {
+                "status": "active",
+                "done": [],
+                "progress": []
+              }
+            }
+          }
+        },
+        {
+          "call": "quest.lifecycle.facts",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "facts": [
+              {
+                "predicate": "quest_status",
+                "args": [
+                  "hero",
+                  "q_herbs",
+                  "completed"
+                ]
+              },
+              {
+                "predicate": "objective_complete",
+                "args": [
+                  "hero",
+                  "q_herbs",
+                  0
+                ]
+              },
+              {
+                "predicate": "objective_complete",
+                "args": [
+                  "hero",
+                  "q_herbs",
+                  1
+                ]
+              },
+              {
+                "predicate": "experience_granted",
+                "args": [
+                  "hero",
+                  "q_herbs",
+                  44
+                ]
+              },
+              {
+                "predicate": "item_granted",
+                "args": [
+                  "hero",
+                  "q_herbs",
+                  "potion",
+                  2
+                ]
+              },
+              {
+                "predicate": "quest_status",
+                "args": [
+                  "hero",
+                  "q_next",
+                  "active"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "call": "quest.lifecycle.quests",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "quests": [
+              {
+                "id": "q_herbs",
+                "status": "completed",
+                "title": "Herbs for the healer",
+                "assignedByCharacterId": "npc_healer",
+                "experienceReward": 40,
+                "itemRewards": [
+                  {
+                    "itemId": "potion",
+                    "quantity": 2,
+                    "name": "Potion"
+                  }
+                ],
+                "objectives": [
+                  {
+                    "id": "o_collect",
+                    "type": "collect_item",
+                    "itemName": "herb",
+                    "itemCount": 3,
+                    "questId": "q_herbs",
+                    "description": "",
+                    "completed": true,
+                    "collectedCount": 3,
+                    "currentCount": 1
+                  },
+                  {
+                    "id": "o_return",
+                    "type": "talk_to_npc",
+                    "npcId": "npc_healer",
+                    "dependsOn": [
+                      "o_collect"
+                    ],
+                    "questId": "q_herbs",
+                    "description": "",
+                    "completed": true,
+                    "currentCount": 1
+                  }
+                ],
+                "activatesQuestIds": [
+                  "q_next"
+                ],
+                "completedAtMs": 2500
+              },
+              {
+                "id": "q_next",
+                "status": "active",
+                "prerequisiteQuestIds": [
+                  "q_herbs"
+                ],
+                "objectives": [
+                  {
+                    "id": "o_next",
+                    "type": "visit_location",
+                    "locationId": "mill",
+                    "questId": "q_next",
+                    "description": "",
+                    "completed": false
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "disposed": true
+          }
+        },
+        {
+          "call": "quest.lifecycle.apply",
+          "args": {
+            "session": 1,
+            "ops": []
+          },
+          "expectError": "quest.lifecycle.apply: no open session 1"
+        }
+      ]
+    },
+    {
+      "name": "core's refusals are VALUES through the rows: an op core does not know, a step missing its field, a pick-up over the count limit and a negative atMs each answer { ok: false, refusal } and change nothing; an empty batch answers no result; a session opened with no player names the default player; a null player and quests that are not a list are core's missing_field values, with no session",
+      "steps": [
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": [
+                  {
+                    "id": "o",
+                    "type": "talk_to_npc",
+                    "npcId": "n"
+                  }
+                ]
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "session": 1,
+            "state": {
+              "q": {
+                "status": "active",
+                "done": [],
+                "progress": []
+              }
+            },
+            "facts": [
+              {
+                "predicate": "quest_status",
+                "args": [
+                  "player",
+                  "q",
+                  "active"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "call": "quest.lifecycle.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "dance"
+              },
+              {
+                "op": "talk_to"
+              },
+              {
+                "op": "pick_up",
+                "item": "x",
+                "count": 1001
+              },
+              {
+                "op": "talk_to",
+                "npc": "n",
+                "atMs": -1
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": false,
+                "refusal": {
+                  "code": "unknown_op",
+                  "field": "op"
+                }
+              },
+              {
+                "ok": false,
+                "refusal": {
+                  "code": "missing_field",
+                  "field": "npc"
+                }
+              },
+              {
+                "ok": false,
+                "refusal": {
+                  "code": "bad_count",
+                  "field": "count"
+                }
+              },
+              {
+                "ok": false,
+                "refusal": {
+                  "code": "bad_time",
+                  "field": "atMs"
+                }
+              }
+            ],
+            "state": {
+              "q": {
+                "status": "active",
+                "done": [],
+                "progress": []
+              }
+            }
+          }
+        },
+        {
+          "call": "quest.lifecycle.apply",
+          "args": {
+            "session": 1,
+            "ops": []
+          },
+          "expect": {
+            "results": [],
+            "state": {
+              "q": {
+                "status": "active",
+                "done": [],
+                "progress": []
+              }
+            }
+          }
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": [
+                  {
+                    "id": "o",
+                    "type": "talk_to_npc",
+                    "npcId": "n"
+                  }
+                ]
+              }
+            ],
+            "player": null
+          },
+          "expect": {
+            "ok": false,
+            "refusal": {
+              "code": "missing_field",
+              "field": "player"
+            }
+          }
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": {
+              "q": {
+                "id": "q",
+                "status": "active",
+                "objectives": [
+                  {
+                    "id": "o",
+                    "type": "talk_to_npc",
+                    "npcId": "n"
+                  }
+                ]
+              }
+            }
+          },
+          "expect": {
+            "ok": false,
+            "refusal": {
+              "code": "missing_field",
+              "field": "quests"
+            }
+          }
+        },
+        {
+          "call": "session.list",
+          "args": {},
+          "expect": {
+            "sessions": [
+              {
+                "session": 1,
+                "kind": "quest.lifecycle"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "the row's boundary refuses [invalid-input] only a quest set core would take or throw on (objectives not a list, prerequisite or activation ids not strings, a giver that is not a string, a reward that is not a number, item rewards not { itemId, quantity, name? }); each may be absent or null; where core refuses the same set itself (no id, a duplicate id, a status it does not know), core's value is the answer",
+      "steps": [
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": {}
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: quest.lifecycle.create: `quests[0].objectives` must be an array"
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": [],
+                "prerequisiteQuestIds": "q0"
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: quest.lifecycle.create: `quests[0].prerequisiteQuestIds` must be an array"
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": [],
+                "activatesQuestIds": [
+                  "q1",
+                  7
+                ]
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: quest.lifecycle.create: `quests[0].activatesQuestIds[1]` must be a string"
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": [],
+                "assignedByCharacterId": 7
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: quest.lifecycle.create: `quests[0].assignedByCharacterId` must be a string"
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": [],
+                "experienceReward": "50"
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: quest.lifecycle.create: `quests[0].experienceReward` must be a finite number"
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": [],
+                "itemRewards": "potion"
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: quest.lifecycle.create: `quests[0].itemRewards` must be an array"
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": [],
+                "itemRewards": [
+                  {
+                    "itemId": "potion"
+                  }
+                ]
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: quest.lifecycle.create: `quests[0].itemRewards[0].quantity` is missing"
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": [],
+                "itemRewards": [
+                  {
+                    "itemId": "potion",
+                    "quantity": 1,
+                    "name": 3
+                  }
+                ]
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: quest.lifecycle.create: `quests[0].itemRewards[0].name` must be a string"
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": null,
+                "prerequisiteQuestIds": null,
+                "activatesQuestIds": null,
+                "assignedByCharacterId": null,
+                "experienceReward": null,
+                "itemRewards": null
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "session": 1,
+            "state": {
+              "q": {
+                "status": "active",
+                "done": [],
+                "progress": []
+              }
+            },
+            "facts": [
+              {
+                "predicate": "quest_status",
+                "args": [
+                  "player",
+                  "q",
+                  "active"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "status": "active",
+                "objectives": {}
+              }
+            ]
+          },
+          "expect": {
+            "ok": false,
+            "refusal": {
+              "code": "missing_field",
+              "field": "quests[0].id"
+            }
+          }
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "active",
+                "objectives": []
+              },
+              {
+                "id": "q",
+                "status": "active",
+                "experienceReward": "x"
+              }
+            ]
+          },
+          "expect": {
+            "ok": false,
+            "refusal": {
+              "code": "duplicate_quest",
+              "field": "quests[1].id"
+            }
+          }
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": [
+              {
+                "id": "q",
+                "status": "failed",
+                "itemRewards": "potion"
+              }
+            ]
+          },
+          "expect": {
+            "ok": false,
+            "refusal": {
+              "code": "bad_status",
+              "field": "quests[0].status"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "a quest.lifecycle session is its own kind: apply, facts and quests refuse another kind of session and a handle that is not open, and ops must be a list",
+      "steps": [
+        {
+          "call": "ui.notifications.create",
+          "args": {},
+          "expect": {
+            "$subset": {
+              "session": 1
+            }
+          }
+        },
+        {
+          "call": "quest.lifecycle.apply",
+          "args": {
+            "session": 1,
+            "ops": []
+          },
+          "expectError": "quest.lifecycle.apply: session 1 is a ui.notifications session, not quest.lifecycle"
+        },
+        {
+          "call": "quest.lifecycle.facts",
+          "args": {
+            "session": 1
+          },
+          "expectError": "quest.lifecycle.facts: session 1 is a ui.notifications session, not quest.lifecycle"
+        },
+        {
+          "call": "quest.lifecycle.quests",
+          "args": {
+            "session": 9
+          },
+          "expectError": "quest.lifecycle.quests: no open session 9"
+        },
+        {
+          "call": "quest.lifecycle.create",
+          "args": {
+            "quests": []
+          },
+          "expect": {
+            "ok": true,
+            "session": 2,
+            "state": {},
+            "facts": []
+          }
+        },
+        {
+          "call": "quest.lifecycle.apply",
+          "args": {
+            "session": 2,
+            "ops": {
+              "op": "talk_to",
+              "npc": "n"
+            }
+          },
+          "expectError": "`ops` must be an array"
+        }
+      ]
+    }
+  ]
+}

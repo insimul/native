@@ -470,6 +470,11 @@ game; **meta** = about the bridge itself.
 | `quest.markers` | `{ quests, npcs?, surface?, activeObjectiveNpcId?, readyToTurnIn? }` → `{ hasActiveQuest, npcs, locations, styles }` | `game-engine/logic/QuestMarkerService` | P3 |
 | `quest.minimapMarkers` | `{ quests, resolvedPositions?, namedLocations?, activeObjectiveNpcId? }` → `{ markers }` | `game-engine/logic/QuestMinimapMarkers` `extractObjectiveMarkers` | P2/P3 (minimap) |
 | `quest.waypoints` | `{ quest, player, forwardAngle?, buildings?, npcBuildingMap?, npcPositions? }` → `{ waypoints, compass }` | `game-engine/logic/DynamicQuestWaypointDirector` | P2/P3 (compass, waypoints) |
+| `quest.lifecycle.contract` | `{}` → `{ statuses, ops, hostEventDispatch, refusalCodes, defaultPlayer, predicates, criteriaTypes }` | `quests/quest-lifecycle` (its exported tables) | P3 quest lifecycle |
+| `quest.lifecycle.create` | `{ quests, player? }` → `{ ok: true, session, state, facts }` or the refusal VALUE `{ ok: false, refusal: { code, field } }` | `quests/quest-lifecycle` `createQuestLifecycle` | P3 quest lifecycle |
+| `quest.lifecycle.apply` | `{ session, ops: [core's steps: offer, accept, talk_to, reach, pick_up, deliver, read, find_clue, find_text, read_sign, use_word, pronounce, identify, answer_listening, use_grammar, each with atMs?] }` → `{ results: [{ ok, deltas, completed, opened } or { ok: false, refusal }], state }` | same (`QuestLifecycle.step`, `state`) | P3 quest lifecycle |
+| `quest.lifecycle.facts` | `{ session }` → `{ facts }` | same (`facts`) | P3 quest lifecycle |
+| `quest.lifecycle.quests` | `{ session }` → `{ quests }` | same (`quests`) | P3 quest lifecycle |
 | `clock.create` | `{ msPerGameHour?, startHour?, startMinute?, startDay?, state? }` → `{ session, view }` | `game-engine/logic/GameTimeManager` | P4 |
 | `clock.apply` | `{ session, ops: update, advanceHours, setTime, pause, resume, setTimeScale, setMsPerGameHour, restoreState }` → `{ results, events, view }` | same | P4 |
 | `weather.climate` | `{ weather, tuning? }` → `{ climate, climateFacts, issues }` | `weather/weather` `climateFromIR`, `weatherIssues`; `weather/weather-facts` | P4 |
@@ -3053,6 +3058,65 @@ tolerance. Hand cases:
 classes at the pin. Unreal's interim `Portable/InsimulHudModels` is what these rows retire
 (`P2.unreal.retire-hud-copy`; `ENGINE_BINDINGS.md`).
 
+### The quest lifecycle rows (PL.native-quest-lifecycle-rows)
+
+Core's quest lifecycle host contract (P3.core; U143(2), U128): `src/quests/quest-lifecycle.ts`,
+one quest set, one player, a sequence of steps, answered as fact deltas (offer → accept →
+events → complete → reward). The engine reports what the player did as thirteen events
+(`talk_to`, `reach`, `pick_up`, `deliver`, `read`, `find_clue`, `find_text`, `read_sign`,
+`use_word`, `pronounce`, `identify`, `answer_listening`, `use_grammar`) and the two dialogue
+steps (`offer`, `accept`); core decides what follows. The rows decide nothing.
+
+- **A `quest.lifecycle` session holds one `QuestLifecycle`.** `create { quests, player? }` is
+  core's `createQuestLifecycle`: `{ ok: true, session, state, facts }`, or core's refusal VALUE
+  `{ ok: false, refusal: { code, field } }` with no session (`missing_field`,
+  `duplicate_quest`, `duplicate_objective`, `bad_status`, `bad_criteria`, in core's
+  `sessionRefusalOrder`). `apply { session, ops }` hands each op to core's `step` exactly as
+  sent and answers one result per op, in order, then the `state` after the batch; a step core
+  refuses (an unknown op, a missing field, `bad_count`, `bad_score`, `bad_time`, an offer or
+  accept core will not take) is its VALUE and changes nothing, and the ops after it still run.
+  `facts { session }` and `quests { session }` read core's fact set and `quests()` (the records
+  `quest.markers`, `quest.waypoints` and a learning history read). `contract {}` states core's
+  exported tables. `session.dispose` releases it.
+- **Facts and deltas are core's**: `quest_status`, `quest_offered`, `objective_complete`,
+  `objective_progress`, `quest_progress`, `experience_granted`, `item_granted`, with the player
+  atom the set opened with (`player` when none); a step's deltas are retractions then
+  assertions, so a binding applies them to its own knowledge base in order.
+- **The clock is the host's**: a step's optional `atMs` (whole ms from 0) stamps
+  `completedAtMs` on each quest that step completes; the rows read no clock.
+- **`[invalid-input]` only for the members core reads unchecked**, and only where core does not
+  refuse the same set itself: `objectives` not a list, `prerequisiteQuestIds` or
+  `activatesQuestIds` not lists of strings, `assignedByCharacterId` not a string,
+  `experienceReward` not a finite number, `itemRewards` not `[{ itemId, quantity, name? }]`
+  (each may be absent or null). Everything core checks (ids, statuses, objective ids and
+  types, `completionCriteria`, every step field, `atMs`) goes to core as sent, because core's
+  corpus pins those refusals as values.
+- **Not here**: core's marker targets (`quests/quest-markers.ts`, `conformance/quests/markers.json`)
+  and any restore of a session from a saved fact set, which core's lifecycle does not state.
+
+Evidence: `quests_lifecycle_corpus` (`tests/quests_lifecycle_corpus.cpp`) drives core's
+`conformance/quests/lifecycle.json` (147 cases at 45409ed), copied byte for byte as the quest
+lifecycle set, each case answered as core's reference runner (`src/quests/quest-corpus.ts`,
+`runQuestOp` op `session`) answers it, through the rows (`create` with the case's input but its
+steps, then one `apply` per step), and compared by the corpus's own rule (`compareHudValue`:
+numbers within the file's `tolerance`, 1e-9, the rest exactly, key sets included; it also counts
+the answers identical to the last bit). The `contract` block is held whole: the seven keys
+`quest.lifecycle.contract` states exactly; `deltaRule` measured (after every accepted session,
+`quest.lifecycle.facts` is the initial facts with each step's deltas applied); the twenty rule
+keys the cases pin, named; a key the runner does not know fails it. The stated refusal codes,
+predicates, statuses and ops must each be answered over the cases, and nothing else; after every
+accepted session `quest.lifecycle.quests` must agree with the state. Its refusal probes show that
+what core refuses is a value, what core reads unchecked is `[invalid-input]`, and that core's own
+refusal of a set wins over the boundary. `quests_lifecycle_corpus_negative` perturbs every case's
+expectation; `quests_lifecycle_corpus_wrong` runs a doctored cut of the file and must see each
+wrong named. The same 147 cases run on both case legs (and `corebridge_cases_parity`) as
+`vendor/core/cases/core-quests-lifecycle.json`, which `emit-bridge-cases.mjs` transcribes and
+`core_vendor` holds to the vendored corpus by its own derivation
+(`core_vendor_quest_lifecycle_negative`: thirteen perturbations named). Hand cases:
+`tests/cases/bridge-quest-lifecycle.json`, every expectation computed by core's own lifecycle at
+the pin. Unreal's interim `Portable/InsimulQuestLifecycle` is what these rows retire
+(`P9h.unreal.retire-lifecycle-copy`; `ENGINE_BINDINGS.md` maps it).
+
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 
 `save.rules`' `extensionKeys` is `Object.keys(extensionRegistry).sort()` over core's
@@ -3167,7 +3231,9 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `props_vehicle_placement_corpus`, `props_vehicle_placement_corpus_negative`, `props_vehicle_placement_corpus_numerics` | core's world-vehicle parking corpus (`conformance/props/vehicle-placement.json`, 26 cases at 45409ed: park 23, probes 3) driven whole through the `props.vehicle.*` rows by `tests/props_vehicle_placement_corpus.cpp`, one row call per case (0 undriven; `numerics` must name double precision; `props.vehicle.contract` held to the file's contract; refusal probes for `bad-place`, `no-open-spot`, `[invalid-input]`, an unknown op and row); the negative perturbs every case; the numerics control (`tests/props-negative/vehicle-placement-float.json`, a file naming single precision) must fail on that line |
 | `core_vendor_vehicle_placement_negative` | the vehicle-placement transcription guard alone, over thirteen in-memory perturbations of `cases/core-props-vehicle-placement.json` (a dropped case, an invented one, a call changed, an argument dropped, an answer weakened to a subset, a number changed, a refusal code changed, a case on one leg, a contract constant dropped, the deviations weakened, a tier reworded, a declared answer outside the corpus's tolerance, a declaration whose V8 answer is not the corpus's): passes only when the guard names all thirteen |
 | `ui_hud_corpus`, `ui_hud_corpus_negative`, `ui_hud_corpus_wrong` | core's HUD corpora (`conformance/ui/{notifications,compass,minimap}-cases.json`, 22, 82 and 50 cases at 45409ed) driven whole through the `ui.notifications.*`, `ui.compass.*` and `ui.minimap.*` rows by `tests/ui_hud_corpus.cpp`, each case as core's `runHudOp` answers it (0 undriven; each file's contract block held whole: the keys its contract row states, the keys the run measures, the rule keys the cases pin; refusal probes for core's value refusals, `[invalid-input]`, an unknown op and row); the negative perturbs every case; the wrong-file control (`tests/hud-negative/compass-wrong.json` and `minimap-wrong.json`) must see each doctored contract key, feed id prefix, expectation and op named |
-| `core_vendor_hud_negative` | the HUD transcription guard alone, over fourteen in-memory perturbations of `cases/core-ui-{notifications,compass,minimap}.json` (a dropped case, an invented one, a call changed, an argument dropped, a refusal's message no longer held, a number changed, a minimap view weakened, a placed list dropped, a toast op dropped, a history clock dropped, history ids weakened, a case on one leg, a contract key dropped, a contract value changed): passes only when the guard names all fourteen |
+| `core_vendor_hud_negative` | the HUD transcription guard alone, over seventeen in-memory perturbations of `cases/core-ui-{notifications,compass,minimap}.json` (a dropped case, an invented one, a call changed, an argument dropped, a refusal's message no longer held, a number changed, a minimap view weakened, a placed list dropped, a toast op dropped, a history clock dropped, history ids weakened, a case on one leg, a contract key dropped, a contract value changed, a declared library-version answer past the tolerance, a declaration's V8 answer not the corpus's, a declaration on a minimap case): passes only when the guard names all seventeen |
+| `quests_lifecycle_corpus`, `quests_lifecycle_corpus_negative`, `quests_lifecycle_corpus_wrong` | core's quest lifecycle corpus (`conformance/quests/lifecycle.json`, 147 cases at 45409ed) driven whole through the `quest.lifecycle.*` rows by `tests/quests_lifecycle_corpus.cpp`, each case as core's `runQuestOp` op `session` answers it: `create`, then one `apply` per step (0 undriven; the contract block held whole: the seven keys `quest.lifecycle.contract` states, `deltaRule` measured after every accepted session through `quest.lifecycle.facts`, the rule keys the cases pin; the stated refusal codes, predicates, statuses and ops held to what the rows answered over the cases; `quest.lifecycle.quests` held to the state; refusal probes for core's value refusals, `[invalid-input]`, core's own refusal over the boundary, another session kind and an unknown op and row); the negative perturbs every case; the wrong-file control (`tests/quests-negative/lifecycle-wrong.json`) must see the doctored contract value and key, a wrong expectation, an op core's runner does not have and the tables the cut file does not answer named |
+| `core_vendor_quest_lifecycle_negative` | the quest lifecycle transcription guard alone, over thirteen in-memory perturbations of `cases/core-quests-lifecycle.json` (a dropped case, an invented one, a call changed, two steps merged into one apply, a step's atMs dropped, a result weakened to a subset, a state dropped, the initial facts dropped, a refusal's field changed, a completedAtMs changed, a case on one leg, a contract key dropped, a contract value changed): passes only when the guard names all thirteen |
 | `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (73 cases at 45409ed with 8 `press`, 53 at d88b6f0, 33 at 431c95b, 27 at 72c658c; 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does, a press through target, examinePick and press; its contract's data tables held to `props.contract`; the stands sent with no `y` counted against `props.interactables.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give, two runner controls (a case's `ranges`, a lone `prop`), a stand with no `y` read as floor 0, a pick acting over the target and a stand's dropped `objects` seen as wrong |
 | `audio_ground_corpus`, `audio_ground_corpus_negative` | core's ground reading corpus driven whole through the `audio.ground.*` rows (48 cases, 0 undriven; every case whose world lists two or more settlements, ground surfaces or roads driven again with them reversed; its contract's data held to `audio.ground.contract`), and Unreal's sidewalk for a footpath in the contract, an undriven op and six answers an engine keeping one of its interim readings would give seen as wrong |
 | `audio_cues_corpus`, `audio_cues_corpus_negative` | the footstep cases of core's audio cue corpus (`conformance/audio/cues.json` at 45409ed: footstepRun 7, footstep 26) driven through the stateless `audio.stepFootsteps` row (0 undriven; the runner keeps the state as a host does; its contract's `footsteps` data held to `audio.footsteps.contract`; the 63 ambient and music cases reported as not reached), and a wrong run interval, seven wrong clocks and an op on no list seen as wrong |

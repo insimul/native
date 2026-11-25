@@ -11259,6 +11259,455 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
   };
 
+  // @insimul/core/src/quest-bonus-calculator.ts
+  function completionStreakXp(baseXP, completedBefore) {
+    const streakCount = completedBefore + 1;
+    const streakBonus = Math.min(0.5, streakCount * 0.1);
+    const bonusXP = Math.round(baseXP * streakBonus);
+    return { streakCount, bonusXP, totalXP: baseXP + bonusXP };
+  }
+
+  // @insimul/core/src/quests/quest-lifecycle.ts
+  var QUEST_LIFECYCLE_STATUSES = ["unavailable", "available", "active", "completed"];
+  var QUEST_HOST_EVENTS = [
+    "talk_to",
+    "reach",
+    "pick_up",
+    "deliver",
+    "read",
+    "find_clue",
+    "find_text",
+    "read_sign",
+    "use_word",
+    "pronounce",
+    "identify",
+    "answer_listening",
+    "use_grammar"
+  ];
+  var QUEST_LIFECYCLE_OPS = ["offer", "accept", ...QUEST_HOST_EVENTS];
+  var QUEST_HOST_EVENT_DISPATCH = {
+    talk_to: ["npc_talked", "npc_conversation"],
+    reach: ["location_visited", "location_discovered"],
+    pick_up: ["item_collected"],
+    deliver: ["item_delivered"],
+    read: ["text_read"],
+    find_clue: ["clue_discovered"],
+    find_text: ["text_found"],
+    read_sign: ["sign_read"],
+    use_word: ["vocabulary_usage"],
+    pronounce: ["pronunciation_attempt"],
+    identify: ["object_identified"],
+    answer_listening: ["listening_graded"],
+    use_grammar: ["grammar_demonstrated"]
+  };
+  var QUEST_COMPLETION_CRITERIA_TYPES = ["all_objectives", "conversation_turns"];
+  var QUEST_LIFECYCLE_REFUSALS = [
+    "missing_field",
+    "duplicate_quest",
+    "duplicate_objective",
+    "bad_status",
+    "unknown_op",
+    "unknown_quest",
+    "not_available",
+    "prerequisites_unmet",
+    "not_giver",
+    "bad_count",
+    "bad_criteria",
+    "bad_score",
+    "bad_time"
+  ];
+  var DEFAULT_QUEST_PLAYER = "player";
+  var QUEST_PICK_UP_MAX_COUNT = 1e3;
+  var QUEST_PRONOUNCE_SCORE_MAX = 100;
+  var LANGUAGE_PROGRESS = {
+    use_vocabulary: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: getDefaultRequiredCount("use_vocabulary") },
+    collect_vocabulary: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: getDefaultRequiredCount("use_vocabulary") },
+    vocabulary: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: getDefaultRequiredCount("use_vocabulary") },
+    pronunciation_check: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: getDefaultRequiredCount("pronunciation_check") },
+    listen_and_repeat: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: getDefaultRequiredCount("pronunciation_check") },
+    speak_phrase: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: getDefaultRequiredCount("pronunciation_check") },
+    identify_object: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: 1 },
+    grammar: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: getDefaultRequiredCount("grammar") }
+  };
+  var QUEST_LIFECYCLE_PREDICATES = [
+    "quest_status",
+    "quest_offered",
+    "objective_complete",
+    "objective_progress",
+    "quest_progress",
+    "experience_granted",
+    "item_granted"
+  ];
+  function readCompletionCriteria(criteria) {
+    if (criteria === void 0 || criteria === null) return { ok: true, rule: { type: "all_objectives" } };
+    if (typeof criteria !== "object" || Array.isArray(criteria)) return { ok: false, field: "" };
+    const c = criteria;
+    if ("allObjectives" in c && (c.allObjectives !== true || c.type !== void 0 && c.type !== "all_objectives")) {
+      return { ok: false, field: ".allObjectives" };
+    }
+    if (c.type === void 0) {
+      if (Object.keys(c).length === 0 || c.allObjectives === true) return { ok: true, rule: { type: "all_objectives" } };
+      return { ok: false, field: ".type" };
+    }
+    if (c.type === "all_objectives") return { ok: true, rule: { type: "all_objectives" } };
+    if (c.type === "conversation_turns") {
+      const n = c.requiredTurns;
+      if (typeof n !== "number" || !Number.isInteger(n) || n < 1) return { ok: false, field: ".requiredTurns" };
+      return { ok: true, rule: { type: "conversation_turns", requiredTurns: n } };
+    }
+    return { ok: false, field: ".type" };
+  }
+  var isNonEmptyString = (v) => typeof v === "string" && v.length > 0;
+  var isTimeMs = (v) => typeof v === "number" && Number.isInteger(v) && v >= 0;
+  function createQuestLifecycle(input) {
+    if (!Array.isArray(input?.quests)) return { ok: false, refusal: { code: "missing_field", field: "quests" } };
+    if (input.player !== void 0 && !isNonEmptyString(input.player)) {
+      return { ok: false, refusal: { code: "missing_field", field: "player" } };
+    }
+    const seen = /* @__PURE__ */ new Set();
+    for (let i = 0; i < input.quests.length; i++) {
+      const q = input.quests[i];
+      if (!isNonEmptyString(q?.id)) return { ok: false, refusal: { code: "missing_field", field: `quests[${i}].id` } };
+      if (seen.has(q.id)) return { ok: false, refusal: { code: "duplicate_quest", field: `quests[${i}].id` } };
+      seen.add(q.id);
+      if (!QUEST_LIFECYCLE_STATUSES.includes(q.status)) {
+        return { ok: false, refusal: { code: "bad_status", field: `quests[${i}].status` } };
+      }
+      const objIds = /* @__PURE__ */ new Set();
+      const objectives = q.objectives ?? [];
+      for (let j = 0; j < objectives.length; j++) {
+        const o = objectives[j];
+        const at = `quests[${i}].objectives[${j}]`;
+        if (!isNonEmptyString(o?.id)) return { ok: false, refusal: { code: "missing_field", field: `${at}.id` } };
+        if (objIds.has(o.id)) return { ok: false, refusal: { code: "duplicate_objective", field: `${at}.id` } };
+        objIds.add(o.id);
+        if (!isNonEmptyString(o.type)) return { ok: false, refusal: { code: "missing_field", field: `${at}.type` } };
+      }
+      const criteria = readCompletionCriteria(q.completionCriteria);
+      if (!criteria.ok) {
+        return { ok: false, refusal: { code: "bad_criteria", field: `quests[${i}].completionCriteria${criteria.field}` } };
+      }
+    }
+    return { ok: true, session: new QuestLifecycle(input) };
+  }
+  var QuestLifecycle = class {
+    /** Prefer {@link createQuestLifecycle}, which refuses a malformed set instead of trusting it. */
+    constructor(input) {
+      __publicField(this, "player");
+      __publicField(this, "records");
+      __publicField(this, "engine", new QuestCompletionEngine());
+      this.player = input.player ?? DEFAULT_QUEST_PLAYER;
+      this.records = input.quests.map((q) => {
+        const objectives = (q.objectives ?? []).map(
+          (o) => ({
+            ...o,
+            ...Array.isArray(o.textsRead) ? { textsRead: [...o.textsRead] } : {},
+            ...Array.isArray(o.cluesFound) ? { cluesFound: [...o.cluesFound] } : {},
+            ...Array.isArray(o.textsFound) ? { textsFound: [...o.textsFound] } : {},
+            ...Array.isArray(o.signsRead) ? { signsRead: [...o.signsRead] } : {},
+            ...Array.isArray(o.wordsUsed) ? { wordsUsed: [...o.wordsUsed] } : {},
+            ...Array.isArray(o.pronunciationScores) ? { pronunciationScores: [...o.pronunciationScores] } : {},
+            ...Array.isArray(o.objectsIdentified) ? { objectsIdentified: [...o.objectsIdentified] } : {},
+            questId: q.id,
+            description: o.description ?? "",
+            completed: o.completed === true
+          })
+        );
+        const criteria = readCompletionCriteria(q.completionCriteria);
+        if (!criteria.ok) throw new Error(`quest ${q.id}: unreadable completionCriteria${criteria.field} (bad_criteria)`);
+        return {
+          id: q.id,
+          status: q.status,
+          objectives,
+          input: q,
+          offeredBy: null,
+          grant: null,
+          rule: criteria.rule,
+          turns: 0,
+          // Only a quest that opens completed keeps the time it came with (PL.core-lifecycle-completed-at).
+          completedAtMs: q.status === "completed" && isTimeMs(q.completedAtMs) ? q.completedAtMs : null
+        };
+      });
+      for (const r of this.records) this.engine.addQuest(r);
+    }
+    /** Every quest's state, in input order. */
+    state() {
+      const out = {};
+      for (const r of this.records) {
+        const view2 = { status: r.status, done: [], progress: [] };
+        r.objectives.forEach((o, index) => {
+          if (o.completed) view2.done.push(index);
+          else {
+            const p = this.progressOf(o);
+            if (p !== null) view2.progress.push({ index, ...p });
+          }
+        });
+        if (r.offeredBy !== null) view2.offeredBy = r.offeredBy;
+        if (r.rule.type === "conversation_turns") {
+          view2.criteria = { type: "conversation_turns", current: r.turns, required: r.rule.requiredTurns };
+        }
+        if (r.completedAtMs !== null) view2.completedAtMs = r.completedAtMs;
+        out[r.id] = view2;
+      }
+      return out;
+    }
+    /** The fact set, in its stated order. */
+    facts() {
+      const P = this.player;
+      const facts = [];
+      for (const r of this.records) {
+        facts.push({ predicate: "quest_status", args: [P, r.id, r.status] });
+        if (r.offeredBy !== null) facts.push({ predicate: "quest_offered", args: [P, r.id, r.offeredBy] });
+        r.objectives.forEach((o, index) => {
+          if (o.completed) facts.push({ predicate: "objective_complete", args: [P, r.id, index] });
+        });
+        r.objectives.forEach((o, index) => {
+          if (o.completed) return;
+          const p = this.progressOf(o);
+          if (p !== null) facts.push({ predicate: "objective_progress", args: [P, r.id, index, p.current, p.required] });
+        });
+        if (r.rule.type === "conversation_turns" && r.turns > 0) {
+          facts.push({ predicate: "quest_progress", args: [P, r.id, r.turns] });
+        }
+        if (r.grant !== null) {
+          if (r.grant.experience > 0) facts.push({ predicate: "experience_granted", args: [P, r.id, r.grant.experience] });
+          for (const item2 of r.input.itemRewards ?? []) {
+            facts.push({ predicate: "item_granted", args: [P, r.id, item2.itemId, item2.quantity] });
+          }
+        }
+      }
+      return facts;
+    }
+    /**
+     * The quests with their current status and objective records, for `quest-markers.ts` and a
+     * learning history (`learningHistory`). `completedAtMs` is the lifecycle's own (state()'s): present
+     * only once the quest has a completion time, whatever the input carried.
+     */
+    quests() {
+      return this.records.map((r) => {
+        const { completedAtMs: _input, ...rest } = r.input;
+        return { ...rest, status: r.status, objectives: r.objectives, ...r.completedAtMs !== null ? { completedAtMs: r.completedAtMs } : {} };
+      });
+    }
+    /** Apply one step. A refused step changes nothing. */
+    step(step) {
+      const refusal3 = this.validate(step);
+      if (refusal3 !== null) return { ok: false, refusal: refusal3 };
+      const before = this.facts();
+      const s = step;
+      const atMs = step.atMs ?? null;
+      switch (step.op) {
+        case "offer":
+          this.record(step.quest).offeredBy = step.npc;
+          break;
+        case "accept": {
+          const r = this.record(step.quest);
+          r.status = "active";
+          r.offeredBy = null;
+          break;
+        }
+        case "talk_to":
+          this.dispatch("talk_to", { npcId: step.npc });
+          for (const r of this.records) {
+            if (r.status === "active" && r.rule.type === "conversation_turns") r.turns += 1;
+          }
+          break;
+        case "reach":
+          this.dispatch("reach", { locationId: step.location, locationName: s.name ?? step.location });
+          break;
+        case "pick_up": {
+          const completed2 = [];
+          const opened2 = [];
+          for (let k = 0; k < (step.count ?? 1); k++) {
+            this.dispatch("pick_up", { itemName: step.item });
+            const settled = this.settle(atMs);
+            completed2.push(...settled.completed);
+            opened2.push(...settled.opened);
+          }
+          return { ok: true, deltas: diffFacts(before, this.facts()), completed: completed2, opened: opened2 };
+        }
+        case "deliver":
+          this.dispatch("deliver", { npcId: step.npc, itemName: step.item });
+          break;
+        case "read":
+          this.dispatch("read", { textId: step.text, ...step.title !== void 0 ? { textTitle: step.title } : {} });
+          break;
+        case "find_clue":
+          this.dispatch("find_clue", {
+            clueId: step.clue,
+            ...step.category !== void 0 ? { clueCategory: step.category } : {},
+            ...step.source !== void 0 ? { clueSource: step.source } : {}
+          });
+          break;
+        case "find_text":
+          this.dispatch("find_text", {
+            textId: step.text,
+            ...step.title !== void 0 ? { textName: step.title } : {},
+            ...step.category !== void 0 ? { textCategory: step.category } : {}
+          });
+          break;
+        case "read_sign":
+          this.dispatch("read_sign", { signId: step.sign });
+          break;
+        case "use_word":
+          if (step.correct) this.dispatch("use_word", { word: step.word });
+          break;
+        case "pronounce":
+          this.dispatch("pronounce", { phrase: step.phrase, score: step.score, passed: step.passed });
+          break;
+        case "identify":
+          this.dispatch("identify", { objectId: step.object, objectName: step.object });
+          break;
+        case "answer_listening":
+          this.dispatch("answer_listening", { questId: step.quest, passed: step.passed });
+          break;
+        case "use_grammar":
+          if (step.correct) this.dispatch("use_grammar", { patternCount: 1 });
+          break;
+      }
+      const { completed, opened } = this.settle(atMs);
+      return { ok: true, deltas: diffFacts(before, this.facts()), completed, opened };
+    }
+    // ── Internals ──────────────────────────────────────────────────────────────
+    record(id4) {
+      return this.records.find((r) => r.id === id4);
+    }
+    prerequisitesMet(r) {
+      return (r.input.prerequisiteQuestIds ?? []).every((id4) => this.record(id4)?.status === "completed");
+    }
+    /**
+     * Progress of a quantity objective, or null: a language objective's counter
+     * (`LANGUAGE_PROGRESS`), else the quest-action mapping's quantity fields.
+     */
+    progressOf(o) {
+      const q = LANGUAGE_PROGRESS[o.type] ?? getMappingForObjective(o.type)?.quantity;
+      if (!q) return null;
+      const any = o;
+      const current = typeof any[q.currentField] === "number" ? any[q.currentField] : 0;
+      if (current <= 0) return null;
+      const required2 = any[q.requiredField] || q.defaultRequired;
+      return { current, required: required2 };
+    }
+    /** The op's own checks, then the step's time (`bad_time`, last). */
+    validate(step) {
+      const refusal3 = this.validateOp(step);
+      if (refusal3 !== null) return refusal3;
+      const atMs = step.atMs;
+      return atMs === void 0 || isTimeMs(atMs) ? null : { code: "bad_time", field: "atMs" };
+    }
+    validateOp(step) {
+      const s = step;
+      if (!QUEST_LIFECYCLE_OPS.includes(s?.op)) return { code: "unknown_op", field: "op" };
+      const need = (field) => isNonEmptyString(s[field]) ? null : { code: "missing_field", field };
+      const optional = (field) => s[field] === void 0 || isNonEmptyString(s[field]) ? null : { code: "missing_field", field };
+      const flag = (field) => typeof s[field] === "boolean" ? null : { code: "missing_field", field };
+      switch (step.op) {
+        case "offer":
+        case "accept": {
+          const missing = need("quest") ?? (step.op === "offer" ? need("npc") : null);
+          if (missing) return missing;
+          const r = this.record(step.quest);
+          if (!r) return { code: "unknown_quest", field: "quest" };
+          if (r.status !== "available") return { code: "not_available", field: "quest" };
+          if (!this.prerequisitesMet(r)) return { code: "prerequisites_unmet", field: "quest" };
+          if (step.op === "offer" && isNonEmptyString(r.input.assignedByCharacterId) && r.input.assignedByCharacterId !== step.npc) {
+            return { code: "not_giver", field: "npc" };
+          }
+          return null;
+        }
+        case "talk_to":
+          return need("npc");
+        case "reach":
+          if (need("location")) return need("location");
+          return s.name === void 0 || isNonEmptyString(s.name) ? null : { code: "missing_field", field: "name" };
+        case "pick_up":
+          if (need("item")) return need("item");
+          if (s.count !== void 0 && !(Number.isInteger(s.count) && s.count >= 1 && s.count <= QUEST_PICK_UP_MAX_COUNT)) {
+            return { code: "bad_count", field: "count" };
+          }
+          return null;
+        case "deliver":
+          return need("npc") ?? need("item");
+        case "read":
+          return need("text") ?? optional("title");
+        case "find_clue":
+          return need("clue") ?? optional("category") ?? optional("source");
+        case "find_text":
+          return need("text") ?? optional("title") ?? optional("category");
+        case "read_sign":
+          return need("sign");
+        case "use_word":
+          return need("word") ?? flag("correct");
+        case "pronounce": {
+          const missing = need("phrase");
+          if (missing) return missing;
+          if (typeof s.score !== "number") return { code: "missing_field", field: "score" };
+          if (!Number.isFinite(s.score) || s.score < 0 || s.score > QUEST_PRONOUNCE_SCORE_MAX) return { code: "bad_score", field: "score" };
+          return flag("passed");
+        }
+        case "identify":
+          return need("object");
+        case "answer_listening":
+          return need("quest") ?? flag("passed");
+        case "use_grammar":
+          return flag("correct");
+      }
+    }
+    /** One host event: its dispatched events, evaluated against the locks before it. */
+    dispatch(event, fields) {
+      const events = QUEST_HOST_EVENT_DISPATCH[event].map(
+        (type) => ({ type, ...fields })
+      );
+      this.engine.trackHostEvent(events);
+    }
+    /** Whether a quest's completion criterion holds (`readCompletionCriteria`'s rule). */
+    criterionMet(r) {
+      if (r.rule.type === "conversation_turns") return r.turns >= r.rule.requiredTurns;
+      return this.engine.isQuestComplete(r.id);
+    }
+    /**
+     * Complete every active quest whose criterion holds, then promote, until nothing moves. Each quest
+     * completed here is stamped with the step's time (`atMs`, or none).
+     */
+    settle(atMs) {
+      const completed = [];
+      const opened = [];
+      for (let moved2 = true; moved2; ) {
+        moved2 = false;
+        for (const r of this.records) {
+          if (r.status !== "active" || !this.criterionMet(r)) continue;
+          const completedBefore = this.records.filter((x) => x.status === "completed").length;
+          r.status = "completed";
+          r.grant = { experience: completionStreakXp(r.input.experienceReward ?? 0, completedBefore).totalXP };
+          r.completedAtMs = atMs;
+          completed.push(r.id);
+          moved2 = true;
+        }
+        for (const r of this.records) {
+          if (r.status !== "unavailable") continue;
+          const prereqs = r.input.prerequisiteQuestIds ?? [];
+          if (prereqs.length === 0 || !this.prerequisitesMet(r)) continue;
+          const activated2 = this.records.some(
+            (x) => x.status === "completed" && (x.input.activatesQuestIds ?? []).includes(r.id)
+          );
+          r.status = activated2 ? "active" : "available";
+          opened.push({ quest: r.id, status: r.status });
+          moved2 = true;
+        }
+      }
+      return { completed, opened };
+    }
+  };
+  var factKey = (f) => JSON.stringify([f.predicate, f.args]);
+  function diffFacts(before, after) {
+    const a = new Set(after.map(factKey));
+    const b = new Set(before.map(factKey));
+    return [
+      ...before.filter((f) => !a.has(factKey(f))).map((f) => ({ op: "retract", ...f })),
+      ...after.filter((f) => !b.has(factKey(f))).map((f) => ({ op: "assert", ...f }))
+    ];
+  }
+
   // @insimul/core/src/game-engine/logic/GameTimeManager.ts
   var getTimeOfDay = timeOfDayOf;
   var GameTimeManager = class {
@@ -55623,6 +56072,40 @@ Return JSON format:
       objectiveStates: plain(engine.serializeObjectiveStates())
     };
   }
+  var tAnyList = (m, v, n) => needArray(m, v, n);
+  var QUEST_LIFECYCLE_QUEST = [
+    ["objectives", tAnyList, OPT_NULL],
+    ["prerequisiteQuestIds", tList(tStr), OPT_NULL],
+    ["activatesQuestIds", tList(tStr), OPT_NULL],
+    ["assignedByCharacterId", tStr, OPT_NULL],
+    ["experienceReward", tNum, OPT_NULL],
+    ["itemRewards", tList(tObj([["itemId", tStr, REQ], ["quantity", tNum, REQ], ["name", tStr, OPT]])), OPT_NULL]
+  ];
+  function lifecycleQuestsArg(method, quests) {
+    if (!Array.isArray(quests)) return;
+    quests.forEach((q, i) => {
+      if (q !== null && typeof q === "object" && !Array.isArray(q)) declared(method, q, `quests[${i}]`, QUEST_LIFECYCLE_QUEST);
+    });
+  }
+  function lifecycleOpen(method, args) {
+    let problem = null;
+    try {
+      lifecycleQuestsArg(method, args.quests);
+    } catch (err) {
+      problem = err;
+    }
+    if (problem === null) return createQuestLifecycle(args);
+    let own = null;
+    try {
+      own = createQuestLifecycle(args);
+    } catch {
+      own = null;
+    }
+    if (own !== null && own.ok === false) return own;
+    return coded("invalid-input", () => {
+      throw problem;
+    });
+  }
   function clockView(clock) {
     return {
       state: clock.getState(),
@@ -59669,6 +60152,90 @@ Return JSON format:
         waypoints: waypoints.map((wp) => ({ ...wp, alpha: director.getDistanceAlpha(player, wp.position) })),
         compass: director.getCompassData(waypoints, player, forward)
       };
+    },
+    // ── the quest lifecycle (P3.core; PL.native-quest-lifecycle-rows, U143(2)) ──
+    // Core's `createQuestLifecycle` and `QuestLifecycle` (`quests/quest-lifecycle`): one quest
+    // set, one player, a sequence of steps; core decides what follows and answers with the
+    // quest state and the fact deltas the step caused. Every refusal core states (a malformed
+    // set when the session opens, a step it will not take) is core's VALUE
+    // `{ ok: false, refusal: { code, field } }`, never a row error.
+    /**
+     * `quest.lifecycle.contract {}` → `{ statuses, ops, hostEventDispatch, refusalCodes,
+     * defaultPlayer, predicates, criteriaTypes }`: core's exported tables
+     * (`QUEST_LIFECYCLE_STATUSES`, `QUEST_LIFECYCLE_OPS`, `QUEST_HOST_EVENT_DISPATCH`,
+     * `QUEST_LIFECYCLE_REFUSALS`, `DEFAULT_QUEST_PLAYER`, `QUEST_LIFECYCLE_PREDICATES`,
+     * `QUEST_COMPLETION_CRITERIA_TYPES`), as core's corpus states them.
+     */
+    "quest.lifecycle.contract": () => ({
+      statuses: [...QUEST_LIFECYCLE_STATUSES],
+      ops: [...QUEST_LIFECYCLE_OPS],
+      hostEventDispatch: plain(QUEST_HOST_EVENT_DISPATCH),
+      refusalCodes: [...QUEST_LIFECYCLE_REFUSALS],
+      defaultPlayer: DEFAULT_QUEST_PLAYER,
+      predicates: [...QUEST_LIFECYCLE_PREDICATES],
+      criteriaTypes: [...QUEST_COMPLETION_CRITERIA_TYPES]
+    }),
+    /**
+     * `quest.lifecycle.create { quests, player? }` → `{ ok: true, session, state, facts }`, or
+     * core's refusal `{ ok: false, refusal: { code, field } }` (and no session): core's
+     * `createQuestLifecycle`. `quests` are the quest set's records (`QuestIR` fields: `id`,
+     * `status`, `objectives`, `prerequisiteQuestIds`, `activatesQuestIds`,
+     * `assignedByCharacterId`, `experienceReward`, `itemRewards`, `completionCriteria`,
+     * `completedAtMs`); `player` is the atom every fact names (default `player`). `state` is
+     * quest → `{ status, done, progress, offeredBy?, criteria?, completedAtMs? }` in input order;
+     * `facts` the fact set, `[{ predicate, args }]`, in its stated order.
+     * The row refuses `[invalid-input]` only a set core would TAKE and then misread or throw on
+     * (`objectives` not a list; `prerequisiteQuestIds`/`activatesQuestIds` not lists of strings;
+     * `assignedByCharacterId` not a string; `experienceReward` not a finite number; `itemRewards`
+     * not `[{ itemId, quantity, name? }]`; each may be absent or null): when core refuses the same
+     * set itself, core's value is the answer.
+     */
+    "quest.lifecycle.create": (args) => {
+      const m = "quest.lifecycle.create";
+      const opened = lifecycleOpen(m, args);
+      if (!opened.ok) return plain(opened);
+      const lifecycle = opened.session;
+      return {
+        ok: true,
+        session: openSession("quest.lifecycle", { lifecycle }),
+        state: plain(lifecycle.state()),
+        facts: plain(lifecycle.facts())
+      };
+    },
+    /**
+     * `quest.lifecycle.apply { session, ops }` → `{ results, state }`. Each op is one of core's
+     * steps, given to core's `step` exactly as sent: `offer { quest, npc }` · `accept { quest }`
+     * · `talk_to { npc }` · `reach { location, name? }` · `pick_up { item, count? }` · `deliver
+     * { npc, item }` · `read { text, title? }` · `find_clue { clue, category?, source? }` ·
+     * `find_text { text, title?, category? }` · `read_sign { sign }` · `use_word { word, correct
+     * }` · `pronounce { phrase, score, passed }` · `identify { object }` · `answer_listening {
+     * quest, passed }` · `use_grammar { correct }`, each with an optional `atMs` (the host's
+     * time for it, whole ms from 0: it stamps `completedAtMs` on each quest the step completes).
+     * Each result is core's: `{ ok: true, deltas: [{ op: assert|retract, predicate, args }],
+     * completed: [quest], opened: [{ quest, status }] }` or `{ ok: false, refusal: { code,
+     * field } }` (an op core does not know is its `unknown_op` VALUE; a refused step changes
+     * nothing). `state` is the state after the last op, as `create` answers it.
+     */
+    "quest.lifecycle.apply": async (args) => {
+      const m = "quest.lifecycle.apply";
+      const s = session(m, args, "quest.lifecycle");
+      const results = await applySteps(m, s, args, ({ lifecycle }, op) => plain(lifecycle.step(op)));
+      return { results, state: plain(s.lifecycle.state()) };
+    },
+    /** `quest.lifecycle.facts { session }` → `{ facts }`: core's fact set now, in its stated order (what a save keeps). */
+    "quest.lifecycle.facts": (args) => {
+      const s = session("quest.lifecycle.facts", args, "quest.lifecycle");
+      return { facts: plain(s.lifecycle.facts()) };
+    },
+    /**
+     * `quest.lifecycle.quests { session }` → `{ quests }`: core's `quests()`, every quest with its
+     * current `status`, its objective records as the completion engine keeps them (types
+     * normalised, counters and ledgers written) and `completedAtMs` once it has one: the records
+     * `quest.markers`, `quest.waypoints` and a learning history read.
+     */
+    "quest.lifecycle.quests": (args) => {
+      const s = session("quest.lifecycle.quests", args, "quest.lifecycle");
+      return { quests: plain(s.lifecycle.quests()) };
     },
     // ── world: clock and weather (P4) ───────────────────────────────────────────
     /**

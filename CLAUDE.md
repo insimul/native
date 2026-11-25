@@ -656,7 +656,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, audio cues, survival, traversal (vehicles-only among them), headless build, progression, village save, villager pass-by, world-vehicle parking, HUD (notifications, compass, minimap) and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, audio cues, survival, traversal (vehicles-only among them), headless build, progression, village save, villager pass-by, world-vehicle parking, HUD (notifications, compass, minimap), quest lifecycle and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -1167,6 +1167,28 @@
   Never import `ui/hud-corpus` (core's runner). Unreal's `Portable/InsimulHudModels` is the
   interim copy these rows retire (`P2.unreal.retire-hud-copy`; `corebridge/ENGINE_BINDINGS.md`
   maps it).
+- **The quest lifecycle rows (PL.native-quest-lifecycle-rows, U143(2), U128) run core's
+  `conformance/quests/lifecycle.json` UNCHANGED** (147 cases at 45409ed), copied as their own
+  set (`QUEST_LIFECYCLE_CORPUS_FILES`; it shares `conformance/quests/` with the P8 set's
+  `tutorial.json`, both directories listed in `SHARED_COPY_DIRS`, and a file belongs to one) and
+  driven by `tests/quests_lifecycle_corpus.cpp` as `quests_lifecycle_corpus` (+ `_negative`, and
+  `_wrong` over the doctored `tests/quests-negative/lifecycle-wrong.json`): each case answered as
+  core's runner (`quests/quest-corpus.ts`, `runQuestOp` op `session`) answers it, through the rows
+  (`quest.lifecycle.create` with the input but its steps, then ONE `quest.lifecycle.apply` per
+  step, the step as given), compared by `compareHudValue`'s rule. The contract block is held
+  WHOLE (seven keys `quest.lifecycle.contract` states from core's exports, `deltaRule` measured
+  through `quest.lifecycle.facts`, twenty rule keys the cases pin; an unknown key fails), and the
+  stated codes, predicates, statuses and ops must each be answered over the cases.
+  `emit-bridge-cases.mjs` transcribes it into `vendor/core/cases/core-quests-lifecycle.json` and
+  `core_vendor` holds that to the corpus by its own derivation (`core_vendor_quest_lifecycle_negative`:
+  thirteen perturbations named). Every refusal core states is a VALUE (`create`'s, with no
+  session; `apply`'s per step, the batch going on); `[invalid-input]` is only a member core reads
+  unchecked (objectives, prerequisite and activation ids, the giver, the rewards), and only when
+  core does not refuse the same set itself. The rows read no clock: a step's `atMs` is the host's.
+  Never import `quests/quest-corpus` (core's runner). Core's marker targets
+  (`quests/quest-markers.ts`) and a restore from a saved fact set are not rows. Unreal's
+  `Portable/InsimulQuestLifecycle` is the interim copy these rows retire
+  (`P9h.unreal.retire-lifecycle-copy`; `corebridge/ENGINE_BINDINGS.md` maps it).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

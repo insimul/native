@@ -123,6 +123,20 @@ import {
 } from '@insimul/core/game-engine/logic/QuestMarkerService';
 import { extractObjectiveMarkers } from '@insimul/core/game-engine/logic/QuestMinimapMarkers';
 import { DynamicQuestWaypointDirector } from '@insimul/core/game-engine/logic/DynamicQuestWaypointDirector';
+// The quest lifecycle host contract (P3.core; PL.native-quest-lifecycle-rows, U143(2)):
+// offer -> accept -> events -> complete -> reward, as fact deltas, for the quest.lifecycle.*
+// rows. Never `quests/quest-corpus`, core's corpus runner: the rows call the lifecycle, and
+// tests/quests_lifecycle_corpus.cpp is the runner here.
+import {
+	DEFAULT_QUEST_PLAYER,
+	QUEST_COMPLETION_CRITERIA_TYPES,
+	QUEST_HOST_EVENT_DISPATCH,
+	QUEST_LIFECYCLE_OPS,
+	QUEST_LIFECYCLE_PREDICATES,
+	QUEST_LIFECYCLE_REFUSALS,
+	QUEST_LIFECYCLE_STATUSES,
+	createQuestLifecycle,
+} from '@insimul/core/quests/quest-lifecycle';
 
 // ── world: clock and weather ──────────────────────────────────────────────────
 import { GameTimeManager } from '@insimul/core/game-engine/logic/GameTimeManager';
@@ -4215,6 +4229,54 @@ function completionView(engine) {
 		})),
 		objectiveStates: plain(engine.serializeObjectiveStates()),
 	};
+}
+
+// The quest lifecycle's boundary (PL.native-quest-lifecycle-rows). Core's
+// `createQuestLifecycle` checks a quest's id, status, objective ids and types and its
+// completionCriteria itself and refuses each as a VALUE; these are the members of a quest
+// (`LifecycleQuestInput`) it reads WITHOUT checking: a list it maps or walks, a giver it
+// compares, a reward it adds up and states as a fact. Members not listed pass through.
+const tAnyList = (m, v, n) => needArray(m, v, n);
+const QUEST_LIFECYCLE_QUEST = [
+	['objectives', tAnyList, OPT_NULL],
+	['prerequisiteQuestIds', tList(tStr), OPT_NULL],
+	['activatesQuestIds', tList(tStr), OPT_NULL],
+	['assignedByCharacterId', tStr, OPT_NULL],
+	['experienceReward', tNum, OPT_NULL],
+	['itemRewards', tList(tObj([['itemId', tStr, REQ], ['quantity', tNum, REQ], ['name', tStr, OPT]])), OPT_NULL],
+];
+
+/** Each quest of `quests` (when it is a list of objects; core refuses anything else) holds the members core reads unchecked. */
+function lifecycleQuestsArg(method, quests) {
+	if (!Array.isArray(quests)) return;
+	quests.forEach((q, i) => {
+		if (q !== null && typeof q === 'object' && !Array.isArray(q)) declared(method, q, `quests[${i}]`, QUEST_LIFECYCLE_QUEST);
+	});
+}
+
+/**
+ * Core's `createQuestLifecycle(args)`, behind the row's boundary: a set the boundary refuses is
+ * `[invalid-input]` only when core would take it (or throw on it); when core refuses that same set
+ * itself, core's refusal VALUE is the answer, as it would be without the row.
+ */
+function lifecycleOpen(method, args) {
+	let problem = null;
+	try {
+		lifecycleQuestsArg(method, args.quests);
+	} catch (err) {
+		problem = err;
+	}
+	if (problem === null) return createQuestLifecycle(args);
+	let own = null;
+	try {
+		own = createQuestLifecycle(args);
+	} catch {
+		own = null;
+	}
+	if (own !== null && own.ok === false) return own;
+	return coded('invalid-input', () => {
+		throw problem;
+	});
 }
 
 // ── world ─────────────────────────────────────────────────────────────────────
@@ -8714,6 +8776,96 @@ const METHODS = {
 			waypoints: waypoints.map((wp) => ({ ...wp, alpha: director.getDistanceAlpha(player, wp.position) })),
 			compass: director.getCompassData(waypoints, player, forward),
 		};
+	},
+
+	// ── the quest lifecycle (P3.core; PL.native-quest-lifecycle-rows, U143(2)) ──
+	// Core's `createQuestLifecycle` and `QuestLifecycle` (`quests/quest-lifecycle`): one quest
+	// set, one player, a sequence of steps; core decides what follows and answers with the
+	// quest state and the fact deltas the step caused. Every refusal core states (a malformed
+	// set when the session opens, a step it will not take) is core's VALUE
+	// `{ ok: false, refusal: { code, field } }`, never a row error.
+
+	/**
+	 * `quest.lifecycle.contract {}` → `{ statuses, ops, hostEventDispatch, refusalCodes,
+	 * defaultPlayer, predicates, criteriaTypes }`: core's exported tables
+	 * (`QUEST_LIFECYCLE_STATUSES`, `QUEST_LIFECYCLE_OPS`, `QUEST_HOST_EVENT_DISPATCH`,
+	 * `QUEST_LIFECYCLE_REFUSALS`, `DEFAULT_QUEST_PLAYER`, `QUEST_LIFECYCLE_PREDICATES`,
+	 * `QUEST_COMPLETION_CRITERIA_TYPES`), as core's corpus states them.
+	 */
+	'quest.lifecycle.contract': () => ({
+		statuses: [...QUEST_LIFECYCLE_STATUSES],
+		ops: [...QUEST_LIFECYCLE_OPS],
+		hostEventDispatch: plain(QUEST_HOST_EVENT_DISPATCH),
+		refusalCodes: [...QUEST_LIFECYCLE_REFUSALS],
+		defaultPlayer: DEFAULT_QUEST_PLAYER,
+		predicates: [...QUEST_LIFECYCLE_PREDICATES],
+		criteriaTypes: [...QUEST_COMPLETION_CRITERIA_TYPES],
+	}),
+
+	/**
+	 * `quest.lifecycle.create { quests, player? }` → `{ ok: true, session, state, facts }`, or
+	 * core's refusal `{ ok: false, refusal: { code, field } }` (and no session): core's
+	 * `createQuestLifecycle`. `quests` are the quest set's records (`QuestIR` fields: `id`,
+	 * `status`, `objectives`, `prerequisiteQuestIds`, `activatesQuestIds`,
+	 * `assignedByCharacterId`, `experienceReward`, `itemRewards`, `completionCriteria`,
+	 * `completedAtMs`); `player` is the atom every fact names (default `player`). `state` is
+	 * quest → `{ status, done, progress, offeredBy?, criteria?, completedAtMs? }` in input order;
+	 * `facts` the fact set, `[{ predicate, args }]`, in its stated order.
+	 * The row refuses `[invalid-input]` only a set core would TAKE and then misread or throw on
+	 * (`objectives` not a list; `prerequisiteQuestIds`/`activatesQuestIds` not lists of strings;
+	 * `assignedByCharacterId` not a string; `experienceReward` not a finite number; `itemRewards`
+	 * not `[{ itemId, quantity, name? }]`; each may be absent or null): when core refuses the same
+	 * set itself, core's value is the answer.
+	 */
+	'quest.lifecycle.create': (args) => {
+		const m = 'quest.lifecycle.create';
+		const opened = lifecycleOpen(m, args);
+		if (!opened.ok) return plain(opened);
+		const lifecycle = opened.session;
+		return {
+			ok: true,
+			session: openSession('quest.lifecycle', { lifecycle }),
+			state: plain(lifecycle.state()),
+			facts: plain(lifecycle.facts()),
+		};
+	},
+
+	/**
+	 * `quest.lifecycle.apply { session, ops }` → `{ results, state }`. Each op is one of core's
+	 * steps, given to core's `step` exactly as sent: `offer { quest, npc }` · `accept { quest }`
+	 * · `talk_to { npc }` · `reach { location, name? }` · `pick_up { item, count? }` · `deliver
+	 * { npc, item }` · `read { text, title? }` · `find_clue { clue, category?, source? }` ·
+	 * `find_text { text, title?, category? }` · `read_sign { sign }` · `use_word { word, correct
+	 * }` · `pronounce { phrase, score, passed }` · `identify { object }` · `answer_listening {
+	 * quest, passed }` · `use_grammar { correct }`, each with an optional `atMs` (the host's
+	 * time for it, whole ms from 0: it stamps `completedAtMs` on each quest the step completes).
+	 * Each result is core's: `{ ok: true, deltas: [{ op: assert|retract, predicate, args }],
+	 * completed: [quest], opened: [{ quest, status }] }` or `{ ok: false, refusal: { code,
+	 * field } }` (an op core does not know is its `unknown_op` VALUE; a refused step changes
+	 * nothing). `state` is the state after the last op, as `create` answers it.
+	 */
+	'quest.lifecycle.apply': async (args) => {
+		const m = 'quest.lifecycle.apply';
+		const s = session(m, args, 'quest.lifecycle');
+		const results = await applySteps(m, s, args, ({ lifecycle }, op) => plain(lifecycle.step(op)));
+		return { results, state: plain(s.lifecycle.state()) };
+	},
+
+	/** `quest.lifecycle.facts { session }` → `{ facts }`: core's fact set now, in its stated order (what a save keeps). */
+	'quest.lifecycle.facts': (args) => {
+		const s = session('quest.lifecycle.facts', args, 'quest.lifecycle');
+		return { facts: plain(s.lifecycle.facts()) };
+	},
+
+	/**
+	 * `quest.lifecycle.quests { session }` → `{ quests }`: core's `quests()`, every quest with its
+	 * current `status`, its objective records as the completion engine keeps them (types
+	 * normalised, counters and ledgers written) and `completedAtMs` once it has one: the records
+	 * `quest.markers`, `quest.waypoints` and a learning history read.
+	 */
+	'quest.lifecycle.quests': (args) => {
+		const s = session('quest.lifecycle.quests', args, 'quest.lifecycle');
+		return { quests: plain(s.lifecycle.quests()) };
 	},
 
 	// ── world: clock and weather (P4) ───────────────────────────────────────────

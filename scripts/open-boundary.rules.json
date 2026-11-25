@@ -1002,6 +1002,15 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/quests/quest-lifecycle",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the quest.lifecycle.* rows (createQuestLifecycle and the QUEST_LIFECYCLE_*, QUEST_HOST_EVENT_DISPATCH, QUEST_COMPLETION_CRITERIA_TYPES and DEFAULT_QUEST_PLAYER tables) (the quest lifecycle host contract; PL.native-quest-lifecycle-rows, rulings U143, U128 and U36), exactly as the props.vehicle.* rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-quest-lifecycle-rows (Features Gauntlet PL.native-quest-lifecycle-rows)",
+      "reviewedAt": "2026-11-25"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/editor/binding/archetypes",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the genrePieces.deriveArchetype, .collect and .stamp rows (the binding walk's genre piece leg: deriveGenrePieceArchetype, and collectPlaceableEntities and stampWorldArchetypes over a world holding only entities.genrePieces; PL.native-genre-rows slice 4, rulings U128, U115, U103 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

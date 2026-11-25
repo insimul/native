@@ -770,6 +770,20 @@ add_test(NAME core_vendor_hud_negative COMMAND
        --check-hud-transcription-negative)
 set_tests_properties(core_vendor_hud_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "HUD transcription negative [^ ]* 17 of 17 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_hud_negative")
+# The quest lifecycle transcription's guard (PL.native-quest-lifecycle-rows: cases/core-quests-lifecycle.json carrying
+# every case of the vendored conformance/quests/lifecycle.json by name, each the calls core's runner makes through the
+# rows, create then one apply per step, with every answer stated, and the contract case holding quest.lifecycle.contract
+# to the keys it states; derived independently of the emitter) is given thirteen perturbations in memory (a dropped
+# case, a case no corpus case names, a call changed, two steps merged into one apply, a step's atMs dropped, a step's
+# result weakened to a subset, a state dropped, the initial facts dropped, a refusal's field changed, a completedAtMs
+# changed, a case put on one leg, a contract key dropped, a contract value changed) and passes only when all thirteen
+# are named.
+add_test(NAME core_vendor_quest_lifecycle_negative COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
+       --check-quest-lifecycle-transcription-negative)
+set_tests_properties(core_vendor_quest_lifecycle_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "quest lifecycle transcription negative [^ ]* 13 of 13 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_quest_lifecycle_negative")
 
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus
@@ -1550,6 +1564,39 @@ add_test(NAME ui_hud_corpus_wrong COMMAND insimulcore_ui_hud_corpus ${CMAKE_CURR
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/hud-negative/minimap-wrong.json)
 set_tests_properties(ui_hud_corpus_wrong PROPERTIES
   PASS_REGULAR_EXPRESSION "\\[FAIL\\] ui-compass contract: defaultSpanDegrees: 140 != 150\n[^\n]*\\[FAIL\\] ui-compass contract: the file's contract key wrongRule is not one this runner holds[^\n]*\n.*expected WRONGLY as heading 80 [^\n]*heading: 80 != 70\n[^\n]*\\[FAIL\\] WRONGLY an op core's runner does not have [^\n]*not driven: op rotate is not one of core's ui-compass ops.*\\[FAIL\\] ui-compass contract: refusalCodes: the contract states \\[not_finite, span_out_of_range, teleported\\] but the rows answered \\[not_finite\\].*\\[FAIL\\] ui-minimap contract: feedIdPrefixes.settlements: stated town_, ingested as settlement_p\n.*ui_hud_corpus: FAIL")
+
+# quests_lifecycle_corpus (PL.native-quest-lifecycle-rows, rulings U143(2), U128, U101(1) and U36): core's quest
+# lifecycle host contract (src/quests/quest-lifecycle.ts, P3.core: offer -> accept -> events -> complete -> reward, as
+# fact deltas, over the thirteen reported events) as libinsimulcore's `quest.lifecycle.*` rows, held to core's own
+# corpus conformance/quests/lifecycle.json (147 cases at the 45409ed pin), COPIED byte for byte as the quest lifecycle
+# set (sha256 in VENDORED.json, checked by core_vendor; byte-compared with core by `--check --core`).
+# tests/quests_lifecycle_corpus.cpp answers each case as core's runner (src/quests/quest-corpus.ts, runQuestOp op
+# session) does, through the rows (create, then one apply per step), and compares as compareHudValue does (numbers
+# within the file's tolerance, key sets both ways); it holds the contract block whole (the seven keys the contract row
+# states, deltaRule measured over every accepted session, the rule keys the cases pin; an unknown key fails), holds the
+# stated refusal codes, predicates, statuses and ops to what the rows answered over the cases, checks the facts and
+# quests rows after every accepted session, and proves on every start that its comparator, perturbation and contract
+# check can fail and that the rows refuse what core reads unchecked while core's own refusals are values. The regex
+# demands every probe (12), the contract whole, every op driven, 0 undriven and PASS. It holds no ';' (CMake reads one
+# as a list separator, and a PASS_REGULAR_EXPRESSION list passes when ANY part matches).
+add_executable(insimulcore_quests_lifecycle_corpus tests/quests_lifecycle_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_quests_lifecycle_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_quests_lifecycle_corpus PRIVATE insimulcore)
+set(INSIMUL_LIFECYCLE_CORPUS ${INSIMUL_PROPS_CORPUS}/quests/lifecycle.json)
+add_test(NAME quests_lifecycle_corpus COMMAND insimulcore_quests_lifecycle_corpus ${INSIMUL_LIFECYCLE_CORPUS})
+set_tests_properties(quests_lifecycle_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "LIFECYCLE_REGEX_PLACEHOLDER")
+# Its negative pass: every case's expectation perturbed (its last leaf) must be refused.
+add_test(NAME quests_lifecycle_corpus_negative COMMAND insimulcore_quests_lifecycle_corpus --negative ${INSIMUL_LIFECYCLE_CORPUS})
+set_tests_properties(quests_lifecycle_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "LIFECYCLE_NEGATIVE_REGEX_PLACEHOLDER")
+# Its wrong-file control (tests/quests-negative/lifecycle-wrong.json, core's lifecycle corpus cut to two cases and
+# doctored): a contract value the row states otherwise (defaultPlayer), a contract key no one holds, a wrong
+# expectation and an op core's runner does not have must each be named, the stated tables the cut file does not answer
+# with them, and the run must FAIL.
+add_test(NAME quests_lifecycle_corpus_wrong COMMAND insimulcore_quests_lifecycle_corpus ${CMAKE_CURRENT_SOURCE_DIR}/tests/quests-negative/lifecycle-wrong.json)
+set_tests_properties(quests_lifecycle_corpus_wrong PROPERTIES
+  PASS_REGULAR_EXPRESSION "LIFECYCLE_WRONG_REGEX_PLACEHOLDER")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest

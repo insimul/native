@@ -186,6 +186,8 @@
     "src/puzzle/puzzle-predicates.ts",
     "src/puzzle/puzzle-save.ts",
     "src/puzzle/puzzle.ts",
+    "src/quest-bonus-calculator.ts",
+    "src/quest-hints.ts",
     "src/quest-objective-types.ts",
     "src/quest-types/business-scavenger-hunt.ts",
     "src/quest-types/customer-service.ts",
@@ -199,6 +201,7 @@
     "src/quest-types/strategy.ts",
     "src/quest-types/survival.ts",
     "src/quest-types/types.ts",
+    "src/quests/quest-lifecycle.ts",
     "src/quests/tutorial-corpus-host.ts",
     "src/quests/tutorial-save.ts",
     "src/radiant/base-templates.ts",
@@ -316,6 +319,9 @@
     "conformance/ui/minimap-cases.json",
     "conformance/ui/notifications-cases.json"
   ],
+  "questLifecycleCorpus": [
+    "conformance/quests/lifecycle.json"
+  ],
   "cameraCorpus": [
     "conformance/camera/movement.json"
   ],
@@ -392,11 +398,11 @@
     "conformance/editor-operations/mint-play-grant.json",
     "conformance/editor-operations/reread-reference-texts.json"
   ],
-  "bundleBytes": 2791925,
-  "bundleSha256": "fa79958497871d636208a2c0ac54250a82a4c17710cac0cf95e6910675ff99ac",
+  "bundleBytes": 2818749,
+  "bundleSha256": "3fc96dfabd7b7e82f43fdf08f343a905838f82b2e0ee6ebca12b948145d0de64",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "fa79958497871d636208a2c0ac54250a82a4c17710cac0cf95e6910675ff99ac",
-    "vendor/core/insimul_core_bundle.c": "b909bc0bd82f16e2bd40ead7b306fc48d0b73645c0739f69697258ec66172ec9",
+    "vendor/core/insimul-core-bundle.js": "3fc96dfabd7b7e82f43fdf08f343a905838f82b2e0ee6ebca12b948145d0de64",
+    "vendor/core/insimul_core_bundle.c": "a2298fbdb8a457eeedf5da7c93c68e2d44b61cbf2707df8cf082820bcea40448",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genre-genre-pieces-build-plan.json": "60388e9cb5652085356059a515382be7ba5d98dd172677c025136c4f640d06ca",
     "vendor/core/cases/core-genre-genre-pieces-kinds.json": "07082aa01cf17b5ecf6154cbb738842e344c40fd5a6f256d3ca81d078f281c83",
@@ -426,6 +432,7 @@
     "vendor/core/cases/core-language-writing.json": "80d422d9917ece1327f0a8e8d5f5791b6635037166747ea77daa18438f3e5465",
     "vendor/core/cases/core-modules-activation.json": "57ab7da8e45f717881fd4f26d74c8b84842098ebaff6bf6ae760165ba1422764",
     "vendor/core/cases/core-props-vehicle-placement.json": "d299c8edf7ab923966a89962508ff9badf6b1644f0b6c04a27d758dd973a4fe3",
+    "vendor/core/cases/core-quests-lifecycle.json": "8f966b345113cb685ff6bc571d08ca2e5f0a0f751a67cc0465dea0716c7cec50",
     "vendor/core/cases/core-quests.json": "26e8e74f0eacfdeaa316ef1c8776668ebbd60dc74277eb07543ba1a29aa24b68",
     "vendor/core/cases/core-saves-village.json": "a1b3fe5d7b26dc21bb7b987864c8f6f314802a7304510d141e161d000f6e79bb",
     "vendor/core/cases/core-saves.json": "f3fd33fd1faa443e4b864f6c2275930ccc3b65695bfc78c3652a65b95f9bae17",
@@ -501,6 +508,7 @@
     "vendor/core/conformance/ui/compass-cases.json": "ca29db0766df2fa676af008cb8af58cc56d71e34a1ee02d9d006a4c5a8996e69",
     "vendor/core/conformance/ui/minimap-cases.json": "0d09d10e197cc3cc718787b75347800e4365b7fa30cd08b68119eeb1478708d7",
     "vendor/core/conformance/ui/notifications-cases.json": "ebc61f0b7159f91c025ca81a0d988996e8df8b0e57a911fcb8dbcb9fc203bc04",
+    "vendor/core/conformance/quests/lifecycle.json": "46159d2229a357d6948a79db97d001700e8464dfc753a2ada2049620bba8e240",
     "vendor/core/conformance/camera/movement.json": "2d4d9e31b81c67361d12c66512b12aa5f647fdd39c0ed6b530c4c83222c76f36",
     "vendor/core/conformance/audio/cues.json": "3ad59c4c3fc97bbf7629cbcdb45135df82459cbef2edef404be098efb94a1687",
     "vendor/core/conformance/audio/ground.json": "e0da12f66977b5cc69d6d75bed273949dbf0782e59c3d3d90de3c22e9eca3572",
@@ -557,13 +565,13 @@
     "vendor/core/conformance/editor-operations/get-world-ir-summary.json": "e782bd1a7d8cbd32fb95d07230fcaa70d4615cc43c67306d24ff66b11d927db0",
     "vendor/core/conformance/editor-operations/mint-play-grant.json": "941cb0a5c749b6594d9bf53080dd68c8d913e1d95dbf72044d587c03513d196e",
     "vendor/core/conformance/editor-operations/reread-reference-texts.json": "fb1d23e1a47b2df0be959d31f3cef619007fbc1ba15730f1e064a94d5cd305c1",
-    "js/entry.js": "f20e42faa86823fbe794b451673dc655228b323ad473bafc2119f9092a9d5161",
+    "js/entry.js": "f8352022be65c844ccc81658632aeea2ab854f8ccb6e192094abde7281215c17",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
-    "tools/emit-bridge-cases.mjs": "deaff2eaddcef16bde6e94920f7431bd079976aeae3fd4ecbcc4b5d3d3cf0fe3",
-    "core-pin.json": "80a5d38b279e2208bbed090aee6ecba95f140b9760dd10dff892c9cbf71be89e"
+    "tools/emit-bridge-cases.mjs": "a5df4b51b68ba157b474b2d5b541527ad6f310f84dccc145fc2b25aa45fed991",
+    "core-pin.json": "c123c0f1a12a72442c5872c7866a552c08fd9ad64356ac9202432b679c951b67"
   }
 }

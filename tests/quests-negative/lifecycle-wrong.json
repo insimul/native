@@ -1,0 +1,687 @@
+{
+ "area": "quests-lifecycle",
+ "description": "A doctored cut of core's conformance/quests/lifecycle.json (PL.native-quest-lifecycle-rows), the wrong-file control of quests_lifecycle_corpus: the contract's defaultPlayer changed (hero), a contract key no runner holds (wrongRule), a wrong expectation (a completed quest expected active) and an op core's runner does not have (replay); with three cases the stated refusal codes, predicates, statuses and ops are not all answered. The run must name each and FAIL.",
+ "version": 1,
+ "sources": [
+  "Cut from core's conformance/quests/lifecycle.json at 45409ed: the cases named seed talk_one and refusals: a status the lifecycle does not know, then doctored as the description says."
+ ],
+ "tolerance": 1e-09,
+ "contract": {
+  "statuses": [
+   "unavailable",
+   "available",
+   "active",
+   "completed"
+  ],
+  "ops": [
+   "offer",
+   "accept",
+   "talk_to",
+   "reach",
+   "pick_up",
+   "deliver",
+   "read",
+   "find_clue",
+   "find_text",
+   "read_sign",
+   "use_word",
+   "pronounce",
+   "identify",
+   "answer_listening",
+   "use_grammar"
+  ],
+  "hostEventDispatch": {
+   "talk_to": [
+    "npc_talked",
+    "npc_conversation"
+   ],
+   "reach": [
+    "location_visited",
+    "location_discovered"
+   ],
+   "pick_up": [
+    "item_collected"
+   ],
+   "deliver": [
+    "item_delivered"
+   ],
+   "read": [
+    "text_read"
+   ],
+   "find_clue": [
+    "clue_discovered"
+   ],
+   "find_text": [
+    "text_found"
+   ],
+   "read_sign": [
+    "sign_read"
+   ],
+   "use_word": [
+    "vocabulary_usage"
+   ],
+   "pronounce": [
+    "pronunciation_attempt"
+   ],
+   "identify": [
+    "object_identified"
+   ],
+   "answer_listening": [
+    "listening_graded"
+   ],
+   "use_grammar": [
+    "grammar_demonstrated"
+   ]
+  },
+  "refusalCodes": [
+   "missing_field",
+   "duplicate_quest",
+   "duplicate_objective",
+   "bad_status",
+   "unknown_op",
+   "unknown_quest",
+   "not_available",
+   "prerequisites_unmet",
+   "not_giver",
+   "bad_count",
+   "bad_criteria",
+   "bad_score",
+   "bad_time"
+  ],
+  "sessionRefusalOrder": [
+   "quests",
+   "player",
+   "quests[i].id",
+   "quests[i].id duplicate",
+   "quests[i].status",
+   "quests[i].objectives[j].id",
+   "quests[i].objectives[j].id duplicate",
+   "quests[i].objectives[j].type",
+   "quests[i].completionCriteria (bad_criteria; the field names the part: completionCriteria itself, .type, .allObjectives or .requiredTurns)"
+  ],
+  "stepRefusalOrder": [
+   "op",
+   "the op's fields in its signature order (an optional field, when present, must be a non-empty string: reach name, read title, find_clue category then source, find_text title then category; a verdict, use_word and use_grammar correct and pronounce and answer_listening passed, must be a boolean; pronounce score must be a number)",
+   "offer/accept: unknown_quest, not_available, prerequisites_unmet, then (offer) not_giver",
+   "pick_up: bad_count (a whole number from 1 to 1000)",
+   "pronounce: bad_score (a finite number from 0 to 100), after score is a number and before passed",
+   "atMs: bad_time (present and not a whole number from 0), after every other check of the step"
+  ],
+  "defaultPlayer": "hero",
+  "predicates": [
+   "quest_status",
+   "quest_offered",
+   "objective_complete",
+   "objective_progress",
+   "quest_progress",
+   "experience_granted",
+   "item_granted"
+  ],
+  "facts": "quest_status(Player, Quest, Status); quest_offered(Player, Quest, Npc) while an offer is open; objective_complete(Player, Quest, Index), Index the objective's position in objectives; objective_progress(Player, Quest, Index, Current, Required) for a quantity objective short of completion; quest_progress(Player, Quest, Turns) for a conversation_turns quest once Turns > 0 (the converter's own predicate, which its conversation_turns quest_complete/2 reads); experience_granted(Player, Quest, Amount) when Amount > 0 and item_granted(Player, Quest, ItemId, Quantity) per item reward, from the completion on",
+  "factOrder": "quests in input order; per quest: quest_status, quest_offered, objective_complete by index, objective_progress by index, quest_progress, experience_granted, item_granted in itemRewards order",
+  "deltaRule": "a step's deltas are the fact set after it less the set before (retracts, in the before order) then the set after less the set before (asserts, in the after order); a refused step has no deltas and changes nothing",
+  "eventRule": "each step is ONE host event, however it is dispatched (hostEventDispatch) and whichever of core's paths handles it (a type handler, completionTrigger, the quest-action mapping): it counts only for objectives of quests active when it happens that are incomplete and unlocked (dependsOn and order lock), with the locks read once, before the step (QuestCompletionEngine.trackHostEvent), so one step never completes or counts an objective it unlocks and the dispatch order never changes the answer; an objective type a type handler decides for an event (QuestCompletionEngine QUEST_EVENT_TYPE_HANDLED: text_read for read_text, clue_discovered for collect_clue, text_found for find_text and collect_text, sign_read for read_sign, pronunciation_attempt for pronunciation_check, vocabulary_usage for vocabulary, grammar_demonstrated for grammar) is not counted again by the mapping's generic pass",
+  "pickUpRule": "a pick_up with a count of N is N single pick_up steps in sequence (P3.core m5, settled in P6.core, U83(3)): each item is its own host event, settled (completions, then promotions) before the next, so an objective or quest one item unlocks counts the items after it and a stack gives the same state as N singles; the step's deltas are the difference across all N, its completed and opened lists theirs in order",
+  "collectRule": "pick_up {item} matches a collect_item objective by its itemName, or by its target when itemName is absent (undefined, null or ''; PL.collect-target, U87(1)); itemName wins when both are present; the names match either way round, case-folded (one contains the other); an objective with neither (or both '') is matched by any item. Each match counts one toward itemCount (default 1)",
+  "readRule": "read {text, title?} (PL.read-clue-events, U89(1)) is the player finishing a text or document (core's DocumentReader document_read, a notice board's notice_read). It matches a read_text objective (read_document is read_text) by its textId, else its target (the hydrator writes read_text(X) as target X), equal to text exactly; a textId or target of any (the converter's read_text(any), as Brightwater stores it) or no text named takes every text; a textTitle the objective names must be matched by title, either way round, case-folded (no title, no match). Each objective counts a text once (its textsRead), toward requiredCount (default 1), so reading the same text again is a no-op for an objective it already counted and counts for one that was not active or was locked when it was first read. A text no objective takes is a no-op, never a refusal: the session holds no catalogue of texts",
+  "clueRule": "find_clue {clue, category?, source?} (PL.read-clue-events, U89(1)) is the player finding a clue (core's DocumentReader or ClueStore clue_discovered, with that id). It completes a completionTrigger clue_discovered objective, and counts one toward a collect_clue objective's requiredCount (default 1; the converter's collect_clue(Count)) when the clueCategory it names equals category and the clueSource it names matches source either way round, case-folded (an objective naming neither takes any clue; one naming one is not matched by a clue without it). A clue id is the world's (one id, one clue), but counting is each objective's: an objective counts a clue once (its cluesFound), only while its quest is active, so one clue counts for every active quest that wants one, a clue found with no active quest is a no-op and not remembered, and finding it again later counts for a quest active then. A clue no objective takes is a no-op, never a refusal. Neither read nor find_clue is a pick-up, a talk or a conversation turn; a document with a clue is two steps, read then find_clue",
+  "findTextRule": "find_text {text, title?, category?} (PL.find-text-events, U90(9)) is the player finding a text or document (core's DocumentReader document_collected, raised on the first read of a collectible document, with its id; category is the document's kind, a game text's textCategory). It counts one toward a find_text objective's requiredCount (default 1; collect_text is find_text; the converter's find_text(Count), which names no text, so any text counts) when the textId it names equals text exactly, the textCategory it names equals category exactly (no category, no match) and the itemName it names equals text exactly or title case-folded (no title, the id only); an objective naming none takes every text. Each objective counts a text once (its textsFound), only while its quest is active, so one find counts once (before, its handler and the quest-action mapping each counted it), counts for every active quest's find_text and for each find_text objective of one quest, is not remembered for a quest opened later, and found again counts for an objective that was not active or was locked before. A text no objective takes is a no-op, never a refusal",
+  "signRule": "read_sign {sign} (PL.find-text-events, U90(9)) is the player reading a sign (core's examineNearest sign_read, with its signId). It counts one toward every read_sign objective's requiredCount (default 1; the converter's read_sign(Count) names no sign), each sign once per objective (its signsRead), only while its quest is active: the same sign again is a no-op for an objective that counted it, and a sign read with no active quest is not remembered. Neither find_text nor read_sign is a read, a clue, a pick-up, a talk or a conversation turn, and a read is neither; a collectible document read the first time is two steps, read then find_text, as the reader raises document_read then document_collected",
+  "languageRule": "the language events (PL.core-language-host-event, U110(4) Q5) are the completion events core's own language kernels raise, so a language quest completes through the lifecycle. use_word {word, correct} is a kernel's vocabulary_used (answerQuiz, answerIdentification, submitName, the collection) or a chat line's chatQuestUsages, dispatched as vocabulary_usage only when correct is true (a wrong naming raises vocabulary_used with the target word, correct false; an incorrect use is accepted and changes nothing): it counts one toward use_vocabulary, collect_vocabulary and the chapter quests' vocabulary meta-objective (requiredCount, default 10: trackVocabularyUsage decides all three, and the mapping's vocabulary quantity does not count it again), each word once per objective, case-folded, and only a word in the objective's targetWords when it names any (compared case-folded). pronounce {phrase, score, passed} is listenAndRepeat's pronunciation_attempt (score 0..100): it decides pronunciation_check, listen_and_repeat and speak_phrase (core's PRONUNCIATION_OBJECTIVES) as QuestCompletionEngine.trackPronunciationAttempt does: a pass counts one toward requiredCount (default 3 for all three), a difficulty the objective names re-decides the pass from the score (beginner 40, intermediate 55, advanced 70, native 85), a failed attempt counts nothing, a failure scoring under 60 is a retry that burns no attempt, and maxAttempts failures fail the objective, which nothing completes after (the quest stays active); the phrase is not matched to the objective. It is not also listen_and_repeat_passed. identify {object} is the object_identified that answerIdentification and submitName raise on a pass: it counts one toward every identify_object objective (requiredCount, default 1; the converter's identify_object(Count) names no object), each object once per objective (objectsIdentified), so an object identified and then named counts once. answer_listening {quest, passed} is gradeListening's completed {questId, passed}: a pass completes every listening_comprehension objective of that quest, whatever its requiredCount or comprehensionQuestions (the grade is the quest's one verdict), a fail nothing; a grade for a quest not in the set or not active is a no-op, and the lifecycle does not hold gradeListening's grade-once rule. Every one counts only while its quest is active and its objective unlocked, like every event; none is a talk, a turn, a reach, a pick-up, a read, a clue, a find or a sign, and none of those completes a language objective. objective_progress states use_vocabulary, collect_vocabulary, vocabulary, the three pronunciation types and identify_object below requiredCount with the handlers' defaults",
+  "talkRule": "talk_to {npc} completes talk_to_npc (npcId equal, or none named), introduce_self and ask_for_directions (npcId equal; one naming no NPC is never completed by a talk), initiate_conversation (npcId equal or none), a completionTrigger npc_talked objective (any talk), and counts a conversation objective; one talk completes a talk_to_npc once",
+  "typeRule": "objective types are normalised to their canonical names (normalizeObjectiveType: talk is talk_to_npc; learn_words_count and learn_words, the hydrator's names for use_vocabulary, are use_vocabulary; practice_grammar, grammar_drill, grammar_pattern and grammar_activities (the hydrator's names for practice_grammar/2 and grammar_activities/1), grammar_practice, conjugation and conjugate are grammar, never use_vocabulary) before anything is decided",
+  "grammarRule": "use_grammar {correct} (PL.core-grammar-objective-type, U120(4)) is the chat's grammar verdict on one line (Babylon's grammar_demonstrated {patternCount: 1} on a correct grammar feedback), dispatched as grammar_demonstrated with patternCount 1 only when correct is true (an incorrect use is accepted and changes nothing): it counts one toward every grammar objective (QuestCompletionEngine.trackGrammarDemonstrated, which alone decides grammar; the mapping's grammar quantity does not count it again) toward requiredCount (default 2), whatever pattern the objective names. A grammar objective takes no word and a word objective no grammar use. objective_progress states a grammar objective below requiredCount with the default 2",
+  "completionRule": "after every step: each active quest whose completion criterion holds (criteriaRule) becomes completed, then each unavailable quest with at least one prerequisite, all completed, becomes active if a completed quest lists it in activatesQuestIds, else available; repeated until nothing moves. An available quest is never promoted. Nothing settles when the session opens",
+  "criteriaTypes": [
+   "all_objectives",
+   "conversation_turns"
+  ],
+  "criteriaRule": "a quest's completionCriteria (PL.criteria-quests, U87(2)) is read when the session opens. Absent, null, {}, {type: all_objectives, description?} or {allObjectives: true} with no type: the criterion holds when all the quest's objectives are complete (a quest with no objectives never completes). {type: conversation_turns, requiredTurns: N, description?}, N a whole number >= 1: it holds when the quest has N turns, whatever its objectives; each talk_to step is one turn for every quest active when it happens (a talk that activates a quest is not one of its turns; a reach, pick_up or deliver is no turn), and the count is stated as quest_progress(Player, Quest, Turns). These are the quest converter's quest_complete/2 for each form. Anything else is refused bad_criteria, never guessed: not an object (field quests[i].completionCriteria); no type and neither {} nor {allObjectives: true}, or a type outside criteriaTypes (.type); allObjectives other than true, or beside a type other than all_objectives (.allObjectives); requiredTurns missing or not a whole number >= 1 (.requiredTurns; the converter writes requiredTurns || 1). Other keys are not read",
+  "acceptRule": "offer and accept need the quest available with every prerequisite completed (a prerequisite naming no quest in the set is never completed); offer needs the giver (assignedByCharacterId) when one is set; accept needs no offer and clears it",
+  "timeRule": "the lifecycle has no clock and reads none (PL.core-lifecycle-completed-at, U124(2), U79(3)). Any step may carry atMs, the host's time for that step as a whole number of ms from 0 (null and every other value is refused bad_time). Each quest a step completes, in any settle pass of that step (one an activation completes at once, and every item of a pick_up stack, included), is stamped completedAtMs = the step's atMs; a step with no atMs stamps none. state shows completedAtMs only once a quest has one: before it completes a quest carries none (the key is absent, never 0 or null), and a quest completed by a step with no atMs carries none. A quest that opens completed keeps its input's completedAtMs when that is a whole number from 0, else carries none; another status's input completedAtMs is not read. completedAtMs is no fact and changes no delta. QuestLifecycle.quests() carries the same completedAtMs (absent until there is one), the record learning history reads",
+  "experienceRule": "completionStreakXp(base, completedBefore): streak = completedBefore + 1 (completedBefore counts every completed quest in the set, initial ones included); bonus = round(base * min(0.5, 0.1 * streak)); amount = base + bonus",
+  "wrongRule": "a rule no runner holds"
+ },
+ "cases": [
+  {
+   "name": "seed talk_one: a conversation held before the accept does not count",
+   "op": "session",
+   "input": {
+    "quests": [
+     {
+      "id": "q_meet",
+      "status": "available",
+      "title": "Meet Roger Miller",
+      "objectives": [
+       {
+        "id": "q_meet_talk",
+        "type": "talk_to_npc",
+        "npcId": "npc_roger"
+       }
+      ]
+     }
+    ],
+    "steps": [
+     {
+      "op": "talk_to",
+      "npc": "npc_roger"
+     },
+     {
+      "op": "accept",
+      "quest": "q_meet"
+     },
+     {
+      "op": "talk_to",
+      "npc": "npc_other"
+     },
+     {
+      "op": "talk_to",
+      "npc": "npc_roger"
+     }
+    ]
+   },
+   "expected": {
+    "ok": true,
+    "initial": {
+     "state": {
+      "q_meet": {
+       "status": "available",
+       "done": [],
+       "progress": []
+      }
+     },
+     "facts": [
+      {
+       "predicate": "quest_status",
+       "args": [
+        "player",
+        "q_meet",
+        "available"
+       ]
+      }
+     ]
+    },
+    "steps": [
+     {
+      "result": {
+       "ok": true,
+       "deltas": [],
+       "completed": [],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "available",
+        "done": [],
+        "progress": []
+       }
+      }
+     },
+     {
+      "result": {
+       "ok": true,
+       "deltas": [
+        {
+         "op": "retract",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "available"
+         ]
+        },
+        {
+         "op": "assert",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "active"
+         ]
+        }
+       ],
+       "completed": [],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "active",
+        "done": [],
+        "progress": []
+       }
+      }
+     },
+     {
+      "result": {
+       "ok": true,
+       "deltas": [],
+       "completed": [],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "active",
+        "done": [],
+        "progress": []
+       }
+      }
+     },
+     {
+      "result": {
+       "ok": true,
+       "deltas": [
+        {
+         "op": "retract",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "active"
+         ]
+        },
+        {
+         "op": "assert",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "completed"
+         ]
+        },
+        {
+         "op": "assert",
+         "predicate": "objective_complete",
+         "args": [
+          "player",
+          "q_meet",
+          0
+         ]
+        }
+       ],
+       "completed": [
+        "q_meet"
+       ],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "completed",
+        "done": [
+         0
+        ],
+        "progress": []
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "refusals: a status the lifecycle does not know",
+   "op": "session",
+   "input": {
+    "quests": [
+     {
+      "id": "q",
+      "status": "failed",
+      "objectives": []
+     }
+    ],
+    "steps": []
+   },
+   "expected": {
+    "ok": false,
+    "refusal": {
+     "code": "bad_status",
+     "field": "quests[0].status"
+    }
+   }
+  },
+  {
+   "name": "WRONGLY completed before its last talk",
+   "op": "session",
+   "input": {
+    "quests": [
+     {
+      "id": "q_meet",
+      "status": "available",
+      "title": "Meet Roger Miller",
+      "objectives": [
+       {
+        "id": "q_meet_talk",
+        "type": "talk_to_npc",
+        "npcId": "npc_roger"
+       }
+      ]
+     }
+    ],
+    "steps": [
+     {
+      "op": "talk_to",
+      "npc": "npc_roger"
+     },
+     {
+      "op": "accept",
+      "quest": "q_meet"
+     },
+     {
+      "op": "talk_to",
+      "npc": "npc_other"
+     },
+     {
+      "op": "talk_to",
+      "npc": "npc_roger"
+     }
+    ]
+   },
+   "expected": {
+    "ok": true,
+    "initial": {
+     "state": {
+      "q_meet": {
+       "status": "available",
+       "done": [],
+       "progress": []
+      }
+     },
+     "facts": [
+      {
+       "predicate": "quest_status",
+       "args": [
+        "player",
+        "q_meet",
+        "available"
+       ]
+      }
+     ]
+    },
+    "steps": [
+     {
+      "result": {
+       "ok": true,
+       "deltas": [],
+       "completed": [],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "available",
+        "done": [],
+        "progress": []
+       }
+      }
+     },
+     {
+      "result": {
+       "ok": true,
+       "deltas": [
+        {
+         "op": "retract",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "available"
+         ]
+        },
+        {
+         "op": "assert",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "active"
+         ]
+        }
+       ],
+       "completed": [],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "active",
+        "done": [],
+        "progress": []
+       }
+      }
+     },
+     {
+      "result": {
+       "ok": true,
+       "deltas": [],
+       "completed": [],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "active",
+        "done": [],
+        "progress": []
+       }
+      }
+     },
+     {
+      "result": {
+       "ok": true,
+       "deltas": [
+        {
+         "op": "retract",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "active"
+         ]
+        },
+        {
+         "op": "assert",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "completed"
+         ]
+        },
+        {
+         "op": "assert",
+         "predicate": "objective_complete",
+         "args": [
+          "player",
+          "q_meet",
+          0
+         ]
+        }
+       ],
+       "completed": [
+        "q_meet"
+       ],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "active",
+        "done": [
+         0
+        ],
+        "progress": []
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "WRONGLY an op core's runner does not have",
+   "op": "replay",
+   "input": {
+    "quests": [
+     {
+      "id": "q_meet",
+      "status": "available",
+      "title": "Meet Roger Miller",
+      "objectives": [
+       {
+        "id": "q_meet_talk",
+        "type": "talk_to_npc",
+        "npcId": "npc_roger"
+       }
+      ]
+     }
+    ],
+    "steps": [
+     {
+      "op": "talk_to",
+      "npc": "npc_roger"
+     },
+     {
+      "op": "accept",
+      "quest": "q_meet"
+     },
+     {
+      "op": "talk_to",
+      "npc": "npc_other"
+     },
+     {
+      "op": "talk_to",
+      "npc": "npc_roger"
+     }
+    ]
+   },
+   "expected": {
+    "ok": true,
+    "initial": {
+     "state": {
+      "q_meet": {
+       "status": "available",
+       "done": [],
+       "progress": []
+      }
+     },
+     "facts": [
+      {
+       "predicate": "quest_status",
+       "args": [
+        "player",
+        "q_meet",
+        "available"
+       ]
+      }
+     ]
+    },
+    "steps": [
+     {
+      "result": {
+       "ok": true,
+       "deltas": [],
+       "completed": [],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "available",
+        "done": [],
+        "progress": []
+       }
+      }
+     },
+     {
+      "result": {
+       "ok": true,
+       "deltas": [
+        {
+         "op": "retract",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "available"
+         ]
+        },
+        {
+         "op": "assert",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "active"
+         ]
+        }
+       ],
+       "completed": [],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "active",
+        "done": [],
+        "progress": []
+       }
+      }
+     },
+     {
+      "result": {
+       "ok": true,
+       "deltas": [],
+       "completed": [],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "active",
+        "done": [],
+        "progress": []
+       }
+      }
+     },
+     {
+      "result": {
+       "ok": true,
+       "deltas": [
+        {
+         "op": "retract",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "active"
+         ]
+        },
+        {
+         "op": "assert",
+         "predicate": "quest_status",
+         "args": [
+          "player",
+          "q_meet",
+          "completed"
+         ]
+        },
+        {
+         "op": "assert",
+         "predicate": "objective_complete",
+         "args": [
+          "player",
+          "q_meet",
+          0
+         ]
+        }
+       ],
+       "completed": [
+        "q_meet"
+       ],
+       "opened": []
+      },
+      "state": {
+       "q_meet": {
+        "status": "completed",
+        "done": [
+         0
+        ],
+        "progress": []
+       }
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

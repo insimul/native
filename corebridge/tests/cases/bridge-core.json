@@ -415,6 +415,11 @@
        "quest.completion.apply",
        "quest.completion.create",
        "quest.hydrate",
+       "quest.lifecycle.apply",
+       "quest.lifecycle.contract",
+       "quest.lifecycle.create",
+       "quest.lifecycle.facts",
+       "quest.lifecycle.quests",
        "quest.markers",
        "quest.minimapMarkers",
        "quest.radiantTick",
@@ -673,7 +678,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 639}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 644}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -719,7 +724,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 639}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 644}}}}
    ]
   },
   {
