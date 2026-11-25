@@ -1,0 +1,116 @@
+{
+  "area": "ui-minimap",
+  "description": "tests/hud-negative/minimap-wrong.json, the ui_hud_corpus_wrong control (PL.native-hud-rows): core's minimap corpus (conformance/ui/minimap-cases.json at the pin) cut to one case of each op and doctored. The contract states the settlements feed's id prefix as town_ (the rows ingest a settlement as settlement_<id>). The runner must name it and FAIL.",
+  "version": 1,
+  "sources": [
+    "Rules moved from babylon packages/babylon/src/engine/game-engine/ui/minimap-model.ts (babylon origin/main bfcdeb2, 279 lines) into core src/ui/minimap-model.ts unchanged; placed() takes the theme as an argument instead of defaulting to Babylon's uiTheme().",
+    "Inputs are synthetic."
+  ],
+  "tolerance": 1e-9,
+  "contract": {
+    "markerTypes": [
+      "player",
+      "settlement",
+      "npc",
+      "quest",
+      "quest_objective",
+      "building",
+      "exclamation",
+      "question",
+      "discovery"
+    ],
+    "tones": {
+      "player": "accent",
+      "settlement": "warning",
+      "npc": "success",
+      "quest": "quest",
+      "quest_objective": "quest",
+      "building": "text_disabled",
+      "exclamation": "quest",
+      "question": "quest",
+      "discovery": "success"
+    },
+    "unknownTypeTone": "text_primary",
+    "sizesPx": {
+      "player": 6,
+      "settlement": 8,
+      "npc": 4,
+      "quest": 7,
+      "quest_objective": 5,
+      "building": 3,
+      "exclamation": 14,
+      "question": 11,
+      "discovery": 6
+    },
+    "unknownTypeSizePx": 4,
+    "defaultWorldSize": 1024,
+    "feedOwnedIds": "^(player|settlement_|npc_|quest_|objective_|item_|board_)",
+    "feedIdPrefixes": {
+      "playerPosition": "player",
+      "settlements": "town_",
+      "npcPositions": "npc_",
+      "questMarkers": "quest_",
+      "questObjectiveMarkers": "objective_",
+      "questItemMarkers": "item_",
+      "noticeBoards": "board_"
+    },
+    "projection": "x = ((p.x + w/2) / w) * size - size/2; y = ((p.z + w/2) / w) * size - size/2",
+    "projectionNote": "projection is Babylon's rule, used when no northYaw is given; under the default north it draws north DOWN and so mirrors the world. Every engine binds projectionNorthUp",
+    "projectionNorthUp": "with northYaw n (the world's, from worldNorth): k = size / w; east = (cos n, -sin n), north = (sin n, cos n); x = (p.x * east.x + p.z * east.z) * k; y = -(p.x * north.x + p.z * north.z) * k (north up, east right)",
+    "projectionMirrored": "a mirrored level (the compass contract's mirroredLevel) passes mirrored: true with its northYaw: x is negated (north up, east LEFT, as the level shows it from above); y is unchanged. mirrored without a northYaw throws"
+  },
+  "cases": [
+    {
+      "name": "project: the centre of the world is the centre of the map",
+      "op": "project",
+      "input": {
+        "worldSize": 1000,
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "sizePx": 200
+      },
+      "expected": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "toneFor: player",
+      "op": "toneFor",
+      "input": {
+        "type": "player"
+      },
+      "expected": {
+        "tone": "accent"
+      }
+    },
+    {
+      "name": "sizeFor: player",
+      "op": "sizeFor",
+      "input": {
+        "type": "player"
+      },
+      "expected": {
+        "size": 6
+      }
+    },
+    {
+      "name": "a new map covers 1024, is hidden, and holds nothing",
+      "op": "session",
+      "input": {
+        "steps": []
+      },
+      "expected": {
+        "results": [],
+        "worldSize": 1024,
+        "visible": false,
+        "markerCount": 0,
+        "markers": [],
+        "player": null
+      }
+    }
+  ]
+}

@@ -1524,8 +1524,9 @@ set_tests_properties(props_vehicle_placement_corpus_negative PROPERTIES
 # file's contract block whole (the keys the contract row states, the keys it measures, the rule
 # keys the cases pin; an unknown key fails), and proves on every start that its comparator,
 # perturbation and contract check can fail and that the rows refuse what core cannot read while
-# core's own refusals are values. The regex demands every probe, each file's contract whole, every
-# op driven, 0 undriven and PASS.
+# core's own refusals are values. The regex demands every probe (13), each file's contract whole, every
+# op driven, 0 undriven and PASS. It holds no ';' (the runner's "agree; 3 of 3" is matched by '.'):
+# CMake reads one as a list separator, and a PASS_REGULAR_EXPRESSION list passes when ANY part matches.
 add_executable(insimulcore_ui_hud_corpus tests/ui_hud_corpus.cpp tests/radiant/json_value.cpp)
 target_include_directories(insimulcore_ui_hud_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 target_link_libraries(insimulcore_ui_hud_corpus PRIVATE insimulcore)
@@ -1535,18 +1536,20 @@ set(INSIMUL_HUD_CORPORA
   ${INSIMUL_PROPS_CORPUS}/ui/minimap-cases.json)
 add_test(NAME ui_hud_corpus COMMAND insimulcore_ui_hud_corpus ${INSIMUL_HUD_CORPORA})
 set_tests_properties(ui_hud_corpus PROPERTIES
-  PASS_REGULAR_EXPRESSION "refusals: 14 of 14 probe[(]s[)] refused as core refuses[^\n]*\n.*ui-notifications contract: 9 key[(]s[)], whole: 4 of 4 stated by ui.notifications.contract agree; 3 of 3 measured hold[^\n]*\nui-notifications: driven toasts [1-9][0-9]*, history [1-9][0-9]*. 0 undriven\nui-notifications: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\n.*ui-compass contract: 16 key[(]s[)], whole: 4 of 4 stated by ui.compass.contract agree; 3 of 3 measured hold[^\n]*\nui-compass: driven view [1-9][0-9]*, heading [1-9][0-9]*, cardinal [1-9][0-9]*, north [1-9][0-9]*, world_view [1-9][0-9]*. 0 undriven\nui-compass: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\n.*ui-minimap contract: 12 key[(]s[)], whole: 7 of 7 stated by ui.minimap.contract agree; 1 of 1 measured hold[^\n]*\nui-minimap: driven project [1-9][0-9]*, toneFor [1-9][0-9]*, sizeFor [1-9][0-9]*, session [1-9][0-9]*. 0 undriven\nui-minimap: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nui_hud_corpus: 3 file[(]s[)], 154 of 154 case[(]s[)] driven, 0 case[(]s[)] failed, 0 failure[(]s[)][^\n]*\nui_hud_corpus: PASS")
+  PASS_REGULAR_EXPRESSION "refusals: 13 of 13 probe[(]s[)] refused as core refuses[^\n]*\n.*ui-notifications contract: 9 key[(]s[)], whole: 4 of 4 stated by ui.notifications.contract agree. 3 of 3 measured hold[^\n]*\nui-notifications: driven toasts [1-9][0-9]*, history [1-9][0-9]*. 0 undriven\nui-notifications: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\n.*ui-compass contract: 16 key[(]s[)], whole: 4 of 4 stated by ui.compass.contract agree. 3 of 3 measured hold[^\n]*\nui-compass: driven view [1-9][0-9]*, heading [1-9][0-9]*, cardinal [1-9][0-9]*, north [1-9][0-9]*, world_view [1-9][0-9]*. 0 undriven\nui-compass: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\n.*ui-minimap contract: 12 key[(]s[)], whole: 7 of 7 stated by ui.minimap.contract agree. 1 of 1 measured hold[^\n]*\nui-minimap: driven project [1-9][0-9]*, toneFor [1-9][0-9]*, sizeFor [1-9][0-9]*, session [1-9][0-9]*. 0 undriven\nui-minimap: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nui_hud_corpus: 3 file[(]s[)], 154 of 154 case[(]s[)] driven, 0 case[(]s[)] failed, 0 failure[(]s[)][^\n]*\nui_hud_corpus: PASS")
 # Its negative pass: every case's expectation perturbed (its last leaf) must be refused.
 add_test(NAME ui_hud_corpus_negative COMMAND insimulcore_ui_hud_corpus --negative ${INSIMUL_HUD_CORPORA})
 set_tests_properties(ui_hud_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "ui-notifications: 22 of 22 perturbed case[(]s[)] refused, 0 accepted\n.*ui-compass: 82 of 82 perturbed case[(]s[)] refused, 0 accepted\n.*ui-minimap: 50 of 50 perturbed case[(]s[)] refused, 0 accepted\nui_hud_corpus --negative: 3 file[(]s[)], 154 of 154 case[(]s[)] driven, 0 case[(]s[)] failed, 0 failure[(]s[)][^\n]*\nui_hud_corpus --negative: PASS")
 # Its wrong-file control (tests/hud-negative/compass-wrong.json, core's compass corpus cut to three cases
 # and doctored): a contract value the row states otherwise, a contract key no one holds, a refusal code the
-# rows never answer, a wrong expectation and an op core's runner does not have must each be named, and the
-# run must FAIL.
-add_test(NAME ui_hud_corpus_wrong COMMAND insimulcore_ui_hud_corpus ${CMAKE_CURRENT_SOURCE_DIR}/tests/hud-negative/compass-wrong.json)
+# rows never answer, a wrong expectation and an op core's runner does not have must each be named; and
+# (tests/hud-negative/minimap-wrong.json, the minimap corpus cut to one case per op) a feed id prefix the
+# rows do not ingest by must be named too, and the run must FAIL.
+add_test(NAME ui_hud_corpus_wrong COMMAND insimulcore_ui_hud_corpus ${CMAKE_CURRENT_SOURCE_DIR}/tests/hud-negative/compass-wrong.json
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/hud-negative/minimap-wrong.json)
 set_tests_properties(ui_hud_corpus_wrong PROPERTIES
-  PASS_REGULAR_EXPRESSION "\\[FAIL\\] ui-compass contract: defaultSpanDegrees: 140 != 150\n[^\n]*\\[FAIL\\] ui-compass contract: the file's contract key wrongRule is not one this runner holds[^\n]*\n.*expected WRONGLY as heading 80 [^\n]*heading: 80 != 70\n[^\n]*\\[FAIL\\] WRONGLY an op core's runner does not have [^\n]*not driven: op rotate is not one of core's ui-compass ops.*\\[FAIL\\] ui-compass contract: refusalCodes: the contract states \\[not_finite, span_out_of_range, teleported\\] but the rows answered \\[not_finite\\].*ui_hud_corpus: FAIL")
+  PASS_REGULAR_EXPRESSION "\\[FAIL\\] ui-compass contract: defaultSpanDegrees: 140 != 150\n[^\n]*\\[FAIL\\] ui-compass contract: the file's contract key wrongRule is not one this runner holds[^\n]*\n.*expected WRONGLY as heading 80 [^\n]*heading: 80 != 70\n[^\n]*\\[FAIL\\] WRONGLY an op core's runner does not have [^\n]*not driven: op rotate is not one of core's ui-compass ops.*\\[FAIL\\] ui-compass contract: refusalCodes: the contract states \\[not_finite, span_out_of_range, teleported\\] but the rows answered \\[not_finite\\].*\\[FAIL\\] ui-minimap contract: feedIdPrefixes.settlements: stated town_, ingested as settlement_p\n.*ui_hud_corpus: FAIL")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest

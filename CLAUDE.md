@@ -1146,7 +1146,7 @@
   cases at 45409ed), copied as their own P2 HUD set (`HUD_CORPUS_FILES`; they share
   `conformance/ui/` with the P9a, P6 and P8 sets, and a file belongs to one) and driven by
   `tests/ui_hud_corpus.cpp` as `ui_hud_corpus` (+ `_negative`, and `_wrong` over the
-  doctored `tests/hud-negative/compass-wrong.json`): each case answered as core's runner
+  doctored `tests/hud-negative/{compass,minimap}-wrong.json`): each case answered as core's runner
   (`ui/hud-corpus.ts`, `runHudOp`) answers it, through the rows, compared by
   `compareHudValue`'s rule (the file's `tolerance`, key sets included). Each file's
   `contract` block is held WHOLE: every key is stated by its contract row
