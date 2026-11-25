@@ -1585,18 +1585,18 @@ target_link_libraries(insimulcore_quests_lifecycle_corpus PRIVATE insimulcore)
 set(INSIMUL_LIFECYCLE_CORPUS ${INSIMUL_PROPS_CORPUS}/quests/lifecycle.json)
 add_test(NAME quests_lifecycle_corpus COMMAND insimulcore_quests_lifecycle_corpus ${INSIMUL_LIFECYCLE_CORPUS})
 set_tests_properties(quests_lifecycle_corpus PROPERTIES
-  PASS_REGULAR_EXPRESSION "LIFECYCLE_REGEX_PLACEHOLDER")
+  PASS_REGULAR_EXPRESSION "refusals: 12 of 12 probe[(]s[)] refused as core refuses[^\n]*\nquests-lifecycle: tolerance 1e-09, as the file states\nquests-lifecycle contract: 28 key[(]s[)], whole: 7 of 7 stated by quest.lifecycle.contract agree. 1 of 1 measured hold [(]deltaRule over [1-9][0-9]* accepted session[(]s[)][)]. 4 of 4 stated tables answered exactly over the cases [(]refusalCodes 13, predicates 7, statuses 4, ops 15[)][^\n]*\nquests-lifecycle: quest.lifecycle.quests agrees with the state after [1-9][0-9]* of [1-9][0-9]* accepted session[(]s[)]\nquests-lifecycle: driven session [1-9][0-9]*. 0 undriven\nquests-lifecycle: 147 of 147 case[(]s[)] driven through the rows, 0 failed[^\n]*\nquests_lifecycle_corpus: 1 file[(]s[)], 147 of 147 case[(]s[)] driven, 0 case[(]s[)] failed, 0 failure[(]s[)][^\n]*\nquests_lifecycle_corpus: PASS")
 # Its negative pass: every case's expectation perturbed (its last leaf) must be refused.
 add_test(NAME quests_lifecycle_corpus_negative COMMAND insimulcore_quests_lifecycle_corpus --negative ${INSIMUL_LIFECYCLE_CORPUS})
 set_tests_properties(quests_lifecycle_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "LIFECYCLE_NEGATIVE_REGEX_PLACEHOLDER")
+  PASS_REGULAR_EXPRESSION "quests-lifecycle: 147 of 147 perturbed case[(]s[)] refused, 0 accepted\nquests_lifecycle_corpus --negative: 1 file[(]s[)], 147 of 147 case[(]s[)] driven, 0 case[(]s[)] failed, 0 failure[(]s[)][^\n]*\nquests_lifecycle_corpus --negative: PASS")
 # Its wrong-file control (tests/quests-negative/lifecycle-wrong.json, core's lifecycle corpus cut to two cases and
 # doctored): a contract value the row states otherwise (defaultPlayer), a contract key no one holds, a wrong
 # expectation and an op core's runner does not have must each be named, the stated tables the cut file does not answer
 # with them, and the run must FAIL.
 add_test(NAME quests_lifecycle_corpus_wrong COMMAND insimulcore_quests_lifecycle_corpus ${CMAKE_CURRENT_SOURCE_DIR}/tests/quests-negative/lifecycle-wrong.json)
 set_tests_properties(quests_lifecycle_corpus_wrong PROPERTIES
-  PASS_REGULAR_EXPRESSION "LIFECYCLE_WRONG_REGEX_PLACEHOLDER")
+  PASS_REGULAR_EXPRESSION "\\[FAIL\\] quests-lifecycle contract: defaultPlayer: \"hero\" != \"player\"\n[^\n]*\\[FAIL\\] quests-lifecycle contract: the file's contract key wrongRule is not one this runner holds[^\n]*\n[^\n]*\\[FAIL\\] WRONGLY completed before its last talk [^\n]*status: \"active\" != \"completed\"\n[^\n]*\\[FAIL\\] WRONGLY an op core's runner does not have [^\n]*not driven: op replay is not one of core's quests-lifecycle ops[^\n]*\n[^\n]*\\[FAIL\\] quests-lifecycle contract: refusalCodes: the contract states [^\n]* but the rows answered \\[bad_status\\]\n.*\\[FAIL\\] quests-lifecycle contract: ops: [^\n]*took steps of \\[accept, talk_to\\]\n.*quests_lifecycle_corpus: FAIL")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest
