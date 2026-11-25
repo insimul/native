@@ -1,11 +1,11 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-native-step-clock-row",
-    "gitHead": "b2aa467acd429f8a1073d71daa2e7564ffcee193"
+    "root": "native-native-hud-rows",
+    "gitHead": "2aaf694e2b43c8e91d51c40a534328b3e4036fa5"
   },
   "coverage": {
-    "trackedFiles": 580,
+    "trackedFiles": 589,
     "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,
