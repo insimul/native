@@ -4,7 +4,7 @@
   "rulesVersion": 1,
   "repository": {
     "root": "native-native-hud-rows",
-    "gitHead": "2aaf694e2b43c8e91d51c40a534328b3e4036fa5"
+    "gitHead": "7a9024cd0dd3d3e1eb60c12491a91d7060eb2863"
   },
   "coverage": {
     "files": 589,
