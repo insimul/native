@@ -784,6 +784,23 @@ add_test(NAME core_vendor_quest_lifecycle_negative COMMAND
        --check-quest-lifecycle-transcription-negative)
 set_tests_properties(core_vendor_quest_lifecycle_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "quest lifecycle transcription negative [^ ]* 13 of 13 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_quest_lifecycle_negative")
+# The runtime and interior save transcriptions' guard (PL.native-runtime-save-rows:
+# cases/core-saves-runtime.json and cases/core-saves-interior.json carrying every case of the vendored
+# conformance/saves/runtime-save.json and interior-state.json by name, each the calls core's runners make
+# through the rows with every answer the corpora pin stated, and each contract case; derived independently
+# of the emitter) is given nineteen perturbations in memory (twelve of the runtime transcription: a case
+# dropped or invented, a New Game step dropped, two steps merged, a Load's options dropped, a refused Load's
+# message dropped or code changed, a step's runtime save dropped or its fresh flipped, a Save's written
+# document weakened, a case put on one leg, the contract changed; seven of the interior one: a case dropped,
+# a read's layout call dropped, a load's rotation dropped or note changed, a round trip's written interior
+# dropped or its placement read off the wrong document, a contract key dropped) and passes only when all
+# nineteen are named.
+add_test(NAME core_vendor_runtime_save_negative COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
+       --check-runtime-save-transcription-negative)
+set_tests_properties(core_vendor_runtime_save_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "runtime and interior save transcription negative [^ ]* 19 of 19 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_runtime_save_negative")
 
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus
@@ -1325,6 +1342,48 @@ set_tests_properties(village_save_corpus PROPERTIES
 add_test(NAME village_save_corpus_negative COMMAND insimulcore_village_save_corpus --negative ${INSIMUL_VILLAGE_SAVE_CORPUS})
 set_tests_properties(village_save_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "refusals: [1-9][0-9]* of [1-9][0-9]* probe[(]s[)] refused as core refuses[^\n]*\n.*village_save_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nvillage_save_corpus --negative: PASS")
+
+# runtime_save_corpus and interior_save_corpus (PL.native-runtime-save-rows, rulings U131, U128,
+# U118(5), U124, U126(3), U49(3) and U36): core's runtime save (src/runtime-save.ts:
+# PL.core-load-refused-message, PL.core-load-refusal-codes) and its rules for a save written
+# inside an interior (src/props/interior-save.ts: PL.core-interior-save-state) as
+# libinsimulcore's `save.runtime.*` and `save.interior.*` rows, held to core's own corpora
+# conformance/saves/runtime-save.json and conformance/saves/interior-state.json, COPIED byte for
+# byte into corebridge/vendor/core/conformance/saves/ at the pin (vendor-core-bundle.mjs
+# SAVES_CORPUS_FILES; hashed, and byte-compared under --check --core). ONE runner,
+# tests/runtime_save_corpus.cpp, drives either file (told apart by its area) as core's reference
+# runners (runtime-save-corpus.ts, interior-save-corpus.ts) compose the calls, refuses every
+# control of the interior file, and accounts for every contract key; the same cases also run on
+# both legs as the transcribed cases/core-saves-{runtime,interior}.json. Unreal's interim runtime
+# save copy (Portable/InsimulRuntimeSave) and any engine's interior save are what these rows
+# retire. The regexes demand every refusal probe refused, the contract line, the driven line with
+# every op (and for the runtime save every step) driven and 0 undriven, the controls line for the
+# interior file, then PASS. They hold no ';' (CMake would split each into a list, and a list passes
+# when ANY part matches).
+add_executable(insimulcore_runtime_save_corpus tests/runtime_save_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_runtime_save_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_runtime_save_corpus PRIVATE insimulcore)
+set(INSIMUL_RUNTIME_SAVE_CORPUS ${INSIMUL_PROPS_CORPUS}/saves/runtime-save.json)
+set(INSIMUL_INTERIOR_SAVE_CORPUS ${INSIMUL_PROPS_CORPUS}/saves/interior-state.json)
+add_test(NAME runtime_save_corpus COMMAND insimulcore_runtime_save_corpus ${INSIMUL_RUNTIME_SAVE_CORPUS})
+set_tests_properties(runtime_save_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 9 of 9 probe[(]s[)] refused as core refuses[^\n]*\ncontract: 1 key[(]s[)] save.runtime.contract states agree with the corpus's, 4 held through the rows and this runner's op list, 6 prose rule[(]s[)] named\nsaves-runtime: driven run [1-9][0-9]* [(]steps new_game [1-9][0-9]* load [1-9][0-9]* save [1-9][0-9]*[)]. 0 undriven\nruntime_save_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nruntime_save_corpus: PASS")
+add_test(NAME runtime_save_corpus_negative COMMAND insimulcore_runtime_save_corpus --negative ${INSIMUL_RUNTIME_SAVE_CORPUS})
+set_tests_properties(runtime_save_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 9 of 9 probe[(]s[)] refused as core refuses[^\n]*\n.*runtime_save_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nruntime_save_corpus --negative: PASS")
+add_test(NAME interior_save_corpus COMMAND insimulcore_runtime_save_corpus ${INSIMUL_INTERIOR_SAVE_CORPUS})
+set_tests_properties(interior_save_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 9 of 9 probe[(]s[)] refused as core refuses[^\n]*\ncontract: 3 key[(]s[)] save.interior.contract states agree with the corpus's, 2 held through the rows and this runner's op list, 8 prose rule[(]s[)] named\nsaves-interior-state: driven read [1-9][0-9]*, load [1-9][0-9]*, round_trip [1-9][0-9]*. 0 undriven\ncontrols: [1-9][0-9]* of [1-9][0-9]* refused\nruntime_save_corpus: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] driven through the rows, 0 failed[^\n]*\nruntime_save_corpus: PASS")
+add_test(NAME interior_save_corpus_negative COMMAND insimulcore_runtime_save_corpus --negative ${INSIMUL_INTERIOR_SAVE_CORPUS})
+set_tests_properties(interior_save_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 9 of 9 probe[(]s[)] refused as core refuses[^\n]*\n.*runtime_save_corpus --negative: [1-9][0-9]* of [1-9][0-9]* perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)][^\n]*\nruntime_save_corpus --negative: PASS")
+# Its wrong-file control: a doctored cut of the interior corpus (tests/saves-negative/interior-state-wrong.json):
+# the contract's positionToleranceM changed, a contract key no runner holds, a wrong expectation, an op core's
+# runner does not have, no round_trip case and a control claiming the true answer must each be named, and the run
+# must FAIL.
+add_test(NAME interior_save_corpus_wrong COMMAND insimulcore_runtime_save_corpus ${CMAKE_CURRENT_SOURCE_DIR}/tests/saves-negative/interior-state-wrong.json)
+set_tests_properties(interior_save_corpus_wrong PROPERTIES
+  PASS_REGULAR_EXPRESSION "\\[FAIL\\] contract.positionToleranceM: 0.6 != 0.5\n[^\n]*\\[FAIL\\] contract: key wrongRule is neither stated[^\n]*\n.*\\[FAIL\\] WRONGLY layoutSeed 0 read as stated [^\n]*layout: \"stated\" != \"seeded\"\n[^\n]*\\[FAIL\\] WRONGLY an op core's runner does not have [^\n]*not driven: op replay is not one of core's interior-save ops[^\n]*\n[^\n]*\\[FAIL\\] control stated-read-kept-as-is [^\n]*\n[^\n]*\\[FAIL\\] op round_trip: no case of it was driven[^\n]*\n.*runtime_save_corpus: FAIL")
 
 # language_corpus (PL.native-language-rows slices 1 to 4, rulings U128, U118, U107(2), U49(3)
 # and U36): core's P9h language kernels (src/language-learning/: the book, the save block, the

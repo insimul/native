@@ -822,6 +822,34 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   case as `tests/village_save_corpus.cpp` does: one row per op, `roundTrip` as a write
   whose two bodies are put over the save and then read, `stamp` as the four stamp
   readers, a refusal compared without its `message`.
+- **The runtime save and a save made inside an interior (after PL.native-runtime-save-rows;
+  U131, U128, U118(5), U124(1), U126(3)).** Core's `RuntimeSave` is the `save.runtime.*`
+  session and core's `props/interior-save` the `save.interior.*` rows (`README.md`, "The
+  runtime save and interior save rows"). On unreal main (`54404465`, read only) the interim
+  copy is `Portable/InsimulRuntimeSave.{h,cpp}` (52 + 48 lines, over the village-save copy
+  above), replayed by `Tests/test_runtime_save.cpp` (341 lines) against Unreal's own vendored
+  `conformance/saves/runtime-save.json`; no retirement row names it yet (it would follow
+  `P1.unreal.retire-village-save-copy`). Unreal has no copy of the interior rules: its writer
+  `AInsimulVillageDirector::WriteInteriorIntoSave` (`Private/InsimulVillageProps.cpp`) writes no
+  `layoutSeed`, which core reads as a stated interior, and `Portable/InsimulInteractables.cpp`
+  tests an interior state the way `readInteriorState` reads one; `P6.unreal.interior-save-frame`
+  is the cell that binds the frame and the load placement.
+
+  | Unreal | Row |
+  |---|---|
+  | `FRuntimeSave(Fresh)` | `save.runtime.create { fresh }` → `{ session, runtimeSave, fresh }` |
+  | `NewGame`, `Load(Save, WorldId, Runtime)` / `FRuntimeLoad`, `SaveState(GameState, Options)` | `save.runtime.apply { session, ops: [{ op: new_game }, { op: load, save, options: { worldId, runtime? } }, { op: save, gameState, options }] }`: one result per op (`{ ok: true, gameState }` or `{ ok: false, refusal, outcome, message }` for a Load; `{ ok: true, save }` or `{ ok: false, refusal }` for a Save) |
+  | `Current`, `IsFresh` | every `save.runtime.create` and `.apply` answer's `runtimeSave` and `fresh` |
+  | `FInsimulSaveSlotModel::OutcomeOfLoadRefusal`, `LoadRefusalMessage` (as the runtime save calls them) | inside a refused Load's `outcome` and `message`; `save.runtime.contract`'s `refusedLoadMessage`; `ui.loadRefusal` for any code |
+  | the session's destruction | `session.dispose { session }` |
+  | `WriteInteriorIntoSave`'s record (`buildingId`, the door's label, the building's type) | `save.interior.stated { building }` → `{ interiorState }` (with `layoutSeed` null) |
+  | reading `interiorState` back (`InsimulInteractables.cpp`'s test, the load's placement) | `save.interior.read`, `.layoutOf`, `.loadOf { interiorState, position, rotation?, buildings }` → where the player stands and the `note` |
+  | the bay offset an interior scene is drawn at | `save.interior.framePoint { position, origin }` writes `p − O`; a load draws at `O + p` (engine-side) |
+
+  Re-vendor `conformance/saves/runtime-save.json` and `interior-state.json` from core at this
+  library's pin and drive each case as `tests/runtime_save_corpus.cpp` does: a run as one
+  `create` and one `apply` per step, a refusal compared by `{ code, field }`, the interior file's
+  `controls` each refused.
 - **Villager pass-by (Unreal's `P4.unreal.retire-pass-by-copy`, after
   PL.native-pass-by-rows; U118, U128, U107(2)).** Core's villager pass-by rule and its
   replay are the `passBy.*` rows (`README.md`, "The villager pass-by rows"). The

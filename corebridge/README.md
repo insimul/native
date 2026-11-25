@@ -148,6 +148,18 @@ game; **meta** = about the bridge itself.
 | `save.village.conversations.records` | `{ rows }` → `{ records }`: the rows split back, one record per conversation | `save-file-game-state` `conversationRecordsOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
 | `save.village.conversations.timestamp` | `{ epochMs }` → `{ timestamp }` (null outside the range) | `save-file-game-state` `conversationTimestampOf` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
 | `save.village.conversations.epochMs` | `{ timestamp }` → `{ epochMs }` (null unless it writes back to itself) | `save-file-game-state` `epochMsOfConversationTimestamp` | P1 village-state save (PL.native-village-save-rows; core's P1.core, PL.core-save-conversations-projection) |
+| `save.runtime.contract` | `{}` → `{ refusedLoadMessage }` | `ui/save-slot-model` `SLOT_MESSAGES.invalid_format` | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
+| `save.runtime.create` | `{ fresh }` → `{ session, runtimeSave, fresh }`: a runtime save over the host's fresh document | `runtime-save` `new RuntimeSave(fresh)` | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
+| `save.runtime.apply` | `{ session, ops: [{ op: new_game } \| { op: load, save, options: { worldId, runtime? } } \| { op: save, gameState, options: { worldId, runtime, positionFrame, tick } }] }` → `{ results, runtimeSave, fresh }`; a Load `{ ok: true, gameState }` or `{ ok: false, refusal, outcome, message }`, a Save `{ ok: true, save }` or `{ ok: false, refusal }` | `RuntimeSave` `newGame`, `load`, `save`, `current`, `isFresh` | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
+| `save.interior.contract` | `{}` → `{ positionToleranceM, defaultFloorHeightM, loadNotes }` | `props/interior-save` constants | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
+| `save.interior.read` | `{ interiorState }` → `{ interiorState }` (the one shape, or null) | `props/interior-save` `readInteriorState` | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
+| `save.interior.layoutOf` | `{ interiorState }` → `{ layout }`: `stated` or `seeded` | `props/interior-save` `interiorLayoutOf` | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
+| `save.interior.layoutSeedOf` | `{ layoutSeed }` → `{ layoutSeed }` (an integer, or null) | `props/interior-save` `layoutSeedOf` | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
+| `save.interior.stated` | `{ building }` → `{ interiorState }`: what a writer puts in for a player inside | `props/interior-save` `statedInteriorState` | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
+| `save.interior.framePoint` | `{ position, origin }` → `{ position }` in the interior frame | `props/interior-save` `interiorFramePoint` | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
+| `save.interior.extentOf` | `{ interior }` → `{ extent }` (`{ width, depth, height }` or null) | `props/interior-save` `interiorExtentOf` | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
+| `save.interior.isFramePoint` | `{ position, interior }` → `{ isFramePoint }` | `props/interior-save` `isInteriorFramePoint` | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
+| `save.interior.loadOf` | `{ interiorState, position, rotation?, buildings }` → `{ where, building, interior, frame, position, rotation, note }` | `props/interior-save` `interiorLoadOf` | P1 runtime and interior save (PL.native-runtime-save-rows; core's PL.core-load-refused-message, PL.core-load-refusal-codes, PL.core-interior-save-state) |
 | `language.contract` | `{}` → `{ cefrOrder, encounterTypes, encounterHalves, grammarWeaknessMinAttempts, grammarWeaknessRate, grammarMasteryCorrectUses, fluencyMax, fluencyGainMin, fluencyGainMax, bookRefusals, extensionKey, blockMembers, bookKeys, wordKeys, grammarKeys, namingKeys, identificationKeys, promptRefusals, examineRange, identificationTuning, namingTuning, collectionTuning, hoverRefusals, chatRefusals, chatPercentPerWordPerTurn, vocabularySorts, masteryLabels, masteryTones, dueLabel, dueTone, cardInteractions, weaknessMinAttempts, weaknessMinRatePermille, weaknessMax, improvementPermille, weaknessVolumePermille, weaknessConfidencePermille, questCategories, skillDimensions, skillToCategories, learningHistoryStatuses, scaffoldingThreshold, scaffoldingTurns, stretchThreshold, stretchTurns, signalWeights, npcModePercent, hintBehavior, cefrAdvancement, frequencyRanges, textComplexity, questPoolSizes, closeThreshold, phoneticWeight, passScore, baseXp, worldWordRefusals, signRoles, compositionRefusals, commonEnglishWords, listeningPass, storyMinLength, feedbackTypes, pronunciationObjectives, pronunciationDefaultRequired, vocabularyObjectives, vocabularyDefaultRequired, grammarObjectives, grammarDefaultRequired, recentFeedbackMax, patternExamplesMax, languageObjectiveTypeMap, languageRewardTypeMap }` | `language-learning/{progress,language-save,prompt-selector,world-words,reading-writing,chat-metrics,bank-profile,adaptation,pronunciation,quest-feedback}`, `quest-types/language-learning` constants | P9h language (PL.native-language-rows slices 1 to 4; core's P9h.core) |
 | `language.book.empty` | `{ language? }` → `{ book }` | `language-learning/progress` `emptyBook` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
 | `language.book.mastery` | `{ encountered, halves }` → `{ mastery }` | `language-learning/progress` `masteryOf` | P9h language (PL.native-language-rows slice 1; core's P9h.core) |
@@ -2371,6 +2383,73 @@ foreign-world and foreign-runtime ownership through `ownership` and `readRuntime
 the checked write and read, the conversation clock, the sky against a `weather.create`
 session), every expectation computed by core's own functions at the pin.
 
+### The runtime save and interior save rows: New Game, Load and Save, refused Loads, a save made inside (PL.native-runtime-save-rows)
+
+Core's runtime save (`src/runtime-save.ts`, `docs/village-state-save.md` §16:
+PL.core-load-refused-message, PL.core-load-refusal-codes; rulings U118(5), U124(1), U126(2)) and
+its rules for a save written inside an interior (`src/props/interior-save.ts`,
+`docs/props-and-interiors.md` §1b, `docs/village-state-save.md` §17:
+PL.core-interior-save-state; U122(4), U126(3)) are rows (U131, U128), so an engine binds them
+instead of keeping a copy (Unreal's interim `Portable/InsimulRuntimeSave`; `ENGINE_BINDINGS.md`
+maps it). They sit beside the `save.village.*` rows, whose checked write and read they call.
+
+- **The runtime save is a SESSION.** Core's `RuntimeSave` holds one save document between calls,
+  so `save.runtime.create { fresh }` opens one over the document the host builds for a new game
+  (`{ session, runtimeSave, fresh }`) and `save.runtime.apply { session, ops }` runs core's three
+  operations in order: `new_game` (the runtime save becomes a copy of the fresh document, whatever
+  was loaded or saved), `load { save, options: { worldId, runtime? } }` (core's `load`:
+  `readRuntimeSave` refuses another world's save, `wrong_world`, then another runtime's,
+  `wrong_runtime`, then whatever the checked read refuses; accepted, the document becomes the
+  runtime save) and `save { gameState, options: { worldId, runtime, positionFrame, tick } }`
+  (core's `save`: the checked writer lays its bodies over the runtime save). Each answer is
+  `{ results, runtimeSave, fresh }`: one result per op, then core's `current()` and `isFresh()`.
+  `session.dispose` closes it.
+- **A refused Load changes nothing and shows core's words.** Its result is `{ ok: false, refusal,
+  outcome, message }`: core's refusal whole (`code`, `field`, `found`/`expected` for the ownership
+  codes, `keys` for an unreadable block, core's log sentence), the slot outcome `invalid_format`
+  and `SLOT_MESSAGES.invalid_format`, for every code (U124(1), U126(2)). An engine shows that
+  message and no words of its own. A refused Save is `{ ok: false, refusal }` and changes nothing.
+  An accepted Load answers the game state, an accepted Save the runtime save as written.
+- **`save.runtime.contract`** states `refusedLoadMessage`. The slot outcome of any code is
+  `ui.loadRefusal`'s; core states no list of the codes as a value.
+- **A save made inside an interior** (`save.interior.*`): `.read` is `readInteriorState` (the one
+  shape `{ buildingId, buildingName, buildingType, layoutSeed }`, or null outside), `.layoutOf` is
+  `interiorLayoutOf` (`stated` when `layoutSeed` is null, else `seeded`), `.layoutSeedOf` is
+  `layoutSeedOf`, `.stated` is `statedInteriorState` (what a writer puts in for a player inside),
+  `.framePoint` is `interiorFramePoint` (a host's point in its interior scene minus where it drew
+  the frame's origin, Unreal's bay), `.extentOf` and `.isFramePoint` are `interiorExtentOf` and
+  `isInteriorFramePoint`, and `.loadOf` is `interiorLoadOf`: where a load puts the player (inside
+  at the saved interior-frame point, inside at the entrance when the point is not one of the
+  frame's, outside at the door for a seeded interior or a building with none, nowhere stated for a
+  building not in the world), with a `note` that is never a refusal (U126(3)). `.contract` states
+  `positionToleranceM`, `defaultFloorHeightM` and `loadNotes`.
+- **`[invalid-input]` only for what core dereferences unread**: the fresh and loaded save
+  documents, the read and write options (as `save.village.*` checks them), the two points
+  `framePoint` subtracts, the read interior state `layoutOf` reads, the building `stated` reads
+  and the buildings `loadOf` searches. A game state, an interior state, a saved position or
+  rotation and an interior's extent are handed over as they came, and core answers them.
+
+Evidence: `runtime_save_corpus` and `interior_save_corpus` (one runner,
+`tests/runtime_save_corpus.cpp`) drive core's `conformance/saves/runtime-save.json` (33 run cases
+at 45409ed: 55 new_game, load and save steps) and `conformance/saves/interior-state.json` (29
+cases: read 9, load 14, round_trip 6), copied byte for byte at the pin, each op composed from the
+rows as core's reference runners (`runtime-save-corpus.ts`, `interior-save-corpus.ts`) compose
+it. The runner holds each contract row to its file's contract and accounts for every other key
+(the ops and steps exactly its own, the refusal outcome table and the interior file's refusal
+codes through `ui.loadRefusal`, the rest named prose rules), refuses each of the interior file's
+7 controls, and probes the refusals (another world's save a value that changes nothing,
+`[invalid-input]`, an unknown op or row). The `_negative` ctests perturb every case. The same
+cases run on both case legs as `vendor/core/cases/core-saves-{runtime,interior}.json`, which
+`emit-bridge-cases.mjs` transcribes and `core_vendor` holds to the vendored corpora call for call
+(its negative, `core_vendor_runtime_save_negative`, proves the guard fails). Hand cases:
+`tests/cases/bridge-runtime-save.json` (each contract whole; a session answered whole, a refusal
+with `found`, `expected` and core's message, several ops in one apply; the boundary; and the
+interior exports the corpus reaches only through `interiorLoadOf`), **generated in this
+repository** by `tools/gen-hand-cases.mjs` from `tools/hand-cases/runtime-save.mjs` over core at
+the pin: every expectation is core's own answer, `--check` re-derives the file byte for byte, and
+`core_vendor` refuses a generated file that names another core commit than the pin, so a re-pin
+regenerates it on purpose.
+
 ### The language rows: the book, the save block, the prompt selector, hover, the chat, the bank and profile, adaptation, pronunciation, the words in the world, composition and listening, quest feedback and the quest types (PL.native-language-rows, slices 1 to 4)
 
 Core's P9h language kernels (`src/language-learning/`, `docs/language-systems.md`) are
@@ -3244,6 +3323,8 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `build_corpus`, `build_corpus_negative` | core's P10 headless build corpus (`conformance/build/headless.json`, 233 cases at 6cd4b4e) driven whole through the `build.*` rows by `tests/build_corpus.cpp` (credential markers expanded as core's runner does; 0 undriven; `build.contract` held to the file's contract; no credential repeated in a detail or a line; every out-dir refusal asked of the fold rows, with at least one case only the macOS fold catches and one only the Windows fold catches), and EVERY case's expectation perturbed and seen as wrong, with purposeful perturbations (a credential not caught or shown, a path escaping the build folder under either fold, an artefact outside it, a path outside the project) each refused |
 | `progression_corpus`, `progression_corpus_negative` | core's P9i progression corpora (`conformance/progression/{gamification,modules,skills,save}.json`, 87 cases at 45409ed with skills.json's `compose` and `kb` through the `skill.kb.*` rows, 73 at 6cd4b4e), its skill-tree corpora (`conformance/skills/*.json`, 52) and the `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json` (3) driven whole through the `progression.*` and `skill.*` rows by `tests/progression_corpus.cpp` (0 undriven per file; a gamification `run` one `progression.gamification.step` per step, every step kind driven; each progression file's catalog, ops and steps held to core's; a KB-backed `skill.unlock` per `can_unlock` case, with a no-KB control; refusal probes for an unknown op, step, area and row); the negative pass perturbs every expectation and needs every one refused |
 | `village_save_corpus`, `village_save_corpus_negative` | core's village-state save corpus (`conformance/saves/village-state.json`, 399 cases at 45409ed) driven whole through the `save.village.*` rows and `skill.kb.loadJson` by `tests/village_save_corpus.cpp`, each op as core's reference runner composes it (0 undriven; `save.village.contract` held to the file's contract; refusal probes for another version, an unregistered extension, another world and runtime, `[invalid-input]` and an unknown op or row); the negative perturbs every case |
+| `runtime_save_corpus`, `runtime_save_corpus_negative`, `interior_save_corpus`, `interior_save_corpus_negative`, `interior_save_corpus_wrong` | core's runtime save and interior save corpora (`conformance/saves/runtime-save.json`, 33 cases, and `interior-state.json`, 29 cases and 7 controls, at 45409ed) driven whole through the `save.runtime.*` and `save.interior.*` rows by `tests/runtime_save_corpus.cpp`, each op as core's reference runners compose it (0 undriven, every runtime step driven; each contract row held to its file, every other contract key accounted for; every control refused; refusal probes); the negatives perturb every case; `_wrong` runs a doctored cut (`tests/saves-negative/interior-state-wrong.json`: a contract value changed, an unknown contract key, a wrong expectation, an unknown op, an undriven op, a control claiming the true answer) and must see each named and FAIL |
+| `core_vendor_runtime_save_negative` | `vendor-core-bundle.mjs --check-runtime-save-transcription-negative`: the runtime and interior save transcription guard must name each perturbed transcription |
 | `language_corpus`, `language_corpus_negative` | core's P9h language corpora `conformance/language/{progress,save,prompts,hover,chat,bank,adaptation,pronunciation,collection,objects,writing}.json` (157 cases at 45409ed) driven whole through the `language.*` rows (and `props.interactables.examinePick` for the prompts' examine pick) by `tests/language_corpus.cpp`, each op as core's reference runner composes it (every op and step of each file driven, 0 undriven; each file's declared ops and steps held to the runner's; refusal probes for core's thirteen refusal values, the `[invalid-input]` of an unreadable book, a vocabulary sort and a band outside core's types and a listening grade with no score, an unknown op, step or row); the negative perturbs every case |
 | `tutorial_progress_corpus`, `tutorial_progress_corpus_negative` | core's tutorial progress corpus driven whole through `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows' `save` op (23 cases, 0 undriven; contract tables held to `ui.tutorial.contract`, the runner lists to the steps it maps), and a wrong contract table, a wrong runner list, four wrong answers and an undrivable step seen as wrong |
 

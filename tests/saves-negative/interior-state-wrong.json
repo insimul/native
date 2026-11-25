@@ -1,0 +1,331 @@
+{
+ "area": "saves-interior-state",
+ "description": "A doctored cut of core's conformance/saves/interior-state.json (PL.native-runtime-save-rows), the wrong-file control of interior_save_corpus: the contract's positionToleranceM changed (0.6), a contract key no runner holds (wrongRule), a wrong expectation (layoutSeed 0 expected stated), an op core's runner does not have (replay), no round_trip case, and a control whose answer is what the rows really answer. The run must name each and FAIL.",
+ "version": 1,
+ "sources": [
+  "Cut from core's conformance/saves/interior-state.json at the pin (corebridge/core-pin.json), then doctored as the description says."
+ ],
+ "tolerance": 1e-9,
+ "contract": {
+  "ops": [
+   "read",
+   "load",
+   "round_trip"
+  ],
+  "shape": "interiorState: null (outside) | {buildingId: non-empty string, buildingName: string, buildingType: string, layoutSeed: null | integer}; a record without a non-empty string buildingId reads as null; a non-string name or type reads as ''",
+  "layoutSeedRule": "null (the sentinel, STATED_LAYOUT_SEED): a stated interior, laid out by BuildingIR.interior. A finite integer, 0 included: a seeded interior, laid out by a host generator from it. A load reads an absent or non-integer layoutSeed as null",
+  "positionFrameRule": "interiorState not null: player.position and player.rotation are in the interior's own frame (metres; origin at its minimum corner; x across 0..width, z from the front wall z = 0 to depth, y up; unturned and unmoved by the building). An engine drawing the frame's origin at its own point O writes p - O in IR axes and loads by drawing at O + p. interiorState null: they are in the world frame the positionFrame slot names. The villagers' positions are always the world frame's",
+  "writerRule": "gameState.interiorState absent: the stored currentState.interiorState is carried; null: null is written; else readInteriorState of it is written (a stated interior with layoutSeed null; an unreadable one as null)",
+  "readerRule": "currentState.interiorState read by readInteriorState: the game state carries it when it names a building, and has no interiorState outside",
+  "loadRule": "interiorLoadOf: interiorState null: outside, saved position and rotation (rotation {0,0,0} when absent), frame world. Building not in the world: outside, position and rotation null, note unknown_building. Seeded, or the building states no interior: outside at doorView(b).outside (rotation {0, yaw, 0}), notes seeded_interior and no_interior. Stated and the position a point of the frame: inside interior:<id>, saved position and rotation. Stated otherwise: inside, at doorStep enter's arrive (the first entrance) with rotation {0,0,0} (facing +z, in), or position and rotation null when the interior lists no entrance; note position_outside_interior",
+  "framePointRule": "a point of the interior frame: x, y, z finite; x in [-t, width + t], z in [-t, depth + t], y in [-t, height + t]; t = positionToleranceM; height as stated, else floors (at least 1) times defaultFloorHeightM; width and depth must be finite and positive, else no point is one",
+  "positionToleranceM": 0.6,
+  "defaultFloorHeightM": 3,
+  "loadNotes": [
+   "position_outside_interior",
+   "seeded_interior",
+   "no_interior",
+   "unknown_building"
+  ],
+  "loadNotesAreNotRefusals": "a note says why the player is not where the save put them; the load is accepted. The load-refusal codes are unchanged (U124(1)): loadRefusalCodes",
+  "loadRefusalCodes": [
+   "unreadable_conversations",
+   "unreadable_gathering",
+   "unreadable_language",
+   "unreadable_npc_life",
+   "unreadable_platformer",
+   "unreadable_progression",
+   "unreadable_puzzle",
+   "unreadable_social",
+   "unreadable_strategy",
+   "unreadable_survival",
+   "unreadable_traversal",
+   "unreadable_tutorial",
+   "unreadable_weather",
+   "unregistered_extension",
+   "wrong_runtime",
+   "wrong_version",
+   "wrong_world"
+  ],
+  "wrongRule": 1
+ },
+ "replay": {
+  "input": "read: input.interiorState. load: input.interiorState, input.player.position and .rotation, input.buildings (the door model's building input plus the interior's width, depth, height and floors). round_trip: a runtime save over input.fresh saves input.gameState with writeOptions; a second over input.fresh loads what was written with readOptions; then load over the loaded game state",
+  "compare": "numbers within tolerance, everything else exactly, object key sets included (compareVillageState)",
+  "controls": "each control is a case's answer with one thing changed. A runner must refuse every one: run the named case and compare its answer with the control's"
+ },
+ "cases": [
+  {
+   "name": "read: a stated interior carries layoutSeed null",
+   "op": "read",
+   "input": {
+    "interiorState": {
+     "buildingId": "bld_6abb84eef2e499b951eecec3",
+     "buildingName": "Denham's Tavern",
+     "buildingType": "Restaurant",
+     "layoutSeed": null
+    }
+   },
+   "expected": {
+    "interiorState": {
+     "buildingId": "bld_6abb84eef2e499b951eecec3",
+     "buildingName": "Denham's Tavern",
+     "buildingType": "Restaurant",
+     "layoutSeed": null
+    },
+    "layout": "stated"
+   }
+  },
+  {
+   "name": "read: a seeded interior keeps its seed",
+   "op": "read",
+   "input": {
+    "interiorState": {
+     "buildingId": "bld_6abb84eef2e499b951eecec3",
+     "buildingName": "Denham's Tavern",
+     "buildingType": "Restaurant",
+     "layoutSeed": 7
+    }
+   },
+   "expected": {
+    "interiorState": {
+     "buildingId": "bld_6abb84eef2e499b951eecec3",
+     "buildingName": "Denham's Tavern",
+     "buildingType": "Restaurant",
+     "layoutSeed": 7
+    },
+    "layout": "seeded"
+   }
+  },
+  {
+   "name": "load: a building not in this world: outside, no stated point",
+   "op": "load",
+   "input": {
+    "interiorState": {
+     "buildingId": "bld_gone",
+     "buildingName": "Gone",
+     "buildingType": "House",
+     "layoutSeed": null
+    },
+    "player": {
+     "position": {
+      "x": 5.0114,
+      "y": 0.9,
+      "z": 3.5
+     },
+     "rotation": {
+      "x": 0,
+      "y": 1.25,
+      "z": 0
+     }
+    },
+    "buildings": [
+     {
+      "id": "bld_6abb84eef2e499b951eecec3",
+      "position": {
+       "x": 195.892,
+       "y": 0,
+       "z": 171.911
+      },
+      "rotation": -1.571,
+      "spec": {
+       "buildingRole": "Restaurant",
+       "floors": 2,
+       "width": 15,
+       "depth": 12
+      },
+      "name": "Denham's Tavern",
+      "businessType": "Restaurant",
+      "interior": {
+       "function": "business.Restaurant",
+       "width": 14.7,
+       "depth": 11.7,
+       "height": 6,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+         "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+         "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+         "kind": "door",
+         "position": {
+          "x": 10.0227,
+          "y": 0,
+          "z": 5.85
+         }
+        },
+        {
+         "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+         "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+         "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+         "kind": "stair",
+         "position": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 5.85
+         }
+        },
+        {
+         "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+         "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+         "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+         "kind": "door",
+         "position": {
+          "x": 7.84,
+          "y": 3,
+          "z": 5.85
+         }
+        },
+        {
+         "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+         "fromRoomId": "",
+         "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+         "kind": "entrance",
+         "position": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     },
+     {
+      "id": "bld_house",
+      "position": {
+       "x": 10,
+       "y": 0,
+       "z": 20
+      },
+      "rotation": 0,
+      "spec": {
+       "buildingRole": "House",
+       "width": 8,
+       "depth": 6
+      },
+      "interior": null
+     },
+     {
+      "id": "bld_shed",
+      "position": {
+       "x": -30,
+       "y": 0,
+       "z": 5
+      },
+      "rotation": 0,
+      "spec": {
+       "buildingRole": "Shed",
+       "width": 4,
+       "depth": 3
+      },
+      "interior": {
+       "function": "storage",
+       "width": 3.7,
+       "depth": 2.7,
+       "height": 3,
+       "floors": 1,
+       "doors": []
+      }
+     },
+     {
+      "id": "bld_loft",
+      "position": {
+       "x": 40,
+       "y": 0,
+       "z": -12
+      },
+      "rotation": 0,
+      "spec": {
+       "buildingRole": "House",
+       "width": 5,
+       "depth": 5
+      },
+      "interior": {
+       "function": "residence",
+       "width": 4.7,
+       "depth": 4.7,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "bld_loft!entrance",
+         "kind": "entrance",
+         "position": {
+          "x": 2.35,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "expected": {
+    "where": "outside",
+    "building": "bld_gone",
+    "interior": null,
+    "frame": "world",
+    "position": null,
+    "rotation": null,
+    "note": "unknown_building"
+   }
+  },
+  {
+   "name": "WRONGLY layoutSeed 0 read as stated",
+   "op": "read",
+   "input": {
+    "interiorState": {
+     "buildingId": "bld_6abb84eef2e499b951eecec3",
+     "buildingName": "Denham's Tavern",
+     "buildingType": "Restaurant",
+     "layoutSeed": 0
+    }
+   },
+   "expected": {
+    "interiorState": {
+     "buildingId": "bld_6abb84eef2e499b951eecec3",
+     "buildingName": "Denham's Tavern",
+     "buildingType": "Restaurant",
+     "layoutSeed": 0
+    },
+    "layout": "stated"
+   }
+  },
+  {
+   "name": "WRONGLY an op core's runner does not have",
+   "op": "replay",
+   "input": {},
+   "expected": {}
+  }
+ ],
+ "controls": [
+  {
+   "name": "stated-read-kept-as-is",
+   "case": "read: a stated interior carries layoutSeed null",
+   "change": "nothing: this control claims the true answer, so a runner must not refuse it",
+   "answer": {
+    "interiorState": {
+     "buildingId": "bld_6abb84eef2e499b951eecec3",
+     "buildingName": "Denham's Tavern",
+     "buildingType": "Restaurant",
+     "layoutSeed": null
+    },
+    "layout": "stated"
+   }
+  },
+  {
+   "name": "seeded-read-as-stated",
+   "case": "read: a seeded interior keeps its seed",
+   "change": "the seed read as null",
+   "answer": {
+    "interiorState": {
+     "buildingId": "bld_6abb84eef2e499b951eecec3",
+     "buildingName": "Denham's Tavern",
+     "buildingType": "Restaurant",
+     "layoutSeed": 7
+    },
+    "layout": "stated"
+   }
+  }
+ ]
+}

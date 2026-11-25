@@ -1,0 +1,4481 @@
+{
+  "area": "saves-interior-state",
+  "description": "A save written inside an interior (PL.core-interior-save-state; rulings U122(4), U122(2), U124(1), U49(3); Unreal run 15 P6 m3). currentState.interiorState is the building the player is inside, or null outside: {buildingId, buildingName, buildingType, layoutSeed}. layoutSeed is null for a stated interior (BuildingIR.interior; the IR lays it out, the only kind core lays out) and a finite integer only for a seeded one (a host generator's); a load reads an absent or non-integer layoutSeed as null. While interiorState is not null, player.position and player.rotation are in the interior's own frame (docs/props-and-interiors.md section 1a), never an engine's off-village bay; the save's positionFrame names the world frame of everything else. A load places the player (interiorLoadOf) and never refuses: no load-refusal code is added (U124(1)). Runner: src/interior-save-corpus.ts (ops read, load, round_trip; controls refused). Numbers compare within tolerance; everything else exactly, object key sets included. Regenerate with npm run interior-save-corpus; npm run interior-save-corpus:check fails on any difference.",
+  "version": 1,
+  "sources": [
+    "Unreal run 15 (requests/to-manager/2026-11-17-unreal-run15) P6 m3: a save written inside an interior needs interiorState.layoutSeed and a stated frame for player.position. Unreal 22f657b writes interiorState without layoutSeed (\"Interiors are not generated from a seed here (the IR states the layout)\", InsimulVillageProps.cpp WriteInteriorIntoSave) and draws each interior in a bay from kInteriorBayX = -500000 cm.",
+    "The interior frame: docs/props-and-interiors.md section 1a (U95(4)) and conformance/props/doors.json's interior-frame case, whose building (Brightwater's Denham's Tavern as pipelines 5328ed2 exports it) these cases reuse.",
+    "Babylon origin/main bfcdeb2 typed SavedInteriorState.layoutSeed as a number and never wrote an interior (BabylonGame getInteriorState returns null): the seeded shape here is synthetic.",
+    "Every expected is core's answer; every control is a case's answer with one thing changed; src/conformance/__tests__/interior-save-corpus.test.ts pins the rules independently."
+  ],
+  "tolerance": 1e-9,
+  "contract": {
+    "ops": [
+      "read",
+      "load",
+      "round_trip"
+    ],
+    "shape": "interiorState: null (outside) | {buildingId: non-empty string, buildingName: string, buildingType: string, layoutSeed: null | integer}; a record without a non-empty string buildingId reads as null; a non-string name or type reads as ''",
+    "layoutSeedRule": "null (the sentinel, STATED_LAYOUT_SEED): a stated interior, laid out by BuildingIR.interior. A finite integer, 0 included: a seeded interior, laid out by a host generator from it. A load reads an absent or non-integer layoutSeed as null",
+    "positionFrameRule": "interiorState not null: player.position and player.rotation are in the interior's own frame (metres; origin at its minimum corner; x across 0..width, z from the front wall z = 0 to depth, y up; unturned and unmoved by the building). An engine drawing the frame's origin at its own point O writes p - O in IR axes and loads by drawing at O + p. interiorState null: they are in the world frame the positionFrame slot names. The villagers' positions are always the world frame's",
+    "writerRule": "gameState.interiorState absent: the stored currentState.interiorState is carried; null: null is written; else readInteriorState of it is written (a stated interior with layoutSeed null; an unreadable one as null)",
+    "readerRule": "currentState.interiorState read by readInteriorState: the game state carries it when it names a building, and has no interiorState outside",
+    "loadRule": "interiorLoadOf: interiorState null: outside, saved position and rotation (rotation {0,0,0} when absent), frame world. Building not in the world: outside, position and rotation null, note unknown_building. Seeded, or the building states no interior: outside at doorView(b).outside (rotation {0, yaw, 0}), notes seeded_interior and no_interior. Stated and the position a point of the frame: inside interior:<id>, saved position and rotation. Stated otherwise: inside, at doorStep enter's arrive (the first entrance) with rotation {0,0,0} (facing +z, in), or position and rotation null when the interior lists no entrance; note position_outside_interior",
+    "framePointRule": "a point of the interior frame: x, y, z finite; x in [-t, width + t], z in [-t, depth + t], y in [-t, height + t]; t = positionToleranceM; height as stated, else floors (at least 1) times defaultFloorHeightM; width and depth must be finite and positive, else no point is one",
+    "positionToleranceM": 0.5,
+    "defaultFloorHeightM": 3,
+    "loadNotes": [
+      "position_outside_interior",
+      "seeded_interior",
+      "no_interior",
+      "unknown_building"
+    ],
+    "loadNotesAreNotRefusals": "a note says why the player is not where the save put them; the load is accepted. The load-refusal codes are unchanged (U124(1)): loadRefusalCodes",
+    "loadRefusalCodes": [
+      "unreadable_conversations",
+      "unreadable_gathering",
+      "unreadable_language",
+      "unreadable_npc_life",
+      "unreadable_platformer",
+      "unreadable_progression",
+      "unreadable_puzzle",
+      "unreadable_social",
+      "unreadable_strategy",
+      "unreadable_survival",
+      "unreadable_traversal",
+      "unreadable_tutorial",
+      "unreadable_weather",
+      "unregistered_extension",
+      "wrong_runtime",
+      "wrong_version",
+      "wrong_world"
+    ]
+  },
+  "replay": {
+    "input": "read: input.interiorState. load: input.interiorState, input.player.position and .rotation, input.buildings (the door model's building input plus the interior's width, depth, height and floors). round_trip: a runtime save over input.fresh saves input.gameState with writeOptions; a second over input.fresh loads what was written with readOptions; then load over the loaded game state",
+    "compare": "numbers within tolerance, everything else exactly, object key sets included (compareVillageState)",
+    "controls": "each control is a case's answer with one thing changed. A runner must refuse every one: run the named case and compare its answer with the control's"
+  },
+  "cases": [
+    {
+      "name": "read: a stated interior carries layoutSeed null",
+      "op": "read",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        }
+      },
+      "expected": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "layout": "stated"
+      }
+    },
+    {
+      "name": "read: a stated interior with no layoutSeed (Unreal's writer at 22f657b) reads as stated, layoutSeed null",
+      "op": "read",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant"
+        }
+      },
+      "expected": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "layout": "stated"
+      }
+    },
+    {
+      "name": "read: a seeded interior keeps its seed",
+      "op": "read",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": 7
+        }
+      },
+      "expected": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": 7
+        },
+        "layout": "seeded"
+      }
+    },
+    {
+      "name": "read: layoutSeed 0 is a seed, not the sentinel",
+      "op": "read",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": 0
+        }
+      },
+      "expected": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": 0
+        },
+        "layout": "seeded"
+      }
+    },
+    {
+      "name": "read: a layoutSeed of 2.5 (not an integer) reads as null, stated",
+      "op": "read",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": 2.5
+        }
+      },
+      "expected": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "layout": "stated"
+      }
+    },
+    {
+      "name": "read: a string layoutSeed reads as null, stated",
+      "op": "read",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": "7"
+        }
+      },
+      "expected": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "layout": "stated"
+      }
+    },
+    {
+      "name": "read: outside, interiorState null",
+      "op": "read",
+      "input": {
+        "interiorState": null
+      },
+      "expected": {
+        "interiorState": null,
+        "layout": null
+      }
+    },
+    {
+      "name": "read: a record with no buildingId is not an interior (null)",
+      "op": "read",
+      "input": {
+        "interiorState": {
+          "buildingName": "Denham's Tavern",
+          "layoutSeed": null
+        }
+      },
+      "expected": {
+        "interiorState": null,
+        "layout": null
+      }
+    },
+    {
+      "name": "read: a missing name and type read as ''",
+      "op": "read",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": 3,
+          "layoutSeed": null
+        }
+      },
+      "expected": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "",
+          "buildingType": "",
+          "layoutSeed": null
+        },
+        "layout": "stated"
+      }
+    },
+    {
+      "name": "load: inside a stated interior, a point of its frame is kept (interior frame)",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "player": {
+          "position": {
+            "x": 5.0114,
+            "y": 0.9,
+            "z": 3.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "inside",
+        "building": "bld_6abb84eef2e499b951eecec3",
+        "interior": "interior:bld_6abb84eef2e499b951eecec3",
+        "frame": "interior",
+        "position": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1.25,
+          "z": 0
+        },
+        "note": null
+      }
+    },
+    {
+      "name": "load: inside a stated interior, upstairs (floor 1, y 3.9 of 6 m) is kept",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "player": {
+          "position": {
+            "x": 7.84,
+            "y": 3.9,
+            "z": 8
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "inside",
+        "building": "bld_6abb84eef2e499b951eecec3",
+        "interior": "interior:bld_6abb84eef2e499b951eecec3",
+        "frame": "interior",
+        "position": {
+          "x": 7.84,
+          "y": 3.9,
+          "z": 8
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1.25,
+          "z": 0
+        },
+        "note": null
+      }
+    },
+    {
+      "name": "load: inside a stated interior, standing in the entrance (z −0.3, within the 0.5 m tolerance) is kept",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant"
+        },
+        "player": {
+          "position": {
+            "x": 5.0114,
+            "y": 0,
+            "z": -0.3
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "inside",
+        "building": "bld_6abb84eef2e499b951eecec3",
+        "interior": "interior:bld_6abb84eef2e499b951eecec3",
+        "frame": "interior",
+        "position": {
+          "x": 5.0114,
+          "y": 0,
+          "z": -0.3
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1.25,
+          "z": 0
+        },
+        "note": null
+      }
+    },
+    {
+      "name": "load: a stated interior carrying an engine-frame position (Unreal's 5 km bay) is not kept: the player arrives at the entrance, facing in",
+      "note": "The control \"stated-interior-engine-frame-position-kept\" claims the bay point is kept; a runner must refuse it.",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant"
+        },
+        "player": {
+          "position": {
+            "x": 5.0114,
+            "y": 0.9,
+            "z": -4996.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "inside",
+        "building": "bld_6abb84eef2e499b951eecec3",
+        "interior": "interior:bld_6abb84eef2e499b951eecec3",
+        "frame": "interior",
+        "position": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "note": "position_outside_interior"
+      }
+    },
+    {
+      "name": "load: a stated interior carrying a world-frame position (by the building) is not kept: the entrance",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "player": {
+          "position": {
+            "x": 195.892,
+            "y": 0,
+            "z": 171.911
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "inside",
+        "building": "bld_6abb84eef2e499b951eecec3",
+        "interior": "interior:bld_6abb84eef2e499b951eecec3",
+        "frame": "interior",
+        "position": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "note": "position_outside_interior"
+      }
+    },
+    {
+      "name": "load: a stated interior carrying a position above its height (y 7 of 6 m) is not kept",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "player": {
+          "position": {
+            "x": 5,
+            "y": 7,
+            "z": 5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "inside",
+        "building": "bld_6abb84eef2e499b951eecec3",
+        "interior": "interior:bld_6abb84eef2e499b951eecec3",
+        "frame": "interior",
+        "position": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "note": "position_outside_interior"
+      }
+    },
+    {
+      "name": "load: a stated interior with no entrance and a position not in its frame: inside, no stated point (the host places the player)",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_shed",
+          "buildingName": "Shed",
+          "buildingType": "Shed",
+          "layoutSeed": null
+        },
+        "player": {
+          "position": {
+            "x": -30,
+            "y": 0,
+            "z": 5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "inside",
+        "building": "bld_shed",
+        "interior": "interior:bld_shed",
+        "frame": "interior",
+        "position": null,
+        "rotation": null,
+        "note": "position_outside_interior"
+      }
+    },
+    {
+      "name": "load: an interior with no stated height is floors × 3 m high: y 6.4 of 6 m is kept (within 0.5 m)",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_loft",
+          "buildingName": "House",
+          "buildingType": "House",
+          "layoutSeed": null
+        },
+        "player": {
+          "position": {
+            "x": 2,
+            "y": 6.4,
+            "z": 2
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "inside",
+        "building": "bld_loft",
+        "interior": "interior:bld_loft",
+        "frame": "interior",
+        "position": {
+          "x": 2,
+          "y": 6.4,
+          "z": 2
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1.25,
+          "z": 0
+        },
+        "note": null
+      }
+    },
+    {
+      "name": "load: an interior with no stated height is floors × 3 m high: y 6.6 is not kept",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_loft",
+          "buildingName": "House",
+          "buildingType": "House",
+          "layoutSeed": null
+        },
+        "player": {
+          "position": {
+            "x": 2,
+            "y": 6.6,
+            "z": 2
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "inside",
+        "building": "bld_loft",
+        "interior": "interior:bld_loft",
+        "frame": "interior",
+        "position": {
+          "x": 2.35,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "note": "position_outside_interior"
+      }
+    },
+    {
+      "name": "load: a locked door does not keep a load out (a load is not a key check): the entrance",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "player": {
+          "position": {
+            "x": 5.0114,
+            "y": 0.9,
+            "z": -4996.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            },
+            "locked": true,
+            "keyItemId": "item_tavern_key"
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          }
+        ]
+      },
+      "expected": {
+        "where": "inside",
+        "building": "bld_6abb84eef2e499b951eecec3",
+        "interior": "interior:bld_6abb84eef2e499b951eecec3",
+        "frame": "interior",
+        "position": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "note": "position_outside_interior"
+      }
+    },
+    {
+      "name": "load: a seeded interior is not re-entered: outside, at the door, facing out",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": 7
+        },
+        "player": {
+          "position": {
+            "x": 5.0114,
+            "y": 0.9,
+            "z": 3.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "outside",
+        "building": "bld_6abb84eef2e499b951eecec3",
+        "interior": null,
+        "frame": "world",
+        "position": {
+          "x": 189.392000134,
+          "y": 0,
+          "z": 171.909676124
+        },
+        "rotation": {
+          "x": 0,
+          "y": -1.571,
+          "z": 0
+        },
+        "note": "seeded_interior"
+      }
+    },
+    {
+      "name": "load: a building whose world states no interior: outside, at its door",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_house",
+          "buildingName": "House",
+          "buildingType": "House",
+          "layoutSeed": null
+        },
+        "player": {
+          "position": {
+            "x": 2,
+            "y": 0,
+            "z": 2
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "outside",
+        "building": "bld_house",
+        "interior": null,
+        "frame": "world",
+        "position": {
+          "x": 10,
+          "y": 0,
+          "z": 23.5
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "note": "no_interior"
+      }
+    },
+    {
+      "name": "load: a building not in this world: outside, no stated point",
+      "op": "load",
+      "input": {
+        "interiorState": {
+          "buildingId": "bld_gone",
+          "buildingName": "Gone",
+          "buildingType": "House",
+          "layoutSeed": null
+        },
+        "player": {
+          "position": {
+            "x": 5.0114,
+            "y": 0.9,
+            "z": 3.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "outside",
+        "building": "bld_gone",
+        "interior": null,
+        "frame": "world",
+        "position": null,
+        "rotation": null,
+        "note": "unknown_building"
+      }
+    },
+    {
+      "name": "load: outside (interiorState null): the saved world-frame position is kept",
+      "op": "load",
+      "input": {
+        "interiorState": null,
+        "player": {
+          "position": {
+            "x": 189.392,
+            "y": 0,
+            "z": 171.91
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "where": "outside",
+        "building": null,
+        "interior": null,
+        "frame": "world",
+        "position": {
+          "x": 189.392,
+          "y": 0,
+          "z": 171.91
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1.25,
+          "z": 0
+        },
+        "note": null
+      }
+    },
+    {
+      "name": "round trip: saved inside a stated interior, loaded inside it at the same interior-frame point",
+      "op": "round_trip",
+      "input": {
+        "fresh": {
+          "id": "new-game",
+          "worldId": "0123456789abcdef01234567",
+          "slotIndex": 0,
+          "version": 3,
+          "lastSavedAt": "2026-11-17T00:00:00Z",
+          "currentState": {
+            "player": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "gold": 100,
+              "health": 100,
+              "energy": 100,
+              "inventory": []
+            },
+            "quests": {
+              "progress": {}
+            },
+            "npcs": {
+              "relationships": {}
+            },
+            "prologFacts": [],
+            "interiorState": null,
+            "extensions": {}
+          },
+          "conversations": []
+        },
+        "readOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village"
+        },
+        "writeOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village",
+          "positionFrame": "world-ir-m",
+          "tick": 33
+        },
+        "gameState": {
+          "version": 3,
+          "slotIndex": 1,
+          "savedAt": "2026-11-17T09:00:00Z",
+          "gameTime": 33.75,
+          "player": {
+            "position": {
+              "x": 5.0114,
+              "y": 0.9,
+              "z": 3.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 1.25,
+              "z": 0
+            },
+            "gold": 100,
+            "health": 100,
+            "energy": 100,
+            "inventory": []
+          },
+          "npcs": [],
+          "relationships": {},
+          "romance": {},
+          "merchants": [],
+          "currentZone": null,
+          "questProgress": {},
+          "timeState": {
+            "gameHour": 9,
+            "gameMinute": 45,
+            "dayNumber": 2,
+            "timeScale": 1,
+            "isPaused": false
+          },
+          "interiorState": {
+            "buildingId": "bld_6abb84eef2e499b951eecec3",
+            "buildingName": "Denham's Tavern",
+            "buildingType": "Restaurant",
+            "layoutSeed": null
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "written": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "writtenPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "loaded": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "loadedPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "placement": {
+          "where": "inside",
+          "building": "bld_6abb84eef2e499b951eecec3",
+          "interior": "interior:bld_6abb84eef2e499b951eecec3",
+          "frame": "interior",
+          "position": {
+            "x": 5.0114,
+            "y": 0.9,
+            "z": 3.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          },
+          "note": null
+        }
+      }
+    },
+    {
+      "name": "round trip: a game reporting Unreal's shape (no layoutSeed) is written with layoutSeed null and loads inside",
+      "op": "round_trip",
+      "input": {
+        "fresh": {
+          "id": "new-game",
+          "worldId": "0123456789abcdef01234567",
+          "slotIndex": 0,
+          "version": 3,
+          "lastSavedAt": "2026-11-17T00:00:00Z",
+          "currentState": {
+            "player": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "gold": 100,
+              "health": 100,
+              "energy": 100,
+              "inventory": []
+            },
+            "quests": {
+              "progress": {}
+            },
+            "npcs": {
+              "relationships": {}
+            },
+            "prologFacts": [],
+            "interiorState": null,
+            "extensions": {}
+          },
+          "conversations": []
+        },
+        "readOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village"
+        },
+        "writeOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village",
+          "positionFrame": "world-ir-m",
+          "tick": 33
+        },
+        "gameState": {
+          "version": 3,
+          "slotIndex": 1,
+          "savedAt": "2026-11-17T09:00:00Z",
+          "gameTime": 33.75,
+          "player": {
+            "position": {
+              "x": 5.0114,
+              "y": 0.9,
+              "z": 3.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 1.25,
+              "z": 0
+            },
+            "gold": 100,
+            "health": 100,
+            "energy": 100,
+            "inventory": []
+          },
+          "npcs": [],
+          "relationships": {},
+          "romance": {},
+          "merchants": [],
+          "currentZone": null,
+          "questProgress": {},
+          "timeState": {
+            "gameHour": 9,
+            "gameMinute": 45,
+            "dayNumber": 2,
+            "timeScale": 1,
+            "isPaused": false
+          },
+          "interiorState": {
+            "buildingId": "bld_6abb84eef2e499b951eecec3",
+            "buildingName": "Denham's Tavern",
+            "buildingType": "Restaurant"
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "written": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "writtenPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "loaded": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "loadedPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "placement": {
+          "where": "inside",
+          "building": "bld_6abb84eef2e499b951eecec3",
+          "interior": "interior:bld_6abb84eef2e499b951eecec3",
+          "frame": "interior",
+          "position": {
+            "x": 5.0114,
+            "y": 0.9,
+            "z": 3.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          },
+          "note": null
+        }
+      }
+    },
+    {
+      "name": "round trip: a seeded interior keeps its seed through the save; the load puts the player outside at the door",
+      "op": "round_trip",
+      "input": {
+        "fresh": {
+          "id": "new-game",
+          "worldId": "0123456789abcdef01234567",
+          "slotIndex": 0,
+          "version": 3,
+          "lastSavedAt": "2026-11-17T00:00:00Z",
+          "currentState": {
+            "player": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "gold": 100,
+              "health": 100,
+              "energy": 100,
+              "inventory": []
+            },
+            "quests": {
+              "progress": {}
+            },
+            "npcs": {
+              "relationships": {}
+            },
+            "prologFacts": [],
+            "interiorState": null,
+            "extensions": {}
+          },
+          "conversations": []
+        },
+        "readOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village"
+        },
+        "writeOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village",
+          "positionFrame": "world-ir-m",
+          "tick": 33
+        },
+        "gameState": {
+          "version": 3,
+          "slotIndex": 1,
+          "savedAt": "2026-11-17T09:00:00Z",
+          "gameTime": 33.75,
+          "player": {
+            "position": {
+              "x": 5.0114,
+              "y": 0.9,
+              "z": 3.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 1.25,
+              "z": 0
+            },
+            "gold": 100,
+            "health": 100,
+            "energy": 100,
+            "inventory": []
+          },
+          "npcs": [],
+          "relationships": {},
+          "romance": {},
+          "merchants": [],
+          "currentZone": null,
+          "questProgress": {},
+          "timeState": {
+            "gameHour": 9,
+            "gameMinute": 45,
+            "dayNumber": 2,
+            "timeScale": 1,
+            "isPaused": false
+          },
+          "interiorState": {
+            "buildingId": "bld_6abb84eef2e499b951eecec3",
+            "buildingName": "Denham's Tavern",
+            "buildingType": "Restaurant",
+            "layoutSeed": 7
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "written": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": 7
+        },
+        "writtenPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "loaded": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": 7
+        },
+        "loadedPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "placement": {
+          "where": "outside",
+          "building": "bld_6abb84eef2e499b951eecec3",
+          "interior": null,
+          "frame": "world",
+          "position": {
+            "x": 189.392000134,
+            "y": 0,
+            "z": 171.909676124
+          },
+          "rotation": {
+            "x": 0,
+            "y": -1.571,
+            "z": 0
+          },
+          "note": "seeded_interior"
+        }
+      }
+    },
+    {
+      "name": "round trip: outside, interiorState null is written null and loads outside at the saved world point",
+      "op": "round_trip",
+      "input": {
+        "fresh": {
+          "id": "new-game",
+          "worldId": "0123456789abcdef01234567",
+          "slotIndex": 0,
+          "version": 3,
+          "lastSavedAt": "2026-11-17T00:00:00Z",
+          "currentState": {
+            "player": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "gold": 100,
+              "health": 100,
+              "energy": 100,
+              "inventory": []
+            },
+            "quests": {
+              "progress": {}
+            },
+            "npcs": {
+              "relationships": {}
+            },
+            "prologFacts": [],
+            "interiorState": null,
+            "extensions": {}
+          },
+          "conversations": []
+        },
+        "readOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village"
+        },
+        "writeOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village",
+          "positionFrame": "world-ir-m",
+          "tick": 33
+        },
+        "gameState": {
+          "version": 3,
+          "slotIndex": 1,
+          "savedAt": "2026-11-17T09:00:00Z",
+          "gameTime": 33.75,
+          "player": {
+            "position": {
+              "x": 189.392,
+              "y": 0,
+              "z": 171.91
+            },
+            "rotation": {
+              "x": 0,
+              "y": 1.25,
+              "z": 0
+            },
+            "gold": 100,
+            "health": 100,
+            "energy": 100,
+            "inventory": []
+          },
+          "npcs": [],
+          "relationships": {},
+          "romance": {},
+          "merchants": [],
+          "currentZone": null,
+          "questProgress": {},
+          "timeState": {
+            "gameHour": 9,
+            "gameMinute": 45,
+            "dayNumber": 2,
+            "timeScale": 1,
+            "isPaused": false
+          },
+          "interiorState": null
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "written": null,
+        "writtenPosition": {
+          "x": 189.392,
+          "y": 0,
+          "z": 171.91
+        },
+        "loaded": null,
+        "loadedPosition": {
+          "x": 189.392,
+          "y": 0,
+          "z": 171.91
+        },
+        "placement": {
+          "where": "outside",
+          "building": null,
+          "interior": null,
+          "frame": "world",
+          "position": {
+            "x": 189.392,
+            "y": 0,
+            "z": 171.91
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          },
+          "note": null
+        }
+      }
+    },
+    {
+      "name": "round trip: a game reporting no interiorState carries the stored one (absent is not null)",
+      "note": "The fresh document already says the player is inside the tavern; a game state without the key leaves it as stored.",
+      "op": "round_trip",
+      "input": {
+        "fresh": {
+          "id": "new-game",
+          "worldId": "0123456789abcdef01234567",
+          "slotIndex": 0,
+          "version": 3,
+          "lastSavedAt": "2026-11-17T00:00:00Z",
+          "currentState": {
+            "player": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "gold": 100,
+              "health": 100,
+              "energy": 100,
+              "inventory": []
+            },
+            "quests": {
+              "progress": {}
+            },
+            "npcs": {
+              "relationships": {}
+            },
+            "prologFacts": [],
+            "interiorState": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null
+            },
+            "extensions": {}
+          },
+          "conversations": []
+        },
+        "readOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village"
+        },
+        "writeOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village",
+          "positionFrame": "world-ir-m",
+          "tick": 33
+        },
+        "gameState": {
+          "version": 3,
+          "slotIndex": 1,
+          "savedAt": "2026-11-17T09:00:00Z",
+          "gameTime": 33.75,
+          "player": {
+            "position": {
+              "x": 5.0114,
+              "y": 0.9,
+              "z": 3.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 1.25,
+              "z": 0
+            },
+            "gold": 100,
+            "health": 100,
+            "energy": 100,
+            "inventory": []
+          },
+          "npcs": [],
+          "relationships": {},
+          "romance": {},
+          "merchants": [],
+          "currentZone": null,
+          "questProgress": {},
+          "timeState": {
+            "gameHour": 9,
+            "gameMinute": 45,
+            "dayNumber": 2,
+            "timeScale": 1,
+            "isPaused": false
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "written": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "writtenPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "loaded": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "loadedPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "placement": {
+          "where": "inside",
+          "building": "bld_6abb84eef2e499b951eecec3",
+          "interior": "interior:bld_6abb84eef2e499b951eecec3",
+          "frame": "interior",
+          "position": {
+            "x": 5.0114,
+            "y": 0.9,
+            "z": 3.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          },
+          "note": null
+        }
+      }
+    },
+    {
+      "name": "round trip: an engine-frame position saved inside is written as given; the load does not keep it (the entrance)",
+      "op": "round_trip",
+      "input": {
+        "fresh": {
+          "id": "new-game",
+          "worldId": "0123456789abcdef01234567",
+          "slotIndex": 0,
+          "version": 3,
+          "lastSavedAt": "2026-11-17T00:00:00Z",
+          "currentState": {
+            "player": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "gold": 100,
+              "health": 100,
+              "energy": 100,
+              "inventory": []
+            },
+            "quests": {
+              "progress": {}
+            },
+            "npcs": {
+              "relationships": {}
+            },
+            "prologFacts": [],
+            "interiorState": null,
+            "extensions": {}
+          },
+          "conversations": []
+        },
+        "readOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village"
+        },
+        "writeOptions": {
+          "worldId": "0123456789abcdef01234567",
+          "runtime": "unreal-village",
+          "positionFrame": "world-ir-m",
+          "tick": 33
+        },
+        "gameState": {
+          "version": 3,
+          "slotIndex": 1,
+          "savedAt": "2026-11-17T09:00:00Z",
+          "gameTime": 33.75,
+          "player": {
+            "position": {
+              "x": 5.0114,
+              "y": 0.9,
+              "z": -4996.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 1.25,
+              "z": 0
+            },
+            "gold": 100,
+            "health": 100,
+            "energy": 100,
+            "inventory": []
+          },
+          "npcs": [],
+          "relationships": {},
+          "romance": {},
+          "merchants": [],
+          "currentZone": null,
+          "questProgress": {},
+          "timeState": {
+            "gameHour": 9,
+            "gameMinute": 45,
+            "dayNumber": 2,
+            "timeScale": 1,
+            "isPaused": false
+          },
+          "interiorState": {
+            "buildingId": "bld_6abb84eef2e499b951eecec3",
+            "buildingName": "Denham's Tavern",
+            "buildingType": "Restaurant"
+          }
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "bld_house",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 8,
+              "depth": 6
+            },
+            "interior": null
+          },
+          {
+            "id": "bld_shed",
+            "position": {
+              "x": -30,
+              "y": 0,
+              "z": 5
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Shed",
+              "width": 4,
+              "depth": 3
+            },
+            "interior": {
+              "function": "storage",
+              "width": 3.7,
+              "depth": 2.7,
+              "height": 3,
+              "floors": 1,
+              "doors": []
+            }
+          },
+          {
+            "id": "bld_loft",
+            "position": {
+              "x": 40,
+              "y": 0,
+              "z": -12
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "width": 5,
+              "depth": 5
+            },
+            "interior": {
+              "function": "residence",
+              "width": 4.7,
+              "depth": 4.7,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_loft!entrance",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 2.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "written": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "writtenPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": -4996.5
+        },
+        "loaded": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "loadedPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": -4996.5
+        },
+        "placement": {
+          "where": "inside",
+          "building": "bld_6abb84eef2e499b951eecec3",
+          "interior": "interior:bld_6abb84eef2e499b951eecec3",
+          "frame": "interior",
+          "position": {
+            "x": 5.0114,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "note": "position_outside_interior"
+        }
+      }
+    }
+  ],
+  "controls": [
+    {
+      "name": "stated-interior-engine-frame-position-kept",
+      "case": "load: a stated interior carrying an engine-frame position (Unreal's 5 km bay) is not kept: the player arrives at the entrance, facing in",
+      "change": "the bay point is kept as the player's interior-frame position, with no note",
+      "answer": {
+        "where": "inside",
+        "building": "bld_6abb84eef2e499b951eecec3",
+        "interior": "interior:bld_6abb84eef2e499b951eecec3",
+        "frame": "interior",
+        "position": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": -4996.5
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1.25,
+          "z": 0
+        },
+        "note": null
+      }
+    },
+    {
+      "name": "stated-interior-read-with-seed-zero",
+      "case": "read: a stated interior with no layoutSeed (Unreal's writer at 22f657b) reads as stated, layoutSeed null",
+      "change": "an absent layoutSeed reads as 0, a seeded interior",
+      "answer": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": 0
+        },
+        "layout": "seeded"
+      }
+    },
+    {
+      "name": "seed-zero-read-as-stated",
+      "case": "read: layoutSeed 0 is a seed, not the sentinel",
+      "change": "layoutSeed 0 reads as null, a stated interior",
+      "answer": {
+        "interiorState": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "layout": "stated"
+      }
+    },
+    {
+      "name": "seeded-interior-re-entered",
+      "case": "load: a seeded interior is not re-entered: outside, at the door, facing out",
+      "change": "the seeded interior is entered at the saved point, as a stated one is",
+      "answer": {
+        "where": "inside",
+        "building": "bld_6abb84eef2e499b951eecec3",
+        "interior": "interior:bld_6abb84eef2e499b951eecec3",
+        "frame": "interior",
+        "position": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1.25,
+          "z": 0
+        },
+        "note": null
+      }
+    },
+    {
+      "name": "outside-position-read-as-interior",
+      "case": "load: outside (interiorState null): the saved world-frame position is kept",
+      "change": "the frame is the interior one although interiorState is null",
+      "answer": {
+        "where": "outside",
+        "building": null,
+        "interior": null,
+        "frame": "interior",
+        "position": {
+          "x": 189.392,
+          "y": 0,
+          "z": 171.91
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1.25,
+          "z": 0
+        },
+        "note": null
+      }
+    },
+    {
+      "name": "round-trip-drops-the-interior",
+      "case": "round trip: saved inside a stated interior, loaded inside it at the same interior-frame point",
+      "change": "the mapping before this row: the interior is not written and not read back, so the load reads the interior-frame point as a world point",
+      "answer": {
+        "written": null,
+        "writtenPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "loaded": null,
+        "loadedPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "placement": {
+          "where": "outside",
+          "building": null,
+          "interior": null,
+          "frame": "world",
+          "position": {
+            "x": 5.0114,
+            "y": 0.9,
+            "z": 3.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          },
+          "note": null
+        }
+      }
+    },
+    {
+      "name": "round-trip-absent-overwrites-with-null",
+      "case": "round trip: a game reporting no interiorState carries the stored one (absent is not null)",
+      "change": "a game state without the key writes null over the stored interior",
+      "answer": {
+        "written": null,
+        "writtenPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "loaded": null,
+        "loadedPosition": {
+          "x": 5.0114,
+          "y": 0.9,
+          "z": 3.5
+        },
+        "placement": {
+          "where": "inside",
+          "building": "bld_6abb84eef2e499b951eecec3",
+          "interior": "interior:bld_6abb84eef2e499b951eecec3",
+          "frame": "interior",
+          "position": {
+            "x": 5.0114,
+            "y": 0.9,
+            "z": 3.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 1.25,
+            "z": 0
+          },
+          "note": null
+        }
+      }
+    }
+  ]
+}

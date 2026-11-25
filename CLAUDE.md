@@ -656,7 +656,8 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, audio cues, survival, traversal (vehicles-only among them), headless build, progression, village save, villager pass-by, world-vehicle parking, HUD (notifications, compass, minimap), quest lifecycle and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, audio cues, survival, traversal (vehicles-only among them), headless build, progression, village save, runtime save, interior save, villager pass-by, world-vehicle parking, HUD (notifications, compass, minimap), quest lifecycle and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the generated hand cases
+  (`node corebridge/tools/gen-hand-cases.mjs --core <checkout>`; `core_vendor` refuses them until you do) and the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -972,6 +973,28 @@
   `message`; `[invalid-input]` only for what core dereferences unread. The bundle now
   carries `src/save-file-game-state.ts` on purpose (it left `UNBUNDLED_CORE_MODULES`);
   never import `save-file-game-state-corpus` (core's runner), which stays refused.
+- **The runtime save and interior save rows (PL.native-runtime-save-rows, U131, U128) run
+  core's `conformance/saves/runtime-save.json` and `interior-state.json` UNCHANGED**, copied
+  with the save set (`SAVES_CORPUS_FILES`) and driven by ONE runner,
+  `tests/runtime_save_corpus.cpp`, as `runtime_save_corpus` and `interior_save_corpus` (+
+  `_negative` each, and `interior_save_corpus_wrong` over `tests/saves-negative/`); it accounts for every contract key (stated by the contract row, held
+  through the rows, or a named prose rule; an unknown key fails) and refuses each of the
+  interior file's `controls`. `emit-bridge-cases.mjs` transcribes both into
+  `vendor/core/cases/core-saves-{runtime,interior}.json`, and `core_vendor` holds them to the
+  corpora call for call (`core_vendor_runtime_save_negative`: nineteen perturbations named).
+  Core's `RuntimeSave` is a SESSION (`save.runtime.create`, `save.runtime.apply` with ops
+  `new_game`, `load`, `save`; the answer carries `runtimeSave` and `fresh`); `save.interior.<fn>`
+  is one function of `props/interior-save` each. Never import `runtime-save-corpus` or
+  `interior-save-corpus` (core's runners; both in `UNBUNDLED_CORE_MODULES`).
+- **Hand cases whose answers are core's are GENERATED in this repo**: `tools/gen-hand-cases.mjs
+  --core <checkout> [--node-modules <dir>]… [--check]` bundles each spec under
+  `tools/hand-cases/` against core AT THE PIN (git archive, the pinned esbuild) and writes its
+  `tests/cases/<file>`, recording `generatedBy` and `source: { coreCommit, spec }`; `--check`
+  re-derives it byte for byte. `core_vendor` refuses a generated file that names another
+  commit than the pin (and a spec with no file), so a re-pin is red until you regenerate. A spec
+  computes every `expect` by calling core; only the rows' own `[invalid-input]` errors are
+  literal. Today: `hand-cases/runtime-save.mjs` → `bridge-runtime-save.json`. The older hand
+  files (e.g. `bridge-village-save.json`) were generated outside the repo and are not covered.
 - **The language rows (PL.native-language-rows, U118, U128; landed in SLICES) run core's
   `conformance/language/*.json` UNCHANGED**, copied as the language set
   (`LANGUAGE_CORPUS_FILES`; slice 1: progress, save, prompts, hover, chat; slice 2: bank,

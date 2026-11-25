@@ -318,6 +318,198 @@ function villageSave(root, coreCommit) {
 	);
 }
 
+// ── the runtime save: conformance/saves/runtime-save.json (runtime-save.test.ts) ──
+//
+// Core's reference runner is src/runtime-save-corpus.ts (`runRuntimeSaveOp`): one op, `run`,
+// a `new RuntimeSave(fresh)` and then each step on it, recording the step's result, the
+// runtime save and whether it is the fresh document. Through the rows (PL.native-runtime-save-rows):
+//
+//   start        save.runtime.create { fresh }            -> { session: 1, runtimeSave, fresh }
+//   each step    save.runtime.apply { session: 1, ops: [ { op: new_game | load | save, ... } ] }
+//                                                         -> { results: [ result ], runtimeSave, fresh }
+//
+// A step `{ load: <save> }` is the op `{ op: 'load', save, options: readOptions }`, `{ save: <game
+// state> }` is `{ op: 'save', gameState, options: writeOptions }`. The corpus pins a result as
+// `{ ok: true }` or a refusal by `{ code, field }` (and a refused Load's `outcome` and `message`);
+// the row answers more (a Load's `gameState`, a Save's written `save`, the refusal's `found`,
+// `expected`, `keys` and `message`), so: an accepted Load is `{ ok: true, gameState: <an object> }`,
+// an accepted Save `{ ok: true, save: <the runtime save the same step records> }`, and a refusal
+// `$subset` of `{ code, field, message: <a string> }`. An op or step this map does not know fails
+// the emit.
+export const RUNTIME_SAVE_CASE_FILE = { area: 'saves-runtime', corpus: 'conformance/saves/runtime-save.json', cases: 'core-saves-runtime.json' };
+/** The contract keys save.runtime.contract states (core's values); tests/runtime_save_corpus.cpp holds the rest. */
+export const RUNTIME_SAVE_CONTRACT_ROW_KEYS = ['refusedLoadMessage'];
+
+const refusedSubset = (refusal) => ({ $subset: { ...refusal, message: { $type: 'string' } } });
+
+/** One runtime-save corpus case as bridge steps. */
+export function runtimeSaveCaseSteps(c) {
+	const where = `saves-runtime ${c.op}: ${c.name}`;
+	if (c.op !== 'run') throw new Error(`emit-bridge-cases: ${where}: no row for op ${c.op}`);
+	const { fresh, readOptions, writeOptions, steps } = c.input;
+	const e = c.expected;
+	if (!Array.isArray(steps) || !e?.start || !Array.isArray(e.steps) || e.steps.length !== steps.length) {
+		throw new Error(`emit-bridge-cases: ${where}: ${steps?.length} step(s) but the answer is not { start, steps } with one per step`);
+	}
+	const out = [{ call: 'save.runtime.create', args: { fresh }, expect: { session: 1, ...e.start } }];
+	steps.forEach((st, i) => {
+		const keys = Object.keys(st);
+		if (keys.length !== 1) throw new Error(`emit-bridge-cases: ${where}: step ${i} names ${keys.length} steps`);
+		const k = keys[0];
+		const rec = e.steps[i];
+		const res = rec.result;
+		let op;
+		let result;
+		if (k === 'new_game') {
+			op = { op: 'new_game' };
+			result = res;
+		} else if (k === 'load') {
+			op = { op: 'load', save: st.load, options: readOptions };
+			result = res.ok ? { ok: true, gameState: { $type: 'object' } } : { ...res, refusal: refusedSubset(res.refusal) };
+		} else if (k === 'save') {
+			op = { op: 'save', gameState: st.save, options: writeOptions };
+			result = res.ok ? { ok: true, save: rec.runtimeSave } : { ...res, refusal: refusedSubset(res.refusal) };
+		} else {
+			throw new Error(`emit-bridge-cases: ${where}: step ${i} is ${k}, not one of new_game, load, save`);
+		}
+		out.push({ call: 'save.runtime.apply', args: { session: 1, ops: [op] }, expect: { results: [result], runtimeSave: rec.runtimeSave, fresh: rec.fresh } });
+	});
+	return out;
+}
+
+function runtimeSave(root, coreCommit) {
+	const { area, corpus, cases: name } = RUNTIME_SAVE_CASE_FILE;
+	const r = reader(root);
+	const file = r.json(corpus);
+	if (file.area !== area) throw new Error(`emit-bridge-cases: ${corpus} is not the ${area} corpus`);
+	const contract = Object.fromEntries(RUNTIME_SAVE_CONTRACT_ROW_KEYS.map((k) => {
+		if (!Object.prototype.hasOwnProperty.call(file.contract, k)) throw new Error(`emit-bridge-cases: ${corpus}'s contract has no ${k}`);
+		return [k, file.contract[k]];
+	}));
+	const cases = [{ name: `${area}: the contract save.runtime.contract states`, steps: [{ call: 'save.runtime.contract', expect: contract }] }];
+	for (const c of file.cases) cases.push({ name: `${area} ${c.op}: ${c.name}`, steps: runtimeSaveCaseSteps(c) });
+	return {
+		[name]: caseFile(
+			area,
+			`core's runtime save corpus (${corpus}, PL.core-load-refused-message and PL.core-load-refusal-codes) through the ` +
+				"save.runtime.* rows, each run the calls core's reference runner (src/runtime-save-corpus.ts) makes, through them: " +
+				'create, then one apply per step; numbers held exactly (tests/runtime_save_corpus.cpp replays the file itself within ' +
+				`its tolerance, ${file.tolerance}).`,
+			coreCommit,
+			r.files,
+			cases,
+		),
+	};
+}
+
+// ── the interior save: conformance/saves/interior-state.json (interior-save-corpus.test.ts) ──
+//
+// Core's reference runner is src/interior-save-corpus.ts (`runInteriorSaveOp`). Through the rows:
+//
+//   read        save.interior.read { interiorState } -> { interiorState }; when it is not null,
+//               save.interior.layoutOf { interiorState: <that> } -> { layout } (null outside, no call)
+//   load        save.interior.loadOf { interiorState, position, rotation, buildings }, the case's
+//               `player.position` and `player.rotation` (absent stays absent) -> the InteriorLoad
+//   round_trip  save.runtime.create { fresh } (session 1), save.runtime.apply { save gameState with
+//               writeOptions }; save.runtime.create { fresh } (session 2), save.runtime.apply { load the
+//               written save with readOptions }; then save.interior.loadOf over the loaded game state's
+//               interiorState (or null), player.position and player.rotation, and the case's buildings.
+//               `written`/`writtenPosition` are held in the save step's written `save`, `loaded`/
+//               `loadedPosition` in the load step's `gameState`, `placement` is loadOf's answer. A
+//               round trip that core refuses fails the emit (the corpus has none; its refusal names no
+//               stage, so a transcription would have to guess one).
+//
+// The file's `controls` are its runner's negatives (tests/runtime_save_corpus.cpp refuses each);
+// they are not transcribed.
+export const INTERIOR_SAVE_CASE_FILE = { area: 'saves-interior-state', corpus: 'conformance/saves/interior-state.json', cases: 'core-saves-interior.json' };
+/** The contract keys save.interior.contract states (core's values); tests/runtime_save_corpus.cpp holds the rest. */
+export const INTERIOR_SAVE_CONTRACT_ROW_KEYS = ['positionToleranceM', 'defaultFloorHeightM', 'loadNotes'];
+
+const isRecord = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** One interior-save corpus case as bridge steps. */
+export function interiorSaveCaseSteps(c) {
+	const where = `saves-interior-state ${c.op}: ${c.name}`;
+	const i = c.input;
+	const e = c.expected;
+	switch (c.op) {
+		case 'read': {
+			const steps = [{ call: 'save.interior.read', args: { interiorState: i.interiorState }, expect: { interiorState: e.interiorState }, bind: 'read' }];
+			if (e.interiorState !== null) {
+				steps.push({ call: 'save.interior.layoutOf', args: { interiorState: { $ref: 'read.interiorState' } }, expect: { layout: e.layout } });
+			} else if (e.layout !== null) {
+				throw new Error(`emit-bridge-cases: ${where}: outside, but the layout is ${JSON.stringify(e.layout)}`);
+			}
+			return steps;
+		}
+		case 'load': {
+			const player = isRecord(i.player) ? i.player : {};
+			const args = { interiorState: i.interiorState };
+			if ('position' in player) args.position = player.position;
+			if ('rotation' in player) args.rotation = player.rotation;
+			args.buildings = i.buildings;
+			return [{ call: 'save.interior.loadOf', args, expect: e }];
+		}
+		case 'round_trip': {
+			if (!isRecord(e) || 'refused' in e) throw new Error(`emit-bridge-cases: ${where}: a refused round trip has no transcription`);
+			const cs = (written) => ({ $subset: { interiorState: written, player: { $subset: { position: e.writtenPosition } } } });
+			const loadedState = e.loaded === null ? {} : { interiorState: e.loaded };
+			return [
+				{ call: 'save.runtime.create', args: { fresh: i.fresh }, expect: { $subset: { session: 1 } } },
+				{
+					call: 'save.runtime.apply',
+					args: { session: 1, ops: [{ op: 'save', gameState: i.gameState, options: i.writeOptions }] },
+					expect: { $subset: { results: [{ ok: true, save: { $subset: { currentState: cs(e.written) } } }] } },
+					bind: 'saved',
+				},
+				{ call: 'save.runtime.create', args: { fresh: i.fresh }, expect: { $subset: { session: 2 } } },
+				{
+					call: 'save.runtime.apply',
+					args: { session: 2, ops: [{ op: 'load', save: { $ref: 'saved.results.0.save' }, options: i.readOptions }] },
+					expect: { $subset: { results: [{ ok: true, gameState: { $subset: { ...loadedState, player: { $subset: { position: e.loadedPosition } } } } }] } },
+					bind: 'loaded',
+				},
+				{
+					call: 'save.interior.loadOf',
+					args: {
+						interiorState: e.loaded === null ? null : { $ref: 'loaded.results.0.gameState.interiorState' },
+						position: { $ref: 'loaded.results.0.gameState.player.position' },
+						rotation: { $ref: 'loaded.results.0.gameState.player.rotation' },
+						buildings: i.buildings,
+					},
+					expect: e.placement,
+				},
+			];
+		}
+		default:
+			throw new Error(`emit-bridge-cases: ${where}: no row for op ${c.op}`);
+	}
+}
+
+function interiorSave(root, coreCommit) {
+	const { area, corpus, cases: name } = INTERIOR_SAVE_CASE_FILE;
+	const r = reader(root);
+	const file = r.json(corpus);
+	if (file.area !== area) throw new Error(`emit-bridge-cases: ${corpus} is not the ${area} corpus`);
+	const contract = Object.fromEntries(INTERIOR_SAVE_CONTRACT_ROW_KEYS.map((k) => {
+		if (!Object.prototype.hasOwnProperty.call(file.contract, k)) throw new Error(`emit-bridge-cases: ${corpus}'s contract has no ${k}`);
+		return [k, file.contract[k]];
+	}));
+	const cases = [{ name: `${area}: the contract save.interior.contract states`, steps: [{ call: 'save.interior.contract', expect: contract }] }];
+	for (const c of file.cases) cases.push({ name: `${area} ${c.op}: ${c.name}`, steps: interiorSaveCaseSteps(c) });
+	return {
+		[name]: caseFile(
+			area,
+			`core's interior save corpus (${corpus}, PL.core-interior-save-state) through the save.interior.* and save.runtime.* ` +
+				"rows, each op the calls core's reference runner (src/interior-save-corpus.ts) makes, through them; numbers held " +
+				`exactly (tests/runtime_save_corpus.cpp replays the file itself within its tolerance, ${file.tolerance}, and refuses its controls).`,
+			coreCommit,
+			r.files,
+			cases,
+		),
+	};
+}
+
 // ── villager pass-by: conformance/villagers/pass-by.json (pass-by-corpus.test.ts) ──
 //
 // Core's reference runner is src/pass-by/pass-by-corpus.ts (`runPassByOp`): each op is ONE
@@ -2742,6 +2934,8 @@ export function emitBridgeCases(root, coreCommit) {
 	return {
 		'core-saves.json': saves(root, coreCommit),
 		'core-saves-village.json': villageSave(root, coreCommit),
+		...runtimeSave(root, coreCommit),
+		...interiorSave(root, coreCommit),
 		'core-villagers-pass-by.json': passBy(root, coreCommit),
 		'core-props-vehicle-placement.json': vehiclePlacement(root, coreCommit),
 		'core-quests.json': quests(root, coreCommit),

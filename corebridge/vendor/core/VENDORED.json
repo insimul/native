@@ -211,6 +211,7 @@
     "src/routines/routine-facts.ts",
     "src/routines/routine-predicates.ts",
     "src/routines/routines.ts",
+    "src/runtime-save.ts",
     "src/save-envelope.ts",
     "src/save-extensions.ts",
     "src/save-file-game-state.ts",
@@ -296,6 +297,8 @@
     "conformance/ui/rules-panel-cases.json"
   ],
   "savesCorpus": [
+    "conformance/saves/interior-state.json",
+    "conformance/saves/runtime-save.json",
     "conformance/saves/slots.json",
     "conformance/saves/tutorial-progress.json",
     "conformance/saves/village-state.json"
@@ -398,11 +401,11 @@
     "conformance/editor-operations/mint-play-grant.json",
     "conformance/editor-operations/reread-reference-texts.json"
   ],
-  "bundleBytes": 2818749,
-  "bundleSha256": "3fc96dfabd7b7e82f43fdf08f343a905838f82b2e0ee6ebca12b948145d0de64",
+  "bundleBytes": 2832144,
+  "bundleSha256": "895ea4569fdbdd09f35e9f67c91c260b29d4c998cc3ae4f1bfbff83208ec72f8",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "3fc96dfabd7b7e82f43fdf08f343a905838f82b2e0ee6ebca12b948145d0de64",
-    "vendor/core/insimul_core_bundle.c": "a2298fbdb8a457eeedf5da7c93c68e2d44b61cbf2707df8cf082820bcea40448",
+    "vendor/core/insimul-core-bundle.js": "895ea4569fdbdd09f35e9f67c91c260b29d4c998cc3ae4f1bfbff83208ec72f8",
+    "vendor/core/insimul_core_bundle.c": "355aeac37dc44616d693e393473ac210feb6da5914254afb92c5bf318edb0255",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genre-genre-pieces-build-plan.json": "60388e9cb5652085356059a515382be7ba5d98dd172677c025136c4f640d06ca",
     "vendor/core/cases/core-genre-genre-pieces-kinds.json": "07082aa01cf17b5ecf6154cbb738842e344c40fd5a6f256d3ca81d078f281c83",
@@ -434,6 +437,8 @@
     "vendor/core/cases/core-props-vehicle-placement.json": "d299c8edf7ab923966a89962508ff9badf6b1644f0b6c04a27d758dd973a4fe3",
     "vendor/core/cases/core-quests-lifecycle.json": "8f966b345113cb685ff6bc571d08ca2e5f0a0f751a67cc0465dea0716c7cec50",
     "vendor/core/cases/core-quests.json": "26e8e74f0eacfdeaa316ef1c8776668ebbd60dc74277eb07543ba1a29aa24b68",
+    "vendor/core/cases/core-saves-interior.json": "2acdd319ed16c8b3c7b56dc5bc1722d05d3e028e62cb9606ebaa24ae8546a082",
+    "vendor/core/cases/core-saves-runtime.json": "36b33f8609f4e77baa2b711bb5b97e385ea48b5e853ec30f934f08ef97c547e8",
     "vendor/core/cases/core-saves-village.json": "a1b3fe5d7b26dc21bb7b987864c8f6f314802a7304510d141e161d000f6e79bb",
     "vendor/core/cases/core-saves.json": "f3fd33fd1faa443e4b864f6c2275930ccc3b65695bfc78c3652a65b95f9bae17",
     "vendor/core/cases/core-ui-compass.json": "8d573c972eb1430e899f878a6a7ac1487c79eefe987f1085de0fc05ef00ac5a1",
@@ -492,6 +497,8 @@
     "vendor/core/conformance/modules/mechanic-runtime.json": "7daafaf8cf96ffa3b324e1c6b84deefbef1d765ccb6325f07d087e5c5f1fdd53",
     "vendor/core/conformance/ui/genre-hud-cases.json": "c6961624993b3847577d53f06f51f1a5795704e0c13b8a662b41deeae257f32e",
     "vendor/core/conformance/ui/rules-panel-cases.json": "f8669b8fc9cce85ad4fc65480e37676eab8d04b8e09ebd20df16747010bdeb2e",
+    "vendor/core/conformance/saves/interior-state.json": "d4c3b74fdc404790b16d6f58614f2c8959586bf18152ab4719d84ecae4f3a3f9",
+    "vendor/core/conformance/saves/runtime-save.json": "e9145c108f5bcaaf6d15cdc50d0843288c2a8dd324e96c1041dca4645a81b840",
     "vendor/core/conformance/saves/slots.json": "e9c0b584bd2fcc88f95109f75dda2c004160f107ba00f060016087662ba2d6e8",
     "vendor/core/conformance/saves/tutorial-progress.json": "62fd19714725fe8c72634341bb6b6342c2219659316f4261cf74d5e802f2f838",
     "vendor/core/conformance/saves/village-state.json": "177a477ffbddb1df8ae5ce51e6f76c4dcf7a5d0f656c7dbefc7c0d93790fc28d",
@@ -565,13 +572,13 @@
     "vendor/core/conformance/editor-operations/get-world-ir-summary.json": "e782bd1a7d8cbd32fb95d07230fcaa70d4615cc43c67306d24ff66b11d927db0",
     "vendor/core/conformance/editor-operations/mint-play-grant.json": "941cb0a5c749b6594d9bf53080dd68c8d913e1d95dbf72044d587c03513d196e",
     "vendor/core/conformance/editor-operations/reread-reference-texts.json": "fb1d23e1a47b2df0be959d31f3cef619007fbc1ba15730f1e064a94d5cd305c1",
-    "js/entry.js": "f8352022be65c844ccc81658632aeea2ab854f8ccb6e192094abde7281215c17",
+    "js/entry.js": "d9557b30d2e02c50c492225f1dc57c15c13f72828411f40c92e0f560b2bbd336",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
-    "tools/emit-bridge-cases.mjs": "a5df4b51b68ba157b474b2d5b541527ad6f310f84dccc145fc2b25aa45fed991",
-    "core-pin.json": "c123c0f1a12a72442c5872c7866a552c08fd9ad64356ac9202432b679c951b67"
+    "tools/emit-bridge-cases.mjs": "bbf37ed68b91d74825bf957a894916106133156f39617d83a87ee3b711ac564b",
+    "core-pin.json": "1c9d325a4d2360aec3f159dbfaebd2337df71df8d66411257d10371af9a353f1"
   }
 }

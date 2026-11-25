@@ -120,6 +120,16 @@
 //       offset stated under another key, a written world's ground stated empty) and requires
 //       the guard to name each one.
 //
+//   node corebridge/tools/vendor-core-bundle.mjs --check-runtime-save-transcription-negative
+//       The runtime and interior save transcription guard's negative control
+//       (PL.native-runtime-save-rows): perturbs the vendored cases/core-saves-{runtime,interior}.json
+//       in memory (a case dropped or invented, a New Game step dropped, two steps merged, a Load's
+//       options dropped, a refused Load's message dropped or code changed, a step's runtime save
+//       dropped or its fresh flipped, a Save's written document weakened, a case on one leg, a
+//       contract changed; a read's layout call dropped, a load's rotation dropped or note changed, a
+//       round trip's written interior dropped or its placement read off the wrong document) and
+//       fails unless the guard names each (the core_vendor_runtime_save_negative ctest).
+//
 //   node corebridge/tools/vendor-core-bundle.mjs --check-language-transcription-negative
 //       The language transcription guard's negative control: perturbs the vendored
 //       cases/core-language-*.json in memory (a dropped case, a dropped call, a first
@@ -211,10 +221,16 @@ const P9A_COPY_ROOTS = ['conformance/modules', 'conformance/ui'];
 // corpus (PL.native-village-save-rows; core's P1.core and
 // PL.core-save-conversations-projection), driven through the `save.village.*`
 // rows by tests/village_save_corpus.cpp and transcribed by emit-bridge-cases.mjs
-// into cases/core-saves-village.json. Only these files of `conformance/saves/`:
-// the rest of that directory is the save-file corpora emit-bridge-cases.mjs
-// transcribes.
+// into cases/core-saves-village.json; and the runtime save and interior save corpora
+// (PL.native-runtime-save-rows; core's PL.core-load-refused-message and
+// PL.core-interior-save-state), driven through the `save.runtime.*` and `save.interior.*`
+// rows by tests/runtime_save_corpus.cpp and transcribed by emit-bridge-cases.mjs into
+// cases/core-saves-runtime.json and cases/core-saves-interior.json. Only these files of
+// `conformance/saves/`: the rest of that directory is the save-file corpora
+// emit-bridge-cases.mjs transcribes.
 const SAVES_CORPUS_FILES = [
+  'conformance/saves/interior-state.json',
+  'conformance/saves/runtime-save.json',
   'conformance/saves/slots.json',
   'conformance/saves/tutorial-progress.json',
   'conformance/saves/village-state.json',
@@ -456,7 +472,18 @@ const EDITOR_OPERATIONS_CORPUS_FILES = [
 // `camera/movement-contract` (which re-exports both) would bring it back, and nothing
 // in core can see native do that (its pl-movement-prose-split m1 and m4). Refused the
 // same way, with its own remedy.
-const UNBUNDLED_CORE_MODULES = ['src/save-file-game-state-corpus.ts', 'src/camera/movement-prose.ts'];
+//
+// Core's runtime save and interior save runners (PL.native-runtime-save-rows):
+// `runtime-save-corpus` and `interior-save-corpus` are what tests/runtime_save_corpus.cpp is
+// here; the save.runtime.* and save.interior.* rows import `runtime-save` and
+// `props/interior-save` themselves. Named so the refusal names them (each also reaches the
+// village-state comparator above).
+const UNBUNDLED_CORE_MODULES = [
+  'src/save-file-game-state-corpus.ts',
+  'src/camera/movement-prose.ts',
+  'src/runtime-save-corpus.ts',
+  'src/interior-save-corpus.ts',
+];
 const UNBUNDLED_REMEDY = {
   'src/camera/movement-prose.ts': 'a row imports camera/movement-contract (it re-exports the prose); import camera/movement-rules instead',
 };
@@ -1066,6 +1093,207 @@ function lifecycleTranscriptionNegative() {
   }
   console.log(`vendor-core-bundle: quest lifecycle transcription negative — ${named} of ${perturbations.length} perturbed transcription(s) named`);
   if (named !== perturbations.length) fail('the quest lifecycle transcription guard missed a perturbation');
+}
+
+// Hand cases GENERATED from core (PL.native-runtime-save-rows; the village-save rows' m1): a
+// hand case file whose expectations are core's own answers is written by
+// tools/gen-hand-cases.mjs from one spec under tools/hand-cases/, over core at the pin, and
+// records `generatedBy` and `source: { coreCommit, spec }`. --check holds each such file to the
+// pin, and every spec to one file, so a re-pin turns core_vendor red until the hand cases are
+// regenerated on purpose (`node corebridge/tools/gen-hand-cases.mjs --core <checkout>`), and a
+// spec with no file (or a file with no spec) cannot pass. Whether a file is still what core
+// answers is gen-hand-cases.mjs --check's (it needs core, like --check --core).
+const HAND_CASES_GENERATOR = 'corebridge/tools/gen-hand-cases.mjs';
+const HAND_CASE_SPECS_DIR = path.join(BRIDGE, 'tools', 'hand-cases');
+function generatedHandCaseProblems(pin) {
+  const problems = [];
+  const files = [];
+  const specs = fs.existsSync(HAND_CASE_SPECS_DIR) ? fs.readdirSync(HAND_CASE_SPECS_DIR).filter((f) => f.endsWith('.mjs')).sort() : [];
+  const named = new Set();
+  for (const name of fs.readdirSync(SAVE_RULES_CASES_DIR).filter((f) => f.endsWith('.json')).sort()) {
+    const doc = JSON.parse(fs.readFileSync(path.join(SAVE_RULES_CASES_DIR, name), 'utf8'));
+    if (typeof doc.generatedBy !== 'string' || !doc.generatedBy.startsWith(HAND_CASES_GENERATOR)) continue;
+    files.push(name);
+    const spec = doc.source?.spec;
+    if (typeof spec !== 'string' || !specs.includes(spec)) problems.push(`${name} names spec ${JSON.stringify(spec)}, which tools/hand-cases/ does not hold`);
+    else named.add(spec);
+    if (doc.source?.coreCommit !== pin.coreCommit) {
+      problems.push(`${name} was generated from core ${doc.source?.coreCommit}, not the pin ${pin.coreCommit}: regenerate it (node ${HAND_CASES_GENERATOR} --core <checkout>)`);
+    }
+  }
+  for (const spec of specs) if (!named.has(spec)) problems.push(`tools/hand-cases/${spec} has no generated case file under corebridge/tests/cases/`);
+  return { problems, files };
+}
+
+// The runtime save and interior save transcriptions (PL.native-runtime-save-rows):
+// cases/core-saves-runtime.json and cases/core-saves-interior.json must carry one case per case of
+// the vendored conformance/saves/runtime-save.json and interior-state.json, by name
+// (`<area> <op>: <name>`), each the calls core's runner makes through the rows
+// (src/runtime-save-corpus.ts runRuntimeSaveOp; src/interior-save-corpus.ts runInteriorSaveOp)
+// with every answer the corpus pins stated, plus the contract case. Restated here, apart from
+// the emitter, so a self-consistent re-vendor with an emitter that dropped a step, merged two,
+// or weakened an answer is refused by --check (the core_vendor ctest), and the negative control
+// (--check-runtime-save-transcription-negative) proves the guard can fail.
+const RUNTIME_SAVE_TRANSCRIPTION = {
+  runtime: { area: 'saves-runtime', corpus: 'conformance/saves/runtime-save.json', cases: 'core-saves-runtime.json', contractRow: 'save.runtime.contract', rowKeys: ['refusedLoadMessage'] },
+  interior: { area: 'saves-interior-state', corpus: 'conformance/saves/interior-state.json', cases: 'core-saves-interior.json', contractRow: 'save.interior.contract', rowKeys: ['positionToleranceM', 'defaultFloorHeightM', 'loadNotes'] },
+};
+
+/** A runtime-save `run` case as the rows' calls; null when it is not one core's runner runs. */
+function runtimeSaveCallsOf(c) {
+  const i = c.input;
+  const e = c.expected;
+  if (c.op !== 'run' || !Array.isArray(i?.steps) || !Array.isArray(e?.steps) || e.steps.length !== i.steps.length) return null;
+  const refused = (res) => ({ ...res, refusal: { $subset: { ...res.refusal, message: { $type: 'string' } } } });
+  const calls = [{ call: 'save.runtime.create', args: { fresh: i.fresh }, expect: { session: 1, ...e.start } }];
+  for (const [n, st] of i.steps.entries()) {
+    const rec = e.steps[n];
+    const [k, ...more] = Object.keys(st);
+    if (more.length) return null;
+    let op;
+    let result;
+    if (k === 'new_game') [op, result] = [{ op: 'new_game' }, rec.result];
+    else if (k === 'load') [op, result] = [{ op: 'load', save: st.load, options: i.readOptions }, rec.result.ok ? { ok: true, gameState: { $type: 'object' } } : refused(rec.result)];
+    else if (k === 'save') [op, result] = [{ op: 'save', gameState: st.save, options: i.writeOptions }, rec.result.ok ? { ok: true, save: rec.runtimeSave } : refused(rec.result)];
+    else return null;
+    calls.push({ call: 'save.runtime.apply', args: { session: 1, ops: [op] }, expect: { results: [result], runtimeSave: rec.runtimeSave, fresh: rec.fresh } });
+  }
+  return calls;
+}
+
+/** An interior-save case as the rows' calls; null for an op core's runner does not have (or a refused round trip). */
+function interiorSaveCallsOf(c) {
+  const i = c.input;
+  const e = c.expected;
+  if (c.op === 'read') {
+    const calls = [{ call: 'save.interior.read', args: { interiorState: i.interiorState }, expect: { interiorState: e.interiorState }, bind: 'read' }];
+    if (e.interiorState !== null) calls.push({ call: 'save.interior.layoutOf', args: { interiorState: { $ref: 'read.interiorState' } }, expect: { layout: e.layout } });
+    return e.interiorState === null && e.layout !== null ? null : calls;
+  }
+  if (c.op === 'load') {
+    const player = i.player !== null && typeof i.player === 'object' && !Array.isArray(i.player) ? i.player : {};
+    const args = { interiorState: i.interiorState };
+    for (const k of ['position', 'rotation']) if (k in player) args[k] = player[k];
+    return [{ call: 'save.interior.loadOf', args: { ...args, buildings: i.buildings }, expect: e }];
+  }
+  if (c.op !== 'round_trip' || e === null || typeof e !== 'object' || 'refused' in e) return null;
+  const loaded = e.loaded === null ? {} : { interiorState: e.loaded };
+  return [
+    { call: 'save.runtime.create', args: { fresh: i.fresh }, expect: { $subset: { session: 1 } } },
+    {
+      call: 'save.runtime.apply',
+      args: { session: 1, ops: [{ op: 'save', gameState: i.gameState, options: i.writeOptions }] },
+      expect: { $subset: { results: [{ ok: true, save: { $subset: { currentState: { $subset: { interiorState: e.written, player: { $subset: { position: e.writtenPosition } } } } } } }] } },
+      bind: 'saved',
+    },
+    { call: 'save.runtime.create', args: { fresh: i.fresh }, expect: { $subset: { session: 2 } } },
+    {
+      call: 'save.runtime.apply',
+      args: { session: 2, ops: [{ op: 'load', save: { $ref: 'saved.results.0.save' }, options: i.readOptions }] },
+      expect: { $subset: { results: [{ ok: true, gameState: { $subset: { ...loaded, player: { $subset: { position: e.loadedPosition } } } } }] } },
+      bind: 'loaded',
+    },
+    {
+      call: 'save.interior.loadOf',
+      args: {
+        interiorState: e.loaded === null ? null : { $ref: 'loaded.results.0.gameState.interiorState' },
+        position: { $ref: 'loaded.results.0.gameState.player.position' },
+        rotation: { $ref: 'loaded.results.0.gameState.player.rotation' },
+        buildings: i.buildings,
+      },
+      expect: e.placement,
+    },
+  ];
+}
+
+function runtimeSaveTranscriptionProblems(docs = {}) {
+  const problems = [];
+  let count = 0;
+  for (const [key, callsOf] of [['runtime', runtimeSaveCallsOf], ['interior', interiorSaveCallsOf]]) {
+    const t = RUNTIME_SAVE_TRANSCRIPTION[key];
+    const file = JSON.parse(fs.readFileSync(path.join(OUT_DIR, t.corpus), 'utf8'));
+    const got = docs[key] ?? JSON.parse(fs.readFileSync(path.join(CASES_DIR, t.cases), 'utf8'));
+    const byName = new Map(got.cases.map((c) => [c.name, c]));
+    const missing = [];
+    const wrong = [];
+    for (const c of file.cases) {
+      const g = byName.get(`${t.area} ${c.op}: ${c.name}`);
+      if (!g) {
+        missing.push(c.name);
+        continue;
+      }
+      const want = callsOf(c);
+      if (want === null || g.legs !== undefined || canonJson(g.steps) !== canonJson(want)) wrong.push(c.name);
+    }
+    if (missing.length) problems.push(`${t.cases}: ${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
+    if (wrong.length) problems.push(`${t.cases}: ${wrong.length} case(s) not transcribed as core's runner calls and answers them, first: ${wrong[0]}`);
+    const contract = byName.get(`${t.area}: the contract ${t.contractRow} states`);
+    const wantContract = Object.fromEntries(t.rowKeys.map((k) => [k, file.contract[k]]));
+    if (!contract || contract.steps?.length !== 1 || contract.steps[0].call !== t.contractRow || canonJson(contract.steps[0].expect) !== canonJson(wantContract) || contract.legs !== undefined) {
+      problems.push(`${t.cases}: the contract case does not hold ${t.contractRow} to the corpus's ${t.rowKeys.join(', ')}`);
+    }
+    if (got.cases.length !== file.cases.length + 1 || byName.size !== got.cases.length) {
+      problems.push(`${t.cases}: it carries ${got.cases.length} case(s), not the corpus's ${file.cases.length} and the contract case`);
+    }
+    count += file.cases.length;
+  }
+  return { problems, count };
+}
+
+/** The runtime/interior save guard's negative control: each perturbation of the transcriptions must be named. */
+function runtimeSaveTranscriptionNegative() {
+  const read = (key) => JSON.parse(fs.readFileSync(path.join(CASES_DIR, RUNTIME_SAVE_TRANSCRIPTION[key].cases), 'utf8'));
+  const step = (d, pred) => d.cases.flatMap((c) => c.steps).find(pred);
+  const applyWith = (d, pred) => step(d, (s) => s.call === 'save.runtime.apply' && pred(s.args.ops[0], s.expect));
+  const perturbations = [
+    ['runtime', 'a dropped case', (d) => d.cases.splice(3, 1), 'corpus case(s) not transcribed'],
+    ['runtime', 'a case no corpus case names', (d) => d.cases.push({ ...d.cases[3], name: 'saves-runtime run: invented' }), 'case(s), not the corpus'],
+    ['runtime', 'a New Game step dropped', (d) => {
+      const c = d.cases.find((x) => x.steps.some((s) => s.call === 'save.runtime.apply' && s.args.ops[0].op === 'new_game') && x.steps.length > 2);
+      c.steps.splice(c.steps.findIndex((s) => s.call === 'save.runtime.apply' && s.args.ops[0].op === 'new_game'), 1);
+    }, "not transcribed as core's runner"],
+    ['runtime', 'two steps merged into one apply', (d) => {
+      const c = d.cases.find((x) => x.steps.length > 2);
+      const [a, b] = [c.steps[1], c.steps[2]];
+      a.args.ops.push(...b.args.ops);
+      a.expect.results.push(...b.expect.results);
+      Object.assign(a.expect, { runtimeSave: b.expect.runtimeSave, fresh: b.expect.fresh });
+      c.steps.splice(2, 1);
+    }, "not transcribed as core's runner"],
+    ['runtime', "a Load's readOptions dropped", (d) => { delete applyWith(d, (op) => op.op === 'load').args.ops[0].options; }, "not transcribed as core's runner"],
+    ['runtime', "a refused Load's message dropped", (d) => { delete applyWith(d, (op, x) => op.op === 'load' && x.results[0].ok === false).expect.results[0].message; }, "not transcribed as core's runner"],
+    ['runtime', "a refused Load's code changed", (d) => {
+      applyWith(d, (op, x) => op.op === 'load' && x.results[0].ok === false).expect.results[0].refusal.$subset.code = 'invalid_format';
+    }, "not transcribed as core's runner"],
+    ['runtime', 'the runtime save after a step dropped', (d) => { delete applyWith(d, () => true).expect.runtimeSave; }, "not transcribed as core's runner"],
+    ['runtime', 'fresh flipped after a step', (d) => { const s = applyWith(d, () => true); s.expect.fresh = !s.expect.fresh; }, "not transcribed as core's runner"],
+    ["runtime", "a Save's written document weakened to ok", (d) => { applyWith(d, (op, x) => op.op === 'save' && x.results[0].ok === true).expect.results[0] = { $subset: { ok: true } }; }, "not transcribed as core's runner"],
+    ['runtime', 'a case put on one leg only', (d) => { Object.assign(d.cases[2], { legs: ['c'], why: 'perturbed' }); }, "not transcribed as core's runner"],
+    ['runtime', 'the contract message changed', (d) => { d.cases[0].steps[0].expect.refusedLoadMessage += '!'; }, 'the contract case'],
+    ['interior', 'a dropped case', (d) => d.cases.splice(4, 1), 'corpus case(s) not transcribed'],
+    ['interior', "a read's layout call dropped", (d) => { d.cases.find((c) => c.steps.length === 2 && c.steps[1].call === 'save.interior.layoutOf').steps.pop(); }, "not transcribed as core's runner"],
+    ['interior', "a load's rotation dropped", (d) => { delete step(d, (s) => s.call === 'save.interior.loadOf' && 'rotation' in s.args && !('$ref' in (s.args.rotation ?? {}))).args.rotation; }, "not transcribed as core's runner"],
+    ['interior', "a load's note changed", (d) => { step(d, (s) => s.call === 'save.interior.loadOf' && s.expect.note === 'seeded_interior').expect.note = 'no_interior'; }, "not transcribed as core's runner"],
+    ['interior', "a round trip's written interior dropped", (d) => {
+      const s = step(d, (x) => x.call === 'save.runtime.apply' && x.args.ops[0].op === 'save');
+      delete s.expect.$subset.results[0].save.$subset.currentState.$subset.interiorState;
+    }, "not transcribed as core's runner"],
+    ['interior', "a round trip's placement read off the fresh document", (d) => {
+      step(d, (x) => x.call === 'save.interior.loadOf' && x.args.position?.$ref).args.position = { $ref: 'saved.results.0.save.currentState.player.position' };
+    }, "not transcribed as core's runner"],
+    ['interior', 'a contract key dropped', (d) => { delete d.cases[0].steps[0].expect.loadNotes; }, 'the contract case'],
+  ];
+  let named = 0;
+  for (const [key, what, perturb, want] of perturbations) {
+    const doc = read(key);
+    perturb(doc);
+    const { problems } = runtimeSaveTranscriptionProblems({ [key]: doc });
+    const hit = problems.find((p) => p.includes(want) && p.startsWith(RUNTIME_SAVE_TRANSCRIPTION[key].cases));
+    console.log(`  ${hit ? 'named' : 'MISSED'}: ${key}: ${what} -> ${(hit ?? problems.join('; ')) || 'no problem'}`);
+    if (hit) named++;
+  }
+  console.log(`vendor-core-bundle: runtime and interior save transcription negative — ${named} of ${perturbations.length} perturbed transcription(s) named`);
+  if (named !== perturbations.length) fail('the runtime and interior save transcription guard missed a perturbation');
 }
 
 /** `a` and `b` the same JSON but for numbers, each within `tol` (core's compareVillageState), key sets included. */
@@ -2588,7 +2816,7 @@ function buildFilesAtPin(src) {
 
 /** core's save corpora (slots, tutorial progress, village state) at the pin, as { 'vendor/core/<path>': Buffer }. */
 function savesFilesAtPin(src) {
-  return filesAtPin(src, SAVES_CORPUS_FILES, 'the saves.slots, tutorial progress and save.village rows');
+  return filesAtPin(src, SAVES_CORPUS_FILES, 'the saves.slots, tutorial progress, save.village, save.runtime and save.interior rows');
 }
 
 /** Exactly `files` (core-relative) at the pin, as { 'vendor/core/<path>': Buffer }. */
@@ -3308,7 +3536,7 @@ async function check(coreDir) {
     `vendor-core-bundle: ${expectedList.length} file(s) match their recorded sha256 ` +
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
-      `${savesFiles.length} saves (slots, tutorial progress, village state), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ${hudFiles.length} P2 HUD, ${lifecycleFiles.length} quest lifecycle, ` +
+      `${savesFiles.length} saves (slots, tutorial progress, village state, runtime save, interior state), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ${hudFiles.length} P2 HUD, ${lifecycleFiles.length} quest lifecycle, ` +
       `${cameraFiles.length} camera movement, ${audioFiles.length} audio (ground, cues), ${survivalFiles.length} survival, ` +
       `${traversalFiles.length} traversal, ${buildFiles.length} headless build, ${progressionFiles.length} progression/skill and ` +
       `${languageFiles.length} language corpus file(s), ${genreFiles.length} genre systems corpus file(s) (the world slice among them), ` +
@@ -3334,6 +3562,21 @@ async function check(coreDir) {
   console.log(
     `vendor-core-bundle: village state — cases/core-saves-village.json transcribes all ${village.count} case(s) of ` +
       'conformance/saves/village-state.json, by name and by the calls core\'s runner makes, and its contract',
+  );
+  const runtimeGuard = runtimeSaveTranscriptionProblems();
+  if (runtimeGuard.problems.length) {
+    fail(`the runtime and interior save transcriptions do not hold the vendored corpora: ${runtimeGuard.problems.join('; ')}`);
+  }
+  console.log(
+    `vendor-core-bundle: runtime and interior save — cases/core-saves-{runtime,interior}.json transcribe all ${runtimeGuard.count} case(s) of ` +
+      "conformance/saves/{runtime-save,interior-state}.json, by name, by the calls core's runners make through the rows, with every " +
+      'answer the corpora pin stated, and each contract row held to the keys it states',
+  );
+  const handCases = generatedHandCaseProblems(pin);
+  if (handCases.problems.length) fail(`generated hand cases: ${handCases.problems.join('; ')}`);
+  console.log(
+    `vendor-core-bundle: generated hand cases — ${handCases.files.length} file(s) under corebridge/tests/cases/ ` +
+      `(${handCases.files.join(', ')}) were generated by tools/gen-hand-cases.mjs from core at the pin`,
   );
   const lang = languageTranscriptionProblems();
   if (lang.problems.length) fail(`the language transcription does not hold the vendored language corpora: ${lang.problems.join('; ')}`);
@@ -3599,7 +3842,7 @@ async function check(coreDir) {
       console.log(
         `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s), ` +
           `all ${want.length} layout corpus file(s), all ${wantPacks.length} pack corpus/catalog file(s), all ` +
-          `${wantP9a.length} P9a corpus file(s), all ${wantSaves.length} save (slots, tutorial progress, village state) corpus file(s), all ` +
+          `${wantP9a.length} P9a corpus file(s), all ${wantSaves.length} save (slots, tutorial progress, village state, runtime save, interior state) corpus file(s), all ` +
           `${wantProps.length} P6 props/inventory corpus file(s), all ${wantTitle.length} P8 title/tutorial ` +
           `corpus file(s), all ${wantCamera.length} camera movement corpus file(s), all ${wantAudio.length} audio (ground, cues) ` +
           `corpus file(s), all ${wantSurvival.length} survival corpus file(s), all ${wantTraversal.length} traversal ` +
@@ -3627,6 +3870,8 @@ if (args.includes('--check-language-transcription-negative')) {
   hudTranscriptionNegative();
 } else if (args.includes('--check-quest-lifecycle-transcription-negative')) {
   lifecycleTranscriptionNegative();
+} else if (args.includes('--check-runtime-save-transcription-negative')) {
+  runtimeSaveTranscriptionNegative();
 } else if (args.includes('--check-genre-transcription-negative')) {
   genreTranscriptionNegative();
 } else if (argValue('--check-extension-keys')) {

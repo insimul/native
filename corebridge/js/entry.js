@@ -87,6 +87,25 @@ import {
 	writeVillageSave,
 } from '@insimul/core/save-file-game-state';
 import { BLACKBOARD_EXTENSION_KEY } from '@insimul/core/ai/blackboard';
+// The runtime save and a save written inside an interior (PL.native-runtime-save-rows; core's
+// PL.core-load-refused-message, PL.core-load-refusal-codes and PL.core-interior-save-state): the
+// save.runtime.* and save.interior.* rows. Never `runtime-save-corpus` or `interior-save-corpus`,
+// core's corpus runners: the rows call the class and the functions, and
+// tests/runtime_save_corpus.cpp is the runner here.
+import { RuntimeSave } from '@insimul/core/runtime-save';
+import {
+	DEFAULT_INTERIOR_FLOOR_HEIGHT_M,
+	INTERIOR_LOAD_NOTES,
+	INTERIOR_POSITION_TOLERANCE_M,
+	interiorExtentOf,
+	interiorFramePoint,
+	interiorLayoutOf,
+	interiorLoadOf,
+	isInteriorFramePoint,
+	layoutSeedOf,
+	readInteriorState,
+	statedInteriorState,
+} from '@insimul/core/props/interior-save';
 
 // ── in-game UI view-models ────────────────────────────────────────────────────
 import { DEFAULT_NOTIFICATION_LIFETIME, KIND_COLOR, Notifications } from '@insimul/core/ui/notifications';
@@ -2757,6 +2776,38 @@ function villageRead(r) {
 	return { ok: true, gameState: plain(r.value) };
 }
 
+// ── the runtime save and the interior save (PL.native-runtime-save-rows) ──────
+// Core's `RuntimeSave` (`runtime-save`) is one save document a running game holds, so its
+// rows are a SESSION (`save.runtime.create`, `save.runtime.apply`); core's `props/interior-save`
+// is values in and out (`save.interior.*`). The rows' own checks, coded `[invalid-input]`, are
+// on what core dereferences unread: the fresh and loaded save documents (the checked read and
+// writer read their members), the read and write options (as the save.village rows check
+// them), the two points `interiorFramePoint` subtracts, the read interior state
+// `interiorLayoutOf` reads, the building `statedInteriorState` reads and the buildings
+// `interiorLoadOf` searches. Everything core reads defensively (a game state, an interior
+// state, a saved position or rotation, an interior's extent) is handed over as it came.
+
+/** The runtime save as a session's view: `{ runtimeSave, fresh }`, core's `current()` and `isFresh()`. */
+function runtimeSaveView(rs) {
+	return { runtimeSave: plain(rs.current()), fresh: rs.isFresh() };
+}
+
+/**
+ * A Load's answer (core's `RuntimeSaveLoadResult`): `{ ok: true, gameState }`, or `{ ok: false,
+ * refusal, outcome, message }`, the refusal whole (`refusalOf`), the slot outcome and the
+ * message the refused Load shows.
+ */
+function runtimeLoaded(r) {
+	if (!r.ok) return { ok: false, refusal: refusalOf(r.refusal), outcome: r.outcome, message: r.message };
+	return { ok: true, gameState: plain(r.gameState) };
+}
+
+/** A Save's answer (core's `RuntimeSaveWriteResult`): `{ ok: true, save }`, the runtime save as written, or `{ ok: false, refusal }`. */
+function runtimeSaved(r) {
+	if (!r.ok) return { ok: false, refusal: refusalOf(r.refusal) };
+	return { ok: true, save: plain(r.save) };
+}
+
 // ── the language rows (PL.native-language-rows) ───────────────────────────────
 // Core's language kernels take a state and return a new one; a row hands the state
 // over as JSON and answers core's result as JSON. Core's refusals (`empty_word`,
@@ -4716,6 +4767,130 @@ const METHODS = {
 
 	/** `save.village.conversations.epochMs { timestamp }` → `{ epochMs }`: core's `epochMsOfConversationTimestamp`, the round trip back, or null. */
 	'save.village.conversations.epochMs': (args) => ({ epochMs: epochMsOfConversationTimestamp(args.timestamp) }),
+
+	// ── the runtime save (PL.native-runtime-save-rows; core's PL.core-load-refused-message) ──
+	// Core's `RuntimeSave` (`runtime-save`): the save document a running game writes its
+	// state into and loads it from. New Game makes it a copy of the fresh document whatever
+	// was loaded or saved; a Load `readRuntimeSave` accepts replaces it (refused first
+	// `wrong_world`, then `wrong_runtime`, then whatever the checked read refuses), a refused
+	// one changes nothing and shows `invalid_format`'s message; a Save writes into it with the
+	// checked writer, a refused one changes nothing. Held to core's
+	// `conformance/saves/runtime-save.json` by tests/runtime_save_corpus.cpp.
+
+	/** `save.runtime.contract` → `{ refusedLoadMessage }`: what every refused Load shows (`SLOT_MESSAGES.invalid_format`), keyed as the corpus's `contract` keys it. */
+	'save.runtime.contract': () => ({ refusedLoadMessage: SLOT_MESSAGES.invalid_format }),
+
+	/**
+	 * `save.runtime.create { fresh }` → `{ session, runtimeSave, fresh }`: core's `new
+	 * RuntimeSave(fresh)`, `fresh` being the document the host builds for a new game (a save
+	 * document: an object). The runtime save starts as a copy of it; core keeps copies, so
+	 * no caller's object is held.
+	 */
+	'save.runtime.create': (args) => {
+		const m = 'save.runtime.create';
+		const fresh = coded('invalid-input', () => needObject(m, args.fresh, 'fresh'));
+		const rs = new RuntimeSave(fresh);
+		return { session: openSession('save.runtime', { rs }), ...runtimeSaveView(rs) };
+	},
+
+	/**
+	 * `save.runtime.apply { session, ops }` → `{ results, runtimeSave, fresh }`, the ops run in
+	 * order, one result each, then the runtime save and whether it is the fresh document
+	 * (core's `current()` and `isFresh()`, compared as canonical JSON). The ops are core's three:
+	 * `new_game {}` → `{ ok: true }` (core's `newGame`) · `load { save, options: { worldId,
+	 * runtime? } }` → core's `load`: `{ ok: true, gameState }` or `{ ok: false, refusal, outcome,
+	 * message }` (`runtime` absent or null: the legacy runtime) · `save { gameState, options: {
+	 * worldId, runtime, positionFrame, tick } }` → core's `save`: `{ ok: true, save }` (the runtime
+	 * save as written) or `{ ok: false, refusal }`. A refusal is core's VALUE, whole, with its
+	 * `message` (core's sentence for a log). `gameState` is handed over as it came (a missing or
+	 * wrong one is core's `wrong_version`).
+	 */
+	'save.runtime.apply': async (args) => {
+		const m = 'save.runtime.apply';
+		const s = session(m, args, 'save.runtime');
+		const results = await applyOps(m, s, args, {
+			new_game: ({ rs }) => {
+				rs.newGame();
+				return { ok: true };
+			},
+			load: ({ rs }, op) => {
+				const save = villageSaveArg(m, op.save);
+				return runtimeLoaded(rs.load(save, villageReadOptions(m, op.options, 'options')));
+			},
+			save: ({ rs }, op) => runtimeSaved(rs.save(op.gameState, villageWriteOptions(m, op.options, 'options'))),
+		});
+		return { results, ...runtimeSaveView(s.rs) };
+	},
+
+	// ── a save written inside an interior (PL.native-runtime-save-rows; core's PL.core-interior-save-state) ──
+	// Core's `props/interior-save`: what `currentState.interiorState` carries (`layoutSeed`
+	// null for a stated interior), which frame `player.position` is in while it is not null
+	// (the interior's own), and where a load puts the player. Held to core's
+	// `conformance/saves/interior-state.json` by tests/runtime_save_corpus.cpp.
+
+	/**
+	 * `save.interior.contract` → `{ positionToleranceM, defaultFloorHeightM, loadNotes }`:
+	 * core's `INTERIOR_POSITION_TOLERANCE_M`, `DEFAULT_INTERIOR_FLOOR_HEIGHT_M` and
+	 * `INTERIOR_LOAD_NOTES`, keyed as the corpus's `contract` keys them.
+	 */
+	'save.interior.contract': () => ({
+		positionToleranceM: INTERIOR_POSITION_TOLERANCE_M,
+		defaultFloorHeightM: DEFAULT_INTERIOR_FLOOR_HEIGHT_M,
+		loadNotes: [...INTERIOR_LOAD_NOTES],
+	}),
+
+	/**
+	 * `save.interior.read { interiorState }` → `{ interiorState }`: core's `readInteriorState`,
+	 * the one shape `{ buildingId, buildingName, buildingType, layoutSeed }`, or null (outside:
+	 * anything with no non-empty string `buildingId`). Any value.
+	 */
+	'save.interior.read': (args) => ({ interiorState: plain(readInteriorState(args.interiorState)) }),
+
+	/** `save.interior.layoutOf { interiorState }` → `{ layout }`: core's `interiorLayoutOf` over a read interior state, `stated` (layoutSeed null) or `seeded`. */
+	'save.interior.layoutOf': (args) => {
+		const state = coded('invalid-input', () => needObject('save.interior.layoutOf', args.interiorState, 'interiorState'));
+		return { layout: interiorLayoutOf(state) };
+	},
+
+	/** `save.interior.layoutSeedOf { layoutSeed }` → `{ layoutSeed }`: core's `layoutSeedOf`, a finite integer (seeded) or null (stated). Any value. */
+	'save.interior.layoutSeedOf': (args) => ({ layoutSeed: layoutSeedOf(args.layoutSeed) }),
+
+	/**
+	 * `save.interior.stated { building }` → `{ interiorState }`: core's `statedInteriorState`,
+	 * what a writer puts in `interiorState` for a player inside `building`'s stated interior
+	 * (its door's label, its `spec.buildingRole`, `layoutSeed` null). `building` is core's
+	 * `DoorBuildingInput`, as `props.doors.door` takes it.
+	 */
+	'save.interior.stated': (args) => {
+		const building = coded('invalid-input', () => needObject('save.interior.stated', args.building, 'building'));
+		return { interiorState: plain(statedInteriorState(building)) };
+	},
+
+	/** `save.interior.framePoint { position, origin }` → `{ position }`: core's `interiorFramePoint`, a host's point in its interior scene as a point of the interior frame (`position − origin`, rounded to 1e-9). */
+	'save.interior.framePoint': (args) => {
+		const m = 'save.interior.framePoint';
+		const [p, origin] = coded('invalid-input', () => [vec3Arg(m, args.position, 'position'), vec3Arg(m, args.origin, 'origin')]);
+		return { position: plain(interiorFramePoint(p, origin)) };
+	},
+
+	/** `save.interior.extentOf { interior }` → `{ extent }`: core's `interiorExtentOf`, `{ width, depth, height }` of a stated interior's frame, or null (no extent). Any value. */
+	'save.interior.extentOf': (args) => ({ extent: plain(interiorExtentOf(args.interior)) }),
+
+	/** `save.interior.isFramePoint { position, interior }` → `{ isFramePoint }`: core's `isInteriorFramePoint` (within the tolerance of the extent; false when the interior states none). Any values. */
+	'save.interior.isFramePoint': (args) => ({ isFramePoint: isInteriorFramePoint(args.position, args.interior) }),
+
+	/**
+	 * `save.interior.loadOf { interiorState, position, rotation?, buildings }` → core's
+	 * `interiorLoadOf`: `{ where, building, interior, frame, position, rotation, note }`, where
+	 * a load puts the player from the save's `interiorState` and `player.position` /
+	 * `player.rotation`, over the world's buildings (`DoorBuildingInput` plus the interior's
+	 * `width`, `depth`, `height`, `floors`). Never refuses: a note says why the player is not
+	 * where the save put them.
+	 */
+	'save.interior.loadOf': (args) => {
+		const buildings = coded('invalid-input', () => doorBuildingsOf('save.interior.loadOf', args.buildings));
+		return plain(interiorLoadOf({ interiorState: args.interiorState, position: args.position, rotation: args.rotation }, buildings));
+	},
 
 	// ── language learning (PL.native-language-rows, slices 1 to 4) ─────────────
 	// One core function per row, state in and out as JSON (README "The language

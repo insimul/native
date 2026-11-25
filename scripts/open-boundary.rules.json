@@ -1047,6 +1047,60 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/runtime-save",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the save.runtime.* rows (core's RuntimeSave: New Game, Load and Save over the save document a running game holds, PL.core-load-refused-message and PL.core-load-refusal-codes) (PL.native-runtime-save-rows, rulings U131, U128 and U36), exactly as the save.village.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-runtime-save-rows (Features Gauntlet PL.native-runtime-save-rows)",
+      "reviewedAt": "2026-11-25"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/props/interior-save",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the save.interior.* rows (core's rules for a save written inside an interior: readInteriorState, interiorLayoutOf, layoutSeedOf, statedInteriorState, interiorFramePoint, interiorExtentOf, isInteriorFramePoint, interiorLoadOf and their constants, PL.core-interior-save-state) (PL.native-runtime-save-rows, rulings U131, U128 and U36), exactly as the save.village.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-runtime-save-rows (Features Gauntlet PL.native-runtime-save-rows)",
+      "reviewedAt": "2026-11-25"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/tools/hand-cases/runtime-save.mjs",
+      "specifier": "@insimul/core/runtime-save",
+      "classification": "keep",
+      "reason": "A GENERATOR INPUT, never shipped: the hand-case spec tools/gen-hand-cases.mjs bundles against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, exactly as vendor-core-bundle.mjs resolves entry.js's specifiers, to compute corebridge/tests/cases/bridge-runtime-save.json's expectations with core's own RuntimeSave (PL.native-runtime-save-rows, rulings U131 and U128). Nothing in the shipped artifact imports it. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-runtime-save-rows (Features Gauntlet PL.native-runtime-save-rows)",
+      "reviewedAt": "2026-11-25"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/tools/hand-cases/runtime-save.mjs",
+      "specifier": "@insimul/core/save-file-game-state",
+      "classification": "keep",
+      "reason": "A GENERATOR INPUT, never shipped: the hand-case spec tools/gen-hand-cases.mjs bundles against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, exactly as vendor-core-bundle.mjs resolves entry.js's specifiers, to compute corebridge/tests/cases/bridge-runtime-save.json's expectations with core's own checked writer (the fixture saves) (PL.native-runtime-save-rows, rulings U131 and U128). Nothing in the shipped artifact imports it. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-runtime-save-rows (Features Gauntlet PL.native-runtime-save-rows)",
+      "reviewedAt": "2026-11-25"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/tools/hand-cases/runtime-save.mjs",
+      "specifier": "@insimul/core/ui/save-slot-model",
+      "classification": "keep",
+      "reason": "A GENERATOR INPUT, never shipped: the hand-case spec tools/gen-hand-cases.mjs bundles against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, exactly as vendor-core-bundle.mjs resolves entry.js's specifiers, to compute corebridge/tests/cases/bridge-runtime-save.json's expectations with core's own SLOT_MESSAGES (PL.native-runtime-save-rows, rulings U131 and U128). Nothing in the shipped artifact imports it. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-runtime-save-rows (Features Gauntlet PL.native-runtime-save-rows)",
+      "reviewedAt": "2026-11-25"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/tools/hand-cases/runtime-save.mjs",
+      "specifier": "@insimul/core/props/interior-save",
+      "classification": "keep",
+      "reason": "A GENERATOR INPUT, never shipped: the hand-case spec tools/gen-hand-cases.mjs bundles against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, exactly as vendor-core-bundle.mjs resolves entry.js's specifiers, to compute corebridge/tests/cases/bridge-runtime-save.json's expectations with core's own interior-save functions and constants (PL.native-runtime-save-rows, rulings U131 and U128). Nothing in the shipped artifact imports it. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-runtime-save-rows (Features Gauntlet PL.native-runtime-save-rows)",
+      "reviewedAt": "2026-11-25"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/stamina/stamina",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the survival.stamina.* rows (core's stamina meter: tuning, bands, spend, regen and the rest clock) (PL.native-survival-rows, rulings U106(1) and U36), exactly as the audio.ground.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

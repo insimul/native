@@ -1,0 +1,5467 @@
+{
+ "area": "saves-runtime-hand",
+ "description": "Hand cases for the save.runtime.* and save.interior.* rows (PL.native-runtime-save-rows) beyond core's runtime-save and interior-state corpora: each contract whole; a runtime save session answered whole (a Load's game state, a Save's written document, a refusal with found, expected and core's message, several ops in one apply, a refused step not stopping the batch); the rows' [invalid-input] boundary; and core's layoutSeedOf, statedInteriorState, interiorFramePoint, interiorExtentOf and isInteriorFramePoint, which the corpus reaches only through interiorLoadOf. Every expectation is core's own answer at the pin, computed by tools/hand-cases/runtime-save.mjs through tools/gen-hand-cases.mjs.",
+ "generatedBy": "corebridge/tools/gen-hand-cases.mjs (tools/hand-cases/runtime-save.mjs) — do not hand-edit; regenerate with --core <checkout>",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "spec": "runtime-save.mjs"
+ },
+ "cases": [
+  {
+   "name": "save.runtime.contract and save.interior.contract state core's values, exactly",
+   "steps": [
+    {
+     "call": "save.runtime.contract",
+     "expect": {
+      "refusedLoadMessage": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "save.interior.contract",
+     "expect": {
+      "positionToleranceM": 0.5,
+      "defaultFloorHeightM": 3,
+      "loadNotes": [
+       "position_outside_interior",
+       "seeded_interior",
+       "no_interior",
+       "unknown_building"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "a session: Load answers the game state, Save the written document, New Game the fresh one",
+   "steps": [
+    {
+     "call": "save.runtime.create",
+     "args": {
+      "fresh": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "session": 1,
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "fresh": true
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "load",
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 70,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          },
+          "interiorState": {
+           "buildingId": "bld_hand_tavern",
+           "buildingName": "The Lantern",
+           "buildingType": "Tavern",
+           "layoutSeed": null
+          }
+         },
+         "conversations": []
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village"
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": true,
+        "gameState": {
+         "version": 3,
+         "slotIndex": 0,
+         "savedAt": "2026-11-25T00:00:00Z",
+         "gameTime": 12.5,
+         "player": {
+          "position": {
+           "x": 3,
+           "y": 0,
+           "z": -4
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0.5,
+           "z": 0
+          },
+          "gold": 70,
+          "health": 90,
+          "energy": 70,
+          "inventory": [
+           {
+            "id": "bread"
+           }
+          ]
+         },
+         "npcs": [
+          {
+           "id": "npc_hand",
+           "position": {
+            "x": 1,
+            "y": 0,
+            "z": 2
+           },
+           "state": "idle",
+           "disposition": 0,
+           "activity": "rest",
+           "destinationId": null,
+           "runtimeState": "idle"
+          }
+         ],
+         "relationships": {},
+         "romance": {},
+         "merchants": [],
+         "currentZone": null,
+         "questProgress": {},
+         "timeState": {
+          "gameHour": 12,
+          "gameMinute": 30,
+          "dayNumber": 1,
+          "timeScale": 1,
+          "isPaused": false
+         },
+         "interiorState": {
+          "buildingId": "bld_hand_tavern",
+          "buildingName": "The Lantern",
+          "buildingType": "Tavern",
+          "layoutSeed": null
+         }
+        }
+       }
+      ],
+      "runtimeSave": {
+       "id": "hand-slot-1",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 3,
+          "y": 0,
+          "z": -4
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0.5,
+          "z": 0
+         },
+         "gold": 70,
+         "health": 90,
+         "energy": 70,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+           "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+           "updatedTick": 12.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+           "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+           "updatedTick": 12.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "idle",
+            "block": null,
+            "activity": "rest",
+            "destination": null,
+            "runtimeState": "idle",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         }
+        },
+        "timeState": {
+         "gameHour": 12,
+         "gameMinute": 30,
+         "dayNumber": 1,
+         "timeScale": 1,
+         "isPaused": false
+        },
+        "interiorState": {
+         "buildingId": "bld_hand_tavern",
+         "buildingName": "The Lantern",
+         "buildingType": "Tavern",
+         "layoutSeed": null
+        }
+       },
+       "conversations": []
+      },
+      "fresh": false
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "save",
+        "gameState": {
+         "version": 3,
+         "savedAt": 1,
+         "gameTime": 12.5,
+         "player": {
+          "position": {
+           "x": 3,
+           "y": 0,
+           "z": -4
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0.5,
+           "z": 0
+          },
+          "gold": 80,
+          "health": 90,
+          "energy": 70,
+          "inventory": [
+           {
+            "id": "bread"
+           }
+          ]
+         },
+         "npcs": [
+          {
+           "id": "npc_hand",
+           "position": {
+            "x": 1,
+            "y": 0,
+            "z": 2
+           },
+           "state": "idle",
+           "activity": "rest",
+           "destinationId": null,
+           "runtimeState": "idle"
+          }
+         ],
+         "relationships": {},
+         "questProgress": {}
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village",
+         "positionFrame": "world-ir-m",
+         "tick": 12.5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": true,
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 80,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          },
+          "interiorState": {
+           "buildingId": "bld_hand_tavern",
+           "buildingName": "The Lantern",
+           "buildingType": "Tavern",
+           "layoutSeed": null
+          }
+         },
+         "conversations": []
+        }
+       }
+      ],
+      "runtimeSave": {
+       "id": "hand-slot-1",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 3,
+          "y": 0,
+          "z": -4
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0.5,
+          "z": 0
+         },
+         "gold": 80,
+         "health": 90,
+         "energy": 70,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+           "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+           "updatedTick": 12.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+           "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+           "updatedTick": 12.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "idle",
+            "block": null,
+            "activity": "rest",
+            "destination": null,
+            "runtimeState": "idle",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         }
+        },
+        "timeState": {
+         "gameHour": 12,
+         "gameMinute": 30,
+         "dayNumber": 1,
+         "timeScale": 1,
+         "isPaused": false
+        },
+        "interiorState": {
+         "buildingId": "bld_hand_tavern",
+         "buildingName": "The Lantern",
+         "buildingType": "Tavern",
+         "layoutSeed": null
+        }
+       },
+       "conversations": []
+      },
+      "fresh": false
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "new_game"
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": true
+       }
+      ],
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "fresh": true
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "save",
+        "gameState": {
+         "version": 3,
+         "savedAt": 1,
+         "gameTime": 12.5,
+         "player": {
+          "position": {
+           "x": 3,
+           "y": 0,
+           "z": -4
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0.5,
+           "z": 0
+          },
+          "gold": 81,
+          "health": 90,
+          "energy": 70,
+          "inventory": [
+           {
+            "id": "bread"
+           }
+          ]
+         },
+         "npcs": [
+          {
+           "id": "npc_hand",
+           "position": {
+            "x": 1,
+            "y": 0,
+            "z": 2
+           },
+           "state": "idle",
+           "activity": "rest",
+           "destinationId": null,
+           "runtimeState": "idle"
+          }
+         ],
+         "relationships": {},
+         "questProgress": {},
+         "interiorState": null
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village",
+         "positionFrame": "world-ir-m",
+         "tick": 12.5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": true,
+        "save": {
+         "id": "hand-new-game",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 81,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          },
+          "interiorState": null
+         },
+         "conversations": []
+        }
+       }
+      ],
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 3,
+          "y": 0,
+          "z": -4
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0.5,
+          "z": 0
+         },
+         "gold": 81,
+         "health": 90,
+         "energy": 70,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+           "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+           "updatedTick": 12.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+           "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+           "updatedTick": 12.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "idle",
+            "block": null,
+            "activity": "rest",
+            "destination": null,
+            "runtimeState": "idle",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         }
+        },
+        "timeState": {
+         "gameHour": 12,
+         "gameMinute": 30,
+         "dayNumber": 1,
+         "timeScale": 1,
+         "isPaused": false
+        },
+        "interiorState": null
+       },
+       "conversations": []
+      },
+      "fresh": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "a refused Load answers core's refusal whole (found, expected, its message), the slot outcome and the message it shows",
+   "steps": [
+    {
+     "call": "save.runtime.create",
+     "args": {
+      "fresh": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "session": 1,
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "fresh": true
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "load",
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "f0e1d2c3b4a5968778695a4b",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 71,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:f0e1d2c3b4a5968778695a4b:ent:player": {
+             "agent": "insimul:world:f0e1d2c3b4a5968778695a4b:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:f0e1d2c3b4a5968778695a4b:ent:npc_hand": {
+             "agent": "insimul:world:f0e1d2c3b4a5968778695a4b:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          }
+         },
+         "conversations": []
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village"
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": false,
+        "refusal": {
+         "code": "wrong_world",
+         "field": "worldId",
+         "found": "f0e1d2c3b4a5968778695a4b",
+         "expected": "0a1b2c3d4e5f60718293a4b5",
+         "message": "the save is world f0e1d2c3b4a5968778695a4b's, and this game is world 0a1b2c3d4e5f60718293a4b5's: a game does not load another world's save"
+        },
+        "outcome": "invalid_format",
+        "message": "Unrecognized save format — this slot cannot be loaded."
+       }
+      ],
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "fresh": true
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "load",
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 72,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "bjs-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "bjs-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          }
+         },
+         "conversations": []
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village"
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": false,
+        "refusal": {
+         "code": "wrong_runtime",
+         "field": "runtime",
+         "found": "bjs-village",
+         "expected": "unreal-village",
+         "message": "the save is bjs-village's, not unreal-village's, and a runtime does not load another runtime's save (C5-3)"
+        },
+        "outcome": "invalid_format",
+        "message": "Unrecognized save format — this slot cannot be loaded."
+       }
+      ],
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "fresh": true
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "load",
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 2,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 70,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          },
+          "interiorState": {
+           "buildingId": "bld_hand_tavern",
+           "buildingName": "The Lantern",
+           "buildingType": "Tavern",
+           "layoutSeed": null
+          }
+         },
+         "conversations": []
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village"
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": false,
+        "refusal": {
+         "code": "wrong_version",
+         "field": "version",
+         "found": 2,
+         "expected": 3,
+         "message": "the save is SaveFile version 2; a village save is version 3 (migrate it first)"
+        },
+        "outcome": "invalid_format",
+        "message": "Unrecognized save format — this slot cannot be loaded."
+       }
+      ],
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "fresh": true
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "load",
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 72,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "bjs-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "bjs-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          }
+         },
+         "conversations": []
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5"
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": false,
+        "refusal": {
+         "code": "wrong_runtime",
+         "field": "runtime",
+         "found": "bjs-village",
+         "expected": null,
+         "message": "the save is bjs-village's, not legacy's, and a runtime does not load another runtime's save (C5-3)"
+        },
+        "outcome": "invalid_format",
+        "message": "Unrecognized save format — this slot cannot be loaded."
+       }
+      ],
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "fresh": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "several ops in one apply run in order, and a refused one does not stop the batch",
+   "steps": [
+    {
+     "call": "save.runtime.create",
+     "args": {
+      "fresh": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "session": 1,
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "fresh": true
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "load",
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 70,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          },
+          "interiorState": {
+           "buildingId": "bld_hand_tavern",
+           "buildingName": "The Lantern",
+           "buildingType": "Tavern",
+           "layoutSeed": null
+          }
+         },
+         "conversations": []
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village"
+        }
+       },
+       {
+        "op": "load",
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "f0e1d2c3b4a5968778695a4b",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 71,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:f0e1d2c3b4a5968778695a4b:ent:player": {
+             "agent": "insimul:world:f0e1d2c3b4a5968778695a4b:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:f0e1d2c3b4a5968778695a4b:ent:npc_hand": {
+             "agent": "insimul:world:f0e1d2c3b4a5968778695a4b:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          }
+         },
+         "conversations": []
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village"
+        }
+       },
+       {
+        "op": "save",
+        "gameState": {
+         "version": 2,
+         "savedAt": 1,
+         "gameTime": 12.5,
+         "player": {
+          "position": {
+           "x": 3,
+           "y": 0,
+           "z": -4
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0.5,
+           "z": 0
+          },
+          "gold": 90,
+          "health": 90,
+          "energy": 70,
+          "inventory": [
+           {
+            "id": "bread"
+           }
+          ]
+         },
+         "npcs": [
+          {
+           "id": "npc_hand",
+           "position": {
+            "x": 1,
+            "y": 0,
+            "z": 2
+           },
+           "state": "idle",
+           "activity": "rest",
+           "destinationId": null,
+           "runtimeState": "idle"
+          }
+         ],
+         "relationships": {},
+         "questProgress": {}
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village",
+         "positionFrame": "world-ir-m",
+         "tick": 12.5
+        }
+       },
+       {
+        "op": "save",
+        "gameState": {
+         "version": 3,
+         "savedAt": 1,
+         "gameTime": 12.5,
+         "player": {
+          "position": {
+           "x": 3,
+           "y": 0,
+           "z": -4
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0.5,
+           "z": 0
+          },
+          "gold": 91,
+          "health": 90,
+          "energy": 70,
+          "inventory": [
+           {
+            "id": "bread"
+           }
+          ]
+         },
+         "npcs": [
+          {
+           "id": "npc_hand",
+           "position": {
+            "x": 1,
+            "y": 0,
+            "z": 2
+           },
+           "state": "idle",
+           "activity": "rest",
+           "destinationId": null,
+           "runtimeState": "idle"
+          }
+         ],
+         "relationships": {},
+         "questProgress": {}
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village",
+         "positionFrame": "world-ir-m",
+         "tick": 12.5
+        }
+       },
+       {
+        "op": "new_game"
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": true,
+        "gameState": {
+         "version": 3,
+         "slotIndex": 0,
+         "savedAt": "2026-11-25T00:00:00Z",
+         "gameTime": 12.5,
+         "player": {
+          "position": {
+           "x": 3,
+           "y": 0,
+           "z": -4
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0.5,
+           "z": 0
+          },
+          "gold": 70,
+          "health": 90,
+          "energy": 70,
+          "inventory": [
+           {
+            "id": "bread"
+           }
+          ]
+         },
+         "npcs": [
+          {
+           "id": "npc_hand",
+           "position": {
+            "x": 1,
+            "y": 0,
+            "z": 2
+           },
+           "state": "idle",
+           "disposition": 0,
+           "activity": "rest",
+           "destinationId": null,
+           "runtimeState": "idle"
+          }
+         ],
+         "relationships": {},
+         "romance": {},
+         "merchants": [],
+         "currentZone": null,
+         "questProgress": {},
+         "timeState": {
+          "gameHour": 12,
+          "gameMinute": 30,
+          "dayNumber": 1,
+          "timeScale": 1,
+          "isPaused": false
+         },
+         "interiorState": {
+          "buildingId": "bld_hand_tavern",
+          "buildingName": "The Lantern",
+          "buildingType": "Tavern",
+          "layoutSeed": null
+         }
+        }
+       },
+       {
+        "ok": false,
+        "refusal": {
+         "code": "wrong_world",
+         "field": "worldId",
+         "found": "f0e1d2c3b4a5968778695a4b",
+         "expected": "0a1b2c3d4e5f60718293a4b5",
+         "message": "the save is world f0e1d2c3b4a5968778695a4b's, and this game is world 0a1b2c3d4e5f60718293a4b5's: a game does not load another world's save"
+        },
+        "outcome": "invalid_format",
+        "message": "Unrecognized save format — this slot cannot be loaded."
+       },
+       {
+        "ok": false,
+        "refusal": {
+         "code": "wrong_version",
+         "field": "gameState.version",
+         "found": 2,
+         "expected": 3,
+         "message": "the game state is version 2; the village mapping writes version 3"
+        }
+       },
+       {
+        "ok": true,
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 91,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          },
+          "interiorState": {
+           "buildingId": "bld_hand_tavern",
+           "buildingName": "The Lantern",
+           "buildingType": "Tavern",
+           "layoutSeed": null
+          }
+         },
+         "conversations": []
+        }
+       },
+       {
+        "ok": true
+       }
+      ],
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "fresh": true
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "results": [],
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "fresh": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "a session over a fresh document holding only its version: the checked writer fills it, a Load replaces it, New Game restores it",
+   "steps": [
+    {
+     "call": "save.runtime.create",
+     "args": {
+      "fresh": {
+       "version": 3
+      }
+     },
+     "expect": {
+      "session": 1,
+      "runtimeSave": {
+       "version": 3
+      },
+      "fresh": true
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "save",
+        "gameState": {
+         "version": 3,
+         "savedAt": 1,
+         "gameTime": 12.5,
+         "player": {
+          "position": {
+           "x": 3,
+           "y": 0,
+           "z": -4
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0.5,
+           "z": 0
+          },
+          "gold": 10,
+          "health": 90,
+          "energy": 70,
+          "inventory": [
+           {
+            "id": "bread"
+           }
+          ]
+         },
+         "npcs": [
+          {
+           "id": "npc_hand",
+           "position": {
+            "x": 1,
+            "y": 0,
+            "z": 2
+           },
+           "state": "idle",
+           "activity": "rest",
+           "destinationId": null,
+           "runtimeState": "idle"
+          }
+         ],
+         "relationships": {},
+         "questProgress": {}
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village",
+         "positionFrame": "world-ir-m",
+         "tick": 12.5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": true,
+        "save": {
+         "version": 3,
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 10,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "npcs": {
+           "relationships": {},
+           "romance": {},
+           "merchantStates": {}
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          },
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          }
+         },
+         "conversations": []
+        }
+       }
+      ],
+      "runtimeSave": {
+       "version": 3,
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 3,
+          "y": 0,
+          "z": -4
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0.5,
+          "z": 0
+         },
+         "gold": 10,
+         "health": 90,
+         "energy": 70,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "npcs": {
+         "relationships": {},
+         "romance": {},
+         "merchantStates": {}
+        },
+        "timeState": {
+         "gameHour": 12,
+         "gameMinute": 30,
+         "dayNumber": 1,
+         "timeScale": 1,
+         "isPaused": false
+        },
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+           "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+           "updatedTick": 12.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+           "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+           "updatedTick": 12.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "idle",
+            "block": null,
+            "activity": "rest",
+            "destination": null,
+            "runtimeState": "idle",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         }
+        }
+       },
+       "conversations": []
+      },
+      "fresh": false
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "load",
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 70,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          },
+          "interiorState": {
+           "buildingId": "bld_hand_tavern",
+           "buildingName": "The Lantern",
+           "buildingType": "Tavern",
+           "layoutSeed": null
+          }
+         },
+         "conversations": []
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village"
+        }
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": true,
+        "gameState": {
+         "version": 3,
+         "slotIndex": 0,
+         "savedAt": "2026-11-25T00:00:00Z",
+         "gameTime": 12.5,
+         "player": {
+          "position": {
+           "x": 3,
+           "y": 0,
+           "z": -4
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0.5,
+           "z": 0
+          },
+          "gold": 70,
+          "health": 90,
+          "energy": 70,
+          "inventory": [
+           {
+            "id": "bread"
+           }
+          ]
+         },
+         "npcs": [
+          {
+           "id": "npc_hand",
+           "position": {
+            "x": 1,
+            "y": 0,
+            "z": 2
+           },
+           "state": "idle",
+           "disposition": 0,
+           "activity": "rest",
+           "destinationId": null,
+           "runtimeState": "idle"
+          }
+         ],
+         "relationships": {},
+         "romance": {},
+         "merchants": [],
+         "currentZone": null,
+         "questProgress": {},
+         "timeState": {
+          "gameHour": 12,
+          "gameMinute": 30,
+          "dayNumber": 1,
+          "timeScale": 1,
+          "isPaused": false
+         },
+         "interiorState": {
+          "buildingId": "bld_hand_tavern",
+          "buildingName": "The Lantern",
+          "buildingType": "Tavern",
+          "layoutSeed": null
+         }
+        }
+       }
+      ],
+      "runtimeSave": {
+       "id": "hand-slot-1",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 3,
+          "y": 0,
+          "z": -4
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0.5,
+          "z": 0
+         },
+         "gold": 70,
+         "health": 90,
+         "energy": 70,
+         "inventory": [
+          {
+           "id": "bread"
+          }
+         ],
+         "cefrLevel": null
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {
+         "aiBlackboards": {
+          "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+           "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+           "updatedTick": 12.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "positionFrame": "world-ir-m"
+           }
+          },
+          "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+           "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+           "updatedTick": 12.5,
+           "slots": {
+            "runtime": "unreal-village",
+            "x": 1,
+            "y": 0,
+            "z": 2,
+            "state": "idle",
+            "block": null,
+            "activity": "rest",
+            "destination": null,
+            "runtimeState": "idle",
+            "inside": null,
+            "indoors": null,
+            "disposition": null
+           }
+          }
+         }
+        },
+        "timeState": {
+         "gameHour": 12,
+         "gameMinute": 30,
+         "dayNumber": 1,
+         "timeScale": 1,
+         "isPaused": false
+        },
+        "interiorState": {
+         "buildingId": "bld_hand_tavern",
+         "buildingName": "The Lantern",
+         "buildingType": "Tavern",
+         "layoutSeed": null
+        }
+       },
+       "conversations": []
+      },
+      "fresh": false
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "new_game"
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "ok": true
+       }
+      ],
+      "runtimeSave": {
+       "version": 3
+      },
+      "fresh": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "the runtime save rows' [invalid-input] boundary, and the session table's errors",
+   "steps": [
+    {
+     "call": "save.runtime.create",
+     "args": {
+      "fresh": null
+     },
+     "expectError": "[invalid-input] insimulcore: save.runtime.create: `fresh` must be a JSON object"
+    },
+    {
+     "call": "save.runtime.create",
+     "args": {},
+     "expectError": "[invalid-input] insimulcore: save.runtime.create: `fresh` must be a JSON object"
+    },
+    {
+     "call": "save.runtime.create",
+     "args": {
+      "fresh": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "session": 1,
+      "runtimeSave": {
+       "id": "hand-new-game",
+       "worldId": "0a1b2c3d4e5f60718293a4b5",
+       "slotIndex": 0,
+       "version": 3,
+       "lastSavedAt": "2026-11-25T00:00:00Z",
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 50,
+         "health": 100,
+         "energy": 100,
+         "inventory": []
+        },
+        "quests": {
+         "progress": {}
+        },
+        "npcs": {
+         "relationships": {}
+        },
+        "prologFacts": [],
+        "extensions": {}
+       },
+       "conversations": []
+      },
+      "fresh": true
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "load",
+        "save": "slot-1",
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village"
+        }
+       }
+      ]
+     },
+     "expectError": "[invalid-input] insimulcore: save.runtime.apply: ops[0] (load) failed: insimulcore: save.runtime.apply: `save` must be a JSON object"
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "load",
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 70,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          },
+          "interiorState": {
+           "buildingId": "bld_hand_tavern",
+           "buildingName": "The Lantern",
+           "buildingType": "Tavern",
+           "layoutSeed": null
+          }
+         },
+         "conversations": []
+        }
+       }
+      ]
+     },
+     "expectError": "`options` must be a JSON object"
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "load",
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 70,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          },
+          "interiorState": {
+           "buildingId": "bld_hand_tavern",
+           "buildingName": "The Lantern",
+           "buildingType": "Tavern",
+           "layoutSeed": null
+          }
+         },
+         "conversations": []
+        },
+        "options": {
+         "runtime": "unreal-village"
+        }
+       }
+      ]
+     },
+     "expectError": "`options.worldId` must be a string"
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "load",
+        "save": {
+         "id": "hand-slot-1",
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "slotIndex": 0,
+         "version": 3,
+         "lastSavedAt": "2026-11-25T00:00:00Z",
+         "currentState": {
+          "player": {
+           "position": {
+            "x": 3,
+            "y": 0,
+            "z": -4
+           },
+           "rotation": {
+            "x": 0,
+            "y": 0.5,
+            "z": 0
+           },
+           "gold": 70,
+           "health": 90,
+           "energy": 70,
+           "inventory": [
+            {
+             "id": "bread"
+            }
+           ],
+           "cefrLevel": null
+          },
+          "quests": {
+           "progress": {}
+          },
+          "npcs": {
+           "relationships": {}
+          },
+          "prologFacts": [],
+          "extensions": {
+           "aiBlackboards": {
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:player",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "positionFrame": "world-ir-m"
+             }
+            },
+            "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand": {
+             "agent": "insimul:world:0a1b2c3d4e5f60718293a4b5:ent:npc_hand",
+             "updatedTick": 12.5,
+             "slots": {
+              "runtime": "unreal-village",
+              "x": 1,
+              "y": 0,
+              "z": 2,
+              "state": "idle",
+              "block": null,
+              "activity": "rest",
+              "destination": null,
+              "runtimeState": "idle",
+              "inside": null,
+              "indoors": null,
+              "disposition": null
+             }
+            }
+           }
+          },
+          "timeState": {
+           "gameHour": 12,
+           "gameMinute": 30,
+           "dayNumber": 1,
+           "timeScale": 1,
+           "isPaused": false
+          },
+          "interiorState": {
+           "buildingId": "bld_hand_tavern",
+           "buildingName": "The Lantern",
+           "buildingType": "Tavern",
+           "layoutSeed": null
+          }
+         },
+         "conversations": []
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": 7
+        }
+       }
+      ]
+     },
+     "expectError": "`options.runtime` must be a string"
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "save",
+        "gameState": {
+         "version": 3,
+         "savedAt": 1,
+         "gameTime": 12.5,
+         "player": {
+          "position": {
+           "x": 3,
+           "y": 0,
+           "z": -4
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0.5,
+           "z": 0
+          },
+          "gold": 1,
+          "health": 90,
+          "energy": 70,
+          "inventory": [
+           {
+            "id": "bread"
+           }
+          ]
+         },
+         "npcs": [
+          {
+           "id": "npc_hand",
+           "position": {
+            "x": 1,
+            "y": 0,
+            "z": 2
+           },
+           "state": "idle",
+           "activity": "rest",
+           "destinationId": null,
+           "runtimeState": "idle"
+          }
+         ],
+         "relationships": {},
+         "questProgress": {}
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village",
+         "positionFrame": "world-ir-m",
+         "tick": "now"
+        }
+       }
+      ]
+     },
+     "expectError": "`options.tick` must be a finite number"
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "save",
+        "gameState": {
+         "version": 3,
+         "savedAt": 1,
+         "gameTime": 12.5,
+         "player": {
+          "position": {
+           "x": 3,
+           "y": 0,
+           "z": -4
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0.5,
+           "z": 0
+          },
+          "gold": 1,
+          "health": 90,
+          "energy": 70,
+          "inventory": [
+           {
+            "id": "bread"
+           }
+          ]
+         },
+         "npcs": [
+          {
+           "id": "npc_hand",
+           "position": {
+            "x": 1,
+            "y": 0,
+            "z": 2
+           },
+           "state": "idle",
+           "activity": "rest",
+           "destinationId": null,
+           "runtimeState": "idle"
+          }
+         ],
+         "relationships": {},
+         "questProgress": {}
+        },
+        "options": {
+         "worldId": "0a1b2c3d4e5f60718293a4b5",
+         "runtime": "unreal-village",
+         "tick": 1
+        }
+       }
+      ]
+     },
+     "expectError": "`options.positionFrame` must be a string"
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "quick_save"
+       }
+      ]
+     },
+     "expectError": "has no known op \"quick_save\" (known: new_game, load, save)"
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": {
+       "op": "new_game"
+      }
+     },
+     "expectError": "`ops` must be an array"
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 2,
+      "ops": []
+     },
+     "expectError": "no open session 2"
+    },
+    {
+     "call": "session.list",
+     "args": {},
+     "expect": {
+      "sessions": [
+       {
+        "session": 1,
+        "kind": "save.runtime"
+       }
+      ]
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": 1
+     },
+     "expect": {
+      "disposed": true
+     }
+    },
+    {
+     "call": "save.runtime.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expectError": "no open session 1"
+    }
+   ]
+  },
+  {
+   "name": "save.interior.layoutSeedOf: an integer is a seed (0 and negatives included), anything else the stated sentinel null",
+   "steps": [
+    {
+     "call": "save.interior.layoutSeedOf",
+     "args": {
+      "layoutSeed": null
+     },
+     "expect": {
+      "layoutSeed": null
+     }
+    },
+    {
+     "call": "save.interior.layoutSeedOf",
+     "args": {
+      "layoutSeed": 0
+     },
+     "expect": {
+      "layoutSeed": 0
+     }
+    },
+    {
+     "call": "save.interior.layoutSeedOf",
+     "args": {
+      "layoutSeed": 7
+     },
+     "expect": {
+      "layoutSeed": 7
+     }
+    },
+    {
+     "call": "save.interior.layoutSeedOf",
+     "args": {
+      "layoutSeed": -3
+     },
+     "expect": {
+      "layoutSeed": -3
+     }
+    },
+    {
+     "call": "save.interior.layoutSeedOf",
+     "args": {
+      "layoutSeed": 2.5
+     },
+     "expect": {
+      "layoutSeed": null
+     }
+    },
+    {
+     "call": "save.interior.layoutSeedOf",
+     "args": {
+      "layoutSeed": "7"
+     },
+     "expect": {
+      "layoutSeed": null
+     }
+    },
+    {
+     "call": "save.interior.layoutSeedOf",
+     "args": {
+      "layoutSeed": true
+     },
+     "expect": {
+      "layoutSeed": null
+     }
+    },
+    {
+     "call": "save.interior.layoutSeedOf",
+     "args": {
+      "layoutSeed": []
+     },
+     "expect": {
+      "layoutSeed": null
+     }
+    },
+    {
+     "call": "save.interior.layoutSeedOf",
+     "args": {
+      "layoutSeed": {}
+     },
+     "expect": {
+      "layoutSeed": null
+     }
+    },
+    {
+     "call": "save.interior.layoutSeedOf",
+     "args": {
+      "layoutSeed": 1e+21
+     },
+     "expect": {
+      "layoutSeed": 1e+21
+     }
+    },
+    {
+     "call": "save.interior.layoutSeedOf",
+     "args": {},
+     "expect": {
+      "layoutSeed": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "save.interior.read reads anything into the one shape or null; save.interior.layoutOf names a read state stated or seeded",
+   "steps": [
+    {
+     "call": "save.interior.read",
+     "args": {
+      "interiorState": 5
+     },
+     "expect": {
+      "interiorState": null
+     }
+    },
+    {
+     "call": "save.interior.read",
+     "args": {
+      "interiorState": "bld_hand_tavern"
+     },
+     "expect": {
+      "interiorState": null
+     }
+    },
+    {
+     "call": "save.interior.read",
+     "args": {
+      "interiorState": []
+     },
+     "expect": {
+      "interiorState": null
+     }
+    },
+    {
+     "call": "save.interior.read",
+     "args": {
+      "interiorState": null
+     },
+     "expect": {
+      "interiorState": null
+     }
+    },
+    {
+     "call": "save.interior.read",
+     "args": {
+      "interiorState": {}
+     },
+     "expect": {
+      "interiorState": null
+     }
+    },
+    {
+     "call": "save.interior.read",
+     "args": {
+      "interiorState": {
+       "buildingId": ""
+      }
+     },
+     "expect": {
+      "interiorState": null
+     }
+    },
+    {
+     "call": "save.interior.read",
+     "args": {
+      "interiorState": {
+       "buildingId": 7
+      }
+     },
+     "expect": {
+      "interiorState": null
+     }
+    },
+    {
+     "call": "save.interior.read",
+     "args": {
+      "interiorState": {
+       "buildingId": "bld_hand_tavern",
+       "buildingName": 3,
+       "buildingType": null,
+       "layoutSeed": 4,
+       "extra": true
+      }
+     },
+     "expect": {
+      "interiorState": {
+       "buildingId": "bld_hand_tavern",
+       "buildingName": "",
+       "buildingType": "",
+       "layoutSeed": 4
+      }
+     }
+    },
+    {
+     "call": "save.interior.read",
+     "args": {
+      "interiorState": {
+       "buildingId": "bld_hand_tavern",
+       "buildingName": "The Lantern",
+       "buildingType": "Tavern",
+       "layoutSeed": -1
+      }
+     },
+     "expect": {
+      "interiorState": {
+       "buildingId": "bld_hand_tavern",
+       "buildingName": "The Lantern",
+       "buildingType": "Tavern",
+       "layoutSeed": -1
+      }
+     }
+    },
+    {
+     "call": "save.interior.read",
+     "args": {},
+     "expect": {
+      "interiorState": null
+     }
+    },
+    {
+     "call": "save.interior.layoutOf",
+     "args": {
+      "interiorState": {
+       "layoutSeed": null
+      }
+     },
+     "expect": {
+      "layout": "stated"
+     }
+    },
+    {
+     "call": "save.interior.layoutOf",
+     "args": {
+      "interiorState": {
+       "layoutSeed": 0
+      }
+     },
+     "expect": {
+      "layout": "seeded"
+     }
+    },
+    {
+     "call": "save.interior.layoutOf",
+     "args": {
+      "interiorState": {
+       "layoutSeed": 12
+      }
+     },
+     "expect": {
+      "layout": "seeded"
+     }
+    },
+    {
+     "call": "save.interior.layoutOf",
+     "args": {
+      "interiorState": {
+       "buildingId": "bld_hand_tavern",
+       "buildingName": "",
+       "buildingType": "",
+       "layoutSeed": 4
+      }
+     },
+     "expect": {
+      "layout": "seeded"
+     }
+    },
+    {
+     "call": "save.interior.layoutOf",
+     "args": {
+      "interiorState": null
+     },
+     "expectError": "[invalid-input] insimulcore: save.interior.layoutOf: `interiorState` must be a JSON object"
+    }
+   ]
+  },
+  {
+   "name": "save.interior.stated: what a writer puts in interiorState, the door's label and the building's role, layoutSeed null",
+   "steps": [
+    {
+     "call": "save.interior.stated",
+     "args": {
+      "building": {
+       "id": "bld_hand_tavern",
+       "position": {
+        "x": 120,
+        "y": 0,
+        "z": 40
+       },
+       "rotation": 1.2,
+       "spec": {
+        "buildingRole": "Tavern",
+        "width": 12,
+        "depth": 9,
+        "floors": 2
+       },
+       "name": "The Lantern",
+       "businessType": "Tavern",
+       "interior": {
+        "function": "business.Tavern",
+        "width": 11.6,
+        "depth": 8.6,
+        "height": 6,
+        "floors": 2,
+        "doors": [
+         {
+          "id": "hall~kitchen",
+          "fromRoomId": "hall",
+          "toRoomId": "kitchen",
+          "kind": "door",
+          "position": {
+           "x": 8,
+           "y": 0,
+           "z": 4.3
+          }
+         },
+         {
+          "id": "hall!entrance",
+          "fromRoomId": "",
+          "toRoomId": "hall",
+          "kind": "entrance",
+          "position": {
+           "x": 5.8,
+           "y": 0,
+           "z": 0
+          }
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "interiorState": {
+       "buildingId": "bld_hand_tavern",
+       "buildingName": "The Lantern",
+       "buildingType": "Tavern",
+       "layoutSeed": null
+      }
+     }
+    },
+    {
+     "call": "save.interior.stated",
+     "args": {
+      "building": {
+       "id": "bld_hand_tavern",
+       "position": {
+        "x": 120,
+        "y": 0,
+        "z": 40
+       },
+       "rotation": 1.2,
+       "spec": {
+        "buildingRole": "Tavern",
+        "width": 12,
+        "depth": 9,
+        "floors": 2
+       },
+       "name": "",
+       "businessType": "Inn",
+       "interior": {
+        "function": "business.Tavern",
+        "width": 11.6,
+        "depth": 8.6,
+        "height": 6,
+        "floors": 2,
+        "doors": [
+         {
+          "id": "hall~kitchen",
+          "fromRoomId": "hall",
+          "toRoomId": "kitchen",
+          "kind": "door",
+          "position": {
+           "x": 8,
+           "y": 0,
+           "z": 4.3
+          }
+         },
+         {
+          "id": "hall!entrance",
+          "fromRoomId": "",
+          "toRoomId": "hall",
+          "kind": "entrance",
+          "position": {
+           "x": 5.8,
+           "y": 0,
+           "z": 0
+          }
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "interiorState": {
+       "buildingId": "bld_hand_tavern",
+       "buildingName": "Inn",
+       "buildingType": "Tavern",
+       "layoutSeed": null
+      }
+     }
+    },
+    {
+     "call": "save.interior.stated",
+     "args": {
+      "building": {
+       "id": "bld_hand_tavern",
+       "position": {
+        "x": 120,
+        "y": 0,
+        "z": 40
+       },
+       "rotation": 1.2,
+       "spec": {
+        "buildingRole": "Tavern",
+        "width": 12,
+        "depth": 9,
+        "floors": 2
+       },
+       "name": null,
+       "businessType": null,
+       "interior": {
+        "function": "business.Tavern",
+        "width": 11.6,
+        "depth": 8.6,
+        "height": 6,
+        "floors": 2,
+        "doors": [
+         {
+          "id": "hall~kitchen",
+          "fromRoomId": "hall",
+          "toRoomId": "kitchen",
+          "kind": "door",
+          "position": {
+           "x": 8,
+           "y": 0,
+           "z": 4.3
+          }
+         },
+         {
+          "id": "hall!entrance",
+          "fromRoomId": "",
+          "toRoomId": "hall",
+          "kind": "entrance",
+          "position": {
+           "x": 5.8,
+           "y": 0,
+           "z": 0
+          }
+         }
+        ]
+       }
+      }
+     },
+     "expect": {
+      "interiorState": {
+       "buildingId": "bld_hand_tavern",
+       "buildingName": "Tavern",
+       "buildingType": "Tavern",
+       "layoutSeed": null
+      }
+     }
+    },
+    {
+     "call": "save.interior.stated",
+     "args": {
+      "building": {
+       "id": "bld_hand_cottage",
+       "position": {
+        "x": -20,
+        "y": 0,
+        "z": 5
+       },
+       "rotation": -0.6,
+       "spec": {
+        "width": 6,
+        "depth": 5
+       }
+      }
+     },
+     "expect": {
+      "interiorState": {
+       "buildingId": "bld_hand_cottage",
+       "buildingName": "Building",
+       "buildingType": "",
+       "layoutSeed": null
+      }
+     }
+    },
+    {
+     "call": "save.interior.stated",
+     "args": {
+      "building": {
+       "id": "bld_hand_shed",
+       "position": {
+        "x": 10,
+        "y": 0,
+        "z": 10
+       },
+       "rotation": 0,
+       "spec": {
+        "buildingRole": 9
+       },
+       "interior": {
+        "function": "storage",
+        "width": 3.6,
+        "depth": 2.6
+       }
+      }
+     },
+     "expect": {
+      "interiorState": {
+       "buildingId": "bld_hand_shed",
+       "buildingName": "Building",
+       "buildingType": "",
+       "layoutSeed": null
+      }
+     }
+    },
+    {
+     "call": "save.interior.stated",
+     "args": {
+      "building": "bld_hand_tavern"
+     },
+     "expectError": "[invalid-input] insimulcore: save.interior.stated: `building` must be a JSON object"
+    }
+   ]
+  },
+  {
+   "name": "save.interior.framePoint: a host's point minus where it drew the frame's origin, rounded to 1e-9",
+   "steps": [
+    {
+     "call": "save.interior.framePoint",
+     "args": {
+      "position": {
+       "x": 5120.3,
+       "y": 0.9,
+       "z": -4996.5
+      },
+      "origin": {
+       "x": 5000,
+       "y": 0,
+       "z": -5000
+      }
+     },
+     "expect": {
+      "position": {
+       "x": 120.3,
+       "y": 0.9,
+       "z": 3.5
+      }
+     }
+    },
+    {
+     "call": "save.interior.framePoint",
+     "args": {
+      "position": {
+       "x": 0.3,
+       "y": 0,
+       "z": 0.1
+      },
+      "origin": {
+       "x": 0.1,
+       "y": 0,
+       "z": 0.2
+      }
+     },
+     "expect": {
+      "position": {
+       "x": 0.2,
+       "y": 0,
+       "z": -0.1
+      }
+     }
+    },
+    {
+     "call": "save.interior.framePoint",
+     "args": {
+      "position": {
+       "x": 1,
+       "y": 2,
+       "z": 3
+      },
+      "origin": {
+       "x": 1,
+       "y": 2,
+       "z": 3
+      }
+     },
+     "expect": {
+      "position": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      }
+     }
+    },
+    {
+     "call": "save.interior.framePoint",
+     "args": {
+      "position": {
+       "x": -1e-10,
+       "y": 0,
+       "z": 0
+      },
+      "origin": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      }
+     },
+     "expect": {
+      "position": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      }
+     }
+    },
+    {
+     "call": "save.interior.framePoint",
+     "args": {
+      "position": {
+       "x": 1,
+       "y": 2,
+       "z": 3
+      }
+     },
+     "expectError": "[invalid-input] insimulcore: save.interior.framePoint: `origin` must be a JSON object"
+    },
+    {
+     "call": "save.interior.framePoint",
+     "args": {
+      "position": {
+       "x": 1,
+       "y": "2",
+       "z": 3
+      },
+      "origin": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      }
+     },
+     "expectError": "`position.y` must be a finite number"
+    }
+   ]
+  },
+  {
+   "name": "save.interior.extentOf: width and depth as stated, height as stated or floors (at least 1) times the default storey",
+   "steps": [
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": null
+     },
+     "expect": {
+      "extent": null
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": 5
+     },
+     "expect": {
+      "extent": null
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": {}
+     },
+     "expect": {
+      "extent": null
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": {
+       "function": "business.Tavern",
+       "width": 11.6,
+       "depth": 8.6,
+       "height": 6,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "hall~kitchen",
+         "fromRoomId": "hall",
+         "toRoomId": "kitchen",
+         "kind": "door",
+         "position": {
+          "x": 8,
+          "y": 0,
+          "z": 4.3
+         }
+        },
+        {
+         "id": "hall!entrance",
+         "fromRoomId": "",
+         "toRoomId": "hall",
+         "kind": "entrance",
+         "position": {
+          "x": 5.8,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     },
+     "expect": {
+      "extent": {
+       "width": 11.6,
+       "depth": 8.6,
+       "height": 6
+      }
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": {
+       "function": "storage",
+       "width": 3.6,
+       "depth": 2.6
+      }
+     },
+     "expect": {
+      "extent": {
+       "width": 3.6,
+       "depth": 2.6,
+       "height": 3
+      }
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": {
+       "width": 0,
+       "depth": 4
+      }
+     },
+     "expect": {
+      "extent": null
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": {
+       "width": 4,
+       "depth": -1
+      }
+     },
+     "expect": {
+      "extent": null
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": {
+       "width": 4,
+       "depth": 4,
+       "floors": 3
+      }
+     },
+     "expect": {
+      "extent": {
+       "width": 4,
+       "depth": 4,
+       "height": 9
+      }
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": {
+       "width": 4,
+       "depth": 4,
+       "floors": 0
+      }
+     },
+     "expect": {
+      "extent": {
+       "width": 4,
+       "depth": 4,
+       "height": 3
+      }
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": {
+       "width": 4,
+       "depth": 4,
+       "floors": 2.7
+      }
+     },
+     "expect": {
+      "extent": {
+       "width": 4,
+       "depth": 4,
+       "height": 6
+      }
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": {
+       "width": 4,
+       "depth": 4,
+       "height": -2,
+       "floors": 2
+      }
+     },
+     "expect": {
+      "extent": {
+       "width": 4,
+       "depth": 4,
+       "height": 6
+      }
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {
+      "interior": {
+       "width": "4",
+       "depth": 4
+      }
+     },
+     "expect": {
+      "extent": null
+     }
+    },
+    {
+     "call": "save.interior.extentOf",
+     "args": {},
+     "expect": {
+      "extent": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "save.interior.isFramePoint: within the tolerance of the extent on every axis, false when there is no extent or no point",
+   "steps": [
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": {
+       "x": 5,
+       "y": 1,
+       "z": 4
+      },
+      "interior": {
+       "function": "business.Tavern",
+       "width": 11.6,
+       "depth": 8.6,
+       "height": 6,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "hall~kitchen",
+         "fromRoomId": "hall",
+         "toRoomId": "kitchen",
+         "kind": "door",
+         "position": {
+          "x": 8,
+          "y": 0,
+          "z": 4.3
+         }
+        },
+        {
+         "id": "hall!entrance",
+         "fromRoomId": "",
+         "toRoomId": "hall",
+         "kind": "entrance",
+         "position": {
+          "x": 5.8,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     },
+     "expect": {
+      "isFramePoint": true
+     }
+    },
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": {
+       "x": -0.5,
+       "y": 0,
+       "z": 0
+      },
+      "interior": {
+       "function": "business.Tavern",
+       "width": 11.6,
+       "depth": 8.6,
+       "height": 6,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "hall~kitchen",
+         "fromRoomId": "hall",
+         "toRoomId": "kitchen",
+         "kind": "door",
+         "position": {
+          "x": 8,
+          "y": 0,
+          "z": 4.3
+         }
+        },
+        {
+         "id": "hall!entrance",
+         "fromRoomId": "",
+         "toRoomId": "hall",
+         "kind": "entrance",
+         "position": {
+          "x": 5.8,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     },
+     "expect": {
+      "isFramePoint": true
+     }
+    },
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": {
+       "x": -0.500001,
+       "y": 0,
+       "z": 0
+      },
+      "interior": {
+       "function": "business.Tavern",
+       "width": 11.6,
+       "depth": 8.6,
+       "height": 6,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "hall~kitchen",
+         "fromRoomId": "hall",
+         "toRoomId": "kitchen",
+         "kind": "door",
+         "position": {
+          "x": 8,
+          "y": 0,
+          "z": 4.3
+         }
+        },
+        {
+         "id": "hall!entrance",
+         "fromRoomId": "",
+         "toRoomId": "hall",
+         "kind": "entrance",
+         "position": {
+          "x": 5.8,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     },
+     "expect": {
+      "isFramePoint": false
+     }
+    },
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": {
+       "x": 12.1,
+       "y": 6.5,
+       "z": 9.1
+      },
+      "interior": {
+       "function": "business.Tavern",
+       "width": 11.6,
+       "depth": 8.6,
+       "height": 6,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "hall~kitchen",
+         "fromRoomId": "hall",
+         "toRoomId": "kitchen",
+         "kind": "door",
+         "position": {
+          "x": 8,
+          "y": 0,
+          "z": 4.3
+         }
+        },
+        {
+         "id": "hall!entrance",
+         "fromRoomId": "",
+         "toRoomId": "hall",
+         "kind": "entrance",
+         "position": {
+          "x": 5.8,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     },
+     "expect": {
+      "isFramePoint": true
+     }
+    },
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": {
+       "x": 11.6,
+       "y": 6.500001,
+       "z": 1
+      },
+      "interior": {
+       "function": "business.Tavern",
+       "width": 11.6,
+       "depth": 8.6,
+       "height": 6,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "hall~kitchen",
+         "fromRoomId": "hall",
+         "toRoomId": "kitchen",
+         "kind": "door",
+         "position": {
+          "x": 8,
+          "y": 0,
+          "z": 4.3
+         }
+        },
+        {
+         "id": "hall!entrance",
+         "fromRoomId": "",
+         "toRoomId": "hall",
+         "kind": "entrance",
+         "position": {
+          "x": 5.8,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     },
+     "expect": {
+      "isFramePoint": false
+     }
+    },
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": {
+       "x": 5,
+       "y": 1
+      },
+      "interior": {
+       "function": "business.Tavern",
+       "width": 11.6,
+       "depth": 8.6,
+       "height": 6,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "hall~kitchen",
+         "fromRoomId": "hall",
+         "toRoomId": "kitchen",
+         "kind": "door",
+         "position": {
+          "x": 8,
+          "y": 0,
+          "z": 4.3
+         }
+        },
+        {
+         "id": "hall!entrance",
+         "fromRoomId": "",
+         "toRoomId": "hall",
+         "kind": "entrance",
+         "position": {
+          "x": 5.8,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     },
+     "expect": {
+      "isFramePoint": false
+     }
+    },
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": {
+       "x": 5,
+       "y": "1",
+       "z": 4
+      },
+      "interior": {
+       "function": "business.Tavern",
+       "width": 11.6,
+       "depth": 8.6,
+       "height": 6,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "hall~kitchen",
+         "fromRoomId": "hall",
+         "toRoomId": "kitchen",
+         "kind": "door",
+         "position": {
+          "x": 8,
+          "y": 0,
+          "z": 4.3
+         }
+        },
+        {
+         "id": "hall!entrance",
+         "fromRoomId": "",
+         "toRoomId": "hall",
+         "kind": "entrance",
+         "position": {
+          "x": 5.8,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     },
+     "expect": {
+      "isFramePoint": false
+     }
+    },
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": null,
+      "interior": {
+       "function": "business.Tavern",
+       "width": 11.6,
+       "depth": 8.6,
+       "height": 6,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "hall~kitchen",
+         "fromRoomId": "hall",
+         "toRoomId": "kitchen",
+         "kind": "door",
+         "position": {
+          "x": 8,
+          "y": 0,
+          "z": 4.3
+         }
+        },
+        {
+         "id": "hall!entrance",
+         "fromRoomId": "",
+         "toRoomId": "hall",
+         "kind": "entrance",
+         "position": {
+          "x": 5.8,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     },
+     "expect": {
+      "isFramePoint": false
+     }
+    },
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": {
+       "x": 5120.3,
+       "y": 0.9,
+       "z": -4996.5
+      },
+      "interior": {
+       "function": "business.Tavern",
+       "width": 11.6,
+       "depth": 8.6,
+       "height": 6,
+       "floors": 2,
+       "doors": [
+        {
+         "id": "hall~kitchen",
+         "fromRoomId": "hall",
+         "toRoomId": "kitchen",
+         "kind": "door",
+         "position": {
+          "x": 8,
+          "y": 0,
+          "z": 4.3
+         }
+        },
+        {
+         "id": "hall!entrance",
+         "fromRoomId": "",
+         "toRoomId": "hall",
+         "kind": "entrance",
+         "position": {
+          "x": 5.8,
+          "y": 0,
+          "z": 0
+         }
+        }
+       ]
+      }
+     },
+     "expect": {
+      "isFramePoint": false
+     }
+    },
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": {
+       "x": 1,
+       "y": 1,
+       "z": 1
+      },
+      "interior": {
+       "function": "storage",
+       "width": 3.6,
+       "depth": 2.6
+      }
+     },
+     "expect": {
+      "isFramePoint": true
+     }
+    },
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": {
+       "x": 1,
+       "y": 3.4,
+       "z": 1
+      },
+      "interior": {
+       "function": "storage",
+       "width": 3.6,
+       "depth": 2.6
+      }
+     },
+     "expect": {
+      "isFramePoint": true
+     }
+    },
+    {
+     "call": "save.interior.isFramePoint",
+     "args": {
+      "position": {
+       "x": 1,
+       "y": 1,
+       "z": 1
+      },
+      "interior": null
+     },
+     "expect": {
+      "isFramePoint": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "save.interior.loadOf beyond the corpus: a rotation absent or unreadable, an unreadable interiorState, a stated interior with no entrance",
+   "steps": [
+    {
+     "call": "save.interior.loadOf",
+     "args": {
+      "interiorState": {
+       "buildingId": "bld_hand_tavern",
+       "buildingName": "The Lantern",
+       "buildingType": "Tavern",
+       "layoutSeed": null
+      },
+      "position": {
+       "x": 5,
+       "y": 3.2,
+       "z": 4
+      },
+      "buildings": [
+       {
+        "id": "bld_hand_tavern",
+        "position": {
+         "x": 120,
+         "y": 0,
+         "z": 40
+        },
+        "rotation": 1.2,
+        "spec": {
+         "buildingRole": "Tavern",
+         "width": 12,
+         "depth": 9,
+         "floors": 2
+        },
+        "name": "The Lantern",
+        "businessType": "Tavern",
+        "interior": {
+         "function": "business.Tavern",
+         "width": 11.6,
+         "depth": 8.6,
+         "height": 6,
+         "floors": 2,
+         "doors": [
+          {
+           "id": "hall~kitchen",
+           "fromRoomId": "hall",
+           "toRoomId": "kitchen",
+           "kind": "door",
+           "position": {
+            "x": 8,
+            "y": 0,
+            "z": 4.3
+           }
+          },
+          {
+           "id": "hall!entrance",
+           "fromRoomId": "",
+           "toRoomId": "hall",
+           "kind": "entrance",
+           "position": {
+            "x": 5.8,
+            "y": 0,
+            "z": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "id": "bld_hand_shed",
+        "position": {
+         "x": 10,
+         "y": 0,
+         "z": 10
+        },
+        "rotation": 0,
+        "spec": {
+         "buildingRole": "Shed",
+         "width": 4,
+         "depth": 3
+        },
+        "interior": {
+         "function": "storage",
+         "width": 3.6,
+         "depth": 2.6
+        }
+       },
+       {
+        "id": "bld_hand_cottage",
+        "position": {
+         "x": -20,
+         "y": 0,
+         "z": 5
+        },
+        "rotation": -0.6,
+        "spec": {
+         "width": 6,
+         "depth": 5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "where": "inside",
+      "building": "bld_hand_tavern",
+      "interior": "interior:bld_hand_tavern",
+      "frame": "interior",
+      "position": {
+       "x": 5,
+       "y": 3.2,
+       "z": 4
+      },
+      "rotation": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "note": null
+     }
+    },
+    {
+     "call": "save.interior.loadOf",
+     "args": {
+      "interiorState": {
+       "buildingId": "bld_hand_tavern",
+       "buildingName": "The Lantern",
+       "buildingType": "Tavern",
+       "layoutSeed": null
+      },
+      "position": {
+       "x": 5,
+       "y": 1,
+       "z": 40
+      },
+      "rotation": {
+       "x": 0,
+       "y": 2,
+       "z": 0
+      },
+      "buildings": [
+       {
+        "id": "bld_hand_tavern",
+        "position": {
+         "x": 120,
+         "y": 0,
+         "z": 40
+        },
+        "rotation": 1.2,
+        "spec": {
+         "buildingRole": "Tavern",
+         "width": 12,
+         "depth": 9,
+         "floors": 2
+        },
+        "name": "The Lantern",
+        "businessType": "Tavern",
+        "interior": {
+         "function": "business.Tavern",
+         "width": 11.6,
+         "depth": 8.6,
+         "height": 6,
+         "floors": 2,
+         "doors": [
+          {
+           "id": "hall~kitchen",
+           "fromRoomId": "hall",
+           "toRoomId": "kitchen",
+           "kind": "door",
+           "position": {
+            "x": 8,
+            "y": 0,
+            "z": 4.3
+           }
+          },
+          {
+           "id": "hall!entrance",
+           "fromRoomId": "",
+           "toRoomId": "hall",
+           "kind": "entrance",
+           "position": {
+            "x": 5.8,
+            "y": 0,
+            "z": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "id": "bld_hand_shed",
+        "position": {
+         "x": 10,
+         "y": 0,
+         "z": 10
+        },
+        "rotation": 0,
+        "spec": {
+         "buildingRole": "Shed",
+         "width": 4,
+         "depth": 3
+        },
+        "interior": {
+         "function": "storage",
+         "width": 3.6,
+         "depth": 2.6
+        }
+       },
+       {
+        "id": "bld_hand_cottage",
+        "position": {
+         "x": -20,
+         "y": 0,
+         "z": 5
+        },
+        "rotation": -0.6,
+        "spec": {
+         "width": 6,
+         "depth": 5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "where": "inside",
+      "building": "bld_hand_tavern",
+      "interior": "interior:bld_hand_tavern",
+      "frame": "interior",
+      "position": {
+       "x": 5.8,
+       "y": 0,
+       "z": 0
+      },
+      "rotation": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "note": "position_outside_interior"
+     }
+    },
+    {
+     "call": "save.interior.loadOf",
+     "args": {
+      "interiorState": {
+       "buildingId": "bld_hand_shed",
+       "buildingName": "Shed",
+       "buildingType": "Shed",
+       "layoutSeed": null
+      },
+      "position": {
+       "x": 50,
+       "y": 0,
+       "z": 50
+      },
+      "buildings": [
+       {
+        "id": "bld_hand_tavern",
+        "position": {
+         "x": 120,
+         "y": 0,
+         "z": 40
+        },
+        "rotation": 1.2,
+        "spec": {
+         "buildingRole": "Tavern",
+         "width": 12,
+         "depth": 9,
+         "floors": 2
+        },
+        "name": "The Lantern",
+        "businessType": "Tavern",
+        "interior": {
+         "function": "business.Tavern",
+         "width": 11.6,
+         "depth": 8.6,
+         "height": 6,
+         "floors": 2,
+         "doors": [
+          {
+           "id": "hall~kitchen",
+           "fromRoomId": "hall",
+           "toRoomId": "kitchen",
+           "kind": "door",
+           "position": {
+            "x": 8,
+            "y": 0,
+            "z": 4.3
+           }
+          },
+          {
+           "id": "hall!entrance",
+           "fromRoomId": "",
+           "toRoomId": "hall",
+           "kind": "entrance",
+           "position": {
+            "x": 5.8,
+            "y": 0,
+            "z": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "id": "bld_hand_shed",
+        "position": {
+         "x": 10,
+         "y": 0,
+         "z": 10
+        },
+        "rotation": 0,
+        "spec": {
+         "buildingRole": "Shed",
+         "width": 4,
+         "depth": 3
+        },
+        "interior": {
+         "function": "storage",
+         "width": 3.6,
+         "depth": 2.6
+        }
+       },
+       {
+        "id": "bld_hand_cottage",
+        "position": {
+         "x": -20,
+         "y": 0,
+         "z": 5
+        },
+        "rotation": -0.6,
+        "spec": {
+         "width": 6,
+         "depth": 5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "where": "inside",
+      "building": "bld_hand_shed",
+      "interior": "interior:bld_hand_shed",
+      "frame": "interior",
+      "position": null,
+      "rotation": null,
+      "note": "position_outside_interior"
+     }
+    },
+    {
+     "call": "save.interior.loadOf",
+     "args": {
+      "interiorState": {
+       "buildingId": "bld_hand_tavern",
+       "buildingName": "The Lantern",
+       "buildingType": "Tavern",
+       "layoutSeed": 3
+      },
+      "position": {
+       "x": 5,
+       "y": 1,
+       "z": 4
+      },
+      "buildings": [
+       {
+        "id": "bld_hand_tavern",
+        "position": {
+         "x": 120,
+         "y": 0,
+         "z": 40
+        },
+        "rotation": 1.2,
+        "spec": {
+         "buildingRole": "Tavern",
+         "width": 12,
+         "depth": 9,
+         "floors": 2
+        },
+        "name": "The Lantern",
+        "businessType": "Tavern",
+        "interior": {
+         "function": "business.Tavern",
+         "width": 11.6,
+         "depth": 8.6,
+         "height": 6,
+         "floors": 2,
+         "doors": [
+          {
+           "id": "hall~kitchen",
+           "fromRoomId": "hall",
+           "toRoomId": "kitchen",
+           "kind": "door",
+           "position": {
+            "x": 8,
+            "y": 0,
+            "z": 4.3
+           }
+          },
+          {
+           "id": "hall!entrance",
+           "fromRoomId": "",
+           "toRoomId": "hall",
+           "kind": "entrance",
+           "position": {
+            "x": 5.8,
+            "y": 0,
+            "z": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "id": "bld_hand_shed",
+        "position": {
+         "x": 10,
+         "y": 0,
+         "z": 10
+        },
+        "rotation": 0,
+        "spec": {
+         "buildingRole": "Shed",
+         "width": 4,
+         "depth": 3
+        },
+        "interior": {
+         "function": "storage",
+         "width": 3.6,
+         "depth": 2.6
+        }
+       },
+       {
+        "id": "bld_hand_cottage",
+        "position": {
+         "x": -20,
+         "y": 0,
+         "z": 5
+        },
+        "rotation": -0.6,
+        "spec": {
+         "width": 6,
+         "depth": 5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "where": "outside",
+      "building": "bld_hand_tavern",
+      "interior": null,
+      "frame": "world",
+      "position": {
+       "x": 124.66019543,
+       "y": 0,
+       "z": 41.811788772
+      },
+      "rotation": {
+       "x": 0,
+       "y": 1.2,
+       "z": 0
+      },
+      "note": "seeded_interior"
+     }
+    },
+    {
+     "call": "save.interior.loadOf",
+     "args": {
+      "interiorState": {
+       "buildingId": "bld_hand_cottage",
+       "buildingName": "Cottage",
+       "buildingType": "",
+       "layoutSeed": null
+      },
+      "position": {
+       "x": 1,
+       "y": 0,
+       "z": 1
+      },
+      "buildings": [
+       {
+        "id": "bld_hand_tavern",
+        "position": {
+         "x": 120,
+         "y": 0,
+         "z": 40
+        },
+        "rotation": 1.2,
+        "spec": {
+         "buildingRole": "Tavern",
+         "width": 12,
+         "depth": 9,
+         "floors": 2
+        },
+        "name": "The Lantern",
+        "businessType": "Tavern",
+        "interior": {
+         "function": "business.Tavern",
+         "width": 11.6,
+         "depth": 8.6,
+         "height": 6,
+         "floors": 2,
+         "doors": [
+          {
+           "id": "hall~kitchen",
+           "fromRoomId": "hall",
+           "toRoomId": "kitchen",
+           "kind": "door",
+           "position": {
+            "x": 8,
+            "y": 0,
+            "z": 4.3
+           }
+          },
+          {
+           "id": "hall!entrance",
+           "fromRoomId": "",
+           "toRoomId": "hall",
+           "kind": "entrance",
+           "position": {
+            "x": 5.8,
+            "y": 0,
+            "z": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "id": "bld_hand_shed",
+        "position": {
+         "x": 10,
+         "y": 0,
+         "z": 10
+        },
+        "rotation": 0,
+        "spec": {
+         "buildingRole": "Shed",
+         "width": 4,
+         "depth": 3
+        },
+        "interior": {
+         "function": "storage",
+         "width": 3.6,
+         "depth": 2.6
+        }
+       },
+       {
+        "id": "bld_hand_cottage",
+        "position": {
+         "x": -20,
+         "y": 0,
+         "z": 5
+        },
+        "rotation": -0.6,
+        "spec": {
+         "width": 6,
+         "depth": 5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "where": "outside",
+      "building": "bld_hand_cottage",
+      "interior": null,
+      "frame": "world",
+      "position": {
+       "x": -21.69392742,
+       "y": 0,
+       "z": 7.476006844
+      },
+      "rotation": {
+       "x": 0,
+       "y": -0.6,
+       "z": 0
+      },
+      "note": "no_interior"
+     }
+    },
+    {
+     "call": "save.interior.loadOf",
+     "args": {
+      "interiorState": {
+       "buildingId": ""
+      },
+      "position": {
+       "x": 9,
+       "y": 0,
+       "z": 9
+      },
+      "rotation": {
+       "x": 0,
+       "y": 1,
+       "z": 0
+      },
+      "buildings": [
+       {
+        "id": "bld_hand_tavern",
+        "position": {
+         "x": 120,
+         "y": 0,
+         "z": 40
+        },
+        "rotation": 1.2,
+        "spec": {
+         "buildingRole": "Tavern",
+         "width": 12,
+         "depth": 9,
+         "floors": 2
+        },
+        "name": "The Lantern",
+        "businessType": "Tavern",
+        "interior": {
+         "function": "business.Tavern",
+         "width": 11.6,
+         "depth": 8.6,
+         "height": 6,
+         "floors": 2,
+         "doors": [
+          {
+           "id": "hall~kitchen",
+           "fromRoomId": "hall",
+           "toRoomId": "kitchen",
+           "kind": "door",
+           "position": {
+            "x": 8,
+            "y": 0,
+            "z": 4.3
+           }
+          },
+          {
+           "id": "hall!entrance",
+           "fromRoomId": "",
+           "toRoomId": "hall",
+           "kind": "entrance",
+           "position": {
+            "x": 5.8,
+            "y": 0,
+            "z": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "id": "bld_hand_shed",
+        "position": {
+         "x": 10,
+         "y": 0,
+         "z": 10
+        },
+        "rotation": 0,
+        "spec": {
+         "buildingRole": "Shed",
+         "width": 4,
+         "depth": 3
+        },
+        "interior": {
+         "function": "storage",
+         "width": 3.6,
+         "depth": 2.6
+        }
+       },
+       {
+        "id": "bld_hand_cottage",
+        "position": {
+         "x": -20,
+         "y": 0,
+         "z": 5
+        },
+        "rotation": -0.6,
+        "spec": {
+         "width": 6,
+         "depth": 5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "where": "outside",
+      "building": null,
+      "interior": null,
+      "frame": "world",
+      "position": {
+       "x": 9,
+       "y": 0,
+       "z": 9
+      },
+      "rotation": {
+       "x": 0,
+       "y": 1,
+       "z": 0
+      },
+      "note": null
+     }
+    },
+    {
+     "call": "save.interior.loadOf",
+     "args": {
+      "interiorState": null,
+      "position": null,
+      "buildings": [
+       {
+        "id": "bld_hand_tavern",
+        "position": {
+         "x": 120,
+         "y": 0,
+         "z": 40
+        },
+        "rotation": 1.2,
+        "spec": {
+         "buildingRole": "Tavern",
+         "width": 12,
+         "depth": 9,
+         "floors": 2
+        },
+        "name": "The Lantern",
+        "businessType": "Tavern",
+        "interior": {
+         "function": "business.Tavern",
+         "width": 11.6,
+         "depth": 8.6,
+         "height": 6,
+         "floors": 2,
+         "doors": [
+          {
+           "id": "hall~kitchen",
+           "fromRoomId": "hall",
+           "toRoomId": "kitchen",
+           "kind": "door",
+           "position": {
+            "x": 8,
+            "y": 0,
+            "z": 4.3
+           }
+          },
+          {
+           "id": "hall!entrance",
+           "fromRoomId": "",
+           "toRoomId": "hall",
+           "kind": "entrance",
+           "position": {
+            "x": 5.8,
+            "y": 0,
+            "z": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "id": "bld_hand_shed",
+        "position": {
+         "x": 10,
+         "y": 0,
+         "z": 10
+        },
+        "rotation": 0,
+        "spec": {
+         "buildingRole": "Shed",
+         "width": 4,
+         "depth": 3
+        },
+        "interior": {
+         "function": "storage",
+         "width": 3.6,
+         "depth": 2.6
+        }
+       },
+       {
+        "id": "bld_hand_cottage",
+        "position": {
+         "x": -20,
+         "y": 0,
+         "z": 5
+        },
+        "rotation": -0.6,
+        "spec": {
+         "width": 6,
+         "depth": 5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "where": "outside",
+      "building": null,
+      "interior": null,
+      "frame": "world",
+      "position": null,
+      "rotation": null,
+      "note": null
+     }
+    },
+    {
+     "call": "save.interior.loadOf",
+     "args": {
+      "interiorState": null,
+      "position": {
+       "x": 9,
+       "y": 0,
+       "z": 9
+      },
+      "rotation": "north",
+      "buildings": [
+       {
+        "id": "bld_hand_tavern",
+        "position": {
+         "x": 120,
+         "y": 0,
+         "z": 40
+        },
+        "rotation": 1.2,
+        "spec": {
+         "buildingRole": "Tavern",
+         "width": 12,
+         "depth": 9,
+         "floors": 2
+        },
+        "name": "The Lantern",
+        "businessType": "Tavern",
+        "interior": {
+         "function": "business.Tavern",
+         "width": 11.6,
+         "depth": 8.6,
+         "height": 6,
+         "floors": 2,
+         "doors": [
+          {
+           "id": "hall~kitchen",
+           "fromRoomId": "hall",
+           "toRoomId": "kitchen",
+           "kind": "door",
+           "position": {
+            "x": 8,
+            "y": 0,
+            "z": 4.3
+           }
+          },
+          {
+           "id": "hall!entrance",
+           "fromRoomId": "",
+           "toRoomId": "hall",
+           "kind": "entrance",
+           "position": {
+            "x": 5.8,
+            "y": 0,
+            "z": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "id": "bld_hand_shed",
+        "position": {
+         "x": 10,
+         "y": 0,
+         "z": 10
+        },
+        "rotation": 0,
+        "spec": {
+         "buildingRole": "Shed",
+         "width": 4,
+         "depth": 3
+        },
+        "interior": {
+         "function": "storage",
+         "width": 3.6,
+         "depth": 2.6
+        }
+       },
+       {
+        "id": "bld_hand_cottage",
+        "position": {
+         "x": -20,
+         "y": 0,
+         "z": 5
+        },
+        "rotation": -0.6,
+        "spec": {
+         "width": 6,
+         "depth": 5
+        }
+       }
+      ]
+     },
+     "expect": {
+      "where": "outside",
+      "building": null,
+      "interior": null,
+      "frame": "world",
+      "position": {
+       "x": 9,
+       "y": 0,
+       "z": 9
+      },
+      "rotation": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "note": null
+     }
+    },
+    {
+     "call": "save.interior.loadOf",
+     "args": {
+      "interiorState": null,
+      "position": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "buildings": {}
+     },
+     "expectError": "[invalid-input] insimulcore: save.interior.loadOf: `buildings` must be an array"
+    },
+    {
+     "call": "save.interior.loadOf",
+     "args": {
+      "interiorState": null,
+      "position": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "buildings": [
+       {
+        "id": "bld_hand_tavern",
+        "position": {
+         "x": 120,
+         "y": 0,
+         "z": 40
+        },
+        "rotation": 1.2,
+        "spec": {
+         "buildingRole": "Tavern",
+         "width": 12,
+         "depth": 9,
+         "floors": 2
+        },
+        "name": "The Lantern",
+        "businessType": "Tavern",
+        "interior": {
+         "function": "business.Tavern",
+         "width": 11.6,
+         "depth": 8.6,
+         "height": 6,
+         "floors": 2,
+         "doors": [
+          {
+           "id": "hall~kitchen",
+           "fromRoomId": "hall",
+           "toRoomId": "kitchen",
+           "kind": "door",
+           "position": {
+            "x": 8,
+            "y": 0,
+            "z": 4.3
+           }
+          },
+          {
+           "id": "hall!entrance",
+           "fromRoomId": "",
+           "toRoomId": "hall",
+           "kind": "entrance",
+           "position": {
+            "x": 5.8,
+            "y": 0,
+            "z": 0
+           }
+          }
+         ]
+        }
+       },
+       null
+      ]
+     },
+     "expectError": "`buildings[1]` must be a JSON object"
+    }
+   ]
+  }
+ ]
+}

@@ -124,7 +124,7 @@
   }
   function polyfillStructuredClone(value) {
     const seen = /* @__PURE__ */ new Map();
-    const clone4 = (v) => {
+    const clone5 = (v) => {
       if (typeof v === "function") throw dataCloneError("a function");
       if (typeof v === "symbol") throw dataCloneError("a symbol");
       if (v === null || typeof v !== "object") return v;
@@ -137,27 +137,27 @@
       if (v instanceof Map) {
         const out2 = /* @__PURE__ */ new Map();
         seen.set(v, out2);
-        for (const [k, x] of v) out2.set(clone4(k), clone4(x));
+        for (const [k, x] of v) out2.set(clone5(k), clone5(x));
         return out2;
       }
       if (v instanceof Set) {
         const out2 = /* @__PURE__ */ new Set();
         seen.set(v, out2);
-        for (const x of v) out2.add(clone4(x));
+        for (const x of v) out2.add(clone5(x));
         return out2;
       }
       if (Array.isArray(v)) {
         const out2 = new Array(v.length);
         seen.set(v, out2);
-        for (const k of Object.keys(v)) out2[k] = clone4(v[k]);
+        for (const k of Object.keys(v)) out2[k] = clone5(v[k]);
         return out2;
       }
       const out = {};
       seen.set(v, out);
-      for (const k of Object.keys(v)) out[k] = clone4(v[k]);
+      for (const k of Object.keys(v)) out[k] = clone5(v[k]);
       return out;
     };
-    return clone4(value);
+    return clone5(value);
   }
   if (typeof globalThis.structuredClone !== "function") globalThis.structuredClone = polyfillStructuredClone;
 
@@ -6450,8 +6450,16 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
 
   // @insimul/core/src/props/interior-save.ts
   var STATED_LAYOUT_SEED = null;
+  var INTERIOR_POSITION_TOLERANCE_M = DOOR_STANDOFF_M;
   var DEFAULT_INTERIOR_FLOOR_HEIGHT_M = 3;
+  var INTERIOR_LOAD_NOTES = ["position_outside_interior", "seeded_interior", "no_interior", "unknown_building"];
   var isRec = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var fin3 = (v) => typeof v === "number" && Number.isFinite(v);
+  var round2 = (n) => {
+    const r = Math.round(n * 1e9) / 1e9;
+    return r === 0 ? 0 : r;
+  };
+  var vec2 = (v) => isRec(v) && fin3(v.x) && fin3(v.y) && fin3(v.z) ? { x: v.x, y: v.y, z: v.z } : null;
   function layoutSeedOf(v) {
     return Number.isInteger(v) ? v : STATED_LAYOUT_SEED;
   }
@@ -6463,6 +6471,71 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       buildingName: typeof v.buildingName === "string" ? v.buildingName : "",
       buildingType: typeof v.buildingType === "string" ? v.buildingType : "",
       layoutSeed: layoutSeedOf(v.layoutSeed)
+    };
+  }
+  function interiorLayoutOf(s) {
+    return s.layoutSeed === STATED_LAYOUT_SEED ? "stated" : "seeded";
+  }
+  function statedInteriorState(b) {
+    return {
+      buildingId: b.id,
+      buildingName: doorView(b).label,
+      buildingType: typeof b.spec?.buildingRole === "string" ? b.spec.buildingRole : "",
+      layoutSeed: STATED_LAYOUT_SEED
+    };
+  }
+  function interiorFramePoint(p, origin) {
+    return { x: round2(p.x - origin.x), y: round2(p.y - origin.y), z: round2(p.z - origin.z) };
+  }
+  function interiorExtentOf(interior) {
+    if (!interior) return null;
+    const { width, depth, height, floors } = interior;
+    if (!fin3(width) || width <= 0 || !fin3(depth) || depth <= 0) return null;
+    const h = fin3(height) && height > 0 ? height : (fin3(floors) && floors >= 1 ? Math.floor(floors) : 1) * DEFAULT_INTERIOR_FLOOR_HEIGHT_M;
+    return { width, depth, height: h };
+  }
+  function isInteriorFramePoint(p, interior) {
+    const e = interiorExtentOf(interior);
+    const v = vec2(p);
+    if (!e || !v) return false;
+    const t = INTERIOR_POSITION_TOLERANCE_M;
+    return v.x >= -t && v.x <= e.width + t && v.z >= -t && v.z <= e.depth + t && v.y >= -t && v.y <= e.height + t;
+  }
+  function interiorLoadOf(saved, buildings) {
+    const s = readInteriorState(saved.interiorState);
+    if (!s) {
+      const position = vec2(saved.position);
+      return { where: "outside", building: null, interior: null, frame: "world", position, rotation: position ? vec2(saved.rotation) ?? { x: 0, y: 0, z: 0 } : null, note: null };
+    }
+    const b = buildings.find((x) => x.id === s.buildingId);
+    if (!b) return { where: "outside", building: s.buildingId, interior: null, frame: "world", position: null, rotation: null, note: "unknown_building" };
+    const seeded = interiorLayoutOf(s) === "seeded";
+    if (seeded || !b.interior) {
+      const out = doorView(b).outside;
+      return {
+        where: "outside",
+        building: b.id,
+        interior: null,
+        frame: "world",
+        position: { ...out.position },
+        rotation: { x: 0, y: out.yaw, z: 0 },
+        note: seeded ? "seeded_interior" : "no_interior"
+      };
+    }
+    const interior = `interior:${b.id}`;
+    if (isInteriorFramePoint(saved.position, b.interior)) {
+      return { where: "inside", building: b.id, interior, frame: "interior", position: vec2(saved.position), rotation: vec2(saved.rotation) ?? { x: 0, y: 0, z: 0 }, note: null };
+    }
+    const step = doorStep([{ ...b, locked: false }], { inside: null }, { op: "enter", building: b.id });
+    const arrive = step.ok && step.handoff.op === "enter_interior" ? step.handoff.arrive : null;
+    return {
+      where: "inside",
+      building: b.id,
+      interior,
+      frame: "interior",
+      position: arrive,
+      rotation: arrive ? { x: 0, y: 0, z: 0 } : null,
+      note: "position_outside_interior"
     };
   }
 
@@ -7120,6 +7193,139 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (owner) return { ok: false, refusal: owner };
     return readVillageSave(save, runtime === null ? { worldId } : { worldId, runtime });
   }
+
+  // @insimul/core/src/ui/save-slot-model.ts
+  var SLOT_MESSAGES = {
+    empty: "",
+    ok: "",
+    invalid_format: "Unrecognized save format \u2014 this slot cannot be loaded.",
+    missing_save_file: "Save data is missing or unreadable.",
+    integrity_mismatch: "Save file integrity check failed \u2014 file may be corrupted or tampered."
+  };
+  function slotOutcomeOfLoadRefusal(code) {
+    return envelopeCodeOfLoadRefusal(code);
+  }
+  function loadRefusalMessage(code) {
+    const outcome = slotOutcomeOfLoadRefusal(code);
+    return outcome ? SLOT_MESSAGES[outcome] : "";
+  }
+  function slotSummaryLine(s) {
+    if (!s) return "";
+    const bits = [];
+    if (s.playerName) bits.push(s.playerName);
+    if (s.level !== void 0) bits.push(`Lv ${s.level}`);
+    if (s.locationName) bits.push(s.locationName);
+    return bits.join(" \xB7 ");
+  }
+  function summaryTitle(index, s) {
+    return slotSummaryLine(s) || `Slot ${index + 1}`;
+  }
+  function view(result2) {
+    const { index, outcome, summary } = result2;
+    if (outcome === "empty") {
+      return { index, status: "empty", title: "Empty Slot", message: "", canLoad: false, canSave: true };
+    }
+    if (outcome === "ok") {
+      return {
+        index,
+        status: "ok",
+        title: summaryTitle(index, summary),
+        message: summary?.savedAt ? `Saved ${summary.savedAt}` : "",
+        canLoad: true,
+        canSave: true,
+        summary
+      };
+    }
+    return {
+      index,
+      status: "corrupted",
+      title: "Corrupted Save",
+      message: SLOT_MESSAGES[outcome],
+      canLoad: false,
+      canSave: true
+    };
+  }
+  var SaveSlotModel = class {
+    constructor(results = []) {
+      __publicField(this, "results", []);
+      this.results = results.map((r) => ({ ...r }));
+    }
+    setSlots(results) {
+      this.results = results.map((r) => ({ ...r }));
+    }
+    /** The rendered rows, in slot-index order. */
+    slots() {
+      return [...this.results].sort((a, b) => a.index - b.index).map(view);
+    }
+    slot(index) {
+      const r = this.results.find((x) => x.index === index);
+      return r ? view(r) : void 0;
+    }
+    /** True when no slot is loadable (fresh install / all corrupted) — main-menu Continue gate. */
+    hasAnyLoadable() {
+      return this.results.some((r) => r.outcome === "ok");
+    }
+    /**
+     * TS-only: run the real envelope validator over a loaded slot candidate and map
+     * its verdict to a `SlotLoadResult`. `null`/`undefined` candidate = empty slot.
+     * With `check` (core's checked read: `(saveFile) => checkVillageSave(saveFile)`), a sound
+     * envelope whose save the read refuses is `invalid_format` (PL.core-load-refused-message).
+     */
+    static classifyEnvelope(index, candidate2, summarize, check) {
+      if (candidate2 === null || candidate2 === void 0) {
+        return { index, outcome: "empty" };
+      }
+      const res = validateSaveFileEnvelope(candidate2, { check });
+      if (res.ok) {
+        return { index, outcome: "ok", summary: summarize?.(candidate2) };
+      }
+      return { index, outcome: res.error.code };
+    }
+  };
+
+  // @insimul/core/src/runtime-save.ts
+  var clone2 = (v) => JSON.parse(JSON.stringify(v));
+  var RuntimeSave = class {
+    /** `fresh`: the document the host builds for a new game. The runtime save starts as a copy of it. */
+    constructor(fresh) {
+      __publicField(this, "freshDoc");
+      __publicField(this, "doc");
+      this.freshDoc = clone2(fresh);
+      this.doc = clone2(fresh);
+    }
+    /** New Game: the runtime save becomes a copy of the fresh document, whatever was loaded or saved. */
+    newGame() {
+      this.doc = clone2(this.freshDoc);
+    }
+    /**
+     * Load `save` as `opts.worldId`'s game under `opts.runtime` (absent: the legacy runtime): {@link readRuntimeSave}
+     * accepts it and it becomes the runtime save, or it is refused and nothing changes.
+     */
+    load(save, opts) {
+      const read = readRuntimeSave(save, opts.worldId, opts.runtime ?? null);
+      if (!read.ok) {
+        const outcome = slotOutcomeOfLoadRefusal(read.refusal.code) ?? "invalid_format";
+        return { ok: false, refusal: read.refusal, outcome, message: loadRefusalMessage(read.refusal.code) };
+      }
+      this.doc = clone2(save);
+      return { ok: true, gameState: read.value };
+    }
+    /** Save `gs` into the runtime save with the checked writer; a refusal changes nothing. */
+    save(gs, opts) {
+      const written = writeVillageSave(this.doc, gs, opts);
+      if (!written.ok) return { ok: false, refusal: written.refusal };
+      this.doc = clone2({ ...this.doc, currentState: written.value.currentState, conversations: written.value.conversations });
+      return { ok: true, save: clone2(this.doc) };
+    }
+    /** A copy of the runtime save as it is now. */
+    current() {
+      return clone2(this.doc);
+    }
+    /** Whether the runtime save is the fresh document (compared as canonical JSON: key order does not count). */
+    isFresh() {
+      return canonicalJSONStringify(this.doc) === canonicalJSONStringify(this.freshDoc);
+    }
+  };
 
   // @insimul/core/src/ui/notifications.ts
   var KIND_COLOR = {
@@ -8513,95 +8719,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     /** The tracker HUD view: tracked quests that are still active, in track order. */
     trackedQuests() {
       return this.tracked.map((id4) => this.byId.get(id4)).filter((e) => !!e && e.status === "active").map((e) => ({ ...e }));
-    }
-  };
-
-  // @insimul/core/src/ui/save-slot-model.ts
-  var SLOT_MESSAGES = {
-    empty: "",
-    ok: "",
-    invalid_format: "Unrecognized save format \u2014 this slot cannot be loaded.",
-    missing_save_file: "Save data is missing or unreadable.",
-    integrity_mismatch: "Save file integrity check failed \u2014 file may be corrupted or tampered."
-  };
-  function slotOutcomeOfLoadRefusal(code) {
-    return envelopeCodeOfLoadRefusal(code);
-  }
-  function loadRefusalMessage(code) {
-    const outcome = slotOutcomeOfLoadRefusal(code);
-    return outcome ? SLOT_MESSAGES[outcome] : "";
-  }
-  function slotSummaryLine(s) {
-    if (!s) return "";
-    const bits = [];
-    if (s.playerName) bits.push(s.playerName);
-    if (s.level !== void 0) bits.push(`Lv ${s.level}`);
-    if (s.locationName) bits.push(s.locationName);
-    return bits.join(" \xB7 ");
-  }
-  function summaryTitle(index, s) {
-    return slotSummaryLine(s) || `Slot ${index + 1}`;
-  }
-  function view(result2) {
-    const { index, outcome, summary } = result2;
-    if (outcome === "empty") {
-      return { index, status: "empty", title: "Empty Slot", message: "", canLoad: false, canSave: true };
-    }
-    if (outcome === "ok") {
-      return {
-        index,
-        status: "ok",
-        title: summaryTitle(index, summary),
-        message: summary?.savedAt ? `Saved ${summary.savedAt}` : "",
-        canLoad: true,
-        canSave: true,
-        summary
-      };
-    }
-    return {
-      index,
-      status: "corrupted",
-      title: "Corrupted Save",
-      message: SLOT_MESSAGES[outcome],
-      canLoad: false,
-      canSave: true
-    };
-  }
-  var SaveSlotModel = class {
-    constructor(results = []) {
-      __publicField(this, "results", []);
-      this.results = results.map((r) => ({ ...r }));
-    }
-    setSlots(results) {
-      this.results = results.map((r) => ({ ...r }));
-    }
-    /** The rendered rows, in slot-index order. */
-    slots() {
-      return [...this.results].sort((a, b) => a.index - b.index).map(view);
-    }
-    slot(index) {
-      const r = this.results.find((x) => x.index === index);
-      return r ? view(r) : void 0;
-    }
-    /** True when no slot is loadable (fresh install / all corrupted) — main-menu Continue gate. */
-    hasAnyLoadable() {
-      return this.results.some((r) => r.outcome === "ok");
-    }
-    /**
-     * TS-only: run the real envelope validator over a loaded slot candidate and map
-     * its verdict to a `SlotLoadResult`. `null`/`undefined` candidate = empty slot.
-     * With `check` (core's checked read: `(saveFile) => checkVillageSave(saveFile)`), a sound
-     * envelope whose save the read refuses is `invalid_format` (PL.core-load-refused-message).
-     */
-    static classifyEnvelope(index, candidate2, summarize, check) {
-      if (candidate2 === null || candidate2 === void 0) {
-        return { index, outcome: "empty" };
-      }
-      const res = validateSaveFileEnvelope(candidate2, { check });
-      if (res.ok) {
-        return { index, outcome: "ok", summary: summarize?.(candidate2) };
-      }
-      return { index, outcome: res.error.code };
     }
   };
 
@@ -32164,7 +32281,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     }
   };
   var hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
-  function clone2(value) {
+  function clone3(value) {
     return JSON.parse(JSON.stringify(value));
   }
   var ENUM_FIELDS = {
@@ -32310,7 +32427,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
   function resolveGenre(requested) {
     const refused2 = [];
     if (isGenreId(requested) && hasOwn(GENRE_REGISTRY, requested)) {
-      const config2 = clone2(GENRE_REGISTRY[requested]);
+      const config2 = clone3(GENRE_REGISTRY[requested]);
       refuseFeatures(config2, refused2);
       const bundle = bundleFor(requested, refused2);
       return {
@@ -32325,7 +32442,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
       };
     }
     const asked = isGenreId(requested) ? requested : null;
-    const config = clone2(GENRE_REGISTRY[DEFAULT_GENRE_ID]);
+    const config = clone3(GENRE_REGISTRY[DEFAULT_GENRE_ID]);
     refuseFeatures(config, refused2);
     return {
       requested: asked,
@@ -32389,15 +32506,15 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
         `${where}: '${String(value)}' is not one of ${ENUM_FIELDS[head].join(", ")}`
       );
     }
-    target[head] = clone2(value);
+    target[head] = clone3(value);
   }
   function applyGenreOverrides(config, overrides, label = "composition") {
-    const out = clone2(config);
+    const out = clone3(config);
     for (const o of overrides) applyOverride(out, o, label);
     return out;
   }
   function recipeConfig(b) {
-    const config = clone2(GENRE_REGISTRY[b.genreId]);
+    const config = clone3(GENRE_REGISTRY[b.genreId]);
     for (const o of b.overrides) applyOverride(config, o, b.recipeId);
     return config;
   }
@@ -32483,7 +32600,7 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
   }
   function worldConfig(world2) {
     const g = world2?.meta?.genreConfig;
-    return g !== null && typeof g === "object" && isGenreId(g.id) ? clone2(g) : null;
+    return g !== null && typeof g === "object" && isGenreId(g.id) ? clone3(g) : null;
   }
   function resolveGameGenre(request = {}) {
     const notes = [];
@@ -39257,7 +39374,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
       why: "a prompt never ends in an empty name"
     }
   ]);
-  var round2 = (n) => Math.round(n * 1e9) / 1e9;
+  var round3 = (n) => Math.round(n * 1e9) / 1e9;
   var finitePoint2 = (p) => !!p && typeof p === "object" && Number.isFinite(p.x) && Number.isFinite(p.z);
   var nonEmpty3 = (s) => typeof s === "string" && s !== "";
   var asciiLower = (s) => s.replace(/[A-Z]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) + 32));
@@ -39376,7 +39493,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     const nearest = (list3) => {
       let best = null;
       for (const c of list3) if (best === null || c.distance < best.distance) best = c;
-      return best === null ? null : { ...best, distance: round2(best.distance) };
+      return best === null ? null : { ...best, distance: round3(best.distance) };
     };
     const found = nearest(actions) ?? nearest(looks);
     if (found !== null) return { ok: true, target: found };
@@ -39411,7 +39528,7 @@ ${num3(combo.damage, 0)} DMG`, tone: "accent" });
     let best = null;
     for (const c of inReach) if (best === null || c.distance < best.distance) best = c;
     const found = best ?? exit;
-    return found === null ? null : { ...found, distance: found.distance === null ? null : round2(found.distance) };
+    return found === null ? null : { ...found, distance: found.distance === null ? null : round3(found.distance) };
   }
   var INTERACT_PRESS_SOURCES = ["interactables", "examine"];
   var INTERACT_PRESS_PRECEDENCE = Object.freeze(["interactables", "examine"]);
@@ -41088,7 +41205,7 @@ After asking each question, wait for the player's response before moving to the 
   var GRAMMAR_DEFAULT_REQUIRED = getDefaultRequiredCount("grammar");
   var RECENT_FEEDBACK_MAX = 20;
   var PATTERN_EXAMPLES_MAX = 5;
-  var clone3 = (s) => JSON.parse(JSON.stringify(s));
+  var clone4 = (s) => JSON.parse(JSON.stringify(s));
   function questFeedback(questId, objectives, meanings = {}) {
     const s = {
       questId,
@@ -41283,7 +41400,7 @@ After asking each question, wait for the player's response before moving to the 
     else if (!grammarDone(s) && before < 50 && s.grammarProgress >= 50) items.push(item(s, "milestone", `Halfway there! ${s.grammarUsed}/${s.grammarRequired} grammar uses`));
   }
   function useVocabulary(state, usages) {
-    const s = clone3(state);
+    const s = clone4(state);
     const items = [];
     const wasDone = vocabularyDone(s);
     const before = s.vocabularyProgress;
@@ -41320,7 +41437,7 @@ After asking each question, wait for the player's response before moving to the 
     return { state: s, items };
   }
   function syncLifecycle(state, objectives) {
-    const s = clone3(state);
+    const s = clone4(state);
     const items = [];
     const wasDone = vocabularyDone(s);
     const before = s.vocabularyProgress;
@@ -41363,7 +41480,7 @@ After asking each question, wait for the player's response before moving to the 
   };
   function grammarFeedback(state, fb) {
     if (fb.status === "no_target_language") return { state, items: [], objectivesUpdated: [] };
-    const s = clone3(state);
+    const s = clone4(state);
     const items = [];
     const errors = fb.errors ?? [];
     if (fb.status === "correct") {
@@ -41421,7 +41538,7 @@ After asking each question, wait for the player's response before moving to the 
     return { state: s, items, objectivesUpdated: updated.filter((v, i, a) => a.indexOf(v) === i) };
   }
   function correctUsage(state, pattern, example) {
-    const s = clone3(state);
+    const s = clone4(state);
     const updated = [];
     for (const o of s.objectives ?? []) {
       if (o.completed) continue;
@@ -41441,7 +41558,7 @@ After asking each question, wait for the player's response before moving to the 
     return o.accuracy >= requiredAccuracy && o.correct >= requiredCorrect;
   }
   function pronunciationFeedback(state, r) {
-    const s = clone3(state);
+    const s = clone4(state);
     const items = [];
     const wasDone = pronunciationDone(s);
     const before = s.pronunciationProgress;
@@ -41486,7 +41603,7 @@ After asking each question, wait for the player's response before moving to the 
     return { state: s, items };
   }
   function vocabularyHints(state, max = 3) {
-    const s = clone3(state);
+    const s = clone4(state);
     const items = s.vocabulary.filter((v) => !v.used).slice(0, max).map((v) => item(s, "vocabulary_hint", `Try using: "${v.word}"${v.meaning ? ` (${v.meaning})` : ""}`));
     return { state: s, items };
   }
@@ -47778,9 +47895,9 @@ Return JSON format:
     let along = sub(vel, scale(u, mine));
     let side = side0;
     if (mine < 0 && length(along) < PASS_BY_GUARD_HEAD_ON_MPS) {
-      const round3 = perp(u);
-      if (side === 0) side = dot(vel, round3) >= 0 ? 1 : -1;
-      along = scale(round3, PASS_BY_GUARD_EDGE_MPS * side);
+      const round5 = perp(u);
+      if (side === 0) side = dot(vel, round5) >= 0 ? 1 : -1;
+      along = scale(round5, PASS_BY_GUARD_EDGE_MPS * side);
     }
     const room = Math.sqrt(Math.max(0, maxSpeed * maxSpeed - radial * radial));
     const alongLen = length(along);
@@ -51222,7 +51339,7 @@ Return JSON format:
   function points(v) {
     return arr(v, "points").map(point2);
   }
-  function vec2(v) {
+  function vec4(v) {
     const o = obj(v, "a vector");
     return { x: numOr2(o, "x", 0), y: numOr2(o, "y", 0), z: numOr2(o, "z", 0) };
   }
@@ -51252,7 +51369,7 @@ Return JSON format:
       source,
       name: str10(o, "name"),
       hasPosition: bool(o, "hasPosition"),
-      position: present(o, "position") ? vec2(o.position) : { x: 0, y: 0, z: 0 },
+      position: present(o, "position") ? vec4(o.position) : { x: 0, y: 0, z: 0 },
       yaw: numOr2(o, "yaw", 0),
       candidates: numOr2(o, "candidates", 0),
       height: numOr2(o, "height", 0)
@@ -51260,7 +51377,7 @@ Return JSON format:
   }
   function candidate(v) {
     const o = obj(v, "a door candidate");
-    return { component: str10(o, "component"), mesh: str10(o, "mesh"), owner: str10(o, "owner"), min: vec2(o.min), max: vec2(o.max) };
+    return { component: str10(o, "component"), mesh: str10(o, "mesh"), owner: str10(o, "owner"), min: vec4(o.min), max: vec4(o.max) };
   }
   function policy(v) {
     const o = obj(v, "a fit policy");
@@ -51285,12 +51402,12 @@ Return JSON format:
       lotId: str10(o, "lotId"),
       lot: present(o, "lot") ? readFitLot(o.lot) : null,
       lotCentre: present(o, "lotCentre") ? point2(o.lotCentre) : null,
-      node: vec2(o.node),
+      node: vec4(o.node),
       nodeHeading: num4(o, "nodeHeading"),
-      nodeScale: vec2(o.nodeScale),
-      geometry: { scale: vec2(g.scale), yaw: num4(g, "yaw"), offset: vec2(g.offset) },
+      nodeScale: vec4(o.nodeScale),
+      geometry: { scale: vec4(g.scale), yaw: num4(g, "yaw"), offset: vec4(g.offset) },
       policy: policy(o.policy),
-      bounds: b === null ? null : { min: vec2(b.min), max: vec2(b.max) },
+      bounds: b === null ? null : { min: vec4(b.min), max: vec4(b.max) },
       door: door(o.door),
       ground: present(o, "ground") ? grid(o.ground) : null,
       castHeight: numOr2(o, "castHeight", 0),
@@ -51501,9 +51618,9 @@ Return JSON format:
       case "isDoorPartName":
         return isDoorPartName({ component: str10(i, "component"), mesh: str10(i, "mesh"), owner: str10(i, "owner") });
       case "faceYawOf":
-        return faceYawOf(vec2(i.point), vec2(i.min), vec2(i.max));
+        return faceYawOf(vec4(i.point), vec4(i.min), vec4(i.max));
       case "chooseDoorPart":
-        return doorJson(chooseDoorPart(arr(i.parts, "parts").map(candidate), vec2(i.boundsMin), vec2(i.boundsMax)));
+        return doorJson(chooseDoorPart(arr(i.parts, "parts").map(candidate), vec4(i.boundsMin), vec4(i.boundsMax)));
       case "bodyStature":
         return bodyStature(num4(i, "boundsHeight"), numOr2(i, "headBoneHeight", 0), numOr2(i, "crownTop", 0));
       case "fitBuildingToLot":
@@ -51588,7 +51705,7 @@ Return JSON format:
           item2.crownRadius = numOr2(o, "crownRadius", 1);
           return item2;
         });
-        const start = present(i, "playerStart") ? vec2(i.playerStart) : null;
+        const start = present(i, "playerStart") ? vec4(i.playerStart) : null;
         const r = settleClearance(items, obstacles(i.obstacles), SETTLE_DEFAULT_ITERATIONS, start);
         const out = {
           moves: movesJson(r.moves),
@@ -51601,7 +51718,7 @@ Return JSON format:
         return out;
       }
       case "startClearOutline": {
-        const s = vec2(i.playerStart);
+        const s = vec4(i.playerStart);
         return { startClearRadiusM: START_CLEAR_RADIUS_M, outline: startClearOutline(s.x, s.z).map(pt) };
       }
       case "clearancePairGap":
@@ -51786,7 +51903,7 @@ Return JSON format:
         const f = backdropFrame(
           { minX: num4(box, "minX"), minZ: num4(box, "minZ"), maxX: num4(box, "maxX"), maxZ: num4(box, "maxZ"), minY: num4(box, "minY") },
           { minX: num4(m, "minX"), minZ: num4(m, "minZ"), maxX: num4(m, "maxX"), maxZ: num4(m, "maxZ") },
-          vec2(i.pieceScale),
+          vec4(i.pieceScale),
           num4(i, "offsetY"),
           present(i, "edgeMinY") ? num4(i, "edgeMinY") : null
         );
@@ -53288,13 +53405,13 @@ Return JSON format:
       const lot = lots[k];
       const hull = houses.get(d.entityId) ?? null;
       const ring = hull === null ? null : offsetHull(hull, off);
-      const round3 = (a, t) => hull === null ? [] : roundHouse(a, t, hull, ring, pathHalf);
-      let mid = round3(out, gates[k]);
+      const round5 = (a, t) => hull === null ? [] : roundHouse(a, t, hull, ring, pathHalf);
+      let mid = round5(out, gates[k]);
       const last = mid.length > 0 ? mid[mid.length - 1] : out;
       if (missesGap(lot, last, gates[k])) {
         const depth = Math.max(edgeAway(lot) - off, frame(lot, last)[0]);
         const approach = [lot.cx + lot.awayX * depth, lot.cz + lot.awayZ * depth];
-        if (hull === null || segmentOutlineDistance(approach, approach, hull) >= pathHalf - COMPOSITION_SLACK) mid = [...round3(out, approach), approach];
+        if (hull === null || segmentOutlineDistance(approach, approach, hull) >= pathHalf - COMPOSITION_SLACK) mid = [...round5(out, approach), approach];
       }
       polyline.push(...mid);
       const tail = polyline[polyline.length - 1];
@@ -54956,6 +55073,17 @@ Return JSON format:
     if (!r.ok) return { ok: false, refusal: refusalOf(r.refusal) };
     return { ok: true, gameState: plain(r.value) };
   }
+  function runtimeSaveView(rs) {
+    return { runtimeSave: plain(rs.current()), fresh: rs.isFresh() };
+  }
+  function runtimeLoaded(r) {
+    if (!r.ok) return { ok: false, refusal: refusalOf(r.refusal), outcome: r.outcome, message: r.message };
+    return { ok: true, gameState: plain(r.gameState) };
+  }
+  function runtimeSaved(r) {
+    if (!r.ok) return { ok: false, refusal: refusalOf(r.refusal) };
+    return { ok: true, save: plain(r.save) };
+  }
   function languageBookArg(method, value, name = "book") {
     coded("invalid-input", () => needObject(method, value, name));
     const read = readLanguageBlock({ book: value });
@@ -56477,6 +56605,116 @@ Return JSON format:
     "save.village.conversations.timestamp": (args) => ({ timestamp: conversationTimestampOf(args.epochMs) }),
     /** `save.village.conversations.epochMs { timestamp }` → `{ epochMs }`: core's `epochMsOfConversationTimestamp`, the round trip back, or null. */
     "save.village.conversations.epochMs": (args) => ({ epochMs: epochMsOfConversationTimestamp(args.timestamp) }),
+    // ── the runtime save (PL.native-runtime-save-rows; core's PL.core-load-refused-message) ──
+    // Core's `RuntimeSave` (`runtime-save`): the save document a running game writes its
+    // state into and loads it from. New Game makes it a copy of the fresh document whatever
+    // was loaded or saved; a Load `readRuntimeSave` accepts replaces it (refused first
+    // `wrong_world`, then `wrong_runtime`, then whatever the checked read refuses), a refused
+    // one changes nothing and shows `invalid_format`'s message; a Save writes into it with the
+    // checked writer, a refused one changes nothing. Held to core's
+    // `conformance/saves/runtime-save.json` by tests/runtime_save_corpus.cpp.
+    /** `save.runtime.contract` → `{ refusedLoadMessage }`: what every refused Load shows (`SLOT_MESSAGES.invalid_format`), keyed as the corpus's `contract` keys it. */
+    "save.runtime.contract": () => ({ refusedLoadMessage: SLOT_MESSAGES.invalid_format }),
+    /**
+     * `save.runtime.create { fresh }` → `{ session, runtimeSave, fresh }`: core's `new
+     * RuntimeSave(fresh)`, `fresh` being the document the host builds for a new game (a save
+     * document: an object). The runtime save starts as a copy of it; core keeps copies, so
+     * no caller's object is held.
+     */
+    "save.runtime.create": (args) => {
+      const m = "save.runtime.create";
+      const fresh = coded("invalid-input", () => needObject(m, args.fresh, "fresh"));
+      const rs = new RuntimeSave(fresh);
+      return { session: openSession("save.runtime", { rs }), ...runtimeSaveView(rs) };
+    },
+    /**
+     * `save.runtime.apply { session, ops }` → `{ results, runtimeSave, fresh }`, the ops run in
+     * order, one result each, then the runtime save and whether it is the fresh document
+     * (core's `current()` and `isFresh()`, compared as canonical JSON). The ops are core's three:
+     * `new_game {}` → `{ ok: true }` (core's `newGame`) · `load { save, options: { worldId,
+     * runtime? } }` → core's `load`: `{ ok: true, gameState }` or `{ ok: false, refusal, outcome,
+     * message }` (`runtime` absent or null: the legacy runtime) · `save { gameState, options: {
+     * worldId, runtime, positionFrame, tick } }` → core's `save`: `{ ok: true, save }` (the runtime
+     * save as written) or `{ ok: false, refusal }`. A refusal is core's VALUE, whole, with its
+     * `message` (core's sentence for a log). `gameState` is handed over as it came (a missing or
+     * wrong one is core's `wrong_version`).
+     */
+    "save.runtime.apply": async (args) => {
+      const m = "save.runtime.apply";
+      const s = session(m, args, "save.runtime");
+      const results = await applyOps(m, s, args, {
+        new_game: ({ rs }) => {
+          rs.newGame();
+          return { ok: true };
+        },
+        load: ({ rs }, op) => {
+          const save = villageSaveArg(m, op.save);
+          return runtimeLoaded(rs.load(save, villageReadOptions(m, op.options, "options")));
+        },
+        save: ({ rs }, op) => runtimeSaved(rs.save(op.gameState, villageWriteOptions(m, op.options, "options")))
+      });
+      return { results, ...runtimeSaveView(s.rs) };
+    },
+    // ── a save written inside an interior (PL.native-runtime-save-rows; core's PL.core-interior-save-state) ──
+    // Core's `props/interior-save`: what `currentState.interiorState` carries (`layoutSeed`
+    // null for a stated interior), which frame `player.position` is in while it is not null
+    // (the interior's own), and where a load puts the player. Held to core's
+    // `conformance/saves/interior-state.json` by tests/runtime_save_corpus.cpp.
+    /**
+     * `save.interior.contract` → `{ positionToleranceM, defaultFloorHeightM, loadNotes }`:
+     * core's `INTERIOR_POSITION_TOLERANCE_M`, `DEFAULT_INTERIOR_FLOOR_HEIGHT_M` and
+     * `INTERIOR_LOAD_NOTES`, keyed as the corpus's `contract` keys them.
+     */
+    "save.interior.contract": () => ({
+      positionToleranceM: INTERIOR_POSITION_TOLERANCE_M,
+      defaultFloorHeightM: DEFAULT_INTERIOR_FLOOR_HEIGHT_M,
+      loadNotes: [...INTERIOR_LOAD_NOTES]
+    }),
+    /**
+     * `save.interior.read { interiorState }` → `{ interiorState }`: core's `readInteriorState`,
+     * the one shape `{ buildingId, buildingName, buildingType, layoutSeed }`, or null (outside:
+     * anything with no non-empty string `buildingId`). Any value.
+     */
+    "save.interior.read": (args) => ({ interiorState: plain(readInteriorState(args.interiorState)) }),
+    /** `save.interior.layoutOf { interiorState }` → `{ layout }`: core's `interiorLayoutOf` over a read interior state, `stated` (layoutSeed null) or `seeded`. */
+    "save.interior.layoutOf": (args) => {
+      const state = coded("invalid-input", () => needObject("save.interior.layoutOf", args.interiorState, "interiorState"));
+      return { layout: interiorLayoutOf(state) };
+    },
+    /** `save.interior.layoutSeedOf { layoutSeed }` → `{ layoutSeed }`: core's `layoutSeedOf`, a finite integer (seeded) or null (stated). Any value. */
+    "save.interior.layoutSeedOf": (args) => ({ layoutSeed: layoutSeedOf(args.layoutSeed) }),
+    /**
+     * `save.interior.stated { building }` → `{ interiorState }`: core's `statedInteriorState`,
+     * what a writer puts in `interiorState` for a player inside `building`'s stated interior
+     * (its door's label, its `spec.buildingRole`, `layoutSeed` null). `building` is core's
+     * `DoorBuildingInput`, as `props.doors.door` takes it.
+     */
+    "save.interior.stated": (args) => {
+      const building = coded("invalid-input", () => needObject("save.interior.stated", args.building, "building"));
+      return { interiorState: plain(statedInteriorState(building)) };
+    },
+    /** `save.interior.framePoint { position, origin }` → `{ position }`: core's `interiorFramePoint`, a host's point in its interior scene as a point of the interior frame (`position − origin`, rounded to 1e-9). */
+    "save.interior.framePoint": (args) => {
+      const m = "save.interior.framePoint";
+      const [p, origin] = coded("invalid-input", () => [vec3Arg(m, args.position, "position"), vec3Arg(m, args.origin, "origin")]);
+      return { position: plain(interiorFramePoint(p, origin)) };
+    },
+    /** `save.interior.extentOf { interior }` → `{ extent }`: core's `interiorExtentOf`, `{ width, depth, height }` of a stated interior's frame, or null (no extent). Any value. */
+    "save.interior.extentOf": (args) => ({ extent: plain(interiorExtentOf(args.interior)) }),
+    /** `save.interior.isFramePoint { position, interior }` → `{ isFramePoint }`: core's `isInteriorFramePoint` (within the tolerance of the extent; false when the interior states none). Any values. */
+    "save.interior.isFramePoint": (args) => ({ isFramePoint: isInteriorFramePoint(args.position, args.interior) }),
+    /**
+     * `save.interior.loadOf { interiorState, position, rotation?, buildings }` → core's
+     * `interiorLoadOf`: `{ where, building, interior, frame, position, rotation, note }`, where
+     * a load puts the player from the save's `interiorState` and `player.position` /
+     * `player.rotation`, over the world's buildings (`DoorBuildingInput` plus the interior's
+     * `width`, `depth`, `height`, `floors`). Never refuses: a note says why the player is not
+     * where the save put them.
+     */
+    "save.interior.loadOf": (args) => {
+      const buildings = coded("invalid-input", () => doorBuildingsOf("save.interior.loadOf", args.buildings));
+      return plain(interiorLoadOf({ interiorState: args.interiorState, position: args.position, rotation: args.rotation }, buildings));
+    },
     // ── language learning (PL.native-language-rows, slices 1 to 4) ─────────────
     // One core function per row, state in and out as JSON (README "The language
     // rows"). Core's corpus runner composes them per op; tests/language_corpus.cpp

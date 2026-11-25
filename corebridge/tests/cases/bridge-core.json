@@ -429,8 +429,20 @@
        "save.decode",
        "save.encode",
        "save.integrity",
+       "save.interior.contract",
+       "save.interior.extentOf",
+       "save.interior.framePoint",
+       "save.interior.isFramePoint",
+       "save.interior.layoutOf",
+       "save.interior.layoutSeedOf",
+       "save.interior.loadOf",
+       "save.interior.read",
+       "save.interior.stated",
        "save.migrate",
        "save.rules",
+       "save.runtime.apply",
+       "save.runtime.contract",
+       "save.runtime.create",
        "save.village.agentCurie",
        "save.village.belongsTo",
        "save.village.check",
@@ -678,7 +690,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 644}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 656}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -724,7 +736,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 644}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 656}}}}
    ]
   },
   {
