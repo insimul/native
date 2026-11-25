@@ -4,11 +4,11 @@
   "rulesVersion": 1,
   "repository": {
     "root": "native-native-hud-rows",
-    "gitHead": "7a9024cd0dd3d3e1eb60c12491a91d7060eb2863"
+    "gitHead": "bf708a4252ad80d0182c8a7adf8345b172037f13"
   },
   "coverage": {
-    "files": 589,
-    "packScanned": 329,
+    "files": 590,
+    "packScanned": 330,
     "packDocuments": [],
     "importFiles": 21,
     "importSpecifiers": 224,
