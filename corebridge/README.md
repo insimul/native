@@ -3041,7 +3041,13 @@ every case's expectation; `ui_hud_corpus_wrong` runs a doctored compass file and
 each of its wrongs named. The same 154 cases run on both case legs (and
 `corebridge_cases_parity`) as `vendor/core/cases/core-ui-{notifications,compass,minimap}.json`,
 which `emit-bridge-cases.mjs` transcribes and `core_vendor` holds to the vendored corpora by
-its own derivation (`core_vendor_hud_negative`: fourteen perturbations named). Hand cases:
+its own derivation (`core_vendor_hud_negative`: seventeen perturbations named). The case
+legs compare numbers exactly, so the two compass cases where this library's QuickJS
+answers one ulp from the V8 the corpus was written on (`Math.hypot` in one, `Math.atan2`
+in the other, both within the file's 1e-9) are declared library-version answers
+(`tests/README.md`): `expect` is the row's answer, `libraryVersion.v8` the corpus's, and
+`core_vendor` requires the V8 answer to be the corpus's exactly and the row's within its
+tolerance. Hand cases:
 `tests/cases/bridge-hud.json`, every expectation computed by core's own functions and
 classes at the pin. Unreal's interim `Portable/InsimulHudModels` is what these rows retire
 (`P2.unreal.retire-hud-copy`; `ENGINE_BINDINGS.md`).

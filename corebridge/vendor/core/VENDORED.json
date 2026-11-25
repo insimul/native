@@ -429,10 +429,10 @@
     "vendor/core/cases/core-quests.json": "26e8e74f0eacfdeaa316ef1c8776668ebbd60dc74277eb07543ba1a29aa24b68",
     "vendor/core/cases/core-saves-village.json": "a1b3fe5d7b26dc21bb7b987864c8f6f314802a7304510d141e161d000f6e79bb",
     "vendor/core/cases/core-saves.json": "f3fd33fd1faa443e4b864f6c2275930ccc3b65695bfc78c3652a65b95f9bae17",
-    "vendor/core/cases/core-ui-compass.json": "ac723c3b0c1092ad3589e89d79205b1a8fb8d1aa47eea817b5400035b49f7278",
+    "vendor/core/cases/core-ui-compass.json": "8d573c972eb1430e899f878a6a7ac1487c79eefe987f1085de0fc05ef00ac5a1",
     "vendor/core/cases/core-ui-loading.json": "807fe1e7d4831b8c7de6fd0f57221846a8f1e14e1ad1930703c401e0ca6868cf",
-    "vendor/core/cases/core-ui-minimap.json": "1627849844d0662c3d99179c9a6cb249b81f328e8e3bbe5c184f52f196c4840e",
-    "vendor/core/cases/core-ui-notifications.json": "3008ae38cf7d569def5ba4c81c4d85d567086284dc236b7648214763f7996342",
+    "vendor/core/cases/core-ui-minimap.json": "5a27cf4dce1e0180e48f601b2c73f5381277bdc51cdec814d140983c3ead2f95",
+    "vendor/core/cases/core-ui-notifications.json": "ba66772970226011c16ac9b0fa5e49edc8e86ebbcca5f79338f234ec78bf67f9",
     "vendor/core/cases/core-ui-pause-menu.json": "8572daac1e9f0babbf7498d72500b35c487b802d261205e48ed6e1d4f22b1d4a",
     "vendor/core/cases/core-ui-quest-journal.json": "bebadcd69186e755f5cb9cbb721f18ec9ceff01195194dcc930aa530d741af77",
     "vendor/core/cases/core-ui-save-slots.json": "ab6f21cfe152f53bf95d10af54f19366e282cc0945985410e01536dc3429afdb",
@@ -563,7 +563,7 @@
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
-    "tools/emit-bridge-cases.mjs": "991f15c57d00b4f28ba63a05498356298f63edab625f397fa160e2cb0a8a3ea4",
+    "tools/emit-bridge-cases.mjs": "deaff2eaddcef16bde6e94920f7431bd079976aeae3fd4ecbcc4b5d3d3cf0fe3",
     "core-pin.json": "80a5d38b279e2208bbed090aee6ecba95f140b9760dd10dff892c9cbf71be89e"
   }
 }

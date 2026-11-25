@@ -1,6 +1,6 @@
 {
  "area": "ui-compass",
- "description": "core's HUD shell corpus (conformance/ui/compass-cases.json, P2.core) through the ui.compass.* rows, each op the calls core's reference runner (src/ui/hud-corpus.ts) makes, through them; numbers held exactly (the corpus's tolerance is 1e-9; tests/ui_hud_corpus.cpp replays the file itself within it).",
+ "description": "core's HUD shell corpus (conformance/ui/compass-cases.json, P2.core) through the ui.compass.* rows, each op the calls core's reference runner (src/ui/hud-corpus.ts) makes, through them; numbers held exactly (the corpus's tolerance is 1e-9; tests/ui_hud_corpus.cpp replays the file itself within it), but for a step declared as a library-version answer.",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
   "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
@@ -415,7 +415,7 @@
        "markers": [
         {
          "id": "m",
-         "distance": 49.99999999999999,
+         "distance": 50,
          "bearing": 10.000000000000002,
          "relative": 20.000000000000057,
          "visible": true,
@@ -423,6 +423,28 @@
         }
        ]
       }
+     },
+     "libraryVersion": {
+      "library": "QuickJS 2025-04-26 Math.hypot (correctly rounded), against V8 Math.hypot",
+      "v8": {
+       "ok": true,
+       "value": {
+        "heading": 349.99999999999994,
+        "cardinal": "N",
+        "span": 150,
+        "markers": [
+         {
+          "id": "m",
+          "distance": 49.99999999999999,
+          "bearing": 10.000000000000002,
+          "relative": 20.000000000000057,
+          "visible": true,
+          "offset": 0.26666666666666744
+         }
+        ]
+       }
+      },
+      "why": "the corpus's answer was written on V8, which is one ulp from QuickJS here (distance); core's runner compares within the file's tolerance 1e-9, which both meet"
      }
     }
    ]
@@ -2256,14 +2278,41 @@
         {
          "id": "aheadRight",
          "distance": 10.77032961426901,
-         "bearing": 38.198590513648206,
-         "relative": 21.8014094863518,
+         "bearing": 38.1985905136482,
+         "relative": 21.801409486351808,
          "visible": true,
-         "offset": 0.290685459818024
+         "offset": 0.29068545981802413
         }
        ],
        "mirrored": true
       }
+     },
+     "libraryVersion": {
+      "library": "QuickJS 2025-04-26 Math.atan2, against V8 Math.atan2",
+      "v8": {
+       "ok": true,
+       "north": {
+        "northYaw": 0,
+        "source": "default"
+       },
+       "value": {
+        "heading": 60.00000000000001,
+        "cardinal": "NE",
+        "span": 150,
+        "markers": [
+         {
+          "id": "aheadRight",
+          "distance": 10.77032961426901,
+          "bearing": 38.198590513648206,
+          "relative": 21.8014094863518,
+          "visible": true,
+          "offset": 0.290685459818024
+         }
+        ],
+        "mirrored": true
+       }
+      },
+      "why": "the corpus's answer was written on V8, which is one ulp from QuickJS here (bearing, relative, offset); core's runner compares within the file's tolerance 1e-9, which both meet"
      }
     }
    ]

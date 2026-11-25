@@ -706,6 +706,44 @@ export const HUD_CASE_FILES = {
 	'ui-minimap': { corpus: 'conformance/ui/minimap-cases.json', cases: 'core-ui-minimap.json' },
 };
 
+/**
+ * Library-version answers (corebridge/tests/README.md) in the compass corpus: the members of a case's answer where this
+ * library's QuickJS answers otherwise than the V8 the corpus was written on, within the corpus's `tolerance`. Core's
+ * runner compares within that tolerance, and so does tests/ui_hud_corpus.cpp; the bridge's matcher compares as doubles,
+ * so such a step is declared: `expect` is the row's answer, `libraryVersion.v8` the corpus's. Measured at the 45409ed pin
+ * (the C leg's raw answers): in the first case `Math.hypot` of the marker's offset is 50 on QuickJS (correctly rounded)
+ * and 49.99999999999999 on V8; in the second `Math.atan2` gives a bearing one ulp apart, which carries into the marker's
+ * relative bearing and strip offset. Each declaration is keyed by the case's op and whole input, not its name (core may
+ * reword a name without changing a case), names only the first marker's members that differ, and the emit fails when a
+ * declaration matches no corpus case or a member it names is absent.
+ */
+const HUD_COMPASS_QUICKJS = [
+	{
+		op: 'view',
+		input: { yaw: 6.108652381980153, northYaw: 0, position: { x: 10, z: 20 }, markers: [{ id: 'm', position: { x: 18.68240888334652, z: 69.2403876506104 } }] },
+		marker: { distance: 50 },
+		library: 'QuickJS 2025-04-26 Math.hypot (correctly rounded), against V8 Math.hypot',
+	},
+	{
+		op: 'world_view',
+		input: {
+			facing: { x: 0.8660254037844387, z: 0.49999999999999994 },
+			mirrored: true,
+			position: { x: 10, z: 20 },
+			markers: [{ id: 'aheadRight', position: { x: 16.66025403784439, z: 28.464101615137753 } }],
+		},
+		marker: { bearing: 38.1985905136482, relative: 21.801409486351808, offset: 0.29068545981802413 },
+		library: 'QuickJS 2025-04-26 Math.atan2, against V8 Math.atan2',
+	},
+];
+
+const canonHud = (v) => (Array.isArray(v) ? `[${v.map(canonHud).join(',')}]` : v !== null && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canonHud(v[k])}`).join(',')}}` : JSON.stringify(v));
+
+/** The compass declaration for case `c`, or undefined. */
+function hudCompassDeclaration(c) {
+	return HUD_COMPASS_QUICKJS.find((d) => d.op === c.op && canonHud(d.input) === canonHud(c.input));
+}
+
 /** A compass answer as the row gives it: a refusal also carries core's `message`, which core's runner leaves out. */
 export function hudCompassExpect(expected) {
 	if (expected && expected.ok === false && expected.refusal) {
@@ -786,12 +824,31 @@ export function hudSessionOps(area, op, input, expected, where) {
 }
 
 /** One HUD corpus case as bridge steps. */
-export function hudCaseSteps(area, c) {
+export function hudCaseSteps(area, c, tolerance) {
 	const where = `${area} ${c.op}: ${c.name}`;
 	if (area === 'ui-compass') {
 		const call = HUD_COMPASS_ROWS[c.op];
 		if (!call) throw new Error(`emit-bridge-cases: ${where}: no row for op ${c.op}`);
-		return [{ call, args: c.input, expect: hudCompassExpect(c.expected) }];
+		const d = hudCompassDeclaration(c);
+		if (!d) return [{ call, args: c.input, expect: hudCompassExpect(c.expected) }];
+		const first = c.expected?.value?.markers?.[0];
+		for (const k of Object.keys(d.marker)) {
+			if (typeof first?.[k] !== 'number') throw new Error(`emit-bridge-cases: ${where}: the declared member ${k} is not in the first marker's answer`);
+			if (!(Math.abs(first[k] - d.marker[k]) <= tolerance)) throw new Error(`emit-bridge-cases: ${where}: the declared ${k} is not within the corpus's tolerance ${tolerance}`);
+		}
+		const markers = c.expected.value.markers.map((m, i) => (i === 0 ? { ...m, ...d.marker } : m));
+		return [
+			{
+				call,
+				args: c.input,
+				expect: { ...c.expected, value: { ...c.expected.value, markers } },
+				libraryVersion: {
+					library: d.library,
+					v8: c.expected,
+					why: `the corpus's answer was written on V8, which is one ulp from QuickJS here (${Object.keys(d.marker).join(', ')}); core's runner compares within the file's tolerance ${tolerance}, which both meet`,
+				},
+			},
+		];
 	}
 	if (area === 'ui-minimap' && HUD_MINIMAP_ROWS[c.op]) return [{ call: HUD_MINIMAP_ROWS[c.op], args: c.input, expect: c.expected }];
 	const { ops, results } = hudSessionOps(area, c.op, c.input, c.expected, where);
@@ -820,12 +877,16 @@ function hud(root, coreCommit) {
 			return [k, file.contract[k]];
 		}));
 		const cases = [{ name: `${area}: the contract ${HUD_CONTRACT_ROWS[area]} states`, steps: [{ call: HUD_CONTRACT_ROWS[area], expect: contract }] }];
-		for (const c of file.cases) cases.push({ name: `${area} ${c.op}: ${c.name}`, steps: hudCaseSteps(area, c) });
+		for (const c of file.cases) cases.push({ name: `${area} ${c.op}: ${c.name}`, steps: hudCaseSteps(area, c, file.tolerance) });
+		if (area === 'ui-compass') {
+			const unmatched = HUD_COMPASS_QUICKJS.filter((d) => !file.cases.some((c) => hudCompassDeclaration(c) === d));
+			if (unmatched.length) throw new Error(`emit-bridge-cases: ${corpus}: ${unmatched.length} library-version declaration(s) match no corpus case (first: op ${unmatched[0].op})`);
+		}
 		out[name] = caseFile(
 			area,
 			`core's HUD shell corpus (${corpus}, P2.core) through the ${HUD_CONTRACT_ROWS[area].replace(/\.contract$/, '.*')} rows, ` +
 				"each op the calls core's reference runner (src/ui/hud-corpus.ts) makes, through them; numbers held exactly (the corpus's tolerance is " +
-				`${file.tolerance}; tests/ui_hud_corpus.cpp replays the file itself within it).`,
+				`${file.tolerance}; tests/ui_hud_corpus.cpp replays the file itself within it), but for a step declared as a library-version answer.`,
 			coreCommit,
 			r.files,
 			cases,

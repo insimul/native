@@ -757,18 +757,19 @@ set_tests_properties(core_vendor_vehicle_placement_negative PROPERTIES
 # The HUD transcriptions' guard (PL.native-hud-rows: cases/core-ui-{notifications,compass,minimap}.json
 # carrying every case of the vendored conformance/ui/{notifications,compass,minimap}-cases.json by name,
 # each the calls core's runner makes through the rows with every answer stated, and each contract case
-# holding its contract row to the keys it states; derived independently of the emitter) is given fourteen
+# holding its contract row to the keys it states; derived independently of the emitter) is given seventeen
 # perturbations in memory (a dropped case, a case no corpus case names, a call changed, an argument
 # dropped, a refusal's message no longer held, an answer number changed, a minimap view weakened to a
 # subset, a placed list dropped, a toast op dropped, a history clock dropped, history ids weakened to a
-# type, a case put on one leg, a contract key dropped, a contract value changed) and passes only when all
-# fourteen are named.
+# type, a case put on one leg, a contract key dropped, a contract value changed, a declared library-version
+# answer moved past the tolerance, a declaration's V8 answer not the corpus's, a declaration on a minimap
+# case) and passes only when all seventeen are named.
 add_test(NAME core_vendor_hud_negative COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
        --check-hud-transcription-negative)
 set_tests_properties(core_vendor_hud_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "HUD transcription negative [^ ]* 14 of 14 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_hud_negative")
+  PASS_REGULAR_EXPRESSION "HUD transcription negative [^ ]* 17 of 17 perturbed transcription[(]s[)] named|\\[SKIP\\] core_vendor_hud_negative")
 
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus

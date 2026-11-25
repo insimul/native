@@ -819,6 +819,7 @@ function hudCallsOf(area, c) {
 
 function hudTranscriptionProblems(docs = null) {
   const problems = [];
+  const declared = [];
   let count = 0;
   for (const [area, t] of Object.entries(HUD_TRANSCRIPTIONS)) {
     const file = JSON.parse(fs.readFileSync(path.join(OUT_DIR, t.corpus), 'utf8'));
@@ -833,7 +834,32 @@ function hudTranscriptionProblems(docs = null) {
         continue;
       }
       const want = hudCallsOf(area, c);
-      if (want === null || got.legs !== undefined || canonJson(got.steps) !== canonJson(want)) wrong.push(c.name);
+      const lv = got.steps?.[0]?.libraryVersion;
+      let ok = want !== null && got.legs === undefined;
+      if (ok && lv !== undefined) {
+        // A declared library-version answer (corebridge/tests/README.md), on a compass op's one call only: V8's answer
+        // is the corpus's exactly, and the row's differs from it only in numbers, each within the corpus's tolerance.
+        const st = got.steps[0];
+        ok =
+          area === 'ui-compass' &&
+          got.steps.length === 1 &&
+          want.length === 1 &&
+          Object.keys(st).sort().join(',') === 'args,call,expect,libraryVersion' &&
+          lv !== null &&
+          typeof lv === 'object' &&
+          Object.keys(lv).sort().join(',') === 'library,v8,why' &&
+          typeof lv.library === 'string' &&
+          lv.library.length > 0 &&
+          typeof lv.why === 'string' &&
+          lv.why.length >= 20 &&
+          st.call === want[0].call &&
+          canonJson(st.args) === canonJson(want[0].args) &&
+          canonJson(lv.v8) === canonJson(want[0].expect) &&
+          canonJson(st.expect) !== canonJson(want[0].expect) &&
+          withinTolerance(st.expect, want[0].expect, file.tolerance);
+        if (ok) declared.push(`${area} ${c.op}: ${c.name}`);
+      } else if (ok) ok = canonJson(got.steps) === canonJson(want);
+      if (!ok) wrong.push(c.name);
     }
     count += file.cases.length;
     if (missing.length) problems.push(`${t.cases}: ${missing.length} corpus case(s) not transcribed, first: ${missing[0]}`);
@@ -848,7 +874,7 @@ function hudTranscriptionProblems(docs = null) {
       problems.push(`${t.cases}: it carries ${doc.cases.length} case(s), not the corpus's ${file.cases.length} and the contract case`);
     }
   }
-  return { problems, count };
+  return { problems, count, declared };
 }
 
 /** The HUD guard's negative control: each perturbation of a transcription must be named. */
@@ -886,6 +912,17 @@ function hudTranscriptionNegative() {
     ['a case put on one leg only', (d) => { Object.assign(first(d, 'ui-minimap', 'session'), { legs: ['c'], why: 'perturbed' }); }, "not transcribed as core's runner"],
     ['a contract key dropped', (d) => { delete d['ui-notifications'].cases[0].steps[0].expect.historyMax; }, 'the contract case'],
     ['a contract value changed', (d) => { d['ui-compass'].cases[0].steps[0].expect.defaultSpanDegrees = 140; }, 'the contract case'],
+    ['a declared answer moved past the tolerance', (d) => {
+      d['ui-compass'].cases.find((c) => c.steps[0].libraryVersion).steps[0].expect.value.markers[0].distance += 1e-3;
+    }, "not transcribed as core's runner"],
+    ["a declaration's V8 answer not the corpus's", (d) => {
+      d['ui-compass'].cases.find((c) => c.steps[0].libraryVersion).steps[0].libraryVersion.v8.value.heading += 1e-12;
+    }, "not transcribed as core's runner"],
+    ['a declaration on a minimap case', (d) => {
+      const st = first(d, 'ui-minimap', 'project').steps[0];
+      st.libraryVersion = { library: 'perturbed', v8: st.expect, why: 'a perturbation the guard must name' };
+      st.expect = { ...st.expect, x: st.expect.x + 1e-12 };
+    }, "not transcribed as core's runner"],
   ];
   let named = 0;
   for (const [what, perturb, want] of perturbations) {
@@ -3167,7 +3204,7 @@ async function check(coreDir) {
   console.log(
     `vendor-core-bundle: HUD — cases/core-ui-{notifications,compass,minimap}.json transcribe all ${hudGuard.count} case(s) of ` +
       "the vendored conformance/ui/{notifications,compass,minimap}-cases.json, by name, by the calls core's runner makes through the rows, " +
-      'with every answer stated, and each contract row held to the keys it states',
+      `with every answer stated (${hudGuard.declared.length} declared library-version answer(s), each within the corpus's tolerance), and each contract row held to the keys it states`,
   );
   const genreGuard = genreTranscriptionProblems();
   if (genreGuard.problems.length) fail(`the genre transcription does not hold the vendored genre systems corpora: ${genreGuard.problems.join('; ')}`);

@@ -1,6 +1,6 @@
 {
  "area": "ui-minimap",
- "description": "core's HUD shell corpus (conformance/ui/minimap-cases.json, P2.core) through the ui.minimap.* rows, each op the calls core's reference runner (src/ui/hud-corpus.ts) makes, through them; numbers held exactly (the corpus's tolerance is 1e-9; tests/ui_hud_corpus.cpp replays the file itself within it).",
+ "description": "core's HUD shell corpus (conformance/ui/minimap-cases.json, P2.core) through the ui.minimap.* rows, each op the calls core's reference runner (src/ui/hud-corpus.ts) makes, through them; numbers held exactly (the corpus's tolerance is 1e-9; tests/ui_hud_corpus.cpp replays the file itself within it), but for a step declared as a library-version answer.",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
   "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",

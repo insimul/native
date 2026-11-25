@@ -1155,8 +1155,9 @@
   feed's id prefixes, the first ids, the categories carried) or a rule the cases pin, and an
   unknown key fails. `emit-bridge-cases.mjs` transcribes the three into
   `vendor/core/cases/core-ui-{notifications,compass,minimap}.json` and `core_vendor` holds them
-  to the corpora by its own derivation (`core_vendor_hud_negative`: fourteen perturbations
-  named). The toast queue and the history log are ONE `ui.notifications` session (the log's
+  to the corpora by its own derivation (`core_vendor_hud_negative`: seventeen perturbations
+  named); two compass cases are declared library-version answers (QuickJS's `Math.hypot`
+  and `Math.atan2` one ulp from V8's, within the file's tolerance). The toast queue and the history log are ONE `ui.notifications` session (the log's
   ops are `history*`; its clock is the last `at` an op gave); `ui.minimap.*` is a stateless
   projection/tone/size trio plus a session; `ui.compass.*` is stateless and is NOT the quest
   director's compass `quest.waypoints` returns. Numbers (and `mirrored`) go to core as sent,

@@ -65,7 +65,12 @@ literally.
 A step may carry `libraryVersion` where the row's answer depends on a table this
 library's engine ships, and V8's differs: today the two case folds on letters and
 marks Unicode 17.0 added, which QuickJS 2025-04-26's Unicode 16.0 tables do not
-know (`cases/bridge-build.json`, PL.native-headless-fold-rules).
+know (`cases/bridge-build.json`, PL.native-headless-fold-rules). Core's corpora
+are written on V8 too, so a transcribed corpus case whose numbers this library's
+QuickJS `Math` answers one ulp apart, within the corpus's own `tolerance`, is declared
+the same way, and `core_vendor` holds `v8` to the corpus's answer exactly and `expect`
+within the tolerance (`core-props-vehicle-placement.json`: `Math.hypot`;
+`core-ui-compass.json`: `Math.hypot` and `Math.atan2`).
 
 ```json
 { "call": "build.foldMacos", "args": { "path": "…" },
