@@ -1,11 +1,11 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-native-grading-plan-call",
-    "gitHead": "55e95c4a8e41bcab8f2e5d8c37c8424071430704"
+    "root": "native-native-ground-seat-batch",
+    "gitHead": "05bf9f5f15a37f5dfae802d18302d7eb345d2ae5"
   },
   "coverage": {
-    "trackedFiles": 614,
+    "trackedFiles": 619,
     "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,

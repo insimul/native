@@ -3,20 +3,20 @@
   "rules": "scripts/open-boundary.rules.json",
   "rulesVersion": 1,
   "repository": {
-    "root": "native-native-grading-plan-call",
-    "gitHead": "55e95c4a8e41bcab8f2e5d8c37c8424071430704"
+    "root": "native-native-ground-seat-batch",
+    "gitHead": "05bf9f5f15a37f5dfae802d18302d7eb345d2ae5"
   },
   "coverage": {
-    "files": 614,
-    "packScanned": 350,
+    "files": 619,
+    "packScanned": 353,
     "packDocuments": [],
-    "importFiles": 26,
-    "importSpecifiers": 249,
+    "importFiles": 27,
+    "importSpecifiers": 251,
     "cargoManifests": 3,
     "cargoDependencies": 3,
-    "cFiles": 162,
-    "cIncludes": 1015,
-    "buildFiles": 23
+    "cFiles": 163,
+    "cIncludes": 1023,
+    "buildFiles": 24
   },
   "content": [
     {
@@ -2728,6 +2728,19 @@
       "rule": "undeclared-dependency",
       "kind": "import",
       "classification": "keep",
+      "path": "corebridge/tools/hand-cases/ground-seat-frame.mjs",
+      "line": 20,
+      "specifier": "@insimul/core/ground-seating/ground-seat",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A GENERATOR INPUT, never shipped: the hand-case spec tools/gen-hand-cases.mjs bundles against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, exactly as vendor-core-bundle.mjs resolves entry.js's specifiers, to compute corebridge/tests/cases/bridge-ground-seat-frame.json's expectations with core's own initialSeat, retargetSeat, seatOffsetAt, unseat and groundSeatTuning (PL.native-ground-seat-batch, rulings U115 and U128). Nothing in the shipped artifact imports it. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-ground-seat-batch (Features Gauntlet PL.native-ground-seat-batch)",
+      "reviewedAt": "2026-11-26"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
       "path": "corebridge/tools/hand-cases/hillside.mjs",
       "line": 15,
       "specifier": "@insimul/core/camera/movement-rules",
@@ -2992,7 +3005,7 @@
       "unresolved": 0
     },
     "dependency": {
-      "findings": 156,
+      "findings": 157,
       "unresolved": 0
     },
     "unusedAllowances": 0
