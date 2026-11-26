@@ -21,6 +21,7 @@
     "src/audio/audio-keys.ts",
     "src/audio/footsteps.ts",
     "src/audio/ground-from-ir.ts",
+    "src/build/build-log-redaction.ts",
     "src/build/headless-build.ts",
     "src/business/business-predicates.ts",
     "src/camera/camera-modes.ts",
@@ -348,7 +349,8 @@
     "conformance/traversal/vehicles.json"
   ],
   "buildCorpus": {
-    "conformance/headless-build/headless.json": "conformance/build/headless.json"
+    "conformance/headless-build/headless.json": "conformance/build/headless.json",
+    "conformance/headless-build/log-redaction.json": "conformance/build/log-redaction.json"
   },
   "progressionCorpus": [
     "conformance/progression/gamification.json",
@@ -401,11 +403,11 @@
     "conformance/editor-operations/mint-play-grant.json",
     "conformance/editor-operations/reread-reference-texts.json"
   ],
-  "bundleBytes": 2832144,
-  "bundleSha256": "895ea4569fdbdd09f35e9f67c91c260b29d4c998cc3ae4f1bfbff83208ec72f8",
+  "bundleBytes": 2839595,
+  "bundleSha256": "38371f5ff421c280c33f130957f6fad35db0e9918bbc6cf2efff917508bf92e1",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "895ea4569fdbdd09f35e9f67c91c260b29d4c998cc3ae4f1bfbff83208ec72f8",
-    "vendor/core/insimul_core_bundle.c": "355aeac37dc44616d693e393473ac210feb6da5914254afb92c5bf318edb0255",
+    "vendor/core/insimul-core-bundle.js": "38371f5ff421c280c33f130957f6fad35db0e9918bbc6cf2efff917508bf92e1",
+    "vendor/core/insimul_core_bundle.c": "0000d2dd0f79de98fb8b97ae9604f8a4d2f2ac8ac9aef57a98869e40f0afe4e0",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genre-genre-pieces-build-plan.json": "60388e9cb5652085356059a515382be7ba5d98dd172677c025136c4f640d06ca",
     "vendor/core/cases/core-genre-genre-pieces-kinds.json": "07082aa01cf17b5ecf6154cbb738842e344c40fd5a6f256d3ca81d078f281c83",
@@ -531,6 +533,7 @@
     "vendor/core/conformance/traversal/vehicles-only.json": "b6f171c02788b8681e2e2b4c4a103c1f223529be47d92826327d6732ea066c45",
     "vendor/core/conformance/traversal/vehicles.json": "1b03a951b6249a089ba2f09e6109cadbcdd79eb030b8871f114369bc04940b92",
     "vendor/core/conformance/headless-build/headless.json": "8d206e42c3efdaea41c373e89daa804b85a6879eea33456818cd9a3e07fed5b9",
+    "vendor/core/conformance/headless-build/log-redaction.json": "e5c5ee919c8c68ae4604ab962d7562658087d7867f7bb0f8a32ba5be6ca68cd4",
     "vendor/core/conformance/progression/gamification.json": "aa344dcc6edee5bb5738a454c2dfbfebc1b90f25e0cb0ec42378df9733abb476",
     "vendor/core/conformance/progression/modules.json": "63cfdcab0fe6518318f6ca97766fe09b40cd6a3c937db614e7f7c6a340f374b5",
     "vendor/core/conformance/progression/save.json": "878de46adc3450c758943748091df1d2ba9215fa5b2e624d2db7f4c67f1ac3a0",
@@ -572,13 +575,13 @@
     "vendor/core/conformance/editor-operations/get-world-ir-summary.json": "e782bd1a7d8cbd32fb95d07230fcaa70d4615cc43c67306d24ff66b11d927db0",
     "vendor/core/conformance/editor-operations/mint-play-grant.json": "941cb0a5c749b6594d9bf53080dd68c8d913e1d95dbf72044d587c03513d196e",
     "vendor/core/conformance/editor-operations/reread-reference-texts.json": "fb1d23e1a47b2df0be959d31f3cef619007fbc1ba15730f1e064a94d5cd305c1",
-    "js/entry.js": "d9557b30d2e02c50c492225f1dc57c15c13f72828411f40c92e0f560b2bbd336",
+    "js/entry.js": "228ea9ade748eb7f6d466d943ea4f512f2aaeed2ff9a22ca27c3d9372fb8da5f",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
     "js/host-sessions.js": "8a09ea25aa989bd1f79c809da9044dc14e7570fd8a9453f00f2b65d99b3e26ab",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
     "tools/emit-bridge-cases.mjs": "bbf37ed68b91d74825bf957a894916106133156f39617d83a87ee3b711ac564b",
-    "core-pin.json": "1c9d325a4d2360aec3f159dbfaebd2337df71df8d66411257d10371af9a353f1"
+    "core-pin.json": "19ffcef077ae1be2474e0708fc743a259b97cfea6c736c29a667070620345f99"
   }
 }

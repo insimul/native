@@ -656,7 +656,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, audio cues, survival, traversal (vehicles-only among them), headless build, progression, village save, runtime save, interior save, villager pass-by, world-vehicle parking, HUD (notifications, compass, minimap), quest lifecycle and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the generated hand cases
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, audio cues, survival, traversal (vehicles-only among them), headless build, build-log redaction, progression, village save, runtime save, interior save, villager pass-by, world-vehicle parking, HUD (notifications, compass, minimap), quest lifecycle and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the generated hand cases
   (`node corebridge/tools/gen-hand-cases.mjs --core <checkout>`; `core_vendor` refuses them until you do) and the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
@@ -946,6 +946,21 @@
   by JavaScript's `toLowerCase` (Kelvin-sign `TOKEN` is one, `PAſSWORD` is not).
   Whether core pins either is core's question (U49(3)); do not "fix" the rows' answers
   toward V8's or a fold without that ruling.
+- **The build-log redaction rows (PL.native-build-redact-rows, U120, U115(11)) run
+  core's redaction corpus UNCHANGED**: `conformance/build/log-redaction.json`, in the
+  same set beside headless.json (`vendor/core/conformance/headless-build/`), driven by
+  `tests/build_log_redaction_corpus.cpp` as `build_log_redaction_corpus` (+ `_negative`;
+  every log case also line by line with the state carried) and witnessed by
+  `build_log_redaction_corpus_order` (Node: both orders core pins, credentials before paths
+  and the home forms before the user segment, found in the vendored bundle, and each
+  swapped in a copy of it refused by the corpus). `build.redactLogLine { line, context?,
+  state? }` and `build.redactLog { log, context? }` are core's `redactBuildLogLine` and
+  `redactBuildLog`; the rule, its order and its assignment forms are core's (U49(3);
+  U120(13): not widened), so never add a form or a step here. The corpus's `<<local:NAME>>`
+  markers stand for home-path starts and are expanded in the input AND the expectation;
+  hand cases spell homes `/home/…`, `/users/…` or with backslashes, so no committed file
+  names a home folder as the private-strings gate reads it. Never import
+  `build/build-log-redaction-corpus` (core's runner).
 - **The progression and skill rows (PL.native-progression-rows, U106(7)) run core's
   P9i corpora UNCHANGED**: `conformance/progression/*.json`, `conformance/skills/*.json`
   and `conformance/prolog/mechanic-skill.json`, copied as one set

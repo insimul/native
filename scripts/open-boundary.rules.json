@@ -1353,6 +1353,15 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/build/build-log-redaction",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the build.redactLogLine and build.redactLog rows (core's build-log redaction, PL.core-build-log-redaction: redactBuildLogLine and redactBuildLog) (PL.native-build-redact-rows, rulings U120, U115(11) and U36), exactly as the build.* rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-build-redact-rows (Features Gauntlet PL.native-build-redact-rows)",
+      "reviewedAt": "2026-11-25"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/system-packs/schema",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the build.contract row, for one constant: SYSTEM_PACKS_LOCK_SCHEMA, the packs.lock.json schema id the headless build corpus's contract names (PL.native-headless-build, rulings U106(1), U107 and U36). The module was already in the bundle through the composer (packs.compose) and core's headless-build module; this import adds no module. Resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

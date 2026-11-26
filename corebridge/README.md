@@ -609,6 +609,8 @@ game; **meta** = about the bridge itself.
 | `build.compareCodeUnits` | `{ a, b }` → `{ order }` (-1, 0, 1) | `build/headless-build` `compareCodeUnits` | P10 headless build |
 | `build.resolvePlatform` | `{ platform, host }` → `{ platform }` | `build/headless-build` `resolveBuildPlatform` | P10 headless build |
 | `build.isPrimaryArtefact` | `{ platform, artefact: { path, kind } }` → `{ primary }` | `build/headless-build` `isPrimaryArtefactFor` | P10 headless build |
+| `build.redactLogLine` | `{ line, context?: { projectDir?, homeDir?, userName? }, state?: { inPrivateKey } }` → `{ line }`, or `{ line, state: { inPrivateKey } }` when `state` is sent | `build/build-log-redaction` `redactBuildLogLine` | P10 build-log redaction |
+| `build.redactLog` | `{ log: [line], context? }` → `{ log: [line] }` (as many lines out as in, one private-key state carried through) | `build/build-log-redaction` `redactBuildLog` | P10 build-log redaction |
 | `progression.gamification.tuning` | `{ tuning? }` → `{ ok: true, value }`: core's tuning with the pack's `tuning` over it | `progression/gamification` `GAMIFICATION_TUNING` | P9i progression (PL.native-progression-rows) |
 | `progression.gamification.levelForXp` | `{ total, thresholds? }` → `{ ok: true, value }` | `progression/gamification` `levelForXp` | P9i progression (PL.native-progression-rows) |
 | `progression.gamification.nextLevelXp` | `{ level, thresholds? }` → `{ ok: true, value }` (0 at the top) | `progression/gamification` `nextLevelXp` | P9i progression (PL.native-progression-rows) |
@@ -2185,7 +2187,8 @@ The rows are named `build.<fn>`, one core function each, plus the contract's tab
   `tests/cases/bridge-build.json` pin each key, and `build.findSecrets` over them, on
   both legs.
   Unreal's engine-side `RedactCredentialAssignment` (a build log's `NAME=value`
-  lines) stays Unreal's and calls these.
+  lines) gives way to `build.redactLogLine` / `build.redactLog` (below), core's whole
+  log rule, of which the assignment is one step.
 - **The path rules**: `build.pathProblem`, the two case folds `build.foldMacos`
   (NFD, each code point's full lower, upper, lower case, then NFC) and
   `build.foldWindows` (the same without normalising), `build.insideDir` (as spelt:
@@ -2236,6 +2239,61 @@ every accepted plan's inputs clear of its build folder under them.
 credential not caught, a credential shown (as an expectation, and planted in an
 answer the leak check must catch), a path escaping the build folder (by fold), an
 artefact outside it and a path outside the project; all must be refused.
+
+#### What a build log redacts: `build.redactLogLine` and `build.redactLog` (PL.native-build-redact-rows)
+
+Core states what an engine's headless build writes to its log with the credentials
+and local paths gone (PL.core-build-log-redaction, `src/build/build-log-redaction.ts`,
+`docs/headless-build.md` § "What a build log redacts"; U115(11), U49(3): core is the
+source). The two rows run core's own functions, nothing re-stated (U120(13): the
+assignment forms are core's, not widened here):
+
+- **`build.redactLogLine { line, context?, state? }`** is `redactBuildLogLine`: one
+  line, in core's step order — a private-key header line withheld whole; a
+  credential-key assignment (`NAME=value`, `export NAME="value"`) keeping `NAME=`; every
+  credential span in the line, to the end of its word; then local paths — the project
+  folder (project-relative, or `<project>` alone), the home folder the context names,
+  the usual home forms (a root `Users` or `home` folder then a name, or a drive's
+  `Users` folder then a name; not the shared folders) as `<home>`, and the user name as a whole path segment as `<user>`.
+  Two of those orders change answers, and core's corpus pins both: **credentials before
+  paths** (a database URL carrying a home path goes whole) and **the home forms before
+  the user segment** (the user's own home is `<home>`, never a home folder holding `<user>`).
+  `context { projectDir?, homeDir?, userName? }` is what the runner knows of the
+  machine (absent or `null`, and each part absent or `null`: unused). `state {
+  inPrivateKey }` is the private-key state a runner STREAMING its tools' output
+  carries: sent, the answer is `{ line, state }`, and the answer's `state` goes with
+  the next line, so a block is withheld header to footer; not sent, only a header line
+  is withheld (core's `redactBuildLogLine` without a state).
+- **`build.redactLog { log, context? }`** is `redactBuildLog`: a whole log (an array of
+  lines), one state carried through it, as many lines out as in.
+- **The rows' checks** (`[invalid-input]`) are on what core reads unchecked: the line
+  and each line of the log are strings; the context an object whose three parts are
+  strings (or absent or `null`); the state an object with a boolean `inPrivateKey`.
+
+Core's corpus `conformance/build/log-redaction.json` (90 cases at 45409ed: 86
+`redactLine`, 4 `redactLog`) is copied byte for byte beside the headless corpus
+(`BUILD_CORPUS_FROM`, `vendor/core/conformance/headless-build/log-redaction.json`;
+`--check --core` compares it with core's) and driven by
+`tests/build_log_redaction_corpus.cpp` (ctest `build_log_redaction_corpus`): every
+`<<secret:NAME>>` marker in the input expanded from the file's `secretFixtures`, then
+every `<<local:NAME>>` marker, in the input and the expectation, from its
+`localFixtures` (core's `expandSecretFixtures` and `expandLocalFixtures`); every case
+through the two rows (`redactLog`'s `lines` as the row's `log`); every log case driven
+AGAIN line by line through `build.redactLogLine` with the state carried, which must
+answer the same lines; `secretKeyStandIn` held to `build.contract`'s and each other
+stand-in (`<home>`, `<user>`, `<project>`) pinned by at least one expected line; and
+every line answered asked of `build.looksLikeSecret` (core: no line that comes out
+holds a credential by its shapes). `build_log_redaction_corpus_negative` perturbs every
+expectation and, on purpose, a credential shown, a home path shown and a private-key
+line let through (against the log row and the carried leg); all must be refused.
+`build_log_redaction_corpus_order` (Node, `tests/build_log_redaction_order.mjs`) finds both
+pinned orders in the vendored bundle as core states them, replays the 90 cases through
+the rows of that bundle, then swaps each order in a copy of the bundle and requires the
+corpus to refuse it (at 45409ed: 1 case refuses paths-before-credentials, 2 refuse the
+user segment before the home forms). Hand cases (`tests/cases/bridge-build-redact.json`,
+generated from core by `tools/hand-cases/build-redact.mjs`) pin the carried state step
+by step, a `null` context and `null` parts, both orders on lines of their own, and the
+rows' boundary.
 
 ### The progression and skill rows: XP, modules, the save block, skill trees (PL.native-progression-rows)
 
@@ -3321,6 +3379,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `survival_corpus`, `survival_corpus_negative` | core's three P9c corpora (`needs.json`, `hud.json`, `stamina.json`; 89 cases at 6cd4b4e) driven whole through the `survival.*` rows by `tests/survival_corpus.cpp` (0 undriven per file; a `run` one row per step over the state the last answer carried, a `pool` one `survival.stamina.pool.apply` per step; each file's catalog and op list held to core's), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `survival_corpus_negative` does |
 | `traversal_corpus`, `traversal_corpus_negative` | core's eight P9e corpora (the kernels' `affordances.json`, `vehicles.json`, `fast-travel.json`, `ground-seating.json`, and the layers' `session.json`, `mounts.json`, `save.json`, `vehicles-only.json`; 140 cases at 45409ed with vehicles-only's 4 runs in a `runsTraversal: false` session, 136 at d88b6f0, 129 at 6cd4b4e) driven whole through the `traversal.*` rows by `tests/traversal_corpus.cpp` (0 undriven per file; each older case's record composed from one row per core function and driven again with its lists reversed, a settle one row per step, a session case one `traversal.session` with one apply per step, a mounts run one personal row per step; each systems file's catalog, ops and steps held to core's and every step driven), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `traversal_corpus_negative` does |
 | `build_corpus`, `build_corpus_negative` | core's P10 headless build corpus (`conformance/build/headless.json`, 233 cases at 6cd4b4e) driven whole through the `build.*` rows by `tests/build_corpus.cpp` (credential markers expanded as core's runner does; 0 undriven; `build.contract` held to the file's contract; no credential repeated in a detail or a line; every out-dir refusal asked of the fold rows, with at least one case only the macOS fold catches and one only the Windows fold catches), and EVERY case's expectation perturbed and seen as wrong, with purposeful perturbations (a credential not caught or shown, a path escaping the build folder under either fold, an artefact outside it, a path outside the project) each refused |
+| `build_log_redaction_corpus`, `build_log_redaction_corpus_negative`, `build_log_redaction_corpus_order` | core's build-log redaction corpus (`conformance/build/log-redaction.json`, 90 cases at 45409ed) driven whole through `build.redactLogLine` and `build.redactLog` by `tests/build_log_redaction_corpus.cpp` (secret and local markers expanded as core's runner does; 0 undriven; every log case again line by line with the state carried; the stand-ins held; every line answered clear of `build.looksLikeSecret`), EVERY expectation perturbed and refused with purposeful perturbations (a credential, a home path or a private-key line shown); and the order witness: both orders core pins found in the vendored bundle, and each swapped in a copy of it refused by the corpus |
 | `progression_corpus`, `progression_corpus_negative` | core's P9i progression corpora (`conformance/progression/{gamification,modules,skills,save}.json`, 87 cases at 45409ed with skills.json's `compose` and `kb` through the `skill.kb.*` rows, 73 at 6cd4b4e), its skill-tree corpora (`conformance/skills/*.json`, 52) and the `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json` (3) driven whole through the `progression.*` and `skill.*` rows by `tests/progression_corpus.cpp` (0 undriven per file; a gamification `run` one `progression.gamification.step` per step, every step kind driven; each progression file's catalog, ops and steps held to core's; a KB-backed `skill.unlock` per `can_unlock` case, with a no-KB control; refusal probes for an unknown op, step, area and row); the negative pass perturbs every expectation and needs every one refused |
 | `village_save_corpus`, `village_save_corpus_negative` | core's village-state save corpus (`conformance/saves/village-state.json`, 399 cases at 45409ed) driven whole through the `save.village.*` rows and `skill.kb.loadJson` by `tests/village_save_corpus.cpp`, each op as core's reference runner composes it (0 undriven; `save.village.contract` held to the file's contract; refusal probes for another version, an unregistered extension, another world and runtime, `[invalid-input]` and an unknown op or row); the negative perturbs every case |
 | `runtime_save_corpus`, `runtime_save_corpus_negative`, `interior_save_corpus`, `interior_save_corpus_negative`, `interior_save_corpus_wrong` | core's runtime save and interior save corpora (`conformance/saves/runtime-save.json`, 33 cases, and `interior-state.json`, 29 cases and 7 controls, at 45409ed) driven whole through the `save.runtime.*` and `save.interior.*` rows by `tests/runtime_save_corpus.cpp`, each op as core's reference runners compose it (0 undriven, every runtime step driven; each contract row held to its file, every other contract key accounted for; every control refused; refusal probes); the negatives perturb every case; `_wrong` runs a doctored cut (`tests/saves-negative/interior-state-wrong.json`: a contract value changed, an unknown contract key, a wrong expectation, an unknown op, an undriven op, a control claiming the true answer) and must see each named and FAIL |

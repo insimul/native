@@ -1277,6 +1277,45 @@ add_test(NAME build_corpus_negative COMMAND insimulcore_build_corpus --negative 
 set_tests_properties(build_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*targeted: credential not caught [1-9][0-9]*/[0-9]+, credential shown [1-9][0-9]*/[0-9]+, credential shown [(]planted[)] [1-9][0-9]*/[0-9]+, escape under a fold [1-9][0-9]*/[0-9]+, artefact outside outDir [1-9][0-9]*/[0-9]+, path outside project [1-9][0-9]*/[0-9]+ refused\n.*escapes refused by fold: macOS only [1-9][0-9]*, Windows only [1-9][0-9]*, both [0-9]+\n.*build_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*build_corpus --negative: PASS")
 
+# build_log_redaction_corpus (PL.native-build-redact-rows, rulings U120, U115(11),
+# U49(3)): core's build-log redaction (PL.core-build-log-redaction:
+# src/build/build-log-redaction.ts) as libinsimulcore's `build.redactLogLine` and
+# `build.redactLog` rows, held to core's own corpus conformance/build/log-redaction.json,
+# COPIED byte for byte beside headless.json into
+# corebridge/vendor/core/conformance/headless-build/ (vendor-core-bundle.mjs
+# BUILD_CORPUS_FROM; hashed, and byte-compared under --check --core).
+# tests/build_log_redaction_corpus.cpp expands the file's secret and local markers as
+# core's runner does and drives EVERY case through the two rows, drives every log case
+# again line by line through build.redactLogLine with the private-key state carried,
+# holds the credential stand-in to build.contract, and asks build.looksLikeSecret of
+# every line answered. Unreal's interim RedactCredentialAssignment is what these rows
+# retire (P10.unreal.retire-headless-build-copy). The regex demands both ops driven,
+# 0 undriven, every stand-in pinned, the carried leg, the leak line, and PASS.
+add_executable(insimulcore_build_log_redaction_corpus tests/build_log_redaction_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_build_log_redaction_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_build_log_redaction_corpus PRIVATE insimulcore)
+set(INSIMUL_BUILD_LOG_REDACTION_CORPUS ${INSIMUL_PROPS_CORPUS}/headless-build/log-redaction.json)
+add_test(NAME build_log_redaction_corpus COMMAND insimulcore_build_log_redaction_corpus ${INSIMUL_BUILD_LOG_REDACTION_CORPUS})
+set_tests_properties(build_log_redaction_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "build-log-redaction: [0-9]+ case[(]s[)], driven redactLine [1-9][0-9]*, redactLog [1-9][0-9]*. 0 undriven\n.*contract: secretKeyStandIn \"<credential>\" is build.contract's. expected lines pinning homeStandIn [1-9][0-9]*, userStandIn [1-9][0-9]*, projectStandIn [1-9][0-9]*\n.*carried: [1-9][0-9]* log case[(]s[)], [1-9][0-9]* line[(]s[)], driven line by line with the state carried, agree\n.*leaks: [1-9][0-9]* line[(]s[)] answered, none repeats a credential.*build_log_redaction_corpus: [1-9][0-9]* of [0-9]+ case[(]s[)] driven through the rows, 0 failed.*build_log_redaction_corpus: PASS")
+# Its negative pass: every case's expectation perturbed (its last leaf) must be
+# refused, and the purposeful perturbations too: a credential shown and a home path
+# shown (the input itself as the expected answer), and a private-key line let through
+# (each withheld line of a log put back, against the log row and the carried leg).
+add_test(NAME build_log_redaction_corpus_negative COMMAND insimulcore_build_log_redaction_corpus --negative ${INSIMUL_BUILD_LOG_REDACTION_CORPUS})
+set_tests_properties(build_log_redaction_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*targeted: credential shown [1-9][0-9]*/[0-9]+, home path shown [1-9][0-9]*/[0-9]+, private-key line shown [1-9][0-9]*/[0-9]+, private-key line shown [(]carried[)] [1-9][0-9]*/[0-9]+ refused\n.*build_log_redaction_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*build_log_redaction_corpus --negative: PASS")
+# The order witness (Node): both orders core's round 2 pinned (credentials before
+# paths; the usual home forms before the user-name segment) are found in the vendored
+# bundle as core states them, the corpus agrees through the rows of that bundle, and
+# each order SWAPPED in a copy of the bundle is refused by at least one case
+# (tests/build_log_redaction_order.mjs). Needs node; a loud [SKIP] without, as the
+# other JS legs.
+add_test(NAME build_log_redaction_corpus_order COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_corebridge_cases.sh redaction-order ${CMAKE_CURRENT_SOURCE_DIR})
+set_tests_properties(build_log_redaction_corpus_order PROPERTIES
+  PASS_REGULAR_EXPRESSION "A credentials before paths: stated in the vendored bundle\n.*B home forms before the user segment: stated in the vendored bundle\n.*as vendored: [1-9][0-9]* of [1-9][0-9]* case[(]s[)] agree\n.*A swapped [(]paths before credentials[)]: refused by [1-9][0-9]* case[(]s[)].*B swapped [(]user segment before home forms[)]: refused by [1-9][0-9]* case[(]s[)].*build_log_redaction_order: PASS|\\[SKIP\\] build_log_redaction_order")
+
 
 # progression_corpus (PL.native-progression-rows, rulings U106(7) and U36): core's P9i
 # progression (P9i.core: src/progression/gamification.ts, feature-modules.ts and

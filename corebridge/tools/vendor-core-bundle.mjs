@@ -348,7 +348,15 @@ const TRAVERSAL_CORPUS_FILES = [
 // The bytes are core's; the folder is named after the corpus's area, headless-build.
 // `conformance/headless-build/` is this set's alone, so a file an earlier pin left there
 // is seen, hashed and removed by the next write.
-const BUILD_CORPUS_FROM = { 'conformance/headless-build/headless.json': 'conformance/build/headless.json' };
+//
+// Beside it, core's build-log redaction corpus (PL.native-build-redact-rows, U120; core's
+// PL.core-build-log-redaction, U115(11)): what a headless build log redacts, line in and
+// line out, driven through `build.redactLogLine` and `build.redactLog` by
+// tests/build_log_redaction_corpus.cpp. Same folder, same reason.
+const BUILD_CORPUS_FROM = {
+  'conformance/headless-build/headless.json': 'conformance/build/headless.json',
+  'conformance/headless-build/log-redaction.json': 'conformance/build/log-redaction.json',
+};
 const BUILD_CORPUS_FILES = Object.keys(BUILD_CORPUS_FROM);
 
 // core's P9i progression corpora and its skill-tree corpora (PL.native-progression-rows,
@@ -478,11 +486,16 @@ const EDITOR_OPERATIONS_CORPUS_FILES = [
 // here; the save.runtime.* and save.interior.* rows import `runtime-save` and
 // `props/interior-save` themselves. Named so the refusal names them (each also reaches the
 // village-state comparator above).
+//
+// Core's build-log redaction runner (PL.native-build-redact-rows): `build/build-log-redaction-corpus`
+// is what tests/build_log_redaction_corpus.cpp is here; the build.redactLog* rows import
+// `build/build-log-redaction` itself. Named for the same reason (it reaches the comparator too).
 const UNBUNDLED_CORE_MODULES = [
   'src/save-file-game-state-corpus.ts',
   'src/camera/movement-prose.ts',
   'src/runtime-save-corpus.ts',
   'src/interior-save-corpus.ts',
+  'src/build/build-log-redaction-corpus.ts',
 ];
 const UNBUNDLED_REMEDY = {
   'src/camera/movement-prose.ts': 'a row imports camera/movement-contract (it re-exports the prose); import camera/movement-rules instead',

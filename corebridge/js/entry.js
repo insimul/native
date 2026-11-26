@@ -382,6 +382,12 @@ import {
 	resolveBuildPlatform,
 } from '@insimul/core/build/headless-build';
 import { SYSTEM_PACKS_LOCK_SCHEMA } from '@insimul/core/system-packs/schema';
+// What a headless build log redacts (core's PL.core-build-log-redaction, 8b77f2c;
+// U115(11), U49(3); bound here by PL.native-build-redact-rows, U120): core's line
+// rule and its log rule, nothing re-stated. Never `build/build-log-redaction-corpus`
+// (core's runner): tests/build_log_redaction_corpus.cpp drives
+// conformance/build/log-redaction.json through the two rows, expanding its markers.
+import { redactBuildLog, redactBuildLogLine } from '@insimul/core/build/build-log-redaction';
 
 // ── progression and skill trees (P9i; PL.native-progression-rows, U106(7)) ────
 // Core's P9i logic (P9i.core: src/progression/, docs/progression-systems.md): the
@@ -2275,6 +2281,33 @@ function buildProgressLineArg(method, value) {
 	oneOf(method, value.step, BUILD_STEPS, 'event.step');
 	if (value.fraction !== null) needNumber(method, value.fraction, 'event.fraction');
 	return value;
+}
+
+// ── build-log redaction (PL.native-build-redact-rows) ─────────────────────────
+// The rows' checks, coded `[invalid-input]`, are on what core reads unchecked: the
+// line (or each line of the log) is a string core searches, and each part of the
+// context core reads (`projectDir`, `homeDir`, `userName`) a string, absent or `null`
+// being core's "unused". Nothing else is checked or rewritten: the rule is core's.
+
+/**
+ * The `BuildLogRedactionContext` a redaction row is given. Absent (or `null`) is
+ * core's `{}`: only the usual home-folder forms are recognised.
+ */
+function buildLogContextArg(method, value) {
+	if (value === undefined || value === null) return {};
+	needObject(method, value, 'context');
+	for (const k of ['projectDir', 'homeDir', 'userName']) {
+		if (value[k] !== undefined && value[k] !== null) needString(method, value[k], `context.${k}`);
+	}
+	return value;
+}
+
+/** The `BuildLogRedactionState` a line row carries: `{ inPrivateKey: boolean }`, or absent (no state). */
+function buildLogStateArg(method, value) {
+	if (value === undefined || value === null) return undefined;
+	needObject(method, value, 'state');
+	if (typeof value.inPrivateKey !== 'boolean') throw refuse(method, '`state.inPrivateKey` must be a boolean');
+	return { inPrivateKey: value.inPrivateKey };
 }
 
 // ── traversal: the stateful layers (PL.native-traversal-rows slice 2) ─────────
@@ -10621,6 +10654,46 @@ const METHODS = {
 			needString(m, args.artefact.kind, 'artefact.kind');
 		});
 		return { primary: isPrimaryArtefactFor(args.platform, args.artefact) };
+	},
+
+	// ── build-log redaction (PL.native-build-redact-rows; core's PL.core-build-log-redaction, U115(11), U120) ──
+	// Core's `build/build-log-redaction`: what an engine's headless build writes to its
+	// log (logFile, logs[].message, progress messages) with the credentials and local
+	// paths gone, in core's step order — a private-key block, a credential-key
+	// assignment, credentials anywhere in the line, then local paths (the project, the
+	// home folder from the context, the usual home forms, then the user name as a path
+	// segment). tests/build_log_redaction_corpus.cpp drives
+	// conformance/build/log-redaction.json through both rows; Unreal's interim
+	// `RedactCredentialAssignment` is what they retire (P10.unreal.retire-headless-build-copy).
+
+	/**
+	 * `build.redactLogLine { line, context?, state? }` → `{ line }`, or `{ line, state }`
+	 * when `state` is sent — core's `redactBuildLogLine`. `context { projectDir?,
+	 * homeDir?, userName? }` is what the runner knows of the machine (absent: only the
+	 * usual home forms). `state { inPrivateKey }` is the private-key state a runner
+	 * carries from one line of its log to the next: send the answer's `state` with the
+	 * next line. Without it, only a line holding a private-key header is withheld.
+	 */
+	'build.redactLogLine': (args) => {
+		const m = 'build.redactLogLine';
+		const [line, context, state] = coded('invalid-input', () => [
+			needString(m, args.line, 'line'),
+			buildLogContextArg(m, args.context),
+			buildLogStateArg(m, args.state),
+		]);
+		const out = redactBuildLogLine(line, context, state);
+		return state === undefined ? { line: out } : { line: out, state: { inPrivateKey: state.inPrivateKey } };
+	},
+
+	/**
+	 * `build.redactLog { log, context? }` → `{ log }` — core's `redactBuildLog`: every
+	 * line of `log` (an array of strings) in order, one private-key state carried
+	 * through it, as many lines out as in.
+	 */
+	'build.redactLog': (args) => {
+		const m = 'build.redactLog';
+		const [log, context] = coded('invalid-input', () => [stringList(m, args.log, 'log'), buildLogContextArg(m, args.context)]);
+		return { log: redactBuildLog(log, context) };
 	},
 
 	// ── progression: the tracker, the feature modules and the save block (P9i; PL.native-progression-rows, U106(7)) ──

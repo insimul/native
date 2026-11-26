@@ -33,6 +33,8 @@
        "build.pathProblem",
        "build.plan",
        "build.progressLine",
+       "build.redactLog",
+       "build.redactLogLine",
        "build.resolvePlatform",
        "build.resultLine",
        "build.size",
@@ -690,7 +692,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 656}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 658}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -736,7 +738,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 656}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 658}}}}
    ]
   },
   {

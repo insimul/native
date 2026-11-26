@@ -23319,6 +23319,108 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     });
   }
 
+  // @insimul/core/src/build/build-log-redaction.ts
+  var BUILD_LOG_HOME_STAND_IN = "<home>";
+  var BUILD_LOG_USER_STAND_IN = "<user>";
+  var BUILD_LOG_PROJECT_STAND_IN = "<project>";
+  var BUILD_LOG_SHARED_HOME_NAMES = Object.freeze(["Shared", "Public", "Default", "Default User", "All Users"]);
+  var PRIVATE_KEY_BEGIN_RE = /-----BEGIN (?:[A-Z]+ )?PRIVATE KEY-----/;
+  var PRIVATE_KEY_END_RE = /-----END (?:[A-Z]+ )?PRIVATE KEY-----/;
+  var isNameChar = (c) => /^[A-Za-z0-9_]$/.test(c);
+  var trimAssignmentPart = (s) => s.replace(/^[ \t]+/, "").replace(/[ \t\r]+$/, "");
+  function redactCredentialAssignment(line) {
+    const eq = line.indexOf("=");
+    if (eq < 0) return line;
+    let start = eq;
+    while (start > 0 && isNameChar(line[start - 1])) start -= 1;
+    const name = line.slice(start, eq);
+    if (name === "" || /^[0-9]/.test(name)) return line;
+    const before = trimAssignmentPart(line.slice(0, start));
+    if (before !== "" && before !== "export") return line;
+    let value = trimAssignmentPart(line.slice(eq + 1));
+    if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+    if (value === "") return line;
+    if (!isSecretKey(name) && !looksLikeSecret(value)) return line;
+    return line.slice(0, eq + 1) + BUILD_SECRET_KEY_STAND_IN;
+  }
+  var WORD_REST = "[^\\s\"'`<>]*";
+  var CREDENTIAL_SPAN_RES = BUILD_SECRET_VALUE_RES.map((re) => new RegExp(re.source + WORD_REST, re.flags + "g"));
+  function redactCredentialTokens(line) {
+    let out = line;
+    for (const re of CREDENTIAL_SPAN_RES) out = out.replace(re, BUILD_SECRET_KEY_STAND_IN);
+    return out;
+  }
+  var isPathNameChar = (c) => c !== void 0 && (/^[A-Za-z0-9._-]$/.test(c) || c > "\x7F");
+  var isSeparator = (c) => c === "/" || c === "\\";
+  var trimDir = (dir) => (dir ?? "").replace(/[\\/]+$/, "");
+  function replaceDir(line, dir, replace) {
+    if (dir === "") return line;
+    let out = "";
+    let i = 0;
+    for (; ; ) {
+      const at = line.indexOf(dir, i);
+      if (at < 0) break;
+      const end = at + dir.length;
+      if (isPathNameChar(line[at - 1]) || isPathNameChar(line[end])) {
+        out += line.slice(i, at + 1);
+        i = at + 1;
+        continue;
+      }
+      const r = replace(line.slice(end));
+      out += line.slice(i, at) + r.text;
+      i = end + r.consumed;
+    }
+    return out + line.slice(i);
+  }
+  var POSIX_HOME_RE = /(?<![A-Za-z0-9._\u0080-\uffff-])\/(?:Users|home)\/([^\s\\/"'`<>|:]+)/gi;
+  var WINDOWS_HOME_RE = /(?<![A-Za-z0-9._\u0080-\uffff-])[A-Za-z]:[\\/]Users[\\/]([^\r\n\\/"'`<>|:*?]+?(?=[\\/"'`])|[^\s\\/"'`<>|:*?]+)/gi;
+  var isSharedHomeName = (name) => BUILD_LOG_SHARED_HOME_NAMES.some((n) => n.toLowerCase() === name.replace(/[A-Z]/g, (c) => c.toLowerCase()));
+  function redactLocalPaths(line, context = {}) {
+    let out = replaceDir(
+      line,
+      trimDir(context.projectDir),
+      (rest) => isSeparator(rest[0]) ? { text: "", consumed: 1 } : { text: BUILD_LOG_PROJECT_STAND_IN, consumed: 0 }
+    );
+    out = replaceDir(out, trimDir(context.homeDir), () => ({ text: BUILD_LOG_HOME_STAND_IN, consumed: 0 }));
+    const home = (whole9, name) => isSharedHomeName(name) ? whole9 : BUILD_LOG_HOME_STAND_IN;
+    out = out.replace(WINDOWS_HOME_RE, home).replace(POSIX_HOME_RE, home);
+    const user = context.userName ?? "";
+    if (user !== "") {
+      let rebuilt = "";
+      let i = 0;
+      for (; ; ) {
+        const at = out.indexOf(user, i);
+        if (at < 0) break;
+        const end = at + user.length;
+        if (isSeparator(out[at - 1]) && !isPathNameChar(out[end])) {
+          rebuilt += out.slice(i, at) + BUILD_LOG_USER_STAND_IN;
+          i = end;
+        } else {
+          rebuilt += out.slice(i, at + 1);
+          i = at + 1;
+        }
+      }
+      out = rebuilt + out.slice(i);
+    }
+    return out;
+  }
+  function redactBuildLogLine(line, context = {}, state) {
+    if (state?.inPrivateKey) {
+      if (PRIVATE_KEY_END_RE.test(line)) state.inPrivateKey = false;
+      return BUILD_SECRET_KEY_STAND_IN;
+    }
+    const begin = PRIVATE_KEY_BEGIN_RE.exec(line);
+    if (begin) {
+      if (state) state.inPrivateKey = !PRIVATE_KEY_END_RE.test(line.slice(begin.index + begin[0].length));
+      return BUILD_SECRET_KEY_STAND_IN;
+    }
+    return redactLocalPaths(redactCredentialTokens(redactCredentialAssignment(line)), context);
+  }
+  function redactBuildLog(lines2, context = {}) {
+    const state = { inPrivateKey: false };
+    return lines2.map((line) => redactBuildLogLine(line, context, state));
+  }
+
   // @insimul/core/src/skills/skills.ts
   var SKILL_EFFECT_KINDS = Object.freeze(["unlocks", "modifies", "permits"]);
   var DEFAULT_SKILL_TUNING = Object.freeze({
@@ -54773,6 +54875,20 @@ Return JSON format:
     if (value.fraction !== null) needNumber(method, value.fraction, "event.fraction");
     return value;
   }
+  function buildLogContextArg(method, value) {
+    if (value === void 0 || value === null) return {};
+    needObject(method, value, "context");
+    for (const k of ["projectDir", "homeDir", "userName"]) {
+      if (value[k] !== void 0 && value[k] !== null) needString(method, value[k], `context.${k}`);
+    }
+    return value;
+  }
+  function buildLogStateArg(method, value) {
+    if (value === void 0 || value === null) return void 0;
+    needObject(method, value, "state");
+    if (typeof value.inPrivateKey !== "boolean") throw refuse4(method, "`state.inPrivateKey` must be a boolean");
+    return { inPrivateKey: value.inPrivateKey };
+  }
   function lentArg(method, value, name) {
     needObject(method, value, name);
     for (const [mode, lenders] of Object.entries(value)) stringList(method, lenders, `${name}.${mode}`);
@@ -61927,6 +62043,43 @@ Return JSON format:
         needString(m, args.artefact.kind, "artefact.kind");
       });
       return { primary: isPrimaryArtefactFor(args.platform, args.artefact) };
+    },
+    // ── build-log redaction (PL.native-build-redact-rows; core's PL.core-build-log-redaction, U115(11), U120) ──
+    // Core's `build/build-log-redaction`: what an engine's headless build writes to its
+    // log (logFile, logs[].message, progress messages) with the credentials and local
+    // paths gone, in core's step order — a private-key block, a credential-key
+    // assignment, credentials anywhere in the line, then local paths (the project, the
+    // home folder from the context, the usual home forms, then the user name as a path
+    // segment). tests/build_log_redaction_corpus.cpp drives
+    // conformance/build/log-redaction.json through both rows; Unreal's interim
+    // `RedactCredentialAssignment` is what they retire (P10.unreal.retire-headless-build-copy).
+    /**
+     * `build.redactLogLine { line, context?, state? }` → `{ line }`, or `{ line, state }`
+     * when `state` is sent — core's `redactBuildLogLine`. `context { projectDir?,
+     * homeDir?, userName? }` is what the runner knows of the machine (absent: only the
+     * usual home forms). `state { inPrivateKey }` is the private-key state a runner
+     * carries from one line of its log to the next: send the answer's `state` with the
+     * next line. Without it, only a line holding a private-key header is withheld.
+     */
+    "build.redactLogLine": (args) => {
+      const m = "build.redactLogLine";
+      const [line, context, state] = coded("invalid-input", () => [
+        needString(m, args.line, "line"),
+        buildLogContextArg(m, args.context),
+        buildLogStateArg(m, args.state)
+      ]);
+      const out = redactBuildLogLine(line, context, state);
+      return state === void 0 ? { line: out } : { line: out, state: { inPrivateKey: state.inPrivateKey } };
+    },
+    /**
+     * `build.redactLog { log, context? }` → `{ log }` — core's `redactBuildLog`: every
+     * line of `log` (an array of strings) in order, one private-key state carried
+     * through it, as many lines out as in.
+     */
+    "build.redactLog": (args) => {
+      const m = "build.redactLog";
+      const [log, context] = coded("invalid-input", () => [stringList(m, args.log, "log"), buildLogContextArg(m, args.context)]);
+      return { log: redactBuildLog(log, context) };
     },
     // ── progression: the tracker, the feature modules and the save block (P9i; PL.native-progression-rows, U106(7)) ──
     // `progression.<group>.<op>` after core's corpus files (`progression/gamification`,

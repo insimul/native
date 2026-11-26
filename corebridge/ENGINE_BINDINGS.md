@@ -698,7 +698,8 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   | `Steps`, `RefusalCodes`, `NoteCodes`, `ResultIssueCodes`, `ProgressIssueCodes`, `EngineReservedDirs`, `FailureStep`, `RequestSchema`, `ResultSchema`, `ProgressSchema`, `LockSchema`, `DefaultTimeoutSeconds`, `MaxTimeoutSeconds` | `build.contract {}` (also `hiddenDetail`, core's `BUILD_HIDDEN_DETAIL`) |
   | `RunBuildOp`, `ExpandSecretFixtures` | none: a corpus runner's, as `tests/build_corpus.cpp` does both; Unreal's `headless_build_corpus` runner keeps them, over the rows |
   | `DecodeUtf8`, `EncodeUtf8`, `JNull`…`JPush`, `FindingsJson` | none (JSON and UTF-8 handling inside the rows) |
-  | `RedactCredentialAssignment`, `StepOfPackagingLine` | none: engine-side, they stay Unreal's (the build log's `NAME=value` lines; the UAT banner → core step map). `RedactCredentialAssignment` calls `build.isSecretKey` and `build.looksLikeSecret` in place of the copy's |
+  | `RedactCredentialAssignment` (the build log's `NAME=value` lines; `FBuildRows::RedactCredentialAssignment`, the interim rule core's corpus names as its source) | `build.redactLogLine { line, context?, state? }` → `{ line }` (`{ line, state }` with a state), or `build.redactLog { log, context? }` → `{ log }` for a whole log (PL.native-build-redact-rows): core's whole log rule, of which the assignment is step 2 — a private-key block, the assignment, credentials anywhere in the line, then local paths (project-relative, `<home>`, `<user>`) |
+  | `StepOfPackagingLine` | none: engine-side, it stays Unreal's (the UAT banner → core step map) |
 
   **What changes for the binding**: the plan, the checks and the lines come from the
   rows, so the copy's Unicode tables (measured from node 20.20.2's, Unicode 17.0)
@@ -744,11 +745,32 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   key on QuickJS and V8 alike). This is the rows' current behaviour stated as the
   contract (U101(4)); core's text says only "lower-cased", and whether it means a
   case fold is core's to state (U49(3)), unanswered. A binding that redacts a build
-  log (`RedactCredentialAssignment`) asks the row and lower-cases nothing itself.
+  log asks `build.redactLogLine` / `build.redactLog` (below) and lower-cases nothing
+  itself.
 
   Re-vendor `conformance/build/headless.json` from core at this
   library's pin and drive each case as `tests/build_corpus.cpp` does: expand the
   markers from the file's own `secretFixtures`, then one row per case.
+
+  **What the build log redacts (PL.native-build-redact-rows; U120, U115(11)).** The
+  binding writes every line of its build log (`logFile`), every `logs[].message` and
+  every progress message through the rows, never its own rule (core's corpus "runner"
+  rule). A runner streaming UAT's output line by line calls `build.redactLogLine` with
+  `context { projectDir, homeDir, userName }` (what it knows of the machine; absent
+  parts are unused) and `state`, starting at `{ inPrivateKey: false }` and sending back
+  each answer's `state` with the next line, so a private-key block is withheld header
+  to footer; a runner holding the whole log calls `build.redactLog`. A line whose row
+  call fails is withheld, not passed on (core: "a runner that cannot answer the rule
+  for a line withholds the line"). Core's order is the contract and its corpus pins the
+  two orders that change answers — credentials before paths (a database URL carrying a
+  home path goes whole) and the usual home forms before the user-name segment (the
+  user's own home is `<home>`) — so the binding redacts nothing before or after the
+  row. The assignment forms are core's (`NAME=value`, `export NAME=value`; U120(13): not
+  widened). Re-vendor `conformance/build/log-redaction.json` from core at this
+  library's pin and drive each case as `tests/build_log_redaction_corpus.cpp` does:
+  expand `<<secret:NAME>>` in the input from `secretFixtures`, then `<<local:NAME>>` in
+  the input and the expectation from `localFixtures`, one row per case (`redactLog`'s
+  `lines` as the row's `log`).
 - **Progression and skill trees (Unreal's P9i retirement rows, after
   PL.native-progression-rows; U106(7)).** Core's P9i logic is the `progression.*`
   and `skill.*` rows (`README.md`, "The progression and skill rows"). The two

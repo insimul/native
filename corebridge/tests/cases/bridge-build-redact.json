@@ -1,0 +1,672 @@
+{
+ "area": "build-redact-hand",
+ "description": "Hand cases for the build.redactLogLine and build.redactLog rows (PL.native-build-redact-rows) beyond core's build-log redaction corpus: the private-key state carried line by line through build.redactLogLine (as a runner streaming its tools' output carries it), a null context and null context parts, both orders core pins (credentials before paths; the usual home forms before the user-name segment), and the rows' [invalid-input] boundary. Every expectation is core's own answer at the pin, computed by tools/hand-cases/build-redact.mjs through tools/gen-hand-cases.mjs.",
+ "generatedBy": "corebridge/tools/gen-hand-cases.mjs (tools/hand-cases/build-redact.mjs) — do not hand-edit; regenerate with --core <checkout>",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "spec": "build-redact.mjs"
+ },
+ "cases": [
+  {
+   "name": "build.redactLogLine without state: an assignment, a credential in a line, a kept line, a header and a body line",
+   "steps": [
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "TOKEN=abc123"
+     },
+     "expect": {
+      "line": "TOKEN=<credential>"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "export SERVICE_URL=\"mongodb+srv://cluster0.example.invalid/insimul\""
+     },
+     "expect": {
+      "line": "export SERVICE_URL=<credential>"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "Fetching with Authorization: Bearer fakefakefakefake0123456789abcdef ok"
+     },
+     "expect": {
+      "line": "Fetching with Authorization: <credential> ok"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "Cook finished: 412 packages, errors=0"
+     },
+     "expect": {
+      "line": "Cook finished: 412 packages, errors=0"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "key: -----BEGIN FAKE PRIVATE KEY-----"
+     },
+     "expect": {
+      "line": "<credential>"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "MIIEvfakefakefakefake"
+     },
+     "expect": {
+      "line": "MIIEvfakefakefakefake"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": ""
+     },
+     "expect": {
+      "line": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "build.redactLogLine carries a private-key block header to footer when the state is sent back, as build.redactLog does",
+   "steps": [
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "writing signing key",
+      "state": {
+       "inPrivateKey": false
+      }
+     },
+     "expect": {
+      "line": "writing signing key",
+      "state": {
+       "inPrivateKey": false
+      }
+     },
+     "bind": "s0"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "-----BEGIN FAKE PRIVATE KEY-----",
+      "state": {
+       "$ref": "s0.state"
+      }
+     },
+     "expect": {
+      "line": "<credential>",
+      "state": {
+       "inPrivateKey": true
+      }
+     },
+     "bind": "s1"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "MIIEvfakefakefakefake",
+      "state": {
+       "$ref": "s1.state"
+      }
+     },
+     "expect": {
+      "line": "<credential>",
+      "state": {
+       "inPrivateKey": true
+      }
+     },
+     "bind": "s2"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "fakefakefake==",
+      "state": {
+       "$ref": "s2.state"
+      }
+     },
+     "expect": {
+      "line": "<credential>",
+      "state": {
+       "inPrivateKey": true
+      }
+     },
+     "bind": "s3"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "-----END FAKE PRIVATE KEY-----",
+      "state": {
+       "$ref": "s3.state"
+      }
+     },
+     "expect": {
+      "line": "<credential>",
+      "state": {
+       "inPrivateKey": false
+      }
+     },
+     "bind": "s4"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "done",
+      "state": {
+       "$ref": "s4.state"
+      }
+     },
+     "expect": {
+      "line": "done",
+      "state": {
+       "inPrivateKey": false
+      }
+     },
+     "bind": "s5"
+    },
+    {
+     "call": "build.redactLog",
+     "args": {
+      "log": [
+       "writing signing key",
+       "-----BEGIN FAKE PRIVATE KEY-----",
+       "MIIEvfakefakefakefake",
+       "fakefakefake==",
+       "-----END FAKE PRIVATE KEY-----",
+       "done"
+      ]
+     },
+     "expect": {
+      "log": [
+       "writing signing key",
+       "<credential>",
+       "<credential>",
+       "<credential>",
+       "<credential>",
+       "done"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "the state: a key on one line ends its own block; a footer before the header does not; a set state withholds any line",
+   "steps": [
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "\"-----BEGIN FAKE PRIVATE KEY-----\\nMIIE\\n-----END FAKE PRIVATE KEY-----\"",
+      "state": {
+       "inPrivateKey": false
+      }
+     },
+     "expect": {
+      "line": "<credential>",
+      "state": {
+       "inPrivateKey": false
+      }
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "-----END FAKE PRIVATE KEY----- then -----BEGIN FAKE PRIVATE KEY-----",
+      "state": {
+       "inPrivateKey": false
+      }
+     },
+     "expect": {
+      "line": "<credential>",
+      "state": {
+       "inPrivateKey": true
+      }
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "Cook finished: 412 packages, errors=0",
+      "state": {
+       "inPrivateKey": true
+      }
+     },
+     "expect": {
+      "line": "<credential>",
+      "state": {
+       "inPrivateKey": true
+      }
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "tail -----END FAKE PRIVATE KEY-----",
+      "state": {
+       "inPrivateKey": true
+      }
+     },
+     "expect": {
+      "line": "<credential>",
+      "state": {
+       "inPrivateKey": false
+      }
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "Cook finished: 412 packages, errors=0",
+      "state": {
+       "inPrivateKey": false
+      }
+     },
+     "expect": {
+      "line": "Cook finished: 412 packages, errors=0",
+      "state": {
+       "inPrivateKey": false
+      }
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "TOKEN=abc123",
+      "state": null
+     },
+     "expect": {
+      "line": "TOKEN=<credential>"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the context: absent, null, each part, null parts, and a whole one",
+   "steps": [
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "Wrote /home/ann/Games/Thistle/Builds/web/index.html"
+     },
+     "expect": {
+      "line": "Wrote <home>/Games/Thistle/Builds/web/index.html"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "Wrote /home/ann/Games/Thistle/Builds/web/index.html",
+      "context": null
+     },
+     "expect": {
+      "line": "Wrote <home>/Games/Thistle/Builds/web/index.html"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "Wrote /home/ann/Games/Thistle/Builds/web/index.html",
+      "context": {
+       "projectDir": "/home/ann/Games/Thistle"
+      }
+     },
+     "expect": {
+      "line": "Wrote Builds/web/index.html"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "cache at /var/lib/ci-builder/.cache",
+      "context": {
+       "homeDir": "/var/lib/ci-builder"
+      }
+     },
+     "expect": {
+      "line": "cache at <home>/.cache"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "mounted /Volumes/ann/Builds",
+      "context": {
+       "userName": "ann"
+      }
+     },
+     "expect": {
+      "line": "mounted /Volumes/<user>/Builds"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "mounted /Volumes/ann/Builds and ann ran",
+      "context": {
+       "projectDir": null,
+       "homeDir": null,
+       "userName": "ann"
+      }
+     },
+     "expect": {
+      "line": "mounted /Volumes/<user>/Builds and ann ran"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "mounted /Volumes/ann/Builds",
+      "context": {
+       "projectDir": null,
+       "homeDir": null,
+       "userName": null
+      }
+     },
+     "expect": {
+      "line": "mounted /Volumes/ann/Builds"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "cd \"/home/ann/Games/Thistle\" && make",
+      "context": {
+       "projectDir": "/home/ann/Games/Thistle",
+       "homeDir": "/home/ann",
+       "userName": "ann"
+      }
+     },
+     "expect": {
+      "line": "cd \"<project>\" && make"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "opened /users/ann/Desktop/notes.txt",
+      "context": {
+       "userName": "ann"
+      }
+     },
+     "expect": {
+      "line": "opened <home>/Desktop/notes.txt"
+     }
+    },
+    {
+     "call": "build.redactLog",
+     "args": {
+      "log": [
+       "export UNREAL_TOKEN=abc",
+       "LogInit: Base directory: /home/ann/Games/Thistle/Binaries/Mac/",
+       "GET mongodb+srv://cluster0.example.invalid/insimul 200"
+      ],
+      "context": {
+       "projectDir": "/home/ann/Games/Thistle",
+       "homeDir": "/home/ann",
+       "userName": "ann"
+      }
+     },
+     "expect": {
+      "log": [
+       "export UNREAL_TOKEN=<credential>",
+       "LogInit: Base directory: Binaries/Mac/",
+       "GET <credential> 200"
+      ]
+     }
+    },
+    {
+     "call": "build.redactLog",
+     "args": {
+      "log": [],
+      "context": null
+     },
+     "expect": {
+      "log": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "credentials before paths: a database URL carrying a home path goes whole, with and without a context",
+   "steps": [
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "connecting to mongodb+srv://cluster0.example.invalid/insimul?tlsCAFile=/home/ann/ca.pem"
+     },
+     "expect": {
+      "line": "connecting to <credential>"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "connecting to mongodb+srv://cluster0.example.invalid/insimul?tlsCAFile=/home/ann/ca.pem",
+      "context": {
+       "userName": "ann"
+      }
+     },
+     "expect": {
+      "line": "connecting to <credential>"
+     }
+    },
+    {
+     "call": "build.redactLog",
+     "args": {
+      "log": [
+       "connecting to mongodb+srv://cluster0.example.invalid/insimul?tlsCAFile=/home/ann/ca.pem"
+      ]
+     },
+     "expect": {
+      "log": [
+       "connecting to <credential>"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "the usual home forms before the user-name segment: the user's own home folder is <home>, not a <user> segment",
+   "steps": [
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "opened /home/ann/Desktop/notes.txt",
+      "context": {
+       "userName": "ann"
+      }
+     },
+     "expect": {
+      "line": "opened <home>/Desktop/notes.txt"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "temp at C:\\Users\\ann\\AppData\\Local\\Temp",
+      "context": {
+       "userName": "ann"
+      }
+     },
+     "expect": {
+      "line": "temp at <home>\\AppData\\Local\\Temp"
+     }
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "temp at c:/users/ann/AppData/Local/Temp and /srv/ann/x",
+      "context": {
+       "userName": "ann"
+      }
+     },
+     "expect": {
+      "line": "temp at <home>/AppData/Local/Temp and /srv/<user>/x"
+     }
+    },
+    {
+     "call": "build.redactLog",
+     "args": {
+      "log": [
+       "opened /home/ann/Desktop/notes.txt",
+       "mounted /Volumes/ann/x"
+      ],
+      "context": {
+       "userName": "ann"
+      }
+     },
+     "expect": {
+      "log": [
+       "opened <home>/Desktop/notes.txt",
+       "mounted /Volumes/<user>/x"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "build.redactLogLine and build.redactLog refuse what core reads unchecked, as [invalid-input]",
+   "steps": [
+    {
+     "call": "build.redactLogLine",
+     "args": {},
+     "expectError": "[invalid-input] insimulcore: build.redactLogLine: `line` must be a string"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": 5
+     },
+     "expectError": "`line` must be a string"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "x",
+      "context": "ctx"
+     },
+     "expectError": "[invalid-input] insimulcore: build.redactLogLine: `context` must be a JSON object"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "x",
+      "context": []
+     },
+     "expectError": "`context` must be a JSON object"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "x",
+      "context": {
+       "projectDir": 5
+      }
+     },
+     "expectError": "`context.projectDir` must be a string"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "x",
+      "context": {
+       "homeDir": false
+      }
+     },
+     "expectError": "`context.homeDir` must be a string"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "x",
+      "context": {
+       "userName": [
+        "ann"
+       ]
+      }
+     },
+     "expectError": "`context.userName` must be a string"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "x",
+      "state": true
+     },
+     "expectError": "[invalid-input] insimulcore: build.redactLogLine: `state` must be a JSON object"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "x",
+      "state": {}
+     },
+     "expectError": "`state.inPrivateKey` must be a boolean"
+    },
+    {
+     "call": "build.redactLogLine",
+     "args": {
+      "line": "x",
+      "state": {
+       "inPrivateKey": "yes"
+      }
+     },
+     "expectError": "`state.inPrivateKey` must be a boolean"
+    },
+    {
+     "call": "build.redactLog",
+     "args": {},
+     "expectError": "[invalid-input] insimulcore: build.redactLog: `log` must be an array"
+    },
+    {
+     "call": "build.redactLog",
+     "args": {
+      "log": "a\nb"
+     },
+     "expectError": "`log` must be an array"
+    },
+    {
+     "call": "build.redactLog",
+     "args": {
+      "log": [
+       "a",
+       5
+      ]
+     },
+     "expectError": "`log[1]` must be a string"
+    },
+    {
+     "call": "build.redactLog",
+     "args": {
+      "log": [
+       "a"
+      ],
+      "context": 7
+     },
+     "expectError": "`context` must be a JSON object"
+    },
+    {
+     "call": "build.redactLog",
+     "args": {
+      "log": [
+       "a"
+      ],
+      "context": {
+       "userName": 7
+      }
+     },
+     "expectError": "`context.userName` must be a string"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1138 @@
+{
+  "area": "build-log-redaction",
+  "description": "What a headless build log redacts (PL.core-build-log-redaction; U115(11), U49(3): core is the source), so every engine's build log redacts the same things: a private-key block, a credential-key assignment (NAME=value, export NAME=\"value\"), credentials anywhere in a line (the shapes secret-in-request refuses), and local paths (project-relative inside the project, <home> for a home folder, <user> for the user name as a path segment). Line in, line out; lines that must not change are cases too.",
+  "version": 1,
+  "sources": [
+    "core src/build/build-log-redaction.ts (redactBuildLogLine, redactBuildLog, redactCredentialAssignment, redactCredentialTokens, redactLocalPaths)",
+    "core src/build/headless-build.ts (isSecretKey, looksLikeSecret, BUILD_SECRET_KEY_STAND_IN) and conformance/build/headless.json contract.rules.credentials",
+    "core docs/headless-build.md § \"What a build log redacts\"",
+    "Unreal Source/InsimulEditor/Portable/InsimulBuildBinding.cpp FBuildRows::RedactCredentialAssignment (the interim rule, U106(1); unreal 16633f20)"
+  ],
+  "tolerance": 0,
+  "contract": {
+    "secretKeyStandIn": "<credential>",
+    "homeStandIn": "<home>",
+    "userStandIn": "<user>",
+    "projectStandIn": "<project>",
+    "sharedHomeNames": [
+      "Shared",
+      "Public",
+      "Default",
+      "Default User",
+      "All Users"
+    ],
+    "context": [
+      "projectDir",
+      "homeDir",
+      "userName"
+    ],
+    "secretFixtures": {
+      "jwt": [
+        "ey",
+        "JhbGciOiJIUzI1NiJ9",
+        ".",
+        "ey",
+        "JzdWIiOiJidWlsZC1jb3JwdXMifQ",
+        ".",
+        "ZmFrZS1zaWduYXR1cmUtMDAw"
+      ],
+      "database-url": [
+        "mongo",
+        "db+srv",
+        "://",
+        "cluster0.example.invalid/insimul"
+      ],
+      "url-with-password": [
+        "https",
+        "://",
+        "builder",
+        ":",
+        "not-a-real-pass",
+        "@",
+        "insimul.example.invalid/api"
+      ],
+      "bearer": [
+        "Bear",
+        "er ",
+        "fakefakefakefake",
+        "0123456789abcdef"
+      ],
+      "model-key": [
+        "sk",
+        "-ant-",
+        "fake",
+        "fakefakefakefakefakefake000"
+      ],
+      "private-key-begin": [
+        "-----BEGIN ",
+        "PRIVATE",
+        " KEY-----"
+      ],
+      "private-key-end": [
+        "-----END ",
+        "PRIVATE",
+        " KEY-----"
+      ],
+      "cloud-key": [
+        "AK",
+        "IA",
+        "FAKEFAKEFAKE0000"
+      ],
+      "source-token": [
+        "gh",
+        "p_",
+        "fakefakefakefakefakefakefakefake0000"
+      ]
+    },
+    "localFixtures": {
+      "windows-users-slash": [
+        "c:",
+        "/users",
+        "/"
+      ],
+      "windows-users": [
+        "C:",
+        "\\Users",
+        "\\"
+      ],
+      "users": [
+        "/Users",
+        "/"
+      ],
+      "users-lower": [
+        "/users",
+        "/"
+      ],
+      "home": [
+        "/home",
+        "/"
+      ]
+    },
+    "rules": {
+      "order": "each line on its own, in this order: (1) a private-key block, (2) a credential-key assignment, (3) credentials anywhere in the line, (4) local paths. A line with nothing to redact comes back byte for byte; no line that comes out holds a credential by headless.json contract.rules.credentials's shapes. As many lines out as in",
+      "privateKey": "a line holding -----BEGIN <WORD >PRIVATE KEY----- is withheld whole (secretKeyStandIn); in a log (redactLog, or a runner carrying the state from line to line) so is every later line up to and including the one holding -----END <WORD >PRIVATE KEY-----, unless that footer follows the header on the header's own line",
+      "assignment": "at the line's FIRST =, when that is not its first character: the name is the [A-Za-z0-9_]+ run just before it, not starting with a digit, and everything before the name trimmed of spaces and tabs is nothing or exactly export. The value is everything after the =, trimmed (spaces and tabs at the start; spaces, tabs and a carriage return at the end), with one pair of enclosing double quotes removed. An empty value is kept. When the name is a credential key (headless.json contract.rules.credentials: lower-cased with toLowerCase, without _ and -, ending in one of its words) or the value holds a credential, the line becomes everything up to and including that =, then secretKeyStandIn. Names are ASCII. Anything else (NAME = value, set NAME=value, -flag=value mid-line, a second assignment on the line) is not an assignment: its value goes only by its shape, in (3)",
+      "credentials": "every span in the line that is a credential by headless.json contract.rules.credentials's shapes (a JWT, a database URL, a URL with user:password, Bearer and its token, a model or cloud key shape), run on to the end of its word (up to whitespace, a quote, a backtick, < or >), is secretKeyStandIn",
+      "paths": "in this order, each comparing as spelt: (a) context.projectDir, without trailing separators and unused when empty: where it is a whole path (not preceded by a path name character, and followed by a separator or a character that is not one), it and the one separator after it go, so the path reads project-relative, the form a build result names its artefacts in; alone it is projectStandIn. (b) context.homeDir the same way is homeStandIn. (c) a home folder by its usual form is homeStandIn, whoever's it is, at the start of an absolute path: the root folder Users or home (the folder word in any case) then a name (POSIX), or a drive letter, a colon, a separator, Users (any case) and a separator, then a name (Windows), unless the name is one of sharedHomeNames (ignoring ASCII case). A POSIX name runs to a separator; a Windows name may hold spaces and runs to the next separator or quote when one comes before a colon, else to whitespace. The Windows form is applied first. (d) context.userName where it is a whole path segment (after a separator, and followed by a separator, the end, or a character that is not a path name character) is userStandIn; never in prose. A path name character is an ASCII letter or digit, ., _, -, or anything outside ASCII. Relative paths are kept as spelt, so an outDir-relative path stays readable. A / before an absolute path is allowed (a file URL's third slash)",
+      "runner": "an engine redacts every line of its build log (logFile) and every logs[].message and progress message before it writes them, carrying the private-key state across one log. A runner that cannot answer the rule for a line (a row unanswered) withholds the line rather than passing it on",
+      "secrets": "a string holding <<secret:NAME>> stands for secretFixtures[NAME] joined; a runner expands every marker in input before answering. No expected line holds a credential",
+      "local": "a string holding <<local:NAME>> stands for localFixtures[NAME] joined: the start of a local home path, kept out of the file so no vendored corpus names a home folder as itself. Unlike secret markers, local markers appear in input AND expected; a runner expands both before it compares"
+    }
+  },
+  "cases": [
+    {
+      "name": "redacted: a credential key assigned",
+      "op": "redactLine",
+      "input": {
+        "line": "TOKEN=abc123"
+      },
+      "expected": {
+        "line": "TOKEN=<credential>"
+      }
+    },
+    {
+      "name": "redacted: export, a credential key, a quoted value with a space",
+      "op": "redactLine",
+      "input": {
+        "line": "export API_KEY=\"abc def\""
+      },
+      "expected": {
+        "line": "export API_KEY=<credential>"
+      }
+    },
+    {
+      "name": "redacted: leading spaces and the export are kept as spelt",
+      "op": "redactLine",
+      "input": {
+        "line": "  export   DATABASE_URL=local-only"
+      },
+      "expected": {
+        "line": "  export   DATABASE_URL=<credential>"
+      }
+    },
+    {
+      "name": "redacted: export then a tab",
+      "op": "redactLine",
+      "input": {
+        "line": "export\tclient_secret=x"
+      },
+      "expected": {
+        "line": "export\tclient_secret=<credential>"
+      }
+    },
+    {
+      "name": "redacted: the trailing carriage return goes with the value",
+      "op": "redactLine",
+      "input": {
+        "line": "NODE_AUTH_TOKEN=abc\r"
+      },
+      "expected": {
+        "line": "NODE_AUTH_TOKEN=<credential>"
+      }
+    },
+    {
+      "name": "redacted: lower-case and mixed-case credential keys",
+      "op": "redactLine",
+      "input": {
+        "line": "Session_Id=42"
+      },
+      "expected": {
+        "line": "Session_Id=<credential>"
+      }
+    },
+    {
+      "name": "redacted: the name ends in a credential key",
+      "op": "redactLine",
+      "input": {
+        "line": "UNREAL_CLOUD_PASSWORD=swordfish"
+      },
+      "expected": {
+        "line": "UNREAL_CLOUD_PASSWORD=<credential>"
+      }
+    },
+    {
+      "name": "redacted: a quoted value of spaces is a value",
+      "note": "trimmed first, then unquoted: the spaces inside the quotes are not trimmed",
+      "op": "redactLine",
+      "input": {
+        "line": "PASSWORD=\"  \""
+      },
+      "expected": {
+        "line": "PASSWORD=<credential>"
+      }
+    },
+    {
+      "name": "redacted: a lone double quote is a value",
+      "op": "redactLine",
+      "input": {
+        "line": "PASSWORD=\""
+      },
+      "expected": {
+        "line": "PASSWORD=<credential>"
+      }
+    },
+    {
+      "name": "redacted: only the first = splits; the rest is the value",
+      "op": "redactLine",
+      "input": {
+        "line": "TOKEN=a=b"
+      },
+      "expected": {
+        "line": "TOKEN=<credential>"
+      }
+    },
+    {
+      "name": "redacted: \"export\" run into the name is part of the name",
+      "note": "the name is exportTOKEN, which ends in token",
+      "op": "redactLine",
+      "input": {
+        "line": "exportTOKEN=abc"
+      },
+      "expected": {
+        "line": "exportTOKEN=<credential>"
+      }
+    },
+    {
+      "name": "redacted: a plain key holding a database URL",
+      "op": "redactLine",
+      "input": {
+        "line": "UE_BACKEND=<<secret:database-url>>"
+      },
+      "expected": {
+        "line": "UE_BACKEND=<credential>"
+      }
+    },
+    {
+      "name": "redacted: a plain key holding a URL with a password",
+      "op": "redactLine",
+      "input": {
+        "line": "export CALLBACK=\"<<secret:url-with-password>>\""
+      },
+      "expected": {
+        "line": "export CALLBACK=<credential>"
+      }
+    },
+    {
+      "name": "redacted: a plain key holding a model key",
+      "op": "redactLine",
+      "input": {
+        "line": "LLM=<<secret:model-key>>"
+      },
+      "expected": {
+        "line": "LLM=<credential>"
+      }
+    },
+    {
+      "name": "kept: an empty value has nothing to hide",
+      "op": "redactLine",
+      "input": {
+        "line": "TOKEN="
+      },
+      "expected": {
+        "line": "TOKEN="
+      }
+    },
+    {
+      "name": "kept: an empty quoted value",
+      "op": "redactLine",
+      "input": {
+        "line": "export TOKEN=\"\""
+      },
+      "expected": {
+        "line": "export TOKEN=\"\""
+      }
+    },
+    {
+      "name": "kept: a value of spaces is empty once trimmed",
+      "op": "redactLine",
+      "input": {
+        "line": "TOKEN=   "
+      },
+      "expected": {
+        "line": "TOKEN=   "
+      }
+    },
+    {
+      "name": "kept: a carriage return alone is trimmed, so the value is empty",
+      "note": "a CRLF log read line by line ends each line in a carriage return",
+      "op": "redactLine",
+      "input": {
+        "line": "TOKEN=\r"
+      },
+      "expected": {
+        "line": "TOKEN=\r"
+      }
+    },
+    {
+      "name": "kept: a plain key and a plain value",
+      "op": "redactLine",
+      "input": {
+        "line": "PATH=/usr/local/bin:/usr/bin"
+      },
+      "expected": {
+        "line": "PATH=/usr/local/bin:/usr/bin"
+      }
+    },
+    {
+      "name": "kept: a key that only starts with a credential word",
+      "op": "redactLine",
+      "input": {
+        "line": "TOKEN_COUNT=5"
+      },
+      "expected": {
+        "line": "TOKEN_COUNT=5"
+      }
+    },
+    {
+      "name": "kept: tokens is not token",
+      "op": "redactLine",
+      "input": {
+        "line": "MAX_TOKENS=4096"
+      },
+      "expected": {
+        "line": "MAX_TOKENS=4096"
+      }
+    },
+    {
+      "name": "kept: a space before = means no name",
+      "note": "not an assignment line; its value is redacted only when it looks like a credential (see the next cases)",
+      "op": "redactLine",
+      "input": {
+        "line": "PASSWORD = swordfish"
+      },
+      "expected": {
+        "line": "PASSWORD = swordfish"
+      }
+    },
+    {
+      "name": "kept: a name starting with a digit",
+      "op": "redactLine",
+      "input": {
+        "line": "9TOKEN=abc"
+      },
+      "expected": {
+        "line": "9TOKEN=abc"
+      }
+    },
+    {
+      "name": "kept: = first",
+      "op": "redactLine",
+      "input": {
+        "line": "=abc"
+      },
+      "expected": {
+        "line": "=abc"
+      }
+    },
+    {
+      "name": "redacted: no name before the =, so only the credential goes, not the whole value",
+      "note": "not an assignment (the name is empty); step 3 replaces the JWT alone",
+      "op": "redactLine",
+      "input": {
+        "line": "export =1 <<secret:jwt>>"
+      },
+      "expected": {
+        "line": "export =1 <credential>"
+      }
+    },
+    {
+      "name": "kept: something other than export before the name",
+      "note": "not an assignment line under the rule (only export or nothing before the name)",
+      "op": "redactLine",
+      "input": {
+        "line": "set PASSWORD=swordfish"
+      },
+      "expected": {
+        "line": "set PASSWORD=swordfish"
+      }
+    },
+    {
+      "name": "kept: a Kelvin sign is not a name character",
+      "note": "names are ASCII, so isSecretKey's toLowerCase never meets the Kelvin sign here; the name is EN and TOK stands before it",
+      "op": "redactLine",
+      "input": {
+        "line": "TOKEN=abc"
+      },
+      "expected": {
+        "line": "TOKEN=abc"
+      }
+    },
+    {
+      "name": "kept: prose with an = in it",
+      "op": "redactLine",
+      "input": {
+        "line": "Cook finished: 412 packages, errors=0"
+      },
+      "expected": {
+        "line": "Cook finished: 412 packages, errors=0"
+      }
+    },
+    {
+      "name": "redacted: a Bearer token, to the end of its word",
+      "op": "redactLine",
+      "input": {
+        "line": "Fetching with Authorization: <<secret:bearer>> ok"
+      },
+      "expected": {
+        "line": "Fetching with Authorization: <credential> ok"
+      }
+    },
+    {
+      "name": "redacted: a JWT between words",
+      "op": "redactLine",
+      "input": {
+        "line": "session <<secret:jwt>> accepted"
+      },
+      "expected": {
+        "line": "session <credential> accepted"
+      }
+    },
+    {
+      "name": "redacted: a database URL, the whole URL",
+      "op": "redactLine",
+      "input": {
+        "line": "connecting to <<secret:database-url>> (pool 4)"
+      },
+      "expected": {
+        "line": "connecting to <credential> (pool 4)"
+      }
+    },
+    {
+      "name": "redacted: a URL with a password, the whole URL",
+      "op": "redactLine",
+      "input": {
+        "line": "GET <<secret:url-with-password>>/v1/worlds 200"
+      },
+      "expected": {
+        "line": "GET <credential> 200"
+      }
+    },
+    {
+      "name": "redacted: a model key inside single quotes",
+      "op": "redactLine",
+      "input": {
+        "line": "using model key '<<secret:model-key>>' from the environment"
+      },
+      "expected": {
+        "line": "using model key '<credential>' from the environment"
+      }
+    },
+    {
+      "name": "redacted: a cloud access key",
+      "op": "redactLine",
+      "input": {
+        "line": "aws: <<secret:cloud-key>> region us-east-1"
+      },
+      "expected": {
+        "line": "aws: <credential> region us-east-1"
+      }
+    },
+    {
+      "name": "redacted: a source-host token, and what follows it in its word",
+      "op": "redactLine",
+      "input": {
+        "line": "pushing with <<secret:source-token>>@github.example.invalid/x.git now"
+      },
+      "expected": {
+        "line": "pushing with <credential> now"
+      }
+    },
+    {
+      "name": "redacted: two credentials in one line",
+      "op": "redactLine",
+      "input": {
+        "line": "jwt <<secret:jwt>> and <<secret:bearer>> both"
+      },
+      "expected": {
+        "line": "jwt <credential> and <credential> both"
+      }
+    },
+    {
+      "name": "redacted: a credential value after a flag",
+      "note": "not an assignment line (the first = has \"LogInit: Command Line: -\" before its name); the value goes by its shape",
+      "op": "redactLine",
+      "input": {
+        "line": "LogInit: Command Line: -token=<<secret:jwt>> -nullrhi"
+      },
+      "expected": {
+        "line": "LogInit: Command Line: -token=<credential> -nullrhi"
+      }
+    },
+    {
+      "name": "redacted: a plain assignment whose value holds a credential loses the whole value",
+      "note": "the line assigns X, and X's value (1 TOKEN=…) holds a model key, so the whole value goes (the interim rule's reading, kept)",
+      "op": "redactLine",
+      "input": {
+        "line": "X=1 TOKEN=<<secret:model-key>>"
+      },
+      "expected": {
+        "line": "X=<credential>"
+      }
+    },
+    {
+      "name": "kept: Bearer followed by a short word",
+      "op": "redactLine",
+      "input": {
+        "line": "Bearer of bad news"
+      },
+      "expected": {
+        "line": "Bearer of bad news"
+      }
+    },
+    {
+      "name": "kept: a short sk- word",
+      "op": "redactLine",
+      "input": {
+        "line": "sk-short"
+      },
+      "expected": {
+        "line": "sk-short"
+      }
+    },
+    {
+      "name": "kept: a URL without a password",
+      "op": "redactLine",
+      "input": {
+        "line": "GET https://insimul.example.invalid/api/v1/worlds 200"
+      },
+      "expected": {
+        "line": "GET https://insimul.example.invalid/api/v1/worlds 200"
+      }
+    },
+    {
+      "name": "kept: user@host without a scheme",
+      "op": "redactLine",
+      "input": {
+        "line": "ssh builder@ci.example.invalid"
+      },
+      "expected": {
+        "line": "ssh builder@ci.example.invalid"
+      }
+    },
+    {
+      "name": "kept: a database name without ://",
+      "op": "redactLine",
+      "input": {
+        "line": "postgres is not running"
+      },
+      "expected": {
+        "line": "postgres is not running"
+      }
+    },
+    {
+      "name": "kept: a content hash",
+      "op": "redactLine",
+      "input": {
+        "line": "world sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": {
+        "line": "world sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "name": "kept: eyJ with too little after it",
+      "op": "redactLine",
+      "input": {
+        "line": "eyJ.abc.def"
+      },
+      "expected": {
+        "line": "eyJ.abc.def"
+      }
+    },
+    {
+      "name": "redacted: a macOS home folder, no context",
+      "op": "redactLine",
+      "input": {
+        "line": "LogInit: Base directory: <<local:users>>rowan/Games/Thistlecombe/Binaries/Mac/"
+      },
+      "expected": {
+        "line": "LogInit: Base directory: <home>/Games/Thistlecombe/Binaries/Mac/"
+      }
+    },
+    {
+      "name": "redacted: a Linux home folder",
+      "op": "redactLine",
+      "input": {
+        "line": "cache <<local:home>>rowan/.cache/unity3d/Thistlecombe"
+      },
+      "expected": {
+        "line": "cache <home>/.cache/unity3d/Thistlecombe"
+      }
+    },
+    {
+      "name": "redacted: a Windows home folder with a space in the name",
+      "op": "redactLine",
+      "input": {
+        "line": "<<local:windows-users>>Rowan Ash\\AppData\\Local\\UnrealEngine\\5.6 is the DDC"
+      },
+      "expected": {
+        "line": "<home>\\AppData\\Local\\UnrealEngine\\5.6 is the DDC"
+      }
+    },
+    {
+      "name": "redacted: a Windows home folder with forward slashes, any case",
+      "op": "redactLine",
+      "input": {
+        "line": "<<local:windows-users-slash>>rowan/AppData/Local/Temp"
+      },
+      "expected": {
+        "line": "<home>/AppData/Local/Temp"
+      }
+    },
+    {
+      "name": "redacted: a home folder alone at the end of a line",
+      "op": "redactLine",
+      "input": {
+        "line": "HOME is <<local:users>>rowan"
+      },
+      "expected": {
+        "line": "HOME is <home>"
+      }
+    },
+    {
+      "name": "redacted: a macOS home folder spelt in lower case",
+      "op": "redactLine",
+      "input": {
+        "line": "opened <<local:users-lower>>rowan/Desktop/notes.txt"
+      },
+      "expected": {
+        "line": "opened <home>/Desktop/notes.txt"
+      }
+    },
+    {
+      "name": "redacted: a file URL into a home folder",
+      "op": "redactLine",
+      "input": {
+        "line": "open file://<<local:users>>rowan/Games/x.html"
+      },
+      "expected": {
+        "line": "open file://<home>/Games/x.html"
+      }
+    },
+    {
+      "name": "redacted: an assignment whose value is a home path",
+      "note": "HOME is not a credential key; the path step redacts its value",
+      "op": "redactLine",
+      "input": {
+        "line": "export HOME=<<local:users>>rowan"
+      },
+      "expected": {
+        "line": "export HOME=<home>"
+      }
+    },
+    {
+      "name": "redacted: a home folder inside quotes",
+      "op": "redactLine",
+      "input": {
+        "line": "wrote \"<<local:users>>rowan/Library/Logs/Unreal Engine/x.log\""
+      },
+      "expected": {
+        "line": "wrote \"<home>/Library/Logs/Unreal Engine/x.log\""
+      }
+    },
+    {
+      "name": "redacted: someone else's home folder",
+      "op": "redactLine",
+      "input": {
+        "line": "copied from <<local:users>>sam/Downloads/pack.zip",
+        "context": {
+          "projectDir": "<<local:users>>rowan/Games/Thistlecombe",
+          "homeDir": "<<local:users>>rowan",
+          "userName": "rowan"
+        }
+      },
+      "expected": {
+        "line": "copied from <home>/Downloads/pack.zip"
+      }
+    },
+    {
+      "name": "redacted: a path into the project reads project-relative",
+      "op": "redactLine",
+      "input": {
+        "line": "Wrote <<local:users>>rowan/Games/Thistlecombe/Builds/web/index.html",
+        "context": {
+          "projectDir": "<<local:users>>rowan/Games/Thistlecombe"
+        }
+      },
+      "expected": {
+        "line": "Wrote Builds/web/index.html"
+      }
+    },
+    {
+      "name": "redacted: the project folder alone",
+      "op": "redactLine",
+      "input": {
+        "line": "cd \"<<local:users>>rowan/Games/Thistlecombe\" && make",
+        "context": {
+          "projectDir": "<<local:users>>rowan/Games/Thistlecombe"
+        }
+      },
+      "expected": {
+        "line": "cd \"<project>\" && make"
+      }
+    },
+    {
+      "name": "redacted: the project folder with a trailing separator in the context",
+      "op": "redactLine",
+      "input": {
+        "line": "Project: <<local:users>>rowan/Games/Thistlecombe",
+        "context": {
+          "projectDir": "<<local:users>>rowan/Games/Thistlecombe/"
+        }
+      },
+      "expected": {
+        "line": "Project: <project>"
+      }
+    },
+    {
+      "name": "redacted: a sibling of the project is not in it",
+      "op": "redactLine",
+      "input": {
+        "line": "old copy <<local:users>>rowan/Games/Thistlecombe-old/x",
+        "context": {
+          "projectDir": "<<local:users>>rowan/Games/Thistlecombe"
+        }
+      },
+      "expected": {
+        "line": "old copy <home>/Games/Thistlecombe-old/x"
+      }
+    },
+    {
+      "name": "redacted: a Windows project, its separators kept as spelt",
+      "op": "redactLine",
+      "input": {
+        "line": "Staged D:\\Games\\Thistle\\Saved\\StagedBuilds\\Windows",
+        "context": {
+          "projectDir": "D:\\Games\\Thistle"
+        }
+      },
+      "expected": {
+        "line": "Staged Saved\\StagedBuilds\\Windows"
+      }
+    },
+    {
+      "name": "redacted: a home folder that is not a usual form, from the context",
+      "op": "redactLine",
+      "input": {
+        "line": "cache at /var/lib/ci-builder/.cache",
+        "context": {
+          "homeDir": "/var/lib/ci-builder"
+        }
+      },
+      "expected": {
+        "line": "cache at <home>/.cache"
+      }
+    },
+    {
+      "name": "redacted: the user name as a whole path segment",
+      "op": "redactLine",
+      "input": {
+        "line": "mounted /Volumes/rowan/Builds",
+        "context": {
+          "userName": "rowan"
+        }
+      },
+      "expected": {
+        "line": "mounted /Volumes/<user>/Builds"
+      }
+    },
+    {
+      "name": "redacted: the user name segment in a URL path",
+      "op": "redactLine",
+      "input": {
+        "line": "see https://git.example.invalid/rowan/thistlecombe",
+        "context": {
+          "userName": "rowan"
+        }
+      },
+      "expected": {
+        "line": "see https://git.example.invalid/<user>/thistlecombe"
+      }
+    },
+    {
+      "name": "redacted: the user name in a path but not in the prose",
+      "note": "the user name is redacted only as a whole path segment: never in prose (LANDINGS m13's over-redaction)",
+      "op": "redactLine",
+      "input": {
+        "line": "the builder ran /opt/builder/run.sh",
+        "context": {
+          "userName": "builder"
+        }
+      },
+      "expected": {
+        "line": "the builder ran /opt/<user>/run.sh"
+      }
+    },
+    {
+      "name": "redacted: credential and path in one line",
+      "op": "redactLine",
+      "input": {
+        "line": "GET <<secret:url-with-password>> from <<local:users>>rowan/Games/Thistlecombe/Saved/x.json",
+        "context": {
+          "projectDir": "<<local:users>>rowan/Games/Thistlecombe"
+        }
+      },
+      "expected": {
+        "line": "GET <credential> from Saved/x.json"
+      }
+    },
+    {
+      "name": "redacted: a database URL carrying a home path goes whole: credentials before paths",
+      "note": "step 3 runs before step 4: the URL runs to the end of its word, home path and all; paths first would leave <credential><home>/ca.pem, since < ends the word",
+      "op": "redactLine",
+      "input": {
+        "line": "connecting to <<secret:database-url>>?tlsCAFile=<<local:home>>rowan/ca.pem"
+      },
+      "expected": {
+        "line": "connecting to <credential>"
+      }
+    },
+    {
+      "name": "redacted: the user's own home folder in a usual form is <home>, not a <user> segment",
+      "note": "step 4 (c) runs before (d): the home form takes the folder whole, so the user name inside it is never left as a <user> segment under the home folder",
+      "op": "redactLine",
+      "input": {
+        "line": "opened <<local:users>>rowan/Desktop/notes.txt",
+        "context": {
+          "userName": "rowan"
+        }
+      },
+      "expected": {
+        "line": "opened <home>/Desktop/notes.txt"
+      }
+    },
+    {
+      "name": "redacted: the user's own Windows home folder is <home> too, with the user name given",
+      "op": "redactLine",
+      "input": {
+        "line": "temp at <<local:windows-users>>rowan\\AppData\\Local\\Temp",
+        "context": {
+          "userName": "rowan"
+        }
+      },
+      "expected": {
+        "line": "temp at <home>\\AppData\\Local\\Temp"
+      }
+    },
+    {
+      "name": "kept: an outDir-relative path",
+      "op": "redactLine",
+      "input": {
+        "line": "Packaged Builds/web/index.html (4.8 kB)",
+        "context": {
+          "projectDir": "<<local:users>>rowan/Games/Thistlecombe",
+          "homeDir": "<<local:users>>rowan",
+          "userName": "rowan"
+        }
+      },
+      "expected": {
+        "line": "Packaged Builds/web/index.html (4.8 kB)"
+      }
+    },
+    {
+      "name": "kept: a relative path holding a Users folder",
+      "op": "redactLine",
+      "input": {
+        "line": "Saved<<local:users>>rowan.json",
+        "context": {
+          "projectDir": "<<local:users>>rowan/Games/Thistlecombe",
+          "homeDir": "<<local:users>>rowan",
+          "userName": "rowan"
+        }
+      },
+      "expected": {
+        "line": "Saved<<local:users>>rowan.json"
+      }
+    },
+    {
+      "name": "kept: macOS's shared folder (Epic's Unreal install)",
+      "op": "redactLine",
+      "input": {
+        "line": "<<local:users>>Shared/Epic Games/UE_5.6/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun"
+      },
+      "expected": {
+        "line": "<<local:users>>Shared/Epic Games/UE_5.6/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun"
+      }
+    },
+    {
+      "name": "kept: Windows's Public folder",
+      "op": "redactLine",
+      "input": {
+        "line": "<<local:windows-users>>Public\\Documents\\Unreal Projects"
+      },
+      "expected": {
+        "line": "<<local:windows-users>>Public\\Documents\\Unreal Projects"
+      }
+    },
+    {
+      "name": "kept: Windows's Default User folder",
+      "op": "redactLine",
+      "input": {
+        "line": "<<local:windows-users>>Default User\\NTUSER.DAT"
+      },
+      "expected": {
+        "line": "<<local:windows-users>>Default User\\NTUSER.DAT"
+      }
+    },
+    {
+      "name": "kept: /Users with no name after it",
+      "op": "redactLine",
+      "input": {
+        "line": "ls <<local:users>>"
+      },
+      "expected": {
+        "line": "ls <<local:users>>"
+      }
+    },
+    {
+      "name": "kept: the user name in prose",
+      "op": "redactLine",
+      "input": {
+        "line": "rowan started the build",
+        "context": {
+          "userName": "rowan"
+        }
+      },
+      "expected": {
+        "line": "rowan started the build"
+      }
+    },
+    {
+      "name": "kept: the user name as part of a longer segment",
+      "op": "redactLine",
+      "input": {
+        "line": "mounted /Volumes/rowanbackup/x",
+        "context": {
+          "userName": "rowan"
+        }
+      },
+      "expected": {
+        "line": "mounted /Volumes/rowanbackup/x"
+      }
+    },
+    {
+      "name": "kept: a homeDir prefix of a longer folder",
+      "op": "redactLine",
+      "input": {
+        "line": "cache at /var/lib/ci-builder2/.cache",
+        "context": {
+          "homeDir": "/var/lib/ci-builder"
+        }
+      },
+      "expected": {
+        "line": "cache at /var/lib/ci-builder2/.cache"
+      }
+    },
+    {
+      "name": "kept: an absolute path outside any home folder",
+      "op": "redactLine",
+      "input": {
+        "line": "/opt/homebrew/bin/cmake --version"
+      },
+      "expected": {
+        "line": "/opt/homebrew/bin/cmake --version"
+      }
+    },
+    {
+      "name": "kept: a tilde path is already redacted",
+      "op": "redactLine",
+      "input": {
+        "line": "see ~/Library/Logs"
+      },
+      "expected": {
+        "line": "see ~/Library/Logs"
+      }
+    },
+    {
+      "name": "kept: a root-only project folder is unused",
+      "op": "redactLine",
+      "input": {
+        "line": "wrote /tmp/x",
+        "context": {
+          "projectDir": "/"
+        }
+      },
+      "expected": {
+        "line": "wrote /tmp/x"
+      }
+    },
+    {
+      "name": "kept: an empty line",
+      "op": "redactLine",
+      "input": {
+        "line": ""
+      },
+      "expected": {
+        "line": ""
+      }
+    },
+    {
+      "name": "kept: spaces only",
+      "op": "redactLine",
+      "input": {
+        "line": "   "
+      },
+      "expected": {
+        "line": "   "
+      }
+    },
+    {
+      "name": "kept: a UAT banner",
+      "op": "redactLine",
+      "input": {
+        "line": "********** COOK COMMAND STARTED **********"
+      },
+      "expected": {
+        "line": "********** COOK COMMAND STARTED **********"
+      }
+    },
+    {
+      "name": "kept: non-ASCII prose",
+      "op": "redactLine",
+      "input": {
+        "line": "Straße gebaut ✓ κος"
+      },
+      "expected": {
+        "line": "Straße gebaut ✓ κος"
+      }
+    },
+    {
+      "name": "redacted: a line holding a private-key header is withheld whole",
+      "op": "redactLine",
+      "input": {
+        "line": "key: <<secret:private-key-begin>>"
+      },
+      "expected": {
+        "line": "<credential>"
+      }
+    },
+    {
+      "name": "kept: a key body line alone (no state: a runner carries the state across lines)",
+      "note": "what redactLog and a runner carrying BuildLogRedactionState withhold",
+      "op": "redactLine",
+      "input": {
+        "line": "MIIEvfakefakefakefakefakefake"
+      },
+      "expected": {
+        "line": "MIIEvfakefakefakefakefakefake"
+      }
+    },
+    {
+      "name": "redacted: a private-key block, header to footer, line by line",
+      "op": "redactLog",
+      "input": {
+        "lines": [
+          "writing signing key",
+          "<<secret:private-key-begin>>",
+          "MIIEvfakefakefakefakefakefake",
+          "fakefakefakefake==",
+          "<<secret:private-key-end>>",
+          "done"
+        ]
+      },
+      "expected": {
+        "lines": [
+          "writing signing key",
+          "<credential>",
+          "<credential>",
+          "<credential>",
+          "<credential>",
+          "done"
+        ]
+      }
+    },
+    {
+      "name": "redacted: a key on one line ends its own block",
+      "op": "redactLog",
+      "input": {
+        "lines": [
+          "key: \"<<secret:private-key-begin>>\\nMIIE\\n<<secret:private-key-end>>\"",
+          "next line"
+        ]
+      },
+      "expected": {
+        "lines": [
+          "<credential>",
+          "next line"
+        ]
+      }
+    },
+    {
+      "name": "redacted: a whole log with a context",
+      "op": "redactLog",
+      "input": {
+        "lines": [
+          "export UNREAL_TOKEN=abc",
+          "LogInit: Base directory: <<local:users>>rowan/Games/Thistlecombe/Binaries/Mac/",
+          "Cook finished: 412 packages, errors=0",
+          "Fetching with Authorization: <<secret:bearer>>",
+          "Wrote <<local:users>>rowan/Games/Thistlecombe/Builds/macos/Thistlecombe.app"
+        ],
+        "context": {
+          "projectDir": "<<local:users>>rowan/Games/Thistlecombe",
+          "homeDir": "<<local:users>>rowan",
+          "userName": "rowan"
+        }
+      },
+      "expected": {
+        "lines": [
+          "export UNREAL_TOKEN=<credential>",
+          "LogInit: Base directory: Binaries/Mac/",
+          "Cook finished: 412 packages, errors=0",
+          "Fetching with Authorization: <credential>",
+          "Wrote Builds/macos/Thistlecombe.app"
+        ]
+      }
+    },
+    {
+      "name": "kept: an empty log",
+      "op": "redactLog",
+      "input": {
+        "lines": []
+      },
+      "expected": {
+        "lines": []
+      }
+    }
+  ]
+}
