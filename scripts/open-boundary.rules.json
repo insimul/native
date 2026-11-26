@@ -461,6 +461,15 @@
     },
     {
       "rule": "undeclared-dependency",
+      "path": "corebridge/tools/hand-cases/ground-seat-frame.mjs",
+      "specifier": "@insimul/core/ground-seating/ground-seat",
+      "classification": "keep",
+      "reason": "A GENERATOR INPUT, never shipped: the hand-case spec tools/gen-hand-cases.mjs bundles against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, exactly as vendor-core-bundle.mjs resolves entry.js's specifiers, to compute corebridge/tests/cases/bridge-ground-seat-frame.json's expectations with core's own initialSeat, retargetSeat, seatOffsetAt, unseat and groundSeatTuning (PL.native-ground-seat-batch, rulings U115 and U128). Nothing in the shipped artifact imports it. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-ground-seat-batch (Features Gauntlet PL.native-ground-seat-batch)",
+      "reviewedAt": "2026-11-26"
+    },
+    {
+      "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/audio/ground-from-ir",
       "classification": "keep",

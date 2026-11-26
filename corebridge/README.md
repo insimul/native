@@ -568,6 +568,7 @@ game; **meta** = about the bridge itself.
 | `traversal.groundSeating.retarget` | `{ state, wantMm, at, params? }` → `{ state }` | `ground-seating/ground-seat` `retargetSeat` | P9e traversal kernels |
 | `traversal.groundSeating.offsetAt` | `{ state, at, params? }` → `{ offsetMm }` | `ground-seating/ground-seat` `seatOffsetAt` | P9e traversal kernels |
 | `traversal.groundSeating.unseat` | `{}` → `{ state }` | `ground-seating/ground-seat` `unseat` | P9e traversal kernels |
+| `traversal.groundSeating.frame` | `{ bodies: [{ state?, wantMm?, at, unseat?, params? }], params? }` → `{ bodies: [{ state, offsetMm }] }` in input order: one call settles every carried body for a frame, exactly the single rows composed body by body (`.initial` for an absent state, `.unseat`, `.retarget`, `.offsetAt`; a body's own `params` over the frame's) | `ground-seating/ground-seat` `initialSeat`, `retargetSeat`, `seatOffsetAt`, `unseat` | P9e traversal kernels (PL.native-ground-seat-batch, U115) |
 | `traversal.personal.tuning` | `{ params? }` → `{ tuning }` (`PersonalVehicleTuning`: kinds merged by id over the bicycle and horse, the cycle, on-foot rates) | `traversal/personal-vehicles` `personalVehicleTuning` | P9e traversal layers (PL.native-traversal-rows slice 2, U106(1); core's P9e.core) |
 | `traversal.personal.pace` | `{ kind, params? }` → `{ pace }` (`{ walk, run, turn, strafe, back }` in thousandths; null kind: on foot) | `traversal/personal-vehicles` `personalPace` | P9e traversal layers |
 | `traversal.personal.label` | `{ kind, params? }` → `{ label }` | `traversal/personal-vehicles` `personalVehicleLabel` | P9e traversal layers |
@@ -2028,6 +2029,22 @@ The rows are named `traversal.<group>.<fn>` after the corpus file's area
   state, wantMm, at }` → `{ state }` and `.offsetAt { state, at }` → `{ offsetMm }`,
   and `.unseat` → `{ state }` whenever nothing carries the body. Each reads the
   pack's `params` on every call (core's `groundSeatTuning`).
+- **`traversal.groundSeating.frame` settles every carried body of a frame in ONE
+  call** (PL.native-ground-seat-batch, U115): `{ bodies: [{ state?, wantMm?, at,
+  unseat?, params? }], params? }` → `{ bodies: [{ state, offsetMm }] }`, in input
+  order. It is defined as exactly the settle rows composed, body by body: a
+  `state` absent or null is `.initial`'s; `unseat: true` is `.unseat` (its `at`
+  optional, its offset 0); a `wantMm` is `.retarget { state, wantMm, at }` and then
+  `.offsetAt { state, at }` over the state it answered; with neither, `.offsetAt {
+  state, at }` and the state as sent. A body's own `params` (null is absent) stand
+  over the frame's, so `{}` is core's defaults under a frame that states params.
+  Every body is checked before any is settled, and one malformed body refuses the
+  whole frame, `[invalid-input]`, naming it (`` `bodies[2].at` must be a finite
+  number ``; `unseat` a boolean; `unseat` with a `wantMm` refused). The single rows
+  stay as they are; `.target`, `.stand` and the probes stay per body (a body is
+  looked up only when it moved). Unreal measured the per-body calls at about 0.19
+  ms a frame for 10 bodies (run 13); `bench/results/ground-seat-frame.json` is this
+  library's measurement of both (below).
 - **Tunings are core's resolved tunings**, as the corpora carry them. A binding
   reads its World IR's `traversal` block once through `traversal.affordances.tuning`
   and `.links`, `traversal.vehicles.fromIR` (its `vehicles`) and
@@ -2076,6 +2093,36 @@ to the next, a stated `stamina` on the route row, the ground-seat `params` (on a
 settle; and on `ground`, `stand` and a mid-settle `retarget`, each with an answer
 core's default tuning would give differently, because no `ground-seating.json` case
 of those ops states `params`) and the `[invalid-input]` errors.
+
+**The frame row's evidence** (PL.native-ground-seat-batch) is in two parts, both
+replayable from data. `tests/cases/bridge-ground-seat-frame.json` is generated from
+core at the pin by `tools/hand-cases/ground-seat-frame.mjs` through
+`tools/gen-hand-cases.mjs` (`expect`s are core's `initialSeat`, `retargetSeat`,
+`seatOffsetAt` and `unseat`): core's five settle cases of the vendored
+`ground-seating.json` played as five bodies of one frame per step, in the file's
+order and reversed, every body's answer checked against the corpus's own `expected`
+when the file is generated; a mixed frame (a new body, a mid-settle retarget, the
+same target again, a clock-only body seated and unseated, a body unseated this
+frame, an unseated body seated at once, `unseat: false`, nulls as absent) after
+the single rows called body by body, with their answers; the empty frame; one
+body; a body's own params over the frame's (absent, null, `{}`, stated); and
+thirteen refusals. An engine runner replays it as the case harnesses do: each
+step's `call` with its `args`, its answer matched to `expect` (or its error to
+`expectError`). And `traversal_corpus` (`tests/traversal_corpus.cpp`) holds the
+frame's RAW answer to the single rows' raw answers composed,
+`{"bodies":[{"state":<.retarget's state text>,"offsetMm":<.offsetAt's number>},…]}`,
+byte for byte, over the same settle cases: in order and reversed (each body also
+held to the case's `expected`), under frame params with bodies' own (absent, null,
+stated), one case to a frame, and the empty frame; ten malformed frames must be
+refused `[invalid-input]`, and, where a single row takes the same malformed value,
+so must it. `traversal_corpus_negative` doctors each composed frame (one body's
+offset one mm off) and must see every one refused.
+
+**The frame row's cost** (`bench/results/ground-seat-frame.json`, written by
+`bench/ground_seat_frame.sh` from `tests/ground_seat_bench.cpp`; 10 bodies, 600
+frames a run, 9 runs a leg, every frame's answers checked equal first): see that
+file for the figures and the host. The `ground_seat_bench_smoke` ctest runs 40
+frames for the equality check only; a wall clock is never a gate.
 
 **Cost.** Five core modules for the rows (`traversal/vehicles`,
 `traversal/vehicle-facts`, `traversal/fast-travel`, `traversal/fast-travel-facts`,
@@ -3464,7 +3511,8 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `camera_movement_corpus`, `camera_movement_corpus_negative` | core's movement contract corpus driven whole through the `camera.movement.*` rows (95 cases at 6cd4b4e, 0 undriven; every case with more than one solid or exclusion driven again with them reversed; its contract's data tables held to `camera.movement.contract`), and Unreal's step in the contract, an undriven op and six answers an engine keeping one of its interim rules would give seen as wrong |
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 | `survival_corpus`, `survival_corpus_negative` | core's three P9c corpora (`needs.json`, `hud.json`, `stamina.json`; 89 cases at 6cd4b4e) driven whole through the `survival.*` rows by `tests/survival_corpus.cpp` (0 undriven per file; a `run` one row per step over the state the last answer carried, a `pool` one `survival.stamina.pool.apply` per step; each file's catalog and op list held to core's), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `survival_corpus_negative` does |
-| `traversal_corpus`, `traversal_corpus_negative` | core's eight P9e corpora (the kernels' `affordances.json`, `vehicles.json`, `fast-travel.json`, `ground-seating.json`, and the layers' `session.json`, `mounts.json`, `save.json`, `vehicles-only.json`; 140 cases at 45409ed with vehicles-only's 4 runs in a `runsTraversal: false` session, 136 at d88b6f0, 129 at 6cd4b4e) driven whole through the `traversal.*` rows by `tests/traversal_corpus.cpp` (0 undriven per file; each older case's record composed from one row per core function and driven again with its lists reversed, a settle one row per step, a session case one `traversal.session` with one apply per step, a mounts run one personal row per step; each systems file's catalog, ops and steps held to core's and every step driven), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `traversal_corpus_negative` does |
+| `traversal_corpus`, `traversal_corpus_negative` | core's eight P9e corpora (the kernels' `affordances.json`, `vehicles.json`, `fast-travel.json`, `ground-seating.json`, and the layers' `session.json`, `mounts.json`, `save.json`, `vehicles-only.json`; 140 cases at 45409ed with vehicles-only's 4 runs in a `runsTraversal: false` session, 136 at d88b6f0, 129 at 6cd4b4e) driven whole through the `traversal.*` rows by `tests/traversal_corpus.cpp` (0 undriven per file; each older case's record composed from one row per core function and driven again with its lists reversed, a settle one row per step, a session case one `traversal.session` with one apply per step, a mounts run one personal row per step; each systems file's catalog, ops and steps held to core's and every step driven), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `traversal_corpus_negative` does; with them the `traversal.groundSeating.frame` differential (PL.native-ground-seat-batch): the frame's raw answer byte-identical to the settle rows' raw answers composed over the settle cases (in order, reversed, under params, one body a frame, empty), ten malformed frames refused `[invalid-input]`, and, in the negative, every doctored composition refused |
+| `ground_seat_bench_smoke` | `tests/ground_seat_bench.cpp` over 40 frames of 10 bodies: every frame's `traversal.groundSeating.frame` answer equals the `.retarget` and `.offsetAt` answers composed, byte for byte (the timing is `bench/ground_seat_frame.sh`'s, never a gate) |
 | `build_corpus`, `build_corpus_negative` | core's P10 headless build corpus (`conformance/build/headless.json`, 233 cases at 6cd4b4e) driven whole through the `build.*` rows by `tests/build_corpus.cpp` (credential markers expanded as core's runner does; 0 undriven; `build.contract` held to the file's contract; no credential repeated in a detail or a line; every out-dir refusal asked of the fold rows, with at least one case only the macOS fold catches and one only the Windows fold catches), and EVERY case's expectation perturbed and seen as wrong, with purposeful perturbations (a credential not caught or shown, a path escaping the build folder under either fold, an artefact outside it, a path outside the project) each refused |
 | `build_log_redaction_corpus`, `build_log_redaction_corpus_negative`, `build_log_redaction_corpus_order` | core's build-log redaction corpus (`conformance/build/log-redaction.json`, 90 cases at 45409ed) driven whole through `build.redactLogLine` and `build.redactLog` by `tests/build_log_redaction_corpus.cpp` (secret and local markers expanded as core's runner does; 0 undriven; every log case again line by line with the state carried; the stand-ins held; every line answered clear of `build.looksLikeSecret`), EVERY expectation perturbed and refused with purposeful perturbations (a credential, a home path or a private-key line shown); and the order witness: both orders core pins found in the vendored bundle, and each swapped in a copy of it refused by the corpus |
 | `progression_corpus`, `progression_corpus_negative` | core's P9i progression corpora (`conformance/progression/{gamification,modules,skills,save}.json`, 87 cases at 45409ed with skills.json's `compose` and `kb` through the `skill.kb.*` rows, 73 at 6cd4b4e), its skill-tree corpora (`conformance/skills/*.json`, 52) and the `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json` (3) driven whole through the `progression.*` and `skill.*` rows by `tests/progression_corpus.cpp` (0 undriven per file; a gamification `run` one `progression.gamification.step` per step, every step kind driven; each progression file's catalog, ops and steps held to core's; a KB-backed `skill.unlock` per `can_unlock` case, with a no-KB control; refusal probes for an unknown op, step, area and row); the negative pass perturbs every expectation and needs every one refused |

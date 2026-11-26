@@ -921,6 +921,15 @@
   STATELESS over the `state` the last answer carried. Tunings are core's RESOLVED
   tunings, read from the IR by the `*.tuning`, `.links` and `.fromIR` rows. Never
   import `traversal/systems-corpus` (core's runner).
+  **`traversal.groundSeating.frame` (PL.native-ground-seat-batch, U115) is DEFINED
+  as those settle rows composed body by body** (one call a frame instead of a
+  `.retarget` and an `.offsetAt` per body): change a single row and the frame must
+  change with it. `traversal_corpus` holds its RAW answer to the single rows' raw
+  answers composed, byte for byte, over the ground-seating file's settle cases (in
+  order, reversed, under params, one body a frame, empty), and
+  `traversal_corpus_negative` doctors that composition and must see every frame
+  refused; `tests/cases/bridge-ground-seat-frame.json` is generated from core
+  (`tools/hand-cases/ground-seat-frame.mjs`). The single rows stay as they are.
 - **The traversal layers (PL.native-traversal-rows slice 2, U106(1)) run core's
   `conformance/traversal/{session,mounts,save}.json` UNCHANGED** in the same set and
   runner. Core's `TraversalPlanner`, `VehicleRegistry` and `FastTravelDirector` are

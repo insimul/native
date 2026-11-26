@@ -650,6 +650,7 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   | `FootprintPoints`, `DrawnGround` | `traversal.groundSeating.footprint { xMm, zMm }`, `.ground { probes, fromMm }` |
   | `SeatTarget`, `StandSeat`, `MovedSideways` | `traversal.groundSeating.target { meshMm, probes }`, `.stand { bodyMm, probes }`, `.moved { from, to }` |
   | `FSeatState()`, `RetargetSeat`, `SeatOffsetAt`, `Unseat` | `traversal.groundSeating.initial`, `.retarget { state, wantMm, at }`, `.offsetAt { state, at }`, `.unseat` (stateless: the binding's `FSeatBook` keeps each body's `state` as the JSON the rows answer) |
+  | `FSeatBook::Carry` over every carried body of a frame (a `.retarget` and an `.offsetAt` per body) | `traversal.groundSeating.frame { bodies: [{ state, wantMm?, at }], params }` → `{ bodies: [{ state, offsetMm }] }` in input order, ONE call a frame (PL.native-ground-seat-batch, U115): exactly those rows composed; a body not looked up this frame sends no `wantMm` (`.offsetAt` only), a body that stops being carried sends `unseat: true`, a new body no `state`. The binding keeps each body's `state` as the frame answered it; `.target` stays per looked-up body. Replay `tests/cases/bridge-ground-seat-frame.json` (core's settle cases as frames) |
   | `JNull` … `JPush`, `CompareIds`, `JsRound`, `PrologAtom` | none: JSON building and core's own id order, atom quoting and rounding run inside the rows |
 
   **Slice 2 (this library, now):** the copy's three classes are ONE session, as core

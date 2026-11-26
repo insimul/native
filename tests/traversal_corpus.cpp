@@ -56,6 +56,14 @@
 //   .offsetAt {params, state, at}, recorded `{ do, state, offsetMm }`; `at` →
 //   .offsetAt, recorded `{ do, offsetMm }`; `unseat` → .unseat, recorded `{ do,
 //   state, offsetMm: 0 }` (core's runner records the 0 as written).
+//   The FRAME row (PL.native-ground-seat-batch), after that file's cases: traversal.groundSeating.frame is
+//   defined as the settle rows composed body by body, so its RAW answer must equal, byte for byte, the
+//   single rows' raw answers composed (`{"bodies":[{"state":<.retarget's or .unseat's state text>,
+//   "offsetMm":<.offsetAt's number>},…]}`), over the file's settle cases as bodies, one frame per step
+//   index: in order and reversed (each body also held to its case's `expected`), under frame params with
+//   bodies' own params (absent, null, stated), one case to a frame, and the empty frame; ten malformed
+//   frames must be refused [invalid-input] (and the single row given the same value likewise). Under
+//   --negative the composition is doctored (the last body's offset one mm off) and every frame must differ.
 //   session run {links, tuning, vehicles, fastTravel, seed, stamina, probe, locomotion,
 //   personal, steps}: ONE traversal.session.create with those (seed 'corpus' when the
 //   case states none, as core's runner plays), then each step one
@@ -119,6 +127,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <fstream>
 #include <functional>
 #include <map>
@@ -517,7 +526,7 @@ const std::vector<Area> &areas() {
 	     {"traversal.groundSeating.tuning", "traversal.groundSeating.footprint", "traversal.groundSeating.ground",
 	      "traversal.groundSeating.target", "traversal.groundSeating.stand", "traversal.groundSeating.moved",
 	      "traversal.groundSeating.initial", "traversal.groundSeating.retarget", "traversal.groundSeating.offsetAt",
-	      "traversal.groundSeating.unseat"},
+	      "traversal.groundSeating.unseat", "traversal.groundSeating.frame"},
 	     true,
 	     {"traversal-ground-seating"},
 	     {{"settle", {"target", "at", "unseat"}}}},
@@ -824,6 +833,236 @@ bool drive_settle(Caller &c, const JsonValue &input, JsonValuePtr &out, std::str
 		g_steps[d]++;
 	}
 	out = make_array(record);
+	return true;
+}
+
+// ── the frame row (PL.native-ground-seat-batch): the single rows composed, byte for byte ──
+//
+// traversal.groundSeating.frame is DEFINED as the single rows composed body by body, so this differential holds
+// its RAW answer to the raw answers of .initial, .retarget, .offsetAt and .unseat called one by one: for each
+// body, `{"state":<the state text the single rows answered>,"offsetMm":<.offsetAt's number text>}`, joined in
+// input order into `{"bodies":[…]}`, must be the frame's answer string exactly. The bodies are core's settle
+// cases (the ground-seating file's own `settle` steps), one frame per step index: in the file's order, reversed,
+// under the frame's params with bodies of their own (absent, null and stated), one case to a frame, and the
+// empty frame. In the file's order and reversed, every body's answer is also held to the case's `expected`.
+// Malformed frames must be refused `[invalid-input]`, and, where a single row takes the same malformed value, so
+// must it. With `sabotage` (--negative) the composed answer's last body is doctored and every non-empty frame must
+// then DIFFER, so a differential that cannot fail fails the run.
+
+struct FrameTally {
+	int frames = 0, bodies = 0, target = 0, at = 0, unseat = 0, own_params = 0, empty = 0, held = 0, refusals = 0;
+	int sabotaged = 0, sabotage_refused = 0;
+};
+
+// The raw answer string of a row, or false with `why` set.
+bool raw_call(Caller &c, const std::string &method, const std::string &args, std::string &out, std::string &why) {
+	c.rows_called[method]++;
+	const char *raw = insimul_core_call(c.core, method.c_str(), args.c_str());
+	if (!raw) return why = method + " failed: " + insimul_core_last_error(c.core), false;
+	out = raw;
+	return true;
+}
+
+// `{"<key>":<inner>}` → inner; false with `why` when the answer is not that shape.
+bool unwrap(const std::string &answer, const std::string &key, std::string &inner, std::string &why) {
+	const std::string head = "{\"" + key + "\":";
+	if (answer.size() < head.size() + 1 || answer.compare(0, head.size(), head) != 0 || answer.back() != '}')
+		return why = "an answer that is not {\"" + key + "\":…}: " + answer, false;
+	inner = answer.substr(head.size(), answer.size() - head.size() - 1);
+	return true;
+}
+
+struct SeatBody {
+	std::string kind;   // target, at, unseat
+	std::string state;  // the state text the body carries; empty on its first frame (absent: .initial's)
+	std::string want;   // number text (target)
+	std::string at;     // number text (target, at)
+	std::string params; // the body's own params text; empty = the key absent
+};
+
+std::string body_args(const SeatBody &b) {
+	std::string s = "{";
+	auto put = [&](const std::string &k, const std::string &v) { s += (s.size() > 1 ? "," : "") + ("\"" + k + "\":" + v); };
+	if (!b.state.empty()) put("state", b.state);
+	if (b.kind == "target") put("wantMm", b.want);
+	if (b.kind == "unseat") put("unseat", "true");
+	if (!b.at.empty()) put("at", b.at);
+	if (!b.params.empty()) put("params", b.params);
+	return s + "}";
+}
+
+// One body through the single rows, as the frame composes them: the composed body text and the state it carries on.
+bool body_by_singles(Caller &c, const SeatBody &b, const std::string &frame_params, std::string &text, std::string &state,
+                     std::string &why) {
+	const std::string params = b.params.empty() || b.params == "null" ? frame_params : b.params;
+	const std::string with = params.empty() ? std::string() : ",\"params\":" + params;
+	std::string answer;
+	state = b.state;
+	if (state.empty()) {
+		if (!raw_call(c, "traversal.groundSeating.initial", "{}", answer, why) || !unwrap(answer, "state", state, why)) return false;
+	}
+	if (b.kind == "unseat") {
+		if (!raw_call(c, "traversal.groundSeating.unseat", "{}", answer, why) || !unwrap(answer, "state", state, why)) return false;
+	} else if (b.kind == "target") {
+		if (!raw_call(c, "traversal.groundSeating.retarget", "{\"state\":" + state + ",\"wantMm\":" + b.want + ",\"at\":" + b.at + with + "}",
+		              answer, why) ||
+		    !unwrap(answer, "state", state, why))
+			return false;
+	}
+	std::string offset;
+	if (!raw_call(c, "traversal.groundSeating.offsetAt", "{\"state\":" + state + ",\"at\":" + (b.at.empty() ? "0" : b.at) + with + "}",
+	              answer, why) ||
+	    !unwrap(answer, "offsetMm", offset, why))
+		return false;
+	text = "{\"state\":" + state + ",\"offsetMm\":" + offset + "}";
+	return true;
+}
+
+// The settle cases of the ground-seating file, as frames: bodies[k] = case k's steps.
+struct SettleCase {
+	std::string name;
+	std::vector<const JsonValue *> steps, expected;
+};
+
+// One variant: frames over `order` (indices into `cases`), each frame `frame_params` (text, empty = absent) with body
+// params from `own(i)` (text, empty = absent). `hold` compares each body with the case's expected answer.
+bool frame_variant(Caller &c, const std::vector<SettleCase> &cases, const std::vector<std::size_t> &order,
+                   const std::string &frame_params, const std::function<std::string(std::size_t)> &own, bool hold, bool sabotage,
+                   FrameTally &t, std::string &why) {
+	std::vector<std::string> states(cases.size());
+	std::size_t most = 0;
+	for (std::size_t i : order) most = std::max(most, cases[i].steps.size());
+	for (std::size_t k = 0; k < most; k++) {
+		std::string args = "{\"bodies\":[", composed = "{\"bodies\":[";
+		std::vector<std::size_t> live;
+		std::vector<std::string> next;
+		for (std::size_t i : order) {
+			if (k >= cases[i].steps.size()) continue;
+			const JsonValue &step = *cases[i].steps[k];
+			SeatBody b;
+			b.kind = step.get_string("do");
+			b.state = states[i];
+			if (const JsonValue *w = step.find("wantMm")) b.want = json_of(*w);
+			if (const JsonValue *a = step.find("at")) b.at = json_of(*a);
+			b.params = own(i);
+			if (b.kind != "target" && b.kind != "at" && b.kind != "unseat") return why = "unknown settle step '" + b.kind + "'", false;
+			std::string text, state;
+			if (!body_by_singles(c, b, frame_params, text, state, why)) return why = cases[i].name + ", step " + std::to_string(k) + ": " + why, false;
+			if (hold) {
+				const JsonValue &want = *cases[i].expected[k];
+				const auto got = insimul::parse_json(text);
+				if (!got.ok) return why = "a composed body is not JSON: " + text, false;
+				std::string diff = compare(*want.find("offsetMm"), *got.root->find("offsetMm"), 0.0, "$.offsetMm");
+				if (diff.empty() && want.find("state")) diff = compare(*want.find("state"), *got.root->find("state"), 0.0, "$.state");
+				if (!diff.empty()) return why = cases[i].name + ", step " + std::to_string(k) + " against core's expected: " + diff, false;
+				t.held++;
+			}
+			args += (live.empty() ? "" : ",") + body_args(b);
+			composed += (live.empty() ? "" : ",") + text;
+			live.push_back(i);
+			next.push_back(state);
+			t.bodies++;
+			if (b.kind == "target") t.target++;
+			else if (b.kind == "at") t.at++;
+			else t.unseat++;
+			if (!b.params.empty()) t.own_params++;
+		}
+		args += "]";
+		if (!frame_params.empty()) args += ",\"params\":" + frame_params;
+		args += "}";
+		composed += "]}";
+		std::string answer;
+		if (!raw_call(c, "traversal.groundSeating.frame", args, answer, why)) return false;
+		// One comparison for both passes: the plain pass holds the answer to the composition, the negative pass to
+		// a doctored one (the last body's offset one mm more), which it must NOT equal.
+		std::string want = composed;
+		if (sabotage && !live.empty()) {
+			const std::size_t at = composed.rfind("\"offsetMm\":");
+			const std::size_t end = composed.find('}', at);
+			const long long n = std::strtoll(composed.c_str() + at + 11, nullptr, 10);
+			want = composed.substr(0, at + 11) + std::to_string(n + 1) + composed.substr(end);
+		}
+		const bool same = answer == want;
+		if (sabotage) {
+			if (!live.empty()) {
+				t.sabotaged++;
+				if (!same) t.sabotage_refused++;
+			}
+		} else if (!same) {
+			return why = "frame " + std::to_string(k) + " is not the single rows composed:\n      frame:   " + answer +
+			             "\n      singles: " + composed,
+			       false;
+		}
+		for (std::size_t j = 0; j < live.size(); j++) states[live[j]] = next[j];
+		t.frames++;
+	}
+	return true;
+}
+
+bool frame_differential(Caller &c, const JsonValue &doc, bool sabotage, FrameTally &t, std::string &why) {
+	std::vector<SettleCase> cases;
+	for (const auto &cp : doc.find("cases")->array_items) {
+		if (cp->get_string("op") != "settle") continue;
+		const JsonValue *input = cp->find("input");
+		const JsonValue *steps = input ? input->find("steps") : nullptr;
+		const JsonValue *expected = cp->find("expected");
+		if (!steps || !steps->is_array() || !expected || !expected->is_array() || expected->size() != steps->size())
+			return why = "settle case '" + cp->get_string("name") + "' has no steps or no answer per step", false;
+		if (input->find("params")) return why = "settle case '" + cp->get_string("name") + "' states params, which this differential does not carry", false;
+		SettleCase sc;
+		sc.name = cp->get_string("name");
+		for (const auto &s : steps->array_items) sc.steps.push_back(s.get());
+		for (const auto &e : expected->array_items) sc.expected.push_back(e.get());
+		cases.push_back(sc);
+	}
+	if (cases.empty()) return why = "the file has no settle case", false;
+	std::vector<std::size_t> order(cases.size());
+	for (std::size_t i = 0; i < order.size(); i++) order[i] = i;
+	std::vector<std::size_t> reversed(order.rbegin(), order.rend());
+	const auto none = [](std::size_t) { return std::string(); };
+	// Every third body its own params, every third null (the frame's), the rest none.
+	const auto mixed = [](std::size_t i) {
+		return i % 3 == 0 ? std::string() : i % 3 == 1 ? std::string("null") : std::string("{\"settleMmPerS\":2500,\"upFactor\":1}");
+	};
+	if (!frame_variant(c, cases, order, "", none, !sabotage, sabotage, t, why)) return why = "in the file's order: " + why, false;
+	if (!frame_variant(c, cases, reversed, "", none, !sabotage, sabotage, t, why)) return why = "reversed: " + why, false;
+	if (!frame_variant(c, cases, order, "{\"settleMmPerS\":1000,\"upFactor\":2}", mixed, false, sabotage, t, why))
+		return why = "under the frame's params: " + why, false;
+	for (std::size_t i = 0; i < cases.size(); i++) {
+		if (!frame_variant(c, cases, {i}, "", none, false, sabotage, t, why)) return why = "one body to a frame: " + why, false;
+	}
+	if (sabotage) return true;
+	// The empty frame.
+	std::string answer;
+	if (!raw_call(c, "traversal.groundSeating.frame", "{\"bodies\":[]}", answer, why)) return false;
+	if (answer != "{\"bodies\":[]}") return why = "the empty frame answered " + answer, false;
+	t.empty++;
+	// Malformed frames: [invalid-input], and the single row given the same value refuses it the same way.
+	struct Bad {
+		const char *frame, *single, *single_args;
+	} bad[] = {
+	    {"{}", nullptr, nullptr},
+	    {"{\"bodies\":{}}", nullptr, nullptr},
+	    {"{\"bodies\":[1]}", nullptr, nullptr},
+	    {"{\"bodies\":[{\"state\":{},\"at\":0},{\"unseat\":\"yes\",\"at\":0}]}", nullptr, nullptr},
+	    {"{\"bodies\":[{\"unseat\":true,\"wantMm\":1,\"at\":0}]}", nullptr, nullptr},
+	    {"{\"bodies\":[{\"state\":[],\"wantMm\":1,\"at\":0}]}", "traversal.groundSeating.retarget", "{\"state\":[],\"wantMm\":1,\"at\":0}"},
+	    {"{\"bodies\":[{\"state\":{},\"wantMm\":\"1\",\"at\":0}]}", "traversal.groundSeating.retarget", "{\"state\":{},\"wantMm\":\"1\",\"at\":0}"},
+	    {"{\"bodies\":[{\"state\":{},\"wantMm\":1,\"at\":\"5\"}]}", "traversal.groundSeating.retarget", "{\"state\":{},\"wantMm\":1,\"at\":\"5\"}"},
+	    {"{\"bodies\":[{\"state\":{},\"at\":null}]}", "traversal.groundSeating.offsetAt", "{\"state\":{},\"at\":null}"},
+	    {"{\"bodies\":[{\"state\":5,\"at\":0}]}", "traversal.groundSeating.offsetAt", "{\"state\":5,\"at\":0}"},
+	};
+	for (const Bad &b : bad) {
+		std::string ignored, err;
+		if (raw_call(c, "traversal.groundSeating.frame", b.frame, ignored, err)) return why = std::string("the frame accepted ") + b.frame, false;
+		if (err.find("[invalid-input]") == std::string::npos) return why = std::string(b.frame) + " was refused, but not [invalid-input]: " + err, false;
+		if (b.single) {
+			std::string serr;
+			if (raw_call(c, b.single, b.single_args, ignored, serr)) return why = std::string(b.single) + " accepted " + b.single_args, false;
+			if (serr.find("[invalid-input]") == std::string::npos) return why = std::string(b.single) + " refused, but not [invalid-input]: " + serr, false;
+		}
+		t.refusals++;
+	}
 	return true;
 }
 
@@ -1521,6 +1760,28 @@ int main(int argc, char **argv) {
 			std::string by_step;
 			for (const auto &kv : g_steps) by_step += (by_step.empty() ? "" : ", ") + kv.first + " " + std::to_string(kv.second);
 			std::printf("  steps through the rows: %s\n", by_step.c_str());
+		}
+		// The frame row against the single rows, over this file's settle cases (PL.native-ground-seat-batch).
+		if (area->key == "traversal/ground-seating") {
+			FrameTally t;
+			std::string why_frame;
+			if (!frame_differential(c, doc, negative, t, why_frame)) {
+				std::printf("  [FAIL] traversal.groundSeating.frame differential: %s\n", why_frame.c_str());
+				failed++;
+			} else if (negative) {
+				std::printf("  traversal.groundSeating.frame --negative: %d of %d doctored frame answer(s) refused\n", t.sabotage_refused,
+				            t.sabotaged);
+				if (t.sabotaged == 0 || t.sabotage_refused != t.sabotaged) failed++;
+			} else {
+				std::printf("  traversal.groundSeating.frame: %d frame(s), %d bodies byte-identical to the single rows composed (target %d, at %d, "
+				            "unseat %d, own params %d, empty %d), %d answer(s) held to core's settle cases, %d malformed frame(s) refused "
+				            "[invalid-input]\n",
+				            t.frames, t.bodies, t.target, t.at, t.unseat, t.own_params, t.empty, t.held, t.refusals);
+				if (!t.frames || !t.target || !t.at || !t.unseat || !t.own_params || !t.empty || !t.held || !t.refusals) {
+					std::printf("  [FAIL] traversal.groundSeating.frame differential: a kind of body, frame or refusal was never driven\n");
+					failed++;
+				}
+			}
 		}
 		if (negative) {
 			std::printf("  negative: %d of %zu perturbed expectation(s) refused, %d accepted\n", file_refused, case_list->size(),

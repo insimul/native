@@ -10104,6 +10104,50 @@ const METHODS = {
 	/** `traversal.groundSeating.unseat {}` → `{ state }` — core's `unseat`: whenever nothing carries the body (switched off, or standing with its agent off). */
 	'traversal.groundSeating.unseat': () => ({ state: plain(unseat()) }),
 
+	/**
+	 * `traversal.groundSeating.frame { bodies: [{ state?, wantMm?, at, unseat?, params? }], params? }` →
+	 * `{ bodies: [{ state, offsetMm }] }` in input order (PL.native-ground-seat-batch, U115): one call settles
+	 * every carried body for a frame. It is EXACTLY the single rows composed, body by body, with the body's
+	 * `params` when it sends them (null is absent) and the frame's otherwise:
+	 * `state` absent or null is `.initial`'s; `unseat: true` is `.unseat`, then `.offsetAt` at `at` (0);
+	 * a `wantMm` is `.retarget { state, wantMm, at }`, then `.offsetAt` over the state it answered; with neither,
+	 * `.offsetAt { state, at }` and the state as sent. Every body is checked before any is settled, and a
+	 * malformed one refuses the whole frame, `[invalid-input]`, naming `bodies[<i>]`.
+	 */
+	'traversal.groundSeating.frame': (args) => {
+		const m = 'traversal.groundSeating.frame';
+		const bodies = coded('invalid-input', () =>
+			needArray(m, args.bodies, 'bodies').map((body, i) => {
+				const at = `bodies[${i}]`;
+				needObject(m, body, at);
+				const unseating = optionalArg(body.unseat, (v) => {
+					if (typeof v !== 'boolean') throw refuse(m, `\`${at}.unseat\` must be a boolean`);
+					return v;
+				});
+				const wantMm = optNumber(m, body.wantMm, `${at}.wantMm`);
+				if (unseating && wantMm !== undefined) throw refuse(m, `\`${at}\` cannot both unseat and send a \`wantMm\``);
+				return {
+					state: optionalArg(body.state, (v) => needObject(m, v, `${at}.state`)),
+					at: unseating ? optNumber(m, body.at, `${at}.at`) : needNumber(m, body.at, `${at}.at`),
+					wantMm,
+					unseat: unseating === true,
+					params: body.params,
+				};
+			}),
+		);
+		const frameTuning = groundSeatTuningOf(args);
+		return {
+			bodies: bodies.map((b) => {
+				const tuning = b.params === undefined || b.params === null ? frameTuning : groundSeatTuningOf(b);
+				let state = b.state === undefined ? plain(initialSeat()) : b.state;
+				if (b.unseat) state = plain(unseat());
+				else if (b.wantMm !== undefined) state = plain(retargetSeat(state, b.wantMm, b.at, tuning));
+				else state = plain(state);
+				return { state, offsetMm: seatOffsetAt(state, b.at ?? 0, tuning) };
+			}),
+		};
+	},
+
 	// ── traversal: the stateful layers (P9e; PL.native-traversal-rows slice 2, U106(1)) ──
 	// The personal vehicles and the lent-mode record are pure functions, one row each
 	// (`traversal.personal.*`, `traversal.lending.*`); the save block is two

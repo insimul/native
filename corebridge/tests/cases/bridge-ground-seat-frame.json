@@ -1,0 +1,2316 @@
+{
+ "area": "traversal-ground-seat-frame",
+ "description": "Hand cases for the traversal.groundSeating.frame row (PL.native-ground-seat-batch, U115): one call settles every carried body of a frame, exactly as the single rows composed body by body. Core's five settle cases (conformance/traversal/ground-seating.json) played as five bodies of one frame per step, in order and reversed, each answer held to the corpus's expected; a mixed frame next to the single rows called one by one; an empty frame, one body, a body's own params over the frame's; and the row's [invalid-input] refusals. Every expectation is core's own answer at the pin, computed by tools/hand-cases/ground-seat-frame.mjs through tools/gen-hand-cases.mjs.",
+ "generatedBy": "corebridge/tools/gen-hand-cases.mjs (tools/hand-cases/ground-seat-frame.mjs) — do not hand-edit; regenerate with --core <checkout>",
+ "source": {
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
+  "spec": "ground-seat-frame.mjs"
+ },
+ "cases": [
+  {
+   "name": "frame: core's five settle cases as five bodies, one frame per step (state absent on the first frame is .initial's)",
+   "steps": [
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "wantMm": 0,
+        "at": 0
+       },
+       {
+        "wantMm": 0,
+        "at": 0
+       },
+       {
+        "wantMm": 0,
+        "at": 0
+       },
+       {
+        "wantMm": 0,
+        "at": 500
+       },
+       {
+        "wantMm": 0,
+        "at": 0
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 500
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "wantMm": 60,
+        "at": 1000
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "wantMm": -100,
+        "at": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "wantMm": -150,
+        "at": 100
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 500
+        },
+        "wantMm": -60,
+        "at": 520
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "wantMm": 200,
+        "at": 10
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -150,
+         "since": 100
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -60,
+         "since": 520
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 200,
+         "since": 10
+        },
+        "offsetMm": 0
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "at": 1005
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "wantMm": -100,
+        "at": 7
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -150,
+         "since": 100
+        },
+        "wantMm": 90,
+        "at": 140
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -60,
+         "since": 520
+        },
+        "at": 400
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 200,
+         "since": 10
+        },
+        "unseat": true
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "offsetMm": 30
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "offsetMm": -10
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 90,
+         "since": 140
+        },
+        "offsetMm": -60
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -60,
+         "since": 520
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "at": 1010
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "wantMm": -100,
+        "at": 13
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 90,
+         "since": 140
+        },
+        "at": 160
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -60,
+         "since": 520
+        },
+        "wantMm": 30,
+        "at": 510
+       },
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "at": 50
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "offsetMm": 60
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "offsetMm": -19
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 90,
+         "since": 140
+        },
+        "offsetMm": 60
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 30,
+         "since": 520
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "at": 1999
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "at": 20
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 90,
+         "since": 140
+        },
+        "at": 170
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 30,
+         "since": 520
+        },
+        "at": 530
+       },
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "wantMm": 200,
+        "at": 60
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "offsetMm": 60
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "offsetMm": -30
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 90,
+         "since": 140
+        },
+        "offsetMm": 90
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 30,
+         "since": 520
+        },
+        "offsetMm": 30
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 200,
+         "wantMm": 200,
+         "since": 60
+        },
+        "offsetMm": 200
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "wantMm": -80,
+        "at": 2000
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 60,
+         "wantMm": -80,
+         "since": 2000
+        },
+        "offsetMm": 60
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 60,
+         "wantMm": -80,
+         "since": 2000
+        },
+        "at": 2050
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 60,
+         "wantMm": -80,
+         "since": 2000
+        },
+        "offsetMm": -15
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 60,
+         "wantMm": -80,
+         "since": 2000
+        },
+        "at": 2100
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 60,
+         "wantMm": -80,
+         "since": 2000
+        },
+        "offsetMm": -80
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "frame: the same frames with the bodies reversed answer the same bodies, reversed",
+   "steps": [
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "wantMm": 0,
+        "at": 0
+       },
+       {
+        "wantMm": 0,
+        "at": 500
+       },
+       {
+        "wantMm": 0,
+        "at": 0
+       },
+       {
+        "wantMm": 0,
+        "at": 0
+       },
+       {
+        "wantMm": 0,
+        "at": 0
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 500
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "wantMm": 200,
+        "at": 10
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 500
+        },
+        "wantMm": -60,
+        "at": 520
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "wantMm": -150,
+        "at": 100
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "wantMm": -100,
+        "at": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "wantMm": 60,
+        "at": 1000
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 200,
+         "since": 10
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -60,
+         "since": 520
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -150,
+         "since": 100
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "offsetMm": 0
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 200,
+         "since": 10
+        },
+        "unseat": true
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -60,
+         "since": 520
+        },
+        "at": 400
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -150,
+         "since": 100
+        },
+        "wantMm": 90,
+        "at": 140
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "wantMm": -100,
+        "at": 7
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "at": 1005
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -60,
+         "since": 520
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 90,
+         "since": 140
+        },
+        "offsetMm": -60
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "offsetMm": -10
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "offsetMm": 30
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "at": 50
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -60,
+         "since": 520
+        },
+        "wantMm": 30,
+        "at": 510
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 90,
+         "since": 140
+        },
+        "at": 160
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "wantMm": -100,
+        "at": 13
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "at": 1010
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 30,
+         "since": 520
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 90,
+         "since": 140
+        },
+        "offsetMm": 60
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "offsetMm": -19
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "offsetMm": 60
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "wantMm": 200,
+        "at": 60
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 30,
+         "since": 520
+        },
+        "at": 530
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 90,
+         "since": 140
+        },
+        "at": 170
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "at": 20
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "at": 1999
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 200,
+         "wantMm": 200,
+         "since": 60
+        },
+        "offsetMm": 200
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 30,
+         "since": 520
+        },
+        "offsetMm": 30
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 90,
+         "since": 140
+        },
+        "offsetMm": 90
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": -100,
+         "since": 0
+        },
+        "offsetMm": -30
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "offsetMm": 60
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 0,
+         "wantMm": 60,
+         "since": 1000
+        },
+        "wantMm": -80,
+        "at": 2000
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 60,
+         "wantMm": -80,
+         "since": 2000
+        },
+        "offsetMm": 60
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 60,
+         "wantMm": -80,
+         "since": 2000
+        },
+        "at": 2050
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 60,
+         "wantMm": -80,
+         "since": 2000
+        },
+        "offsetMm": -15
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 60,
+         "wantMm": -80,
+         "since": 2000
+        },
+        "at": 2100
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 60,
+         "wantMm": -80,
+         "since": 2000
+        },
+        "offsetMm": -80
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "frame: a mixed frame equals .initial, .retarget, .offsetAt and .unseat called body by body",
+   "steps": [
+    {
+     "call": "traversal.groundSeating.initial",
+     "expect": {
+      "state": {
+       "seated": false,
+       "fromMm": 0,
+       "wantMm": 0,
+       "since": 0
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.retarget",
+     "args": {
+      "state": {
+       "seated": false,
+       "fromMm": 0,
+       "wantMm": 0,
+       "since": 0
+      },
+      "wantMm": 40,
+      "at": 1050
+     },
+     "expect": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": 40,
+       "since": 1050
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": 40,
+       "since": 1050
+      },
+      "at": 1050
+     },
+     "expect": {
+      "offsetMm": 40
+     }
+    },
+    {
+     "call": "traversal.groundSeating.retarget",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": -60,
+       "since": 1000
+      },
+      "wantMm": 100,
+      "at": 1050
+     },
+     "expect": {
+      "state": {
+       "seated": true,
+       "fromMm": -35,
+       "wantMm": 100,
+       "since": 1050
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": -35,
+       "wantMm": 100,
+       "since": 1050
+      },
+      "at": 1050
+     },
+     "expect": {
+      "offsetMm": -35
+     }
+    },
+    {
+     "call": "traversal.groundSeating.retarget",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": -60,
+       "since": 1000
+      },
+      "wantMm": -60,
+      "at": 1030
+     },
+     "expect": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": -60,
+       "since": 1000
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": -60,
+       "since": 1000
+      },
+      "at": 1030
+     },
+     "expect": {
+      "offsetMm": -5
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": -60,
+       "since": 1000
+      },
+      "at": 1040
+     },
+     "expect": {
+      "offsetMm": -20
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": false,
+       "fromMm": 0,
+       "wantMm": 0,
+       "since": 0
+      },
+      "at": 1040
+     },
+     "expect": {
+      "offsetMm": 0
+     }
+    },
+    {
+     "call": "traversal.groundSeating.unseat",
+     "expect": {
+      "state": {
+       "seated": false,
+       "fromMm": 0,
+       "wantMm": 0,
+       "since": 0
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": false,
+       "fromMm": 0,
+       "wantMm": 0,
+       "since": 0
+      },
+      "at": 0
+     },
+     "expect": {
+      "offsetMm": 0
+     }
+    },
+    {
+     "call": "traversal.groundSeating.unseat",
+     "expect": {
+      "state": {
+       "seated": false,
+       "fromMm": 0,
+       "wantMm": 0,
+       "since": 0
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": false,
+       "fromMm": 0,
+       "wantMm": 0,
+       "since": 0
+      },
+      "at": 1040
+     },
+     "expect": {
+      "offsetMm": 0
+     }
+    },
+    {
+     "call": "traversal.groundSeating.retarget",
+     "args": {
+      "state": {
+       "seated": false,
+       "fromMm": 0,
+       "wantMm": 0,
+       "since": 0
+      },
+      "wantMm": -25,
+      "at": 1060
+     },
+     "expect": {
+      "state": {
+       "seated": true,
+       "fromMm": -25,
+       "wantMm": -25,
+       "since": 1060
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": -25,
+       "wantMm": -25,
+       "since": 1060
+      },
+      "at": 1060
+     },
+     "expect": {
+      "offsetMm": -25
+     }
+    },
+    {
+     "call": "traversal.groundSeating.retarget",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": -60,
+       "since": 1000
+      },
+      "wantMm": 100,
+      "at": 1050
+     },
+     "expect": {
+      "state": {
+       "seated": true,
+       "fromMm": -35,
+       "wantMm": 100,
+       "since": 1050
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": -35,
+       "wantMm": 100,
+       "since": 1050
+      },
+      "at": 1050
+     },
+     "expect": {
+      "offsetMm": -35
+     }
+    },
+    {
+     "call": "traversal.groundSeating.initial",
+     "expect": {
+      "state": {
+       "seated": false,
+       "fromMm": 0,
+       "wantMm": 0,
+       "since": 0
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": false,
+       "fromMm": 0,
+       "wantMm": 0,
+       "since": 0
+      },
+      "at": 1050
+     },
+     "expect": {
+      "offsetMm": 0
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "wantMm": 40,
+        "at": 1050
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": 100,
+        "at": 1050
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": -60,
+        "at": 1030
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "at": 1040
+       },
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "at": 1040
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "unseat": true
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "unseat": true,
+        "at": 1040
+       },
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "wantMm": -25,
+        "at": 1060
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": 100,
+        "at": 1050,
+        "unseat": false
+       },
+       {
+        "state": null,
+        "wantMm": null,
+        "at": 1050
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": 40,
+         "since": 1050
+        },
+        "offsetMm": 40
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -35,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": -35
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "offsetMm": -5
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "offsetMm": -20
+       },
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -25,
+         "wantMm": -25,
+         "since": 1060
+        },
+        "offsetMm": -25
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -35,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": -35
+       },
+       {
+        "state": {
+         "seated": false,
+         "fromMm": 0,
+         "wantMm": 0,
+         "since": 0
+        },
+        "offsetMm": 0
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "frame: an empty frame answers no bodies",
+   "steps": [
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": []
+     },
+     "expect": {
+      "bodies": []
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [],
+      "params": {
+       "settleMmPerS": 1000
+      }
+     },
+     "expect": {
+      "bodies": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "frame: one body",
+   "steps": [
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": 100,
+        "at": 1050
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -35,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": -35
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "wantMm": 100,
+        "at": 1050
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 100,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": 100
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "frame: a body's own params stand over the frame's; null is absent and {} is core's defaults",
+   "steps": [
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": 100,
+        "at": 1050
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": 100,
+        "at": 1050,
+        "params": null
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": 100,
+        "at": 1050,
+        "params": {}
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": 100,
+        "at": 1050,
+        "params": {
+         "settleMmPerS": 3000,
+         "upFactor": 1
+        }
+       }
+      ],
+      "params": {
+       "settleMmPerS": 1000,
+       "upFactor": 2
+      }
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -10,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": -10
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -10,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": -10
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -35,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": -35
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": -60
+       }
+      ]
+     }
+    },
+    {
+     "call": "traversal.groundSeating.retarget",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": -60,
+       "since": 1000
+      },
+      "wantMm": 100,
+      "at": 1050,
+      "params": {
+       "settleMmPerS": 1000,
+       "upFactor": 2
+      }
+     },
+     "expect": {
+      "state": {
+       "seated": true,
+       "fromMm": -10,
+       "wantMm": 100,
+       "since": 1050
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": -10,
+       "wantMm": 100,
+       "since": 1050
+      },
+      "at": 1050,
+      "params": {
+       "settleMmPerS": 1000,
+       "upFactor": 2
+      }
+     },
+     "expect": {
+      "offsetMm": -10
+     }
+    },
+    {
+     "call": "traversal.groundSeating.retarget",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": -60,
+       "since": 1000
+      },
+      "wantMm": 100,
+      "at": 1050,
+      "params": {
+       "settleMmPerS": 1000,
+       "upFactor": 2
+      }
+     },
+     "expect": {
+      "state": {
+       "seated": true,
+       "fromMm": -10,
+       "wantMm": 100,
+       "since": 1050
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": -10,
+       "wantMm": 100,
+       "since": 1050
+      },
+      "at": 1050,
+      "params": {
+       "settleMmPerS": 1000,
+       "upFactor": 2
+      }
+     },
+     "expect": {
+      "offsetMm": -10
+     }
+    },
+    {
+     "call": "traversal.groundSeating.retarget",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": -60,
+       "since": 1000
+      },
+      "wantMm": 100,
+      "at": 1050,
+      "params": {}
+     },
+     "expect": {
+      "state": {
+       "seated": true,
+       "fromMm": -35,
+       "wantMm": 100,
+       "since": 1050
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": -35,
+       "wantMm": 100,
+       "since": 1050
+      },
+      "at": 1050,
+      "params": {}
+     },
+     "expect": {
+      "offsetMm": -35
+     }
+    },
+    {
+     "call": "traversal.groundSeating.retarget",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": 40,
+       "wantMm": -60,
+       "since": 1000
+      },
+      "wantMm": 100,
+      "at": 1050,
+      "params": {
+       "settleMmPerS": 3000,
+       "upFactor": 1
+      }
+     },
+     "expect": {
+      "state": {
+       "seated": true,
+       "fromMm": -60,
+       "wantMm": 100,
+       "since": 1050
+      }
+     }
+    },
+    {
+     "call": "traversal.groundSeating.offsetAt",
+     "args": {
+      "state": {
+       "seated": true,
+       "fromMm": -60,
+       "wantMm": 100,
+       "since": 1050
+      },
+      "at": 1050,
+      "params": {
+       "settleMmPerS": 3000,
+       "upFactor": 1
+      }
+     },
+     "expect": {
+      "offsetMm": -60
+     }
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": 100,
+        "at": 1050
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": 100,
+        "at": 1050,
+        "params": null
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": 100,
+        "at": 1050,
+        "params": {}
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "wantMm": 100,
+        "at": 1050,
+        "params": {
+         "settleMmPerS": 3000,
+         "upFactor": 1
+        }
+       }
+      ]
+     },
+     "expect": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -35,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": -35
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -35,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": -35
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -35,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": -35
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": -60,
+         "wantMm": 100,
+         "since": 1050
+        },
+        "offsetMm": -60
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "frame: the row refuses a malformed frame whole, [invalid-input], naming the body",
+   "steps": [
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {},
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies` must be an array"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": {}
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies` must be an array"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "at": 1050
+       },
+       1
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies[1]` must be a JSON object"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "at": 1050
+       },
+       null
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies[1]` must be a JSON object"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "at": 1050
+       },
+       {
+        "state": [],
+        "at": 0
+       }
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies[1].state` must be a JSON object"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": 5,
+        "at": 0
+       }
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies[0].state` must be a JSON object"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        }
+       }
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies[0].at` must be a finite number"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "at": "1050"
+       }
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies[0].at` must be a finite number"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "at": 1050
+       },
+       {
+        "state": {
+         "seated": true,
+         "fromMm": 40,
+         "wantMm": -60,
+         "since": 1000
+        },
+        "at": 1050
+       },
+       {
+        "wantMm": 10
+       }
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies[2].at` must be a finite number"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "wantMm": "40",
+        "at": 0
+       }
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies[0].wantMm` must be a finite number"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "unseat": "yes",
+        "at": 0
+       }
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies[0].unseat` must be a boolean"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "unseat": true,
+        "wantMm": 40,
+        "at": 0
+       }
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies[0]` cannot both unseat and send a `wantMm`"
+    },
+    {
+     "call": "traversal.groundSeating.frame",
+     "args": {
+      "bodies": [
+       {
+        "unseat": true,
+        "at": "now"
+       }
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: traversal.groundSeating.frame: `bodies[0].at` must be a finite number"
+    }
+   ]
+  }
+ ]
+}
