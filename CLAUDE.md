@@ -926,7 +926,7 @@
   `.retarget` and an `.offsetAt` per body): change a single row and the frame must
   change with it. `traversal_corpus` holds its RAW answer to the single rows' raw
   answers composed, byte for byte, over the ground-seating file's settle cases (in
-  order, reversed, under params, one body a frame, empty), and
+  order, reversed, under params, one body a frame, empty, no state), and
   `traversal_corpus_negative` doctors that composition and must see every frame
   refused; `tests/cases/bridge-ground-seat-frame.json` is generated from core
   (`tools/hand-cases/ground-seat-frame.mjs`). The single rows stay as they are.

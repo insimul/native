@@ -61,7 +61,8 @@
 //   single rows' raw answers composed (`{"bodies":[{"state":<.retarget's or .unseat's state text>,
 //   "offsetMm":<.offsetAt's number>},…]}`), over the file's settle cases as bodies, one frame per step
 //   index: in order and reversed (each body also held to its case's `expected`), under frame params with
-//   bodies' own params (absent, null, stated), one case to a frame, and the empty frame; ten malformed
+//   bodies' own params (absent, null, stated), one case to a frame, the empty frame and a frame of bodies with
+//   no state (absent and null: .initial's, the clock only); ten malformed
 //   frames must be refused [invalid-input] (and the single row given the same value likewise). Under
 //   --negative the composition is doctored (the last body's offset one mm off) and every frame must differ.
 //   session run {links, tuning, vehicles, fastTravel, seed, stamina, probe, locomotion,
@@ -850,7 +851,7 @@ bool drive_settle(Caller &c, const JsonValue &input, JsonValuePtr &out, std::str
 // then DIFFER, so a differential that cannot fail fails the run.
 
 struct FrameTally {
-	int frames = 0, bodies = 0, target = 0, at = 0, unseat = 0, own_params = 0, empty = 0, held = 0, refusals = 0;
+	int frames = 0, bodies = 0, target = 0, at = 0, unseat = 0, own_params = 0, empty = 0, held = 0, refusals = 0, single_refusals = 0;
 	int sabotaged = 0, sabotage_refused = 0;
 };
 
@@ -1037,6 +1038,21 @@ bool frame_differential(Caller &c, const JsonValue &doc, bool sabotage, FrameTal
 	if (!raw_call(c, "traversal.groundSeating.frame", "{\"bodies\":[]}", answer, why)) return false;
 	if (answer != "{\"bodies\":[]}") return why = "the empty frame answered " + answer, false;
 	t.empty++;
+	// A body with no state (absent, and null) is .initial's: the clock only, so the state is .initial's as answered.
+	{
+		std::string initial, offset;
+		if (!raw_call(c, "traversal.groundSeating.initial", "{}", answer, why) || !unwrap(answer, "state", initial, why)) return false;
+		if (!raw_call(c, "traversal.groundSeating.offsetAt", "{\"state\":" + initial + ",\"at\":5}", answer, why) ||
+		    !unwrap(answer, "offsetMm", offset, why))
+			return false;
+		const std::string body = "{\"state\":" + initial + ",\"offsetMm\":" + offset + "}";
+		if (!raw_call(c, "traversal.groundSeating.frame", "{\"bodies\":[{\"at\":5},{\"state\":null,\"at\":5}]}", answer, why)) return false;
+		if (answer != "{\"bodies\":[" + body + "," + body + "]}")
+			return why = "a body with no state is not .initial's: " + answer + " (singles " + body + ")", false;
+		t.frames++;
+		t.bodies += 2;
+		t.at += 2;
+	}
 	// Malformed frames: [invalid-input], and the single row given the same value refuses it the same way.
 	struct Bad {
 		const char *frame, *single, *single_args;
@@ -1060,6 +1076,7 @@ bool frame_differential(Caller &c, const JsonValue &doc, bool sabotage, FrameTal
 			std::string serr;
 			if (raw_call(c, b.single, b.single_args, ignored, serr)) return why = std::string(b.single) + " accepted " + b.single_args, false;
 			if (serr.find("[invalid-input]") == std::string::npos) return why = std::string(b.single) + " refused, but not [invalid-input]: " + serr, false;
+			t.single_refusals++;
 		}
 		t.refusals++;
 	}
@@ -1775,9 +1792,9 @@ int main(int argc, char **argv) {
 			} else {
 				std::printf("  traversal.groundSeating.frame: %d frame(s), %d bodies byte-identical to the single rows composed (target %d, at %d, "
 				            "unseat %d, own params %d, empty %d), %d answer(s) held to core's settle cases, %d malformed frame(s) refused "
-				            "[invalid-input]\n",
-				            t.frames, t.bodies, t.target, t.at, t.unseat, t.own_params, t.empty, t.held, t.refusals);
-				if (!t.frames || !t.target || !t.at || !t.unseat || !t.own_params || !t.empty || !t.held || !t.refusals) {
+				            "[invalid-input] (%d also by the single row)\n",
+				            t.frames, t.bodies, t.target, t.at, t.unseat, t.own_params, t.empty, t.held, t.refusals, t.single_refusals);
+				if (!t.frames || !t.target || !t.at || !t.unseat || !t.own_params || !t.empty || !t.held || !t.refusals || !t.single_refusals) {
 					std::printf("  [FAIL] traversal.groundSeating.frame differential: a kind of body, frame or refusal was never driven\n");
 					failed++;
 				}
