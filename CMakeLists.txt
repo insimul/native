@@ -1192,7 +1192,8 @@ add_test(NAME hillside_corpus COMMAND insimulcore_hillside_corpus
 set_tests_properties(hillside_corpus PROPERTIES
   PASS_REGULAR_EXPRESSION "contract: 14 data key[(]s[)] held to hillside.contract, 0 problem[(]s[)]\n.*hillside_corpus: contract 14 key[(]s[)], 0 problem[(]s[)]. 16 case[(]s[)] [(]64 call[(]s[)][)], 0 failed. 14 control[(]s[)], 0 not refused\nhillside_corpus: PASS")
 # Its negative control (tests/hillside-negative/pads-wrong.json, made from the
-# vendored file): the contract's wallMaxM moved to 1.6, one true case, six cases whose
+# vendored file): the contract's wallMaxM moved to 1.6 and its overlapSlopeDiffM
+# dropped (a key the row states and the file does not), one true case, six cases whose
 # expected answer is the one a wrong port would give (a terraced pad answered as a
 # default pad, a target 2 mm high, the report line on an empty plan, a stacked pad set
 # read as one pass, an engine the row refuses answering as unreal does, an overlap
@@ -1202,7 +1203,7 @@ set_tests_properties(hillside_corpus PROPERTIES
 add_test(NAME hillside_corpus_negative COMMAND insimulcore_hillside_corpus
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/hillside-negative/pads-wrong.json)
 set_tests_properties(hillside_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "contract.wallMaxM: 1.5 [(]want 1.6[)].*[[] ok []] case interior-and-edge-points: 4 engine.*case WRONG a terraced pad answered as a default pad [^\n]*pads.0..carryM: 0.18119 [(]want 0.714531[)].*case WRONG a target 2 mm high [^\n]*pads.0..height: 7.115 [(]want 7.117[)].*case WRONG the report line on an empty plan [^\n]*breaks an invariant: report.lines.*case WRONG a stacked pad set read as one pass [^\n]*padSet: .map lot footprint.map.fp-gentle is graded.*case WRONG an engine the row refuses [^\n]*cryengine answers differently from unreal.*case WRONG an overlap finding where the blend holds [^\n]*findings: 0 item[(]s[)] [(]want 1[)].*control WRONG a control that changes nothing NOT refused.*7 case[(]s[)] [(]26 call[(]s[)][)], 6 failed. 1 control[(]s[)], 1 not refused\nhillside_corpus: FAIL")
+  PASS_REGULAR_EXPRESSION "contract.wallMaxM: 1.5 [(]want 1.6[)].*hillside.contract states overlapSlopeDiffM, which the file does not.*[[] ok []] case interior-and-edge-points: 4 engine.*case WRONG a terraced pad answered as a default pad [^\n]*pads.0..carryM: 0.18119 [(]want 0.714531[)].*case WRONG a target 2 mm high [^\n]*pads.0..height: 7.115 [(]want 7.117[)].*case WRONG the report line on an empty plan [^\n]*breaks an invariant: report.lines.*case WRONG a stacked pad set read as one pass [^\n]*padSet: .map lot footprint.map.fp-gentle is graded.*case WRONG an engine the row refuses [^\n]*cryengine answers differently from unreal.*case WRONG an overlap finding where the blend holds [^\n]*findings: 0 item[(]s[)] [(]want 1[)].*control WRONG a control that changes nothing NOT refused.*7 case[(]s[)] [(]26 call[(]s[)][)], 6 failed. 1 control[(]s[)], 1 not refused\nhillside_corpus: FAIL")
 
 
 # survival_corpus (PL.native-survival-rows, rulings U106(1) and U36): core's P9c
