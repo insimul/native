@@ -1,0 +1,6 @@
+{
+  "generatedBy": "bench/ground_seat_frame.sh -> insimulcore_ground_seat_bench (tests/ground_seat_bench.cpp)",
+  "what": "traversal.groundSeating.frame (one call a frame) against .retarget + .offsetAt per body per frame, 10 carried bodies, through insimulcore.h; every frame's answers checked byte for byte equal before timing",
+  "host": { "uname": "Darwin arm64", "cc": "Apple clang version 21.0.0 (clang-2100.1.1.101)", "cpus": "10", "loadAverage1min": "2.01" },
+  "result": {"version":"0.1.0 (quickjs 2025-04-26, core 45409ed35f2e33c601923dbbbf0a48b88c7c4952)","bodies":10,"frames":600,"repeat":9,"answersIdentical":true,"singles":{"callsPerFrame":20,"msPerFrameMedian":0.1627,"msPerFrameMin":0.1610},"frame":{"callsPerFrame":1,"msPerFrameMedian":0.0759,"msPerFrameMin":0.0738},"speedupMedian":2.14}
+}
