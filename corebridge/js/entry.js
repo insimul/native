@@ -1219,6 +1219,30 @@ import { CompositionError, resolveComposition } from '@insimul/core/system-packs
 import { LAYOUT_OPS, runLayoutOp } from '@insimul/core/editor/layout/corpus';
 import { COMPOSITION_OPS, runCompositionOp } from '@insimul/core/editor/layout/composition/corpus';
 
+// ── hillside grading: the pads (PL.native-grading-plan-call, U115; core's NF.H3,
+// ADR-0001) ──────────────────────────────────────────────────────────────────
+// Core's grading plan of a World IR's map lots (pads, terraces, retaining walls, the
+// walls between neighbours, the report, the findings) and its point function, so an
+// engine takes the plan from this library instead of porting it. Never the corpus
+// runner (`editor/scene/hillside-grading-corpus`): tests/hillside_corpus.cpp is that
+// here. The stairs (ADR §6) are core's next slice and are not in this module yet.
+import {
+	BLEND_MAX_RISE_M,
+	HILLSIDE_MAX_WALLS,
+	MAP_PAD_ID_PREFIX,
+	OVERLAP_SLOPE_DIFF_M,
+	OVERLAP_SLOPE_LATTICE_M,
+	OVERLAP_SLOPE_TOLERANCE,
+	STAND_MAX_GRADIENT,
+	TERRACE_DEPTH_M,
+	WALL_MAX_M,
+	WALL_STEP_MIN_M,
+	checkPadSet,
+	computeGradingPlan,
+	gradingPlanHeight,
+} from '@insimul/core/editor/scene/hillside-grading';
+import { GRADED_CELL_M, LOT_PAD_BLEND_M, LOT_PAD_MARGIN_M } from '@insimul/core/editor/layout/ground-plan';
+
 // ── boundary helpers ──────────────────────────────────────────────────────────
 
 /** A caller error, named after the row it was made against. */
@@ -2035,6 +2059,106 @@ function footstepTickOf(method, args) {
 		needNumber(method, args.dtSec, 'dtSec');
 		return { state: { elapsedSec: state.elapsedSec, nextFoot: state.nextFoot }, tick: { dtSec: args.dtSec, gait: args.gait, surface: args.surface } };
 	});
+}
+
+// ── hillside grading (PL.native-grading-plan-call) ────────────────────────────
+
+/**
+ * `hillside.contract`'s answer: the data of core's `conformance/hillside/pads.json`
+ * `contract`, from core's exported constants as core's emitter
+ * (`scripts/emit-hillside-corpus.ts`) builds it, at full precision (the file rounds
+ * `standMaxGradient` and `blendMaxRiseM` to 1e-6). The file's prose keys
+ * (`blendMaxRiseRule`, `reportLine`, `overlapSlopeRule`, `neighbourWallRule`, `frame`,
+ * `module`) are rules written out, not data, and are not here; tests/hillside_corpus.cpp
+ * holds every other key of the file's contract to this answer.
+ */
+function hillsideContract() {
+	return {
+		padIdPrefix: MAP_PAD_ID_PREFIX,
+		lotPadMarginM: LOT_PAD_MARGIN_M,
+		lotPadBlendM: LOT_PAD_BLEND_M,
+		gradedCellM: GRADED_CELL_M,
+		standMaxDeg: PLAYER_GROUND.standMaxDeg,
+		standMaxGradient: STAND_MAX_GRADIENT,
+		blendMaxRiseM: BLEND_MAX_RISE_M,
+		wallMaxM: WALL_MAX_M,
+		terraceDepthM: TERRACE_DEPTH_M,
+		hillsideMaxWalls: HILLSIDE_MAX_WALLS,
+		wallStepMinM: WALL_STEP_MIN_M,
+		overlapSlopeLatticeM: OVERLAP_SLOPE_LATTICE_M,
+		overlapSlopeDiffM: OVERLAP_SLOPE_DIFF_M,
+		overlapSlopeTolerance: OVERLAP_SLOPE_TOLERANCE,
+	};
+}
+
+/** The fields of core's `TerrainPad` (`editor/layout/ground-plan`) the point function and `checkPadSet` read as numbers. */
+const TERRAIN_PAD_NUMBERS = ['cx', 'cz', 'halfAcross', 'halfAway', 'awayX', 'awayZ', 'height'];
+
+/**
+ * The grading plan row's own checks, coded `[invalid-input]`: only what core reads
+ * unchecked. `world` is a JSON object (core reads `world.geography` and the
+ * placement's records off it; what a world holds or lacks is core's to refuse, as a
+ * value). `points`, when sent (null is none), is an array of objects with finite `x`
+ * and `z` and, if any, a string `label` (core's point function computes on them
+ * unread, so a missing coordinate would answer NaN). `otherPads`, when sent (null is
+ * none), is an array of `GradeLots` pads in core's `TerrainPad` shape: a string
+ * `lotId` and finite `cx`, `cz`, `halfAcross`, `halfAway`, `awayX`, `awayZ` and
+ * `height`; each goes to core as sent. `engine` goes to core as sent: one core does
+ * not know is core's refusal `unknown-engine`, a value.
+ */
+function gradingPlanArgsOf(method, args) {
+	return coded('invalid-input', () => {
+		const world = needObject(method, args.world, 'world');
+		let points;
+		if (args.points !== undefined && args.points !== null) {
+			points = needArray(method, args.points, 'points').map((pt, i) => {
+				needObject(method, pt, `points[${i}]`);
+				needNumber(method, pt.x, `points[${i}].x`);
+				needNumber(method, pt.z, `points[${i}].z`);
+				if (pt.label !== undefined) needString(method, pt.label, `points[${i}].label`);
+				return pt;
+			});
+		}
+		let otherPads;
+		if (args.otherPads !== undefined && args.otherPads !== null) {
+			otherPads = needArray(method, args.otherPads, 'otherPads').map((pad, i) => {
+				needObject(method, pad, `otherPads[${i}]`);
+				needString(method, pad.lotId, `otherPads[${i}].lotId`);
+				for (const k of TERRAIN_PAD_NUMBERS) needNumber(method, pad[k], `otherPads[${i}].${k}`);
+				return pad;
+			});
+		}
+		return { world, engine: args.engine, points, otherPads };
+	});
+}
+
+/**
+ * `hillside.gradingPlan`'s answer: core's `computeGradingPlan(world, { engine })`;
+ * a refusal is core's value whole (`{ ok: false, engine, refused, message }`). With
+ * `points`, each point's `raw` and `graded` height by core's point function
+ * `gradingPlanHeight` (`raw` with no pads, `graded` with the plan and `otherPads` in
+ * one pad set), as core's corpus runner reads them, unrounded. With `otherPads`,
+ * `padSet` is core's `checkPadSet(plan, otherPads)` (the refusal of a map lot stacked
+ * on `GradeLots`, or null). The raw ground grid stays here: an engine reads its own
+ * terrain, or asks for points.
+ */
+function gradingPlanAnswer(input) {
+	const result = computeGradingPlan(input.world, { engine: input.engine });
+	if (!result.ok) return plain(result);
+	const { plan, raw } = result;
+	const answer = { ok: true, engine: result.engine, plan: plain(plan) };
+	const otherPads = input.otherPads ?? [];
+	if (input.points !== undefined) {
+		answer.points = input.points.map((pt) => ({
+			...(pt.label !== undefined ? { label: pt.label } : {}),
+			x: pt.x,
+			z: pt.z,
+			raw: gradingPlanHeight({ pads: [] }, raw, pt.x, pt.z),
+			graded: gradingPlanHeight(plan, raw, pt.x, pt.z, otherPads),
+		}));
+	}
+	if (input.otherPads !== undefined) answer.padSet = checkPadSet(plan, otherPads);
+	return answer;
 }
 
 // ── survival (PL.native-survival-rows) ────────────────────────────────────────
@@ -11687,6 +11811,32 @@ const METHODS = {
 	'layout.seatVillagers': compositionRow('seatVillagers'),
 	'layout.keepClearOfProps': compositionRow('keepClearOfProps'),
 	'layout.composeVillage': compositionRow('composeVillage'),
+
+	// ── hillside grading: the pads (PL.native-grading-plan-call, U115; core's NF.H3, ADR-0001) ──
+	// Core's grading plan of a World IR and its point function, STATELESS: each call
+	// computes the plan from the world it is sent. Core's
+	// `conformance/hillside/pads.json` drives it (tests/hillside_corpus.cpp): each case
+	// is one call per engine it names, with its points and otherPads. Pads only: the
+	// stairs (ADR §6) and the tiled raster sidecar (§7) are not in core's module yet.
+
+	/** `hillside.contract` → the data of `pads.json`'s `contract` (padIdPrefix, the pad and wall constants, the overlap lattice), core's constants at full precision. */
+	'hillside.contract': () => hillsideContract(),
+
+	/**
+	 * `hillside.gradingPlan { world, engine, points?, otherPads? }` → `{ ok: true,
+	 * engine, plan: { pads, walls, report, findings, dividers? }, points?: [{ label?, x,
+	 * z, raw, graded }], padSet? }` — core's `computeGradingPlan`, its plan whole
+	 * (pads ascending by id; walls with every vertex's `top` and `base`, already on
+	 * core's 1 mm quantum; `dividers` only when neighbours were divided), in core's
+	 * relative frame (metres over `[0, terrainSize]²`). A world core cannot place is
+	 * its refusal VALUE `{ ok: false, engine, refused, message }`. `points` are read by
+	 * core's point function (`raw` with no pads, `graded` with the plan's pads and
+	 * `otherPads` in one set); `padSet`, present when `otherPads` is sent, is
+	 * `checkPadSet`'s refusal string or null. `[invalid-input]`: `world` not an object;
+	 * `points` not an array of objects with finite `x`, `z` (and a string `label` if
+	 * any); `otherPads` not an array of `TerrainPad` objects.
+	 */
+	'hillside.gradingPlan': (args) => gradingPlanAnswer(gradingPlanArgsOf('hillside.gradingPlan', args)),
 };
 
 function notificationsView(model) {

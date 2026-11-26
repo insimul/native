@@ -1073,6 +1073,33 @@
     },
     {
       "rule": "undeclared-dependency",
+      "path": "corebridge/tools/hand-cases/hillside.mjs",
+      "specifier": "@insimul/core/editor/scene/hillside-grading",
+      "classification": "keep",
+      "reason": "A GENERATOR INPUT, never shipped: the hand-case spec tools/gen-hand-cases.mjs bundles against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, exactly as vendor-core-bundle.mjs resolves entry.js's specifiers, to compute corebridge/tests/cases/bridge-hillside.json's expectations with core's own computeGradingPlan, gradingPlanHeight, checkPadSet and constants (PL.native-grading-plan-call, rulings U115 and U128). Nothing in the shipped artifact imports it. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-grading-plan-call (Features Gauntlet PL.native-grading-plan-call)",
+      "reviewedAt": "2026-11-26"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/tools/hand-cases/hillside.mjs",
+      "specifier": "@insimul/core/editor/layout/ground-plan",
+      "classification": "keep",
+      "reason": "A GENERATOR INPUT, never shipped: the hand-case spec computes the hillside.contract row's expectation from core's LOT_PAD_MARGIN_M, LOT_PAD_BLEND_M and GRADED_CELL_M, bundled by tools/gen-hand-cases.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins (PL.native-grading-plan-call, rulings U115 and U128). Nothing in the shipped artifact imports it. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-grading-plan-call (Features Gauntlet PL.native-grading-plan-call)",
+      "reviewedAt": "2026-11-26"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/tools/hand-cases/hillside.mjs",
+      "specifier": "@insimul/core/camera/movement-rules",
+      "classification": "keep",
+      "reason": "A GENERATOR INPUT, never shipped: the hand-case spec computes the hillside.contract row's standMaxDeg from core's PLAYER_GROUND, bundled by tools/gen-hand-cases.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins (PL.native-grading-plan-call, rulings U115 and U128). Nothing in the shipped artifact imports it. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-grading-plan-call (Features Gauntlet PL.native-grading-plan-call)",
+      "reviewedAt": "2026-11-26"
+    },
+    {
+      "rule": "undeclared-dependency",
       "path": "corebridge/tools/hand-cases/runtime-save.mjs",
       "specifier": "@insimul/core/runtime-save",
       "classification": "keep",
@@ -1367,6 +1394,24 @@
       "reason": "A BUNDLE INPUT of the build.redactLogLine and build.redactLog rows (core's build-log redaction, PL.core-build-log-redaction: redactBuildLogLine and redactBuildLog) (PL.native-build-redact-rows, rulings U120, U115(11) and U36), exactly as the build.* rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
       "reviewedBy": "features-native-build-redact-rows (Features Gauntlet PL.native-build-redact-rows)",
       "reviewedAt": "2026-11-25"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/editor/scene/hillside-grading",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the hillside.gradingPlan and hillside.contract rows (computeGradingPlan, gradingPlanHeight, checkPadSet and the pad, wall and overlap constants: core's hillside grading plan, its pads; core's NF.H3, ADR-0001) (PL.native-grading-plan-call, rulings U115, U128 and U36), exactly as the layout.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-grading-plan-call (Features Gauntlet PL.native-grading-plan-call)",
+      "reviewedAt": "2026-11-26"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/editor/layout/ground-plan",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the hillside.contract row (LOT_PAD_MARGIN_M, LOT_PAD_BLEND_M and GRADED_CELL_M, the ground plan's pad constants the hillside grading plan is built on and its corpus contract states) (PL.native-grading-plan-call, rulings U115, U128 and U36), exactly as the hillside-grading specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-grading-plan-call (Features Gauntlet PL.native-grading-plan-call)",
+      "reviewedAt": "2026-11-26"
     },
     {
       "rule": "undeclared-dependency",

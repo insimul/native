@@ -772,6 +772,8 @@ game; **meta** = about the bridge itself.
 | `layout.seatVillagers` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('seatVillagers')` | L.native-layout |
 | `layout.keepClearOfProps` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('keepClearOfProps')` | L.native-layout |
 | `layout.composeVillage` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('composeVillage')` | L.native-layout |
+| `hillside.contract` | `{}` → `{ padIdPrefix, lotPadMarginM, lotPadBlendM, gradedCellM, standMaxDeg, standMaxGradient, blendMaxRiseM, wallMaxM, terraceDepthM, hillsideMaxWalls, wallStepMinM, overlapSlopeLatticeM, overlapSlopeDiffM, overlapSlopeTolerance }` — the data of core's `conformance/hillside/pads.json` `contract`, core's constants unrounded | `editor/scene/hillside-grading` (`MAP_PAD_ID_PREFIX`, `WALL_MAX_M`, `TERRACE_DEPTH_M`, `HILLSIDE_MAX_WALLS`, `OVERLAP_SLOPE_*`, …), `editor/layout/ground-plan`, `camera/movement-rules` | NF.H3 hillside grading, the pads (PL.native-grading-plan-call; core's NF.H3, ADR-0001) |
+| `hillside.gradingPlan` | `{ world, engine, points?: [{ label?, x, z }], otherPads?: [TerrainPad] }` → `{ ok: true, engine, plan: { pads, walls, report, findings, dividers? }, points?: [{ label?, x, z, raw, graded }], padSet? }`, or core's refusal value `{ ok: false, engine, refused, message }` | `editor/scene/hillside-grading` `computeGradingPlan`, `gradingPlanHeight`, `checkPadSet` | NF.H3 hillside grading, the pads (PL.native-grading-plan-call) |
 <!-- END METHOD TABLE -->
 
 Each row's comment in `js/entry.js` gives the exact argument and result fields.
@@ -1642,6 +1644,83 @@ and an op that is neither driven nor listed as unreached, each reported. The han
 cases in `tests/cases/bridge-audio.json` pin the contract, a long frame spanning
 several intervals, idle resetting the state, unknown gaits and surfaces as values,
 the row holding nothing between calls, and the boundary.
+
+### The hillside grading rows: the pads, terraces and retaining walls (PL.native-grading-plan-call)
+
+Core states how a world's map lots are graded on a hillside (core's NF.H3, ADR-0001
+`docs/decisions/0001-hillside-grading-carrier.md` §§1–5 and §8;
+`src/editor/scene/hillside-grading.ts`): one pad `pad.map.<sourceFeatureId>` per fitted
+map building footprint, a default pad graded as `GradeLots` grades a lot, a hillside pad
+(its flat area's edge more than `BLEND_MAX_RISE_M` ≈ 0.7145 m off its target) built of
+terraces `TERRACE_DEPTH_M` deep and retaining walls of at most `WALL_MAX_M`, neighbours
+whose blend would tilt the ground past `standMaxDeg` divided by a wall or a shared
+terrace, the `N grading patches not applied` report and the findings. An engine takes
+the plan from this row instead of porting the module (ADR §1: "the plan reaches
+`libinsimulcore` as `insimul_core_call` rows"; no new C symbol). The row is
+**stateless**: each call computes the plan from the world it is sent.
+
+- **`hillside.gradingPlan { world, engine, points?, otherPads? }`** → `{ ok: true,
+  engine, plan, points?, padSet? }`: core's `computeGradingPlan(world, { engine })`,
+  its plan whole — `pads` (ascending by id: the `TerrainPad` rectangle and target
+  `height`, `id`, `sourceFeatureId`, `footprintId`, `hillside`, `wallCount`,
+  `terraceDepthM`, `carryM`), `walls` (each `wall.<padId>.<line>.<n>` a run of vertices
+  `{ x, z, top, base }` on core's 1 mm quantum; the walls between divided neighbours
+  are `wall.<lower id>.nb.<other>.<n>`), `report` `{ patches, lines }`, `findings`
+  (never silent) and, only when neighbours were divided, `dividers` (what the point
+  function reads). Numbers are unrounded metres in core's relative frame (an IR point
+  `p` is the frame point `p + terrainSize / 2`; a height is `n × verticalScale.value`),
+  so an engine adds nothing to them. `points` (`[{ label?, x, z }]`) are read by core's
+  point function `gradingPlanHeight`: each answered `{ label?, x, z, raw, graded }`,
+  `raw` with no pads and `graded` with the plan's pads and `otherPads` in one pad set.
+  `otherPads` are the engine's own `GradeLots` pads of its non-map lots (core's
+  `TerrainPad`: `lotId`, `cx`, `cz`, `halfAcross`, `halfAway`, `awayX`, `awayZ`,
+  `height`), and with them `padSet` is `checkPadSet`'s answer: null when the set is
+  one pass, else the refusal naming the map lot stacked on `GradeLots` (ADR §3).
+- **`hillside.contract`** → the data of the corpus's `contract`: `padIdPrefix`,
+  `lotPadMarginM`, `lotPadBlendM`, `gradedCellM`, `standMaxDeg`, `standMaxGradient`,
+  `blendMaxRiseM`, `wallMaxM`, `terraceDepthM`, `hillsideMaxWalls`, `wallStepMinM`,
+  `overlapSlopeLatticeM`, `overlapSlopeDiffM` and `overlapSlopeTolerance`, from core's
+  constants unrounded (the file rounds `standMaxGradient` and `blendMaxRiseM` to 1e-6).
+  The file's prose keys (`blendMaxRiseRule`, `reportLine`, `overlapSlopeRule`,
+  `neighbourWallRule`, `frame`, `module`) are rules written out and stay in the corpus.
+
+**Pads only.** Core's stairs (ADR §6, the corpus's §9 cases 5–8, `N stairs not graded`)
+are NF.H3's next slice and are not in core's module at the pin, so this row answers no
+stair element. The tiled raster sidecar (§7) is the server owner's, not a row here.
+
+**Errors.** A world core cannot place is core's refusal VALUE `{ ok: false, engine,
+refused, message }` (`unknown-engine` for an engine core does not know, absent
+included; `terrain-size-not-positive`; `heightmap-not-square`;
+`raster-terrain-source-without-elevation`; …), never an error. The row's own boundary,
+coded `[invalid-input]`, refuses only what core reads unchecked: a `world` that is not a
+JSON object; `points` that are not an array of objects with a finite `x` and `z` (and a
+string `label`, if any); `otherPads` that are not an array of objects with a string
+`lotId` and finite `cx`, `cz`, `halfAcross`, `halfAway`, `awayX`, `awayZ` and `height`.
+`points` or `otherPads` sent as null are not sent.
+
+**The evidence** is core's `conformance/hillside/pads.json` (16 cases and 14 controls at
+45409ed, last changed in 129d80c), copied byte for byte as the hillside set and driven
+by `tests/hillside_corpus.cpp` as the ctest `hillside_corpus`, core's
+`hillside-grading-corpus.ts` step for step: the contract's data keys held to
+`hillside.contract`; each case one row call per engine it names (all four), projected
+as core's `runHillsideEngine` projects (`cx`, `cz`, `halfAcross`, `halfAway`, `height`,
+`raw` and `graded` on the 1 mm quantum; `awayX`, `awayZ` and `carryM` rounded to 1e-6),
+every engine the same, the expected answer's invariants checked
+(`hillsideAnswerFlaws`), and the answer compared by `compareHillside` within the file's
+tolerance; every control refused. `hillside_corpus_negative`
+(`tests/hillside-negative/pads-wrong.json`) must see a wrong `wallMaxM` in the contract,
+six wrong answers (a terraced pad answered as a default pad, a target 2 mm high, the
+report line on an empty plan, a stacked pad set read as one pass, an engine the row
+refuses, an overlap finding where the blend holds) and a control that changes nothing,
+each reported. The hand cases in `tests/cases/bridge-hillside.json` (generated from core
+by `tools/hand-cases/hillside.mjs`) pin the plan whole as the row answers it (unrounded,
+`dividers` included), the contract unrounded, a terraced pad (three walls on a 26 %
+slope), the wall count stopping at `HILLSIDE_MAX_WALLS` with its findings, divided
+neighbours (one wall; a shared terrace), each engine's legacy scale where a world
+states no relief, core's refusals as values, `GradeLots` pads in one set and the
+boundary. **Cost:** the overlap cases read the slope on core's 0.1 m lattice; a pair of
+terraced neighbours takes about 1 s per engine in QuickJS (the whole corpus, 64 calls,
+about 18 s on the 16 GB Mac), so a binding asks once per import, not once per point.
 
 **Cost.** No new core module (`audio/footsteps` was already in for the ground rows):
 at the 45409ed pin the bundle goes from 2,757,224 bytes to 2,760,706 (+3,482, the two
@@ -3374,6 +3453,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (73 cases at 45409ed with 8 `press`, 53 at d88b6f0, 33 at 431c95b, 27 at 72c658c; 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does, a press through target, examinePick and press; its contract's data tables held to `props.contract`; the stands sent with no `y` counted against `props.interactables.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give, two runner controls (a case's `ranges`, a lone `prop`), a stand with no `y` read as floor 0, a pick acting over the target and a stand's dropped `objects` seen as wrong |
 | `audio_ground_corpus`, `audio_ground_corpus_negative` | core's ground reading corpus driven whole through the `audio.ground.*` rows (48 cases, 0 undriven; every case whose world lists two or more settlements, ground surfaces or roads driven again with them reversed; its contract's data held to `audio.ground.contract`), and Unreal's sidewalk for a footpath in the contract, an undriven op and six answers an engine keeping one of its interim readings would give seen as wrong |
 | `audio_cues_corpus`, `audio_cues_corpus_negative` | the footstep cases of core's audio cue corpus (`conformance/audio/cues.json` at 45409ed: footstepRun 7, footstep 26) driven through the stateless `audio.stepFootsteps` row (0 undriven; the runner keeps the state as a host does; its contract's `footsteps` data held to `audio.footsteps.contract`; the 63 ambient and music cases reported as not reached), and a wrong run interval, seven wrong clocks and an op on no list seen as wrong |
+| `hillside_corpus`, `hillside_corpus_negative` | core's hillside grading corpus (`conformance/hillside/pads.json` at 45409ed: 16 cases, 14 controls) driven whole through the stateless `hillside.gradingPlan` row, one call per engine a case names (64), projected as core's runner projects (the 1 mm quantum, r6), every engine the same, compared within the file's tolerance, every control refused, the contract's data held to `hillside.contract`; and a wrong `wallMaxM`, six wrong answers and a control that changes nothing seen as wrong |
 | `camera_movement_corpus`, `camera_movement_corpus_negative` | core's movement contract corpus driven whole through the `camera.movement.*` rows (95 cases at 6cd4b4e, 0 undriven; every case with more than one solid or exclusion driven again with them reversed; its contract's data tables held to `camera.movement.contract`), and Unreal's step in the contract, an undriven op and six answers an engine keeping one of its interim rules would give seen as wrong |
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 | `survival_corpus`, `survival_corpus_negative` | core's three P9c corpora (`needs.json`, `hud.json`, `stamina.json`; 89 cases at 6cd4b4e) driven whole through the `survival.*` rows by `tests/survival_corpus.cpp` (0 undriven per file; a `run` one row per step over the state the last answer carried, a `pool` one `survival.stamina.pool.apply` per step; each file's catalog and op list held to core's), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `survival_corpus_negative` does |

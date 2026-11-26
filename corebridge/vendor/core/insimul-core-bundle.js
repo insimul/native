@@ -1062,8 +1062,8 @@
       if (obj3.type !== "compound") continue;
       const hasSlot = obj3.args.some((a) => a.type === "variable" && a.value === v);
       if (!hasSlot) continue;
-      const num6 = obj3.args.find((a) => a.type === "number");
-      if (num6 && num6.type === "number") return num6.value;
+      const num7 = obj3.args.find((a) => a.type === "number");
+      if (num7 && num7.type === "number") return num7.value;
     }
     return 1;
   }
@@ -8330,7 +8330,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
   var QUEST_DIFFICULTIES = Object.freeze(["beginner", "intermediate", "advanced"]);
   var ADJUSTMENT_TUNING = Object.freeze({ minWindow: 3, window: 10, highScore: 850, lowScore: 400, lowObjective: 500, highAttemptsTenths: 25 });
-  var roundDiv = (num6, den) => Math.floor((num6 * 2 + den) / (den * 2));
+  var roundDiv = (num7, den) => Math.floor((num7 * 2 + den) / (den * 2));
   function performanceScore(records) {
     const n = records.length;
     if (n === 0) return { score: 500, success: 0, objectives: 0, attempts: 0, time: 500 };
@@ -9397,8 +9397,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       okay: ['"{npc} adjusts their glasses" Functionally correct. The prosody needs refinement.', '"{npc}" Understandable. Work on the tonal patterns.']
     }
   };
-  function pick(arr3, rng = Math.random) {
-    return arr3[Math.floor(rng() * arr3.length)];
+  function pick(arr6, rng = Math.random) {
+    return arr6[Math.floor(rng() * arr6.length)];
   }
   function generateCorrectionResponse(input, correct, score, ctx, rng = Math.random) {
     const templates = CORRECTION_TEMPLATES[ctx.style];
@@ -9951,8 +9951,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       this.forEachObjective(questId, ["collect_item", "collect_items"], (quest, obj3) => {
         const objName = (obj3.itemName || "").toLowerCase();
         if (!objName) return;
-        const matched = normalizedItems.some((n) => n === objName || n.includes(objName) || objName.includes(n));
-        if (matched) {
+        const matched2 = normalizedItems.some((n) => n === objName || n.includes(objName) || objName.includes(n));
+        if (matched2) {
           this.completeObjective(quest.id, obj3.id);
         }
       });
@@ -13808,17 +13808,17 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function staminaTuningFromIR(ir) {
     const config = ir?.staminaConfig;
     if (!config) return { ...DEFAULT_STAMINA_TUNING };
-    const num6 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    const num7 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
     return {
-      maxStamina: num6(config.maxStamina, DEFAULT_STAMINA_TUNING.maxStamina),
-      recoveryRate: num6(config.recoveryRate, DEFAULT_STAMINA_TUNING.recoveryRate),
-      combatRecoveryRate: num6(config.combatRecoveryRate, DEFAULT_STAMINA_TUNING.combatRecoveryRate),
-      encumberedRecoveryMultiplier: num6(
+      maxStamina: num7(config.maxStamina, DEFAULT_STAMINA_TUNING.maxStamina),
+      recoveryRate: num7(config.recoveryRate, DEFAULT_STAMINA_TUNING.recoveryRate),
+      combatRecoveryRate: num7(config.combatRecoveryRate, DEFAULT_STAMINA_TUNING.combatRecoveryRate),
+      encumberedRecoveryMultiplier: num7(
         config.encumberedRecoveryMultiplier,
         DEFAULT_STAMINA_TUNING.encumberedRecoveryMultiplier
       ),
-      windedPercent: num6(config.windedPercent, DEFAULT_STAMINA_TUNING.windedPercent),
-      exhaustedPercent: num6(config.exhaustedPercent, DEFAULT_STAMINA_TUNING.exhaustedPercent)
+      windedPercent: num7(config.windedPercent, DEFAULT_STAMINA_TUNING.windedPercent),
+      exhaustedPercent: num7(config.exhaustedPercent, DEFAULT_STAMINA_TUNING.exhaustedPercent)
     };
   }
   function staminaStateOf(current, max, tuning) {
@@ -14316,9 +14316,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function traversalTuningFromIR(ir) {
     const d = DEFAULT_TRAVERSAL_TUNING;
     if (!ir) return { ...d };
-    const num6 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    const num7 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
     return {
-      defaultCost: num6(ir.defaultCost, d.defaultCost),
+      defaultCost: num7(ir.defaultCost, d.defaultCost),
       modeCost: { ...d.modeCost, ...ir.modeCost ?? {} },
       modeAction: { ...d.modeAction, ...ir.modeAction ?? {} },
       defaultAction: ir.defaultAction ?? d.defaultAction
@@ -14715,13 +14715,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function fastTravelTuningFromIR(ir) {
     const d = DEFAULT_FAST_TRAVEL_TUNING;
     if (!ir) return { ...d };
-    const num6 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    const num7 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
     return {
-      hoursPerCost: num6(ir.hoursPerCost, d.hoursPerCost),
-      minimumHours: num6(ir.minimumHours, d.minimumHours),
-      maxHours: num6(ir.maxHours, d.maxHours),
-      stepHours: num6(ir.stepHours, d.stepHours),
-      maxSteps: num6(ir.maxSteps, d.maxSteps),
+      hoursPerCost: num7(ir.hoursPerCost, d.hoursPerCost),
+      minimumHours: num7(ir.minimumHours, d.minimumHours),
+      maxHours: num7(ir.maxHours, d.maxHours),
+      stepHours: num7(ir.stepHours, d.stepHours),
+      maxSteps: num7(ir.maxSteps, d.maxSteps),
       action: ir.action ?? d.action,
       mode: ir.mode ?? d.mode
     };
@@ -18502,8 +18502,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       }
       return keys;
     };
-    util2.find = (arr3, checker) => {
-      for (const item2 of arr3) {
+    util2.find = (arr6, checker) => {
+      for (const item2 of arr6) {
         if (checker(item2))
           return item2;
       }
@@ -23436,11 +23436,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function skillTuningFromIR(ir) {
     const d = DEFAULT_SKILL_TUNING;
     if (!ir) return { ...d };
-    const num6 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    const num7 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
     return {
-      pointsPerLevel: num6(ir.pointsPerLevel, d.pointsPerLevel),
-      defaultNodeCost: num6(ir.defaultNodeCost, d.defaultNodeCost),
-      defaultMaxLevel: num6(ir.defaultMaxLevel, d.defaultMaxLevel),
+      pointsPerLevel: num7(ir.pointsPerLevel, d.pointsPerLevel),
+      defaultNodeCost: num7(ir.defaultNodeCost, d.defaultNodeCost),
+      defaultMaxLevel: num7(ir.defaultMaxLevel, d.defaultMaxLevel),
       levelXp: ir.levelXp && ir.levelXp.length > 0 ? [...ir.levelXp] : d.levelXp,
       advanceAction: ir.advanceAction ?? d.advanceAction,
       unlockAction: ir.unlockAction ?? d.unlockAction
@@ -40152,8 +40152,8 @@ Do NOT mention that you are increasing difficulty. Be natural.
     return s;
   }
   var quizDraw = (seed, objectId, quiz, i) => Math.floor(derivedValue(seed, "quiz", objectId, quiz, i) * 1e6);
-  function shuffle(arr3, draw) {
-    const out = [...arr3];
+  function shuffle(arr6, draw) {
+    const out = [...arr6];
     for (let i = out.length - 1; i > 0; i--) {
       const j = Math.floor(draw(i) * (i + 1) / 1e6);
       [out[i], out[j]] = [out[j], out[i]];
@@ -41010,8 +41010,8 @@ After asking each question, wait for the player's response before moving to the 
     const results = q.questions.map((x, i) => {
       const answer2 = (q.answers[i] || "").toLowerCase().trim();
       const words = x.correctAnswer.toLowerCase().trim().split(/\s+/).filter((w) => w.length > 2);
-      const matched = words.filter((w) => answer2.includes(w)).length;
-      const correct = matched >= Math.ceil(words.length / 2);
+      const matched2 = words.filter((w) => answer2.includes(w)).length;
+      const correct = matched2 >= Math.ceil(words.length / 2);
       return { question: x.question, correct, feedback: correct ? "Good answer!" : `Expected something like: "${x.correctAnswer}"` };
     });
     return { score: halfUpPercent(results.filter((r) => r.correct).length, Math.max(1, q.questions.length)), results };
@@ -41576,9 +41576,9 @@ After asking each question, wait for the player's response before moving to the 
     const lower = name.toLowerCase();
     return patterns.find((p) => p.pattern.toLowerCase() === lower) ?? patterns.find((p) => lower.includes(p.pattern.toLowerCase()) || p.pattern.toLowerCase().includes(lower));
   }
-  var pushExample = (arr3, ex) => {
-    if (arr3.length >= PATTERN_EXAMPLES_MAX) arr3.shift();
-    arr3.push(ex);
+  var pushExample = (arr6, ex) => {
+    if (arr6.length >= PATTERN_EXAMPLES_MAX) arr6.shift();
+    arr6.push(ex);
   };
   function grammarFeedback(state, fb) {
     if (fb.status === "no_target_language") return { state, items: [], objectivesUpdated: [] };
@@ -49422,6 +49422,10 @@ Return JSON format:
     };
     return convertGeometry(raw, CORE_CONVENTION);
   }
+  function assetGeometryOf(entry) {
+    if (!entry) return unmeasuredGeometry(CORE_CONVENTION);
+    return readAssetGeometry(entry.transform, entry.sockets);
+  }
   function socketByName(geometry, name) {
     if (!name) return null;
     return geometry.sockets.find((socket) => socket.name === name) ?? null;
@@ -52964,8 +52968,8 @@ Return JSON format:
         }
         return null;
       }
-      const cross = first.dir[0] * (l.z - first.at[1]) - first.dir[1] * (l.x - first.at[0]);
-      const own = cross < -COMPOSITION_SLACK ? -1 : 1;
+      const cross2 = first.dir[0] * (l.z - first.at[1]) - first.dir[1] * (l.x - first.at[0]);
+      const own = cross2 < -COMPOSITION_SLACK ? -1 : 1;
       const off = s.halfWidth + r.besideRouteM;
       for (const side of [own, -own]) {
         for (const st of stations) {
@@ -53241,11 +53245,11 @@ Return JSON format:
   function convexHull(points3) {
     const pts = [...points3].map((p) => [p[0], p[1]]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
     if (pts.length < 3) return pts;
-    const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+    const cross2 = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
     const half = (list3) => {
       const h = [];
       for (const p of list3) {
-        while (h.length >= 2 && cross(h[h.length - 2], h[h.length - 1], p) <= COMPOSITION_SLACK) h.pop();
+        while (h.length >= 2 && cross2(h[h.length - 2], h[h.length - 1], p) <= COMPOSITION_SLACK) h.pop();
         h.push(p);
       }
       h.pop();
@@ -54214,6 +54218,2316 @@ Return JSON format:
     "composeVillage"
   ];
 
+  // @insimul/core/src/editor/binding/resolver.ts
+  var NO_MATCH = { kind: 0 /* None */, matchedSegments: 0 };
+  var UNRESOLVED = {
+    resolved: false,
+    sourceName: "",
+    key: "",
+    entry: null,
+    score: NO_MATCH
+  };
+  function segmentCount(key) {
+    if (key.length === 0) return 0;
+    let n = 1;
+    for (const c of key) if (c === ".") n++;
+    return n;
+  }
+  function matchArchetype(entryKey, query) {
+    if (!entryKey || !query) return NO_MATCH;
+    if (entryKey === "*") {
+      return { kind: 1 /* Wildcard */, matchedSegments: 0 };
+    }
+    if (entryKey.endsWith(".*")) {
+      const prefix = entryKey.slice(0, -2);
+      if (!prefix) return NO_MATCH;
+      if (query === prefix || query.startsWith(prefix + ".")) {
+        return { kind: 1 /* Wildcard */, matchedSegments: segmentCount(prefix) };
+      }
+      return NO_MATCH;
+    }
+    if (query === entryKey) {
+      return { kind: 3 /* Exact */, matchedSegments: segmentCount(entryKey) };
+    }
+    if (query.startsWith(entryKey + ".")) {
+      return { kind: 2 /* Descendant */, matchedSegments: segmentCount(entryKey) };
+    }
+    return NO_MATCH;
+  }
+  function matched(score) {
+    return score.kind !== 0 /* None */;
+  }
+  function compareMatchScore(a, b) {
+    if (a.matchedSegments !== b.matchedSegments) {
+      return a.matchedSegments < b.matchedSegments ? -1 : 1;
+    }
+    if (a.kind !== b.kind) return a.kind < b.kind ? -1 : 1;
+    return 0;
+  }
+  var BindingResolver = class {
+    constructor() {
+      __publicField(this, "sourceList", []);
+    }
+    /** The tiers, in current (resolution) order. */
+    get sources() {
+      return this.sourceList;
+    }
+    addSource(source) {
+      this.sourceList.push(source);
+      return this;
+    }
+    /**
+     * Stable sort by `priority` descending — the project → packs → placeholder
+     * fallback order. Equal priorities keep insertion order.
+     */
+    sortSourcesByPriority() {
+      this.sourceList.sort((a, b) => b.priority - a.priority);
+      return this;
+    }
+    /** Resolve one archetype key against the chain. */
+    resolve(query) {
+      for (const source of this.sourceList) {
+        let best = null;
+        let bestScore = NO_MATCH;
+        for (const entry of source.entries) {
+          const score = matchArchetype(entry.key, query);
+          if (!matched(score)) continue;
+          if (best === null || compareMatchScore(score, bestScore) > 0) {
+            best = entry;
+            bestScore = score;
+          }
+        }
+        if (best !== null) {
+          return {
+            resolved: true,
+            sourceName: source.name,
+            key: best.key,
+            entry: best,
+            score: bestScore
+          };
+        }
+      }
+      return UNRESOLVED;
+    }
+    /**
+     * Which of `usedKeys` resolve to nothing in any tier. Distinct + ascending so
+     * the report is diff-stable; empty keys are ignored.
+     */
+    collectUnbound(usedKeys) {
+      const seen = /* @__PURE__ */ new Set();
+      const missing = /* @__PURE__ */ new Set();
+      let requestedCount = 0;
+      let boundCount = 0;
+      for (const key of usedKeys) {
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        requestedCount++;
+        if (this.resolve(key).resolved) boundCount++;
+        else missing.add(key);
+      }
+      return {
+        requestedCount,
+        boundCount,
+        missingKeys: [...missing].sort()
+      };
+    }
+  };
+
+  // @insimul/core/src/editor/binding/provenance.ts
+  function isRecord3(v) {
+    return typeof v === "object" && v !== null && !Array.isArray(v);
+  }
+  function mergeProvenance(base, over) {
+    if (!isRecord3(base)) return isRecord3(over) ? over : null;
+    if (!isRecord3(over)) return base;
+    const merged = { ...base };
+    for (const [key, value] of Object.entries(over)) {
+      if (value !== void 0) merged[key] = value;
+    }
+    return merged;
+  }
+
+  // @insimul/core/src/editor/binding/variant-rules.ts
+  function emptyVariantRuleContext() {
+    return {
+      satisfied: /* @__PURE__ */ new Map(),
+      goals: [],
+      failures: [],
+      programError: "",
+      factCount: 0,
+      ruleCount: 0
+    };
+  }
+  function variantGoalHolds(context, entityId, goal) {
+    if (!context || !goal) return false;
+    return context.satisfied.get(entityId)?.has(goal) ?? false;
+  }
+
+  // @insimul/core/src/editor/binding/variants.ts
+  var VARIANT_SEED_VERSION = "variant@1";
+  var DEFAULT_VARIANT_WEIGHT = 1;
+  function variantId(variant, index) {
+    const authored = typeof variant.id === "string" ? variant.id.trim() : "";
+    return authored || `#${index}`;
+  }
+  function variantHandle(variant) {
+    return variant.scene || variant.mesh || "";
+  }
+  function variantWeight(variant) {
+    const weight = variant.weight;
+    return typeof weight === "number" && Number.isFinite(weight) ? weight : DEFAULT_VARIANT_WEIGHT;
+  }
+  function variantWhen(variant) {
+    return typeof variant.when === "string" ? variant.when.trim() : "";
+  }
+  function variantCandidates(entry) {
+    const out = [];
+    (entry.variants ?? []).forEach((variant, index) => {
+      const handle = variantHandle(variant);
+      const weight = variantWeight(variant);
+      const when = variantWhen(variant);
+      if (!handle || weight <= 0 && !when) return;
+      out.push({ id: variantId(variant, index), handle, weight, when, index });
+    });
+    return out;
+  }
+  function variantSeedKey(identity) {
+    return streamKey([VARIANT_SEED_VERSION, identity.worldId, identity.entityId]);
+  }
+  function variantRoll(seedKey) {
+    return mulberry322(hashSeedString(seedKey))();
+  }
+  function selectVariant(entry, identity, context) {
+    const candidates = variantCandidates(entry);
+    if (candidates.length === 0) return null;
+    const seedKey = variantSeedKey(identity);
+    const roll2 = variantRoll(seedKey);
+    const stableIdentity = !!identity.entityId && !isPositionalEntityId(identity.entityId);
+    const report = (chosen2, reason, when) => ({
+      entryKey: entry.key,
+      chosen: chosen2,
+      candidates,
+      reason,
+      when,
+      seedKey,
+      roll: roll2,
+      stableIdentity
+    });
+    for (const candidate2 of candidates) {
+      if (candidate2.when && variantGoalHolds(context, identity.entityId, candidate2.when)) {
+        return report(candidate2, "query", candidate2.when);
+      }
+    }
+    const pool = candidates.filter((candidate2) => !candidate2.when);
+    if (pool.length === 0) return null;
+    let total = 0;
+    for (const candidate2 of pool) total += candidate2.weight;
+    const target = roll2 * total;
+    let cumulative = 0;
+    let chosen = pool[pool.length - 1];
+    for (const candidate2 of pool) {
+      cumulative += candidate2.weight;
+      if (target < cumulative) {
+        chosen = candidate2;
+        break;
+      }
+    }
+    return report(chosen, "weighted", "");
+  }
+  function variantEntry(entry, selection) {
+    const variant = entry.variants?.[selection.chosen.index];
+    const out = { key: entry.key, scene: selection.chosen.handle };
+    const transform = variant?.transform !== void 0 ? variant.transform : entry.transform;
+    const sockets = variant?.sockets !== void 0 ? variant.sockets : entry.sockets;
+    if (transform !== void 0) out.transform = transform;
+    if (sockets !== void 0) out.sockets = sockets;
+    const provenance = mergeProvenance(entry.provenance, variant?.provenance);
+    if (provenance !== null) out.provenance = provenance;
+    if (variant?.contentHash) out.contentHash = variant.contentHash;
+    return out;
+  }
+
+  // @insimul/core/src/editor/binding/world-binding.ts
+  var INSTANCE_PIN_SOURCE_NAME = "instance-pin";
+  var NO_PINS = /* @__PURE__ */ new Map();
+  function unresolvedBinding(entityId, archetype) {
+    return {
+      entityId,
+      archetype,
+      assetRef: "",
+      bindingSource: "",
+      contentHash: "",
+      pinned: false,
+      pinSource: "",
+      variant: null,
+      resolved: false
+    };
+  }
+  var WorldAssetBinder = class {
+    constructor(resolver, pins = NO_PINS, worldId = "", variantContext = null) {
+      __publicField(this, "resolver");
+      __publicField(this, "pins");
+      /**
+       * `MetaIR.worldId` — half of the logical identity a variant is selected on
+       * (`./variants`), and the same half US-1's override address carries. `''` for
+       * a world that has none: selection still works and stays deterministic, it
+       * just cannot distinguish two worlds that reuse an entity id.
+       */
+      __publicField(this, "worldId");
+      /**
+       * Which authored `when` goals hold for which entity — the pre-solved answer to
+       * every simulation-driven variant rule in the chain (`./variant-rules`).
+       * Empty for a world that was never queried, which is exactly a world where no
+       * goal holds and every set falls back to its weighted walk.
+       */
+      __publicField(this, "variantContext");
+      this.resolver = resolver;
+      this.pins = pins;
+      this.worldId = worldId;
+      this.variantContext = variantContext ?? emptyVariantRuleContext();
+    }
+    /** Is this entity pinned? The honest form of `InteriorSceneManager`'s test (§6.2). */
+    hasPin(entityId) {
+      return !!entityId && this.pins.has(entityId);
+    }
+    /**
+     * Resolve one entity: pin first, then the chain on its archetype.
+     *
+     * A pin whose handle could not be resolved (a `modelAssetKey` naming an asset
+     * the world's index does not contain) does **not** fail the entity — it falls
+     * through to the chain, which is strictly better than the legacy behaviour and
+     * strictly additive. The dangling key is not lost: it stays on the pin and
+     * {@link buildWorldBinding} reports it.
+     */
+    resolveEntity(entityId, archetype, assetResolver) {
+      const pin = entityId ? this.pins.get(entityId) : void 0;
+      if (pin && pin.handle) {
+        const handle2 = this.applyHostResolver(
+          { key: archetype || entityId, scene: pin.handle },
+          archetype,
+          assetResolver,
+          pin.handle
+        );
+        if (handle2) {
+          return {
+            entityId,
+            archetype,
+            assetRef: handle2,
+            // A pin names a handle and says nothing about its bytes: it is a
+            // creator pointing at a file, not a producer measuring one. Stating
+            // a hash here would mean inventing one.
+            contentHash: "",
+            bindingSource: INSTANCE_PIN_SOURCE_NAME,
+            pinned: true,
+            pinSource: pin.source,
+            // A pin beats variant selection by construction: it is consulted
+            // before the chain, so no set is ever reached (US-2 AC5).
+            variant: null,
+            resolved: true
+          };
+        }
+      }
+      if (!archetype) return unresolvedBinding(entityId, archetype);
+      const result2 = this.resolver.resolve(archetype);
+      if (!result2.resolved || result2.entry === null) return unresolvedBinding(entityId, archetype);
+      const variant = selectVariant(
+        result2.entry,
+        { entityId, worldId: this.worldId },
+        this.variantContext
+      );
+      const entry = variant ? variantEntry(result2.entry, variant) : result2.entry;
+      const handle = assetResolver ? assetResolver.resolveAssetHandle(entry, archetype, { ...result2, entry }) : entry.scene ?? entry.mesh ?? "";
+      if (handle === null || handle === "") return unresolvedBinding(entityId, archetype);
+      return {
+        entityId,
+        archetype,
+        assetRef: handle,
+        // The entry's hash describes the entry's OWN handle. A host resolver that
+        // returned a different one substituted a different file, and carrying the
+        // measurement across would be a wrong one — worse than none at all.
+        contentHash: handle === (entry.scene ?? entry.mesh ?? "") ? entry.contentHash ?? "" : "",
+        bindingSource: result2.sourceName,
+        pinned: false,
+        pinSource: "",
+        variant,
+        resolved: true
+      };
+    }
+    /**
+     * What the CHAIN would choose for this entity, ignoring any pin — the Binding
+     * Editor's picker.
+     *
+     * {@link resolveEntity} reports the variant that actually won, which is `null`
+     * for a pinned entity because no set was reached. An editor still has to be
+     * able to show a creator the set behind the pin they are about to remove, and
+     * that is this method; it is deliberately the same selection function, so the
+     * picker cannot disagree with the resolution.
+     */
+    variantsFor(entityId, archetype) {
+      if (!archetype) return null;
+      const result2 = this.resolver.resolve(archetype);
+      if (!result2.resolved || result2.entry === null) return null;
+      return selectVariant(
+        result2.entry,
+        { entityId, worldId: this.worldId },
+        this.variantContext
+      );
+    }
+    /**
+     * The GEOMETRY the winning entry carries for this entity, in core's space
+     * (`./geometry`, band-162 US-1) — footprint, pivot and named anchors, so
+     * generation can ask how big a bakery is and which way its door faces.
+     *
+     * It resolves through the same chain and the same {@link selectVariant} call
+     * {@link resolveEntity} does, so the measurements belong to the mesh that is
+     * actually placed rather than to whichever member of the set the reader
+     * happened to look at. A **pinned** entity reads as unmeasured on purpose: a
+     * pin names a handle outright, bypassing every entry that could have carried
+     * measurements, so claiming the chain's footprint for it would be claiming a
+     * measurement of a different mesh.
+     */
+    geometryFor(entityId, archetype) {
+      const pin = entityId ? this.pins.get(entityId) : void 0;
+      if (pin && pin.handle) return unmeasuredGeometry();
+      if (!archetype) return unmeasuredGeometry();
+      const result2 = this.resolver.resolve(archetype);
+      if (!result2.resolved || result2.entry === null) return unmeasuredGeometry();
+      const variant = selectVariant(
+        result2.entry,
+        { entityId, worldId: this.worldId },
+        this.variantContext
+      );
+      return assetGeometryOf(variant ? variantEntry(result2.entry, variant) : result2.entry);
+    }
+    /**
+     * Give the host the same say over a pin's handle it has over a tier's, by
+     * handing it a synthesized entry. A host that declines (returns `''`/`null`)
+     * drops the entity to the chain rather than to nothing.
+     */
+    applyHostResolver(entry, archetype, assetResolver, fallback) {
+      if (!assetResolver) return fallback;
+      const handle = assetResolver.resolveAssetHandle(entry, archetype, {
+        resolved: true,
+        sourceName: INSTANCE_PIN_SOURCE_NAME,
+        key: entry.key,
+        entry,
+        // Honest: a pin is an exact per-entity lookup, so no matching happened.
+        score: NO_MATCH
+      });
+      return handle ?? "";
+    }
+  };
+
+  // @insimul/core/src/editor/scene/placement.ts
+  var SCENE_COORD_QUANTUM = 1e-3;
+  function quantizeSceneCoord(value) {
+    if (!Number.isFinite(value)) return 0;
+    const inv = 1 / SCENE_COORD_QUANTUM;
+    const scaled2 = value * inv;
+    const rounded = scaled2 < 0 ? -Math.round(-scaled2) : Math.round(scaled2);
+    const q = rounded / inv;
+    return q === 0 ? 0 : q;
+  }
+  function sampleTerrainHeight(heights, resolution, sizeX, sizeZ, worldX, worldZ) {
+    if (resolution < 1 || heights.length === 0) return 0;
+    if (resolution === 1) return heights[0];
+    if (sizeX <= 0 || sizeZ <= 0) return heights[0];
+    let gx = worldX / sizeX * (resolution - 1);
+    let gz = worldZ / sizeZ * (resolution - 1);
+    gx = Math.min(Math.max(gx, 0), resolution - 1);
+    gz = Math.min(Math.max(gz, 0), resolution - 1);
+    const x0 = Math.floor(gx);
+    const z0 = Math.floor(gz);
+    const x1 = Math.min(x0 + 1, resolution - 1);
+    const z1 = Math.min(z0 + 1, resolution - 1);
+    const fx = gx - x0;
+    const fz = gz - z0;
+    const at = (xi, zi) => {
+      const idx = zi * resolution + xi;
+      return idx < heights.length ? heights[idx] : 0;
+    };
+    const top = at(x0, z0) + (at(x1, z0) - at(x0, z0)) * fx;
+    const bot = at(x0, z1) + (at(x1, z1) - at(x0, z1)) * fx;
+    return top + (bot - top) * fz;
+  }
+  function resolveNodeAsset(binder, target, assetResolver) {
+    const binding2 = binder.resolveEntity(target.entityId, target.archetype, assetResolver);
+    if (!binding2.resolved) return;
+    target.assetRef = binding2.assetRef;
+    target.bindingSource = binding2.bindingSource;
+    if (binding2.contentHash) target.contentHash = binding2.contentHash;
+  }
+
+  // @insimul/core/src/editor/scene/footprint-fit.ts
+  var FOOTPRINT_AREA_EPSILON = 1e-9;
+  var FOOTPRINT_DISTANCE_EPSILON = 1e-9;
+  var cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  function convexHullXZ(points3) {
+    const sorted = [...points3].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const unique = [];
+    for (const p of sorted) {
+      const last = unique[unique.length - 1];
+      if (last === void 0 || last[0] !== p[0] || last[1] !== p[1]) unique.push(p);
+    }
+    if (unique.length < 3) return unique;
+    const lower = [];
+    for (const p of unique) {
+      while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+      lower.push(p);
+    }
+    const upper = [];
+    for (let i = unique.length - 1; i >= 0; i--) {
+      const p = unique[i];
+      while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
+      upper.push(p);
+    }
+    lower.pop();
+    upper.pop();
+    return [...lower, ...upper];
+  }
+  function minimumOrientedRectangle(points3) {
+    const hull = convexHullXZ(points3);
+    if (hull.length < 3) return null;
+    let best = null;
+    for (let i = 0; i < hull.length; i++) {
+      const a = hull[i];
+      const b = hull[(i + 1) % hull.length];
+      const dx = b[0] - a[0];
+      const dz = b[1] - a[1];
+      const len = Math.sqrt(dx * dx + dz * dz);
+      const ux = dx / len;
+      const uz = dz / len;
+      const vx = -uz;
+      const vz = ux;
+      let minU = Infinity;
+      let maxU = -Infinity;
+      let minV = Infinity;
+      let maxV = -Infinity;
+      for (const p of hull) {
+        const s = p[0] * ux + p[1] * uz;
+        const t = p[0] * vx + p[1] * vz;
+        if (s < minU) minU = s;
+        if (s > maxU) maxU = s;
+        if (t < minV) minV = t;
+        if (t > maxV) maxV = t;
+      }
+      const area = (maxU - minU) * (maxV - minV);
+      if (best === null || area < best.area - FOOTPRINT_AREA_EPSILON * Math.max(1, best.area)) {
+        best = { u: { x: ux, z: uz }, v: { x: vx, z: vz }, minU, maxU, minV, maxV, area };
+      }
+    }
+    if (best === null) return null;
+    const { area: _area, ...rect } = best;
+    return rect;
+  }
+  function polylineDistance(p, line) {
+    let d = Infinity;
+    for (let i = 0; i + 1 < line.length; i++) d = Math.min(d, pointSegmentDistance(p, line[i], line[i + 1]));
+    return d;
+  }
+  function foldYaw(yaw, span) {
+    let out = yaw;
+    while (out > span) out -= 2 * span;
+    while (out <= -span) out += 2 * span;
+    return out;
+  }
+  function footprintFitLot(polygon, streets) {
+    const r = minimumOrientedRectangle(polygon);
+    if (r === null) return null;
+    const at = (s, t) => ({ x: s * r.u.x + t * r.v.x, z: s * r.u.z + t * r.v.z });
+    const corners = [
+      at(r.minU, r.minV),
+      at(r.maxU, r.minV),
+      at(r.maxU, r.maxV),
+      at(r.minU, r.maxV)
+    ];
+    const centre = at((r.minU + r.maxU) / 2, (r.minV + r.maxV) / 2);
+    const sideU = r.maxU - r.minU;
+    const sideV = r.maxV - r.minV;
+    let street = null;
+    let streetD = Infinity;
+    for (const line of streets) {
+      if (line.length < 2) continue;
+      const d = polylineDistance([centre.x, centre.z], line);
+      if (street === null || d < streetD - FOOTPRINT_DISTANCE_EPSILON) {
+        street = line;
+        streetD = d;
+      }
+    }
+    if (street === null) {
+      const alongU = sideU >= sideV;
+      const axis = alongU ? r.u : r.v;
+      const square = quantizeSceneCoord(sideU) === quantizeSceneCoord(sideV);
+      let yaw = foldYaw(Math.atan2(-axis.z, axis.x), Math.PI / 2);
+      if (square) yaw = foldYaw(yaw, Math.PI / 4);
+      return {
+        centre,
+        corners,
+        width: Math.max(sideU, sideV),
+        depth: Math.min(sideU, sideV),
+        frontageYaw: null,
+        frontage: null,
+        yaw: normalizeYaw(yaw)
+      };
+    }
+    let edge = -1;
+    let edgeD = Infinity;
+    let edgeMid = { x: 0, z: 0 };
+    for (let k = 0; k < 4; k++) {
+      const a = corners[k];
+      const b = corners[(k + 1) % 4];
+      const mid = { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 };
+      const d = polylineDistance([mid.x, mid.z], street);
+      const eps = FOOTPRINT_DISTANCE_EPSILON;
+      const nearer2 = d < edgeD - eps;
+      const tied = !nearer2 && Math.abs(d - edgeD) <= eps;
+      const lesser = mid.x < edgeMid.x - eps || Math.abs(mid.x - edgeMid.x) <= eps && mid.z < edgeMid.z - eps;
+      if (edge < 0 || nearer2 || tied && lesser) {
+        edge = k;
+        edgeD = d;
+        edgeMid = mid;
+      }
+    }
+    const frontageYaw = normalizeYaw(Math.atan2(edgeMid.x - centre.x, edgeMid.z - centre.z));
+    const across = edge % 2 === 0 ? sideU : sideV;
+    const away = edge % 2 === 0 ? sideV : sideU;
+    return {
+      centre,
+      corners,
+      width: across,
+      depth: away,
+      frontageYaw,
+      frontage: [corners[edge], corners[(edge + 1) % 4]],
+      yaw: frontageYaw
+    };
+  }
+  function fitLotOfFootprint(lot) {
+    return {
+      width: lot.width,
+      depth: lot.depth,
+      frontageYaw: lot.frontageYaw ?? 0,
+      hasFrontage: lot.frontageYaw !== null
+    };
+  }
+  var isObj16 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var arr3 = (v) => Array.isArray(v) ? v : [];
+  var num6 = (o, key) => {
+    const v = o[key];
+    return typeof v === "number" && Number.isFinite(v) ? v : 0;
+  };
+  function footprintStreets(world2, half) {
+    const out = [];
+    const take = (records) => {
+      for (const r of arr3(records)) {
+        if (!isObj16(r)) continue;
+        const line = [];
+        for (const p of arr3(r.waypoints)) if (isObj16(p)) line.push([num6(p, "x") + half, num6(p, "z") + half]);
+        if (line.length >= 2) out.push(line);
+      }
+    };
+    const w = isObj16(world2) ? world2 : {};
+    take(isObj16(w.entities) ? w.entities.roads : void 0);
+    const g = isObj16(w.geography) ? w.geography : {};
+    for (const s of arr3(g.settlements)) {
+      if (!isObj16(s)) continue;
+      take(s.internalRoads);
+      take(isObj16(s.streetNetwork) ? s.streetNetwork.segments : void 0);
+    }
+    return out;
+  }
+
+  // @insimul/core/src/schemas/world-ir.schema.ts
+  var looseObject = external_exports.object({}).passthrough();
+  var assetHandlesSchema = external_exports.record(external_exports.string());
+  var assetReferenceIrSchema = external_exports.object({
+    id: external_exports.string(),
+    role: external_exports.string(),
+    babylonPath: external_exports.string().optional(),
+    unrealPath: external_exports.string().optional(),
+    unityPath: external_exports.string().optional(),
+    godotPath: external_exports.string().optional(),
+    handles: assetHandlesSchema.optional(),
+    assetType: external_exports.string().optional(),
+    tags: external_exports.array(external_exports.string()).optional()
+  }).passthrough();
+  var assetsIrSchema = external_exports.object({
+    collectionId: external_exports.string().nullable().optional(),
+    textures: external_exports.array(assetReferenceIrSchema).optional(),
+    models: external_exports.array(assetReferenceIrSchema).optional(),
+    audio: external_exports.array(assetReferenceIrSchema).optional(),
+    animations: external_exports.array(looseObject).optional()
+  }).passthrough();
+  var placeableEntityIrSchema = external_exports.object({
+    archetype: external_exports.string().optional(),
+    modelAssetKey: external_exports.string().nullable().optional()
+  }).passthrough();
+  var roadIrSchema = external_exports.object({
+    archetype: external_exports.string().optional(),
+    materialKey: external_exports.string().nullable().optional()
+  }).passthrough();
+  var metaIrSchema = external_exports.object({
+    insimulVersion: external_exports.string(),
+    worldId: external_exports.string(),
+    worldName: external_exports.string(),
+    worldType: external_exports.string(),
+    genreConfig: looseObject,
+    exportTimestamp: external_exports.string(),
+    exportVersion: external_exports.number().int(),
+    seed: external_exports.string(),
+    /** Provenance only — no reader may branch on it (§3.4). */
+    selectedAssetCollectionId: external_exports.string().nullable().optional(),
+    /**
+     * MongoDB asset id → export file path. The legacy world's asset index, and
+     * why the migration needs no data rewrite (§6.1).
+     */
+    assetIdToPath: external_exports.record(external_exports.string()).optional()
+  }).passthrough();
+  var entitiesIrSchema = external_exports.object({
+    buildings: external_exports.array(placeableEntityIrSchema).optional(),
+    natureObjects: external_exports.array(placeableEntityIrSchema).optional(),
+    questObjects: external_exports.array(placeableEntityIrSchema).optional(),
+    containers: external_exports.array(placeableEntityIrSchema).optional(),
+    npcs: external_exports.array(placeableEntityIrSchema).optional(),
+    animals: external_exports.array(placeableEntityIrSchema).optional(),
+    roads: external_exports.array(roadIrSchema).optional()
+  }).passthrough();
+  var MAP_FEATURE_ID_PATTERN = /^(?=.{1,256}$)[A-Za-z0-9_:-](?:[A-Za-z0-9_:./-]*[A-Za-z0-9_:-])?$/;
+  var MAP_FEATURE_ID_BODY = "[A-Za-z0-9_:-](?:[A-Za-z0-9_:./-]*[A-Za-z0-9_:-])?";
+  var GROUND_SURFACE_LOT_ID_PATTERN = /^surface\.(?!map\.)[^.\s]+\.[^.\s]+\.(?:plaza|footpath)$/;
+  var GROUND_SURFACE_MAP_ID_PATTERN = new RegExp(`^surface\\.map\\.${MAP_FEATURE_ID_BODY}$`);
+  var groundSurfaceIrSchema = external_exports.object({
+    /** Either id form, each a JSON Schema `pattern` in the emitted schema. */
+    id: external_exports.union([
+      external_exports.string().regex(GROUND_SURFACE_LOT_ID_PATTERN, "not surface.<settlementId>.<lotId>.<kind>"),
+      external_exports.string().regex(GROUND_SURFACE_MAP_ID_PATTERN, "not surface.map.<featureId>")
+    ]),
+    kind: external_exports.enum(["plaza", "footpath"]),
+    archetype: external_exports.string(),
+    settlementId: external_exports.string().nullable(),
+    lotId: external_exports.string().nullable(),
+    points: external_exports.array(external_exports.object({ x: external_exports.number(), z: external_exports.number() }).passthrough()),
+    closed: external_exports.boolean(),
+    width: external_exports.number(),
+    name: external_exports.string().nullable().optional(),
+    districtName: external_exports.string().nullable().optional(),
+    /** NF.C6: a map stair is one footpath with `steps: true`. */
+    steps: external_exports.boolean().optional(),
+    /** NF.C6: the MapSource feature a map-derived surface was made from. */
+    sourceFeatureId: external_exports.string().optional()
+  }).passthrough();
+  var geographyAssetsIrSchema = external_exports.object({
+    waterFeatures: external_exports.array(placeableEntityIrSchema).optional(),
+    foliageLayers: external_exports.array(placeableEntityIrSchema).optional()
+  }).passthrough();
+  var geographyGroundSurfacesIrSchema = external_exports.object({
+    groundSurfaces: external_exports.array(groundSurfaceIrSchema).optional()
+  }).passthrough();
+  function mapRecordIdPattern(prefix) {
+    return new RegExp(`^${prefix}\\.map\\.${MAP_FEATURE_ID_BODY}$`);
+  }
+  function notMapRecordIdPattern(prefix) {
+    return new RegExp(`^(?!${prefix}\\.map\\.)`);
+  }
+  var finite6 = external_exports.number().finite();
+  var groundPointSchema = external_exports.object({ x: finite6, z: finite6 }).passthrough();
+  var footprintRingSchema = external_exports.array(groundPointSchema).min(3).refine(
+    (ring) => {
+      const a = ring[0];
+      const b = ring[ring.length - 1];
+      return a === void 0 || b === void 0 || a.x !== b.x || a.z !== b.z;
+    },
+    { message: "a ring does not repeat its first point at the end" }
+  );
+  function notMapDerivedRecordSchema(prefix, why = `${prefix}.map.* ids are minted from a sourceFeatureId`) {
+    return external_exports.object({
+      id: external_exports.string().regex(notMapRecordIdPattern(prefix), why).optional(),
+      sourceFeatureId: external_exports.undefined({ invalid_type_error: why })
+    }).passthrough();
+  }
+  function mapDerivableRecordSchema(prefix, mapOnly) {
+    const notMapDerived = notMapDerivedRecordSchema(prefix);
+    const mapDerived = external_exports.object({
+      id: external_exports.string().regex(mapRecordIdPattern(prefix), `not ${prefix}.map.<featureId>`),
+      sourceFeatureId: external_exports.string().regex(MAP_FEATURE_ID_PATTERN, "not a MapSource feature id"),
+      ...mapOnly
+    }).passthrough().refine((r) => r.id === `${prefix}.map.${r.sourceFeatureId}`, {
+      message: `id is not ${prefix}.map.<sourceFeatureId>`,
+      path: ["id"]
+    });
+    return external_exports.union([notMapDerived, mapDerived]);
+  }
+  var groundSurfaceMapIrSchema = mapDerivableRecordSchema("surface", {}).and(
+    external_exports.object({ steps: external_exports.boolean().optional() }).passthrough().refine((r) => r.steps !== true || r.kind === "footpath", {
+      message: "steps: true is a footpath (a map stair is one footpath surface)",
+      path: ["steps"]
+    })
+  );
+  var groundSurfaceRecordIrSchema = groundSurfaceIrSchema.and(groundSurfaceMapIrSchema);
+  var MAP_STILL_WATER_TYPES = ["lake", "pond", "marsh"];
+  var MAP_RIVER_WATER_TYPES = ["river", "stream", "canal"];
+  var MAP_WATER_TYPES = [...MAP_STILL_WATER_TYPES, ...MAP_RIVER_WATER_TYPES];
+  var waterFeatureMapIrSchema = mapDerivableRecordSchema("water", {
+    type: external_exports.enum(MAP_WATER_TYPES),
+    archetype: external_exports.string(),
+    waterLevel: finite6,
+    width: finite6,
+    shorelinePoints: external_exports.array(external_exports.object({ x: finite6, y: finite6, z: finite6 }).passthrough()).min(2)
+  }).superRefine((r, ctx) => {
+    const w = r;
+    if (w.sourceFeatureId === void 0) return;
+    if (w.archetype !== `terrain.water.${w.type}`) {
+      ctx.addIssue({ code: external_exports.ZodIssueCode.custom, path: ["archetype"], message: `a map ${w.type} is terrain.water.${w.type}` });
+    }
+    const river = MAP_RIVER_WATER_TYPES.includes(w.type ?? "");
+    if (river && !((w.width ?? 0) > 0)) {
+      ctx.addIssue({ code: external_exports.ZodIssueCode.custom, path: ["width"], message: "a map river carries its centreline width" });
+    }
+    if (!river && (w.shorelinePoints?.length ?? 0) < 3) {
+      ctx.addIssue({ code: external_exports.ZodIssueCode.custom, path: ["shorelinePoints"], message: "map still water carries its polygon ring" });
+    }
+  });
+  var roadMapIrSchema = mapDerivableRecordSchema("road", {});
+  var streetSegmentMapIrSchema = mapDerivableRecordSchema("street", {});
+  var foliageLayerMapIrSchema = mapDerivableRecordSchema("foliage", {});
+  var geographyElevationIrSchema = external_exports.object({ minM: finite6, maxM: finite6, verticalScaleM: finite6 }).passthrough().superRefine((e, ctx) => {
+    if (e.maxM < e.minM) {
+      ctx.addIssue({ code: external_exports.ZodIssueCode.custom, path: ["maxM"], message: "maxM is below minM" });
+    } else if (e.verticalScaleM !== e.maxM - e.minM) {
+      ctx.addIssue({
+        code: external_exports.ZodIssueCode.custom,
+        path: ["verticalScaleM"],
+        message: `verticalScaleM must be maxM - minM (${e.maxM - e.minM})`
+      });
+    }
+  });
+  var GEOREFERENCE_CRS_PATTERN = /^(?:EPSG:[1-9][0-9]*|local)$/;
+  var georeferenceIrSchema = external_exports.object({
+    crs: external_exports.string().regex(GEOREFERENCE_CRS_PATTERN, "not EPSG:<code> or local"),
+    origin: external_exports.object({ x: finite6, y: finite6 }).passthrough(),
+    rotationRad: finite6.optional()
+  }).passthrough();
+  var MAP_SOURCE_DIGEST_PATTERN = /^sha256:[0-9a-f]{64}$/;
+  var TERRAIN_INLINE_CAP_BYTES = 16 * 1024 * 1024;
+  var TILED_MAX_RESOLUTION = 16384;
+  var TERRAIN_TILE_SAMPLES = 256;
+  var TERRAIN_TILES_ENCODING = "f32le-normalised";
+  var TERRAIN_TILE_DIGEST_PATTERN = MAP_SOURCE_DIGEST_PATTERN;
+  var TERRAIN_CONTRACT_CODES = {
+    /** Inline terrain whose serialized `heightmap` + `slopeMap` exceed {@link TERRAIN_INLINE_CAP_BYTES}. */
+    inlineOverCap: "terrain-inline-over-cap",
+    /** A geography with `terrainSource.tiles` that still carries a `heightmap` or a `slopeMap`. */
+    tiledWithInline: "terrain-tiled-with-inline",
+    /** A tile index whose resolution N exceeds {@link TILED_MAX_RESOLUTION}. */
+    tilesResolutionOverMax: "terrain-tiles-resolution-over-max",
+    /** A tile index whose N is not its terrain source's resolution (absent: 128). */
+    tilesResolutionMismatch: "terrain-tiles-resolution-mismatch",
+    /** A tile index with other than `ceil((N - 1) / 256)²` entries. */
+    tilesIndexSize: "terrain-tiles-index-size",
+    /** A tile `(i, j)` outside `[0, ceil((N - 1) / 256))` on either axis. */
+    tileOutOfRange: "terrain-tile-out-of-range",
+    /** A second entry for the same `(i, j)`. */
+    tileDuplicate: "terrain-tile-duplicate",
+    /** A tile digest that is not `sha256:<64 lower-case hex>`. */
+    tileDigest: "terrain-tile-digest",
+    /** A tile locator, an IR file name or an IR location that cannot name a tile in the IR's sidecar. */
+    tileLocator: "terrain-tile-locator"
+  };
+  var TERRAIN_CODE = TERRAIN_CONTRACT_CODES;
+  function terrainTilesPerSide(resolution) {
+    if (!Number.isInteger(resolution) || resolution < 2) {
+      throw new RangeError(`terrainTilesPerSide: a resolution is an integer of at least 2, got ${resolution}`);
+    }
+    return Math.ceil((resolution - 1) / TERRAIN_TILE_SAMPLES);
+  }
+  function utf8Length(s) {
+    let n = 0;
+    for (let k = 0; k < s.length; k += 1) {
+      const c = s.charCodeAt(k);
+      if (c < 128) n += 1;
+      else if (c < 2048) n += 2;
+      else if (c >= 55296 && c <= 56319) {
+        n += 4;
+        k += 1;
+      } else n += 3;
+    }
+    return n;
+  }
+  function serializedBytes(value) {
+    if (value === void 0 || value === null) return 0;
+    if (!Array.isArray(value)) return utf8Length(JSON.stringify(value) ?? "");
+    let n = 2 + Math.max(0, value.length - 1);
+    for (const row of value) n += utf8Length(JSON.stringify(row) ?? "null");
+    return n;
+  }
+  function inlineTerrainBytes(geography) {
+    return serializedBytes(geography.heightmap) + serializedBytes(geography.slopeMap);
+  }
+  function validateInlineTerrain(geography) {
+    const bytes = inlineTerrainBytes(geography);
+    const capBytes = TERRAIN_INLINE_CAP_BYTES;
+    if (bytes <= capBytes) return { ok: true, bytes, capBytes };
+    return {
+      ok: false,
+      bytes,
+      capBytes,
+      code: TERRAIN_CODE.inlineOverCap,
+      message: `${TERRAIN_CODE.inlineOverCap}: the inline geography.heightmap + geography.slopeMap serialize to ${bytes} bytes, over the ${capBytes}-byte inline terrain cap (U114(2), ADR-0001 \xA77); terrain this large goes to the tiled raster (terrainSource.tiles)`
+    };
+  }
+  var terrainTileIrSchema = external_exports.object({
+    i: external_exports.number().int().min(0),
+    j: external_exports.number().int().min(0),
+    digest: external_exports.string().regex(TERRAIN_TILE_DIGEST_PATTERN, `${TERRAIN_CODE.tileDigest}: not sha256:<64 lower-case hex>`)
+  }).passthrough();
+  var terrainTilesIrSchema = external_exports.object({
+    encoding: external_exports.literal(TERRAIN_TILES_ENCODING),
+    resolution: external_exports.number().int().min(2).max(
+      TILED_MAX_RESOLUTION,
+      `${TERRAIN_CODE.tilesResolutionOverMax}: a tiled bake's resolution is at most ${TILED_MAX_RESOLUTION}`
+    ),
+    tileSamples: external_exports.literal(TERRAIN_TILE_SAMPLES),
+    tiles: external_exports.array(terrainTileIrSchema)
+  }).passthrough().describe(
+    "ADR-0001 \xA77 (U114(2)): the index of a terrain baked over the 16 MiB inline cap; the geography then carries no heightmap or slopeMap. Exactly one tile per (i, j) in [0, ceil((resolution - 1) / 256))^2; tile (i, j) holds samples [256i, min(256i + 256, resolution - 1)] across and [256j, min(256j + 256, resolution - 1)] down, edges inclusive, as little-endian float32 normalised heights, row-major, top row first. Its bytes are the file <hex>.f32 (hex = digest without sha256:) in the sidecar directory <IR file name>.tiles/ beside the IR, resolved against wherever the IR was read from. A missing or mismatched tile refuses the world."
+  ).superRefine((t, ctx) => {
+    const n = t.resolution;
+    if (!Number.isInteger(n) || n < 2 || n > TILED_MAX_RESOLUTION || !Array.isArray(t.tiles)) return;
+    const side = terrainTilesPerSide(n);
+    if (t.tiles.length !== side * side) {
+      ctx.addIssue({
+        code: external_exports.ZodIssueCode.custom,
+        path: ["tiles"],
+        message: `${TERRAIN_CODE.tilesIndexSize}: resolution ${n} has ${side} tiles a side, so its index has ${side * side} entries, not ${t.tiles.length}`
+      });
+    }
+    const seen = /* @__PURE__ */ new Set();
+    t.tiles.forEach((tile, k) => {
+      if (!Number.isInteger(tile.i) || !Number.isInteger(tile.j)) return;
+      if (tile.i >= side || tile.j >= side) {
+        ctx.addIssue({
+          code: external_exports.ZodIssueCode.custom,
+          path: ["tiles", k],
+          message: `${TERRAIN_CODE.tileOutOfRange}: tile (${tile.i}, ${tile.j}) is outside resolution ${n}'s ${side} x ${side} tiles`
+        });
+        return;
+      }
+      const key = `${tile.i},${tile.j}`;
+      if (seen.has(key)) {
+        ctx.addIssue({
+          code: external_exports.ZodIssueCode.custom,
+          path: ["tiles", k],
+          message: `${TERRAIN_CODE.tileDuplicate}: tile (${tile.i}, ${tile.j}) is listed twice`
+        });
+      }
+      seen.add(key);
+    });
+  });
+  var terrainSourceIrSchema = external_exports.object({
+    kind: external_exports.literal("raster"),
+    mapSourceDigest: external_exports.string().regex(MAP_SOURCE_DIGEST_PATTERN, "not sha256:<64 hex>"),
+    resolution: external_exports.number().int().min(2).optional(),
+    tiles: terrainTilesIrSchema.optional()
+  }).passthrough().superRefine((s, ctx) => {
+    if (s.tiles === void 0) return;
+    const resolution = s.resolution ?? 128;
+    if (s.tiles.resolution !== resolution) {
+      ctx.addIssue({
+        code: external_exports.ZodIssueCode.custom,
+        path: ["tiles", "resolution"],
+        message: `${TERRAIN_CODE.tilesResolutionMismatch}: the tile index's resolution ${s.tiles.resolution} is not the terrain source's ${resolution}`
+      });
+    }
+  });
+  var coastlineIrSchema = external_exports.object({
+    id: external_exports.string().regex(mapRecordIdPattern("coast"), "not coast.map.<featureId>"),
+    sourceFeatureId: external_exports.string().regex(MAP_FEATURE_ID_PATTERN, "not a MapSource feature id"),
+    points: external_exports.array(groundPointSchema).min(2),
+    closed: external_exports.boolean()
+  }).passthrough().refine((r) => r.id === `coast.map.${r.sourceFeatureId}`, { message: "id is not coast.map.<sourceFeatureId>", path: ["id"] });
+  var footprintIrSchema = external_exports.object({
+    id: external_exports.string().regex(mapRecordIdPattern("footprint"), "not footprint.map.<featureId>"),
+    sourceFeatureId: external_exports.string().regex(MAP_FEATURE_ID_PATTERN, "not a MapSource feature id"),
+    kind: external_exports.enum(["building", "lot"]),
+    points: footprintRingSchema
+  }).passthrough().refine((r) => r.id === `footprint.map.${r.sourceFeatureId}`, {
+    message: "id is not footprint.map.<sourceFeatureId>",
+    path: ["id"]
+  });
+  var geographyLayersIrSchema = external_exports.object({
+    coastline: external_exports.array(coastlineIrSchema).optional(),
+    footprints: external_exports.array(footprintIrSchema).optional()
+  }).strict();
+  var lotFootprintIrSchema = external_exports.object({ footprint: footprintRingSchema.optional() }).passthrough();
+  var internalRoadMapIrSchema = notMapDerivedRecordSchema(
+    "road",
+    "a map road inside a settlement is a street-network segment, never an internal road"
+  );
+  var settlementMapIrSchema = external_exports.object({
+    lots: external_exports.array(lotFootprintIrSchema).nullable().optional(),
+    internalRoads: external_exports.array(internalRoadMapIrSchema).nullable().optional(),
+    streetNetwork: external_exports.object({
+      segments: external_exports.array(streetSegmentMapIrSchema).nullable().optional()
+    }).passthrough().nullable().optional()
+  }).passthrough();
+  function uniqueMintedIds(records, path, ctx) {
+    const seen = /* @__PURE__ */ new Set();
+    (records ?? []).forEach((r, i) => {
+      if (r.sourceFeatureId === void 0 || typeof r.id !== "string") return;
+      if (seen.has(r.id)) {
+        ctx.addIssue({ code: external_exports.ZodIssueCode.custom, path: [...path, i, "id"], message: `duplicate map-minted id ${r.id}` });
+      }
+      seen.add(r.id);
+    });
+  }
+  var geographyMapIrSchema = external_exports.object({
+    elevation: geographyElevationIrSchema.optional(),
+    georeference: georeferenceIrSchema.optional(),
+    terrainSource: terrainSourceIrSchema.optional(),
+    layers: geographyLayersIrSchema.optional(),
+    groundSurfaces: external_exports.array(groundSurfaceMapIrSchema).optional(),
+    waterFeatures: external_exports.array(waterFeatureMapIrSchema).optional(),
+    foliageLayers: external_exports.array(foliageLayerMapIrSchema).optional(),
+    settlements: external_exports.array(settlementMapIrSchema).optional()
+  }).passthrough().superRefine((g, ctx) => {
+    const geo = g;
+    for (const key of ["groundSurfaces", "waterFeatures", "foliageLayers"]) {
+      uniqueMintedIds(geo[key], [key], ctx);
+    }
+    uniqueMintedIds(g.layers?.coastline, ["layers", "coastline"], ctx);
+    uniqueMintedIds(g.layers?.footprints, ["layers", "footprints"], ctx);
+    const inline = ["heightmap", "slopeMap"].filter((key) => geo[key] !== void 0 && geo[key] !== null);
+    if (g.terrainSource?.tiles !== void 0 && inline.length > 0) {
+      ctx.addIssue({
+        code: external_exports.ZodIssueCode.custom,
+        path: [inline[0]],
+        message: `${TERRAIN_CODE.tiledWithInline}: a geography whose terrainSource has tiles carries no heightmap or slopeMap (it has ${inline.join(" and ")})`
+      });
+    } else if (inline.length > 0) {
+      const verdict = validateInlineTerrain(geo);
+      if (!verdict.ok) ctx.addIssue({ code: external_exports.ZodIssueCode.custom, path: [inline[0]], message: verdict.message });
+    }
+  });
+  var entitiesMapIrSchema = external_exports.object({
+    roads: external_exports.array(roadMapIrSchema).optional(),
+    buildings: external_exports.array(external_exports.object({ footprint: footprintRingSchema.optional() }).passthrough()).optional()
+  }).passthrough().superRefine((e, ctx) => uniqueMintedIds(e.roads, ["roads"], ctx));
+  var genrePiecePointIrSchema = external_exports.object({ x: external_exports.number().finite(), z: external_exports.number().finite() }).passthrough();
+  var genrePieceIrSchema = external_exports.object({
+    id: external_exports.string().min(1),
+    module: external_exports.enum(["platformer", "puzzle", "strategy"]),
+    kind: external_exports.string().min(1),
+    variant: external_exports.string().optional(),
+    ref: external_exports.string(),
+    at: external_exports.string().optional(),
+    level: external_exports.string().optional(),
+    archetype: external_exports.string().optional(),
+    position: genrePiecePointIrSchema.optional(),
+    span: external_exports.object({ from: genrePiecePointIrSchema, to: genrePiecePointIrSchema }).passthrough().optional()
+  }).passthrough();
+  var genreGroundIrSchema = genrePieceIrSchema.extend({
+    module: external_exports.enum(["platformer", "puzzle"]),
+    kind: external_exports.literal("ground"),
+    archetype: external_exports.string().min(1),
+    position: genrePiecePointIrSchema,
+    extent: external_exports.object({ min: genrePiecePointIrSchema, max: genrePiecePointIrSchema }).passthrough()
+  }).passthrough().superRefine((g, ctx) => {
+    const { min, max } = g.extent;
+    if (min.x > max.x || min.z > max.z) {
+      ctx.addIssue({ code: external_exports.ZodIssueCode.custom, path: ["extent"], message: "a ground extent's min exceeds its max" });
+    }
+    if (g.position.x !== (min.x + max.x) / 2 || g.position.z !== (min.z + max.z) / 2) {
+      ctx.addIssue({ code: external_exports.ZodIssueCode.custom, path: ["position"], message: "a ground's position is its extent's midpoint" });
+    }
+  });
+  var entitiesGenrePiecesIrSchema = external_exports.object({ genrePieces: external_exports.array(genrePieceIrSchema).optional(), genreGround: external_exports.array(genreGroundIrSchema).optional() }).passthrough().superRefine((e, ctx) => {
+    for (const list3 of ["genrePieces", "genreGround"]) {
+      const seen = /* @__PURE__ */ new Set();
+      (e[list3] ?? []).forEach((p, i) => {
+        if (seen.has(p.id)) {
+          ctx.addIssue({ code: external_exports.ZodIssueCode.custom, path: [list3, i, "id"], message: `duplicate genre piece id ${p.id}` });
+        }
+        seen.add(p.id);
+      });
+    }
+  });
+  var BUILDING_POSITION_Y_DESCRIPTION = "Ground-relative (U108(2), U115(6)): an offset in metres above the ground at this x/z. 0 means on the ground; a positive value stands the building that far above it (a plinth), so its height is the terrain height at the snapped x/z plus y. A negative value is clamped to 0 (seated on the ground). Each engine seats the building on its own terrain at import, so the world file depends on no engine's terrain. A placed container reads its y the same way (U120(2)); a loose placed item does not: its authored y is absolute.";
+  var buildingPositionIrSchema = external_exports.object({
+    x: external_exports.number().optional(),
+    y: external_exports.number().optional().describe(BUILDING_POSITION_Y_DESCRIPTION),
+    z: external_exports.number().optional()
+  }).passthrough().describe(
+    "A building's position in IR metres: x and z on the ground plane, y ground-relative (U108(2), U115(6)): an offset above the ground at x/z (0 on the ground, a negative value clamped to 0), and each engine seats the building on its terrain at import."
+  );
+  var entitiesBuildingPositionIrSchema = external_exports.object({
+    buildings: external_exports.array(external_exports.object({ position: buildingPositionIrSchema.optional() }).passthrough()).optional()
+  }).passthrough();
+  var geographyIrSchema = geographyAssetsIrSchema.and(geographyGroundSurfacesIrSchema).and(geographyMapIrSchema);
+  var worldIrSchema = external_exports.object({
+    meta: metaIrSchema,
+    geography: geographyIrSchema,
+    entities: entitiesIrSchema.and(entitiesMapIrSchema).and(entitiesGenrePiecesIrSchema).and(entitiesBuildingPositionIrSchema),
+    systems: looseObject,
+    theme: looseObject,
+    assets: assetsIrSchema,
+    player: placeableEntityIrSchema,
+    ui: looseObject,
+    combat: looseObject,
+    survival: looseObject.nullable(),
+    resources: looseObject.nullable(),
+    assessment: looseObject.nullable(),
+    languageLearning: looseObject.nullable(),
+    aiConfig: looseObject
+  }).passthrough();
+
+  // @insimul/core/src/geo/map-geography.ts
+  function groundHeightM(n, elevation) {
+    return n * elevation.verticalScaleM;
+  }
+
+  // @insimul/core/src/editor/scene/geography-projection.ts
+  var GEOGRAPHY_PROJECTION_ENGINES = ["unreal", "unity", "godot", "babylon"];
+  var LEGACY_FALLBACK_VERTICAL_SCALE_M = 20;
+  var GODOT_LEGACY_SCALE_PER_TERRAIN_M = 0.15;
+  var BABYLON_LEGACY_VERTICAL_SCALE_M = 30;
+  var UNREAL_SETTLEMENT_SAMPLE_DENSITY = 8;
+  var BABYLON_RENDERS_FLAT_NOTE = "babylon main renders flat today: TerrainRenderer's maxHeight is 30, but tryApplyTerrainHeightmap returns before applying it and the live game uses maxHeight 0";
+  var isObj17 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var arr4 = (v) => Array.isArray(v) ? v : [];
+  var numField = (o, key, fallback) => {
+    const v = isObj17(o) ? o[key] : void 0;
+    return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+  };
+  function squareHeightmap(geography) {
+    const rows = geography.heightmap;
+    if (!Array.isArray(rows)) return null;
+    const resolution = rows.length;
+    if (resolution < 2) return null;
+    const normalised = [];
+    for (const row of rows) {
+      if (!Array.isArray(row) || row.length !== resolution) return null;
+      for (const v of row) normalised.push(typeof v === "number" && Number.isFinite(v) ? v : 0);
+    }
+    return { normalised, resolution };
+  }
+  function unrealSettlementDerivedScale(world2) {
+    const g = isObj17(world2.geography) ? world2.geography : {};
+    const size = numField(g, "terrainSize", 0);
+    const grid2 = squareHeightmap(g);
+    if (grid2 === null || !(size > 0)) return null;
+    const half = size / 2;
+    const ratios = [];
+    for (const s of arr4(g.settlements)) {
+      if (!isObj17(s)) continue;
+      const meanM = numField(s.elevationProfile, "meanElevation", 0);
+      if (meanM <= 0) continue;
+      const cx = numField(s.position, "x", 0);
+      const cz = numField(s.position, "z", 0);
+      const r = Math.max(numField(s, "radius", 1), 1);
+      const density = UNREAL_SETTLEMENT_SAMPLE_DENSITY;
+      const step = 2 * r / density;
+      let total = 0;
+      let n = 0;
+      for (let xi = 0; xi < density; ++xi) {
+        for (let zi = 0; zi < density; ++zi) {
+          const wx = cx - r + (xi + 0.5) * step;
+          const wz = cz - r + (zi + 0.5) * step;
+          if ((wx - cx) * (wx - cx) + (wz - cz) * (wz - cz) > r * r) continue;
+          total += sampleTerrainHeight(grid2.normalised, grid2.resolution, size, size, wx + half, wz + half);
+          ++n;
+        }
+      }
+      if (n > 0 && total > 0) ratios.push(meanM / (total / n));
+    }
+    if (ratios.length === 0) return null;
+    let acc = 0;
+    for (const v of ratios) acc += v;
+    return acc / ratios.length;
+  }
+  function legacyScale(engine, world2) {
+    const g = isObj17(world2.geography) ? world2.geography : {};
+    switch (engine) {
+      case "unreal": {
+        const stated2 = g.elevationScale;
+        if (typeof stated2 === "number" && Number.isFinite(stated2) && stated2 > 0) {
+          return { value: stated2, source: "legacy.unreal.elevationScale", divergence: true };
+        }
+        const derived = unrealSettlementDerivedScale(world2);
+        if (derived !== null) return { value: derived, source: "legacy.unreal.settlementElevationProfile", divergence: true };
+        return { value: LEGACY_FALLBACK_VERTICAL_SCALE_M, source: "legacy.unreal.fallback", divergence: true };
+      }
+      case "unity":
+        return { value: LEGACY_FALLBACK_VERTICAL_SCALE_M, source: "legacy.unity.constant", divergence: true };
+      case "godot": {
+        const size = g.terrainSize;
+        if (!(typeof size === "number" && Number.isFinite(size) && size > 0)) {
+          return {
+            refused: "godot-terrain-size-not-positive",
+            message: `godot's legacy vertical scale is terrainSize x ${GODOT_LEGACY_SCALE_PER_TERRAIN_M}, and terrainSize is ${JSON.stringify(size)}`
+          };
+        }
+        return { value: size * GODOT_LEGACY_SCALE_PER_TERRAIN_M, source: "legacy.godot.terrainSize", divergence: true };
+      }
+      case "babylon":
+        return {
+          value: BABYLON_LEGACY_VERTICAL_SCALE_M,
+          source: "legacy.babylon.terrainRenderer",
+          divergence: true,
+          note: BABYLON_RENDERS_FLAT_NOTE
+        };
+    }
+  }
+  var LAYER_SOURCES = [
+    { kind: "ground_surface", records: (g) => arr4(g.groundSurfaces) },
+    { kind: "water", records: (g) => arr4(g.waterFeatures) },
+    { kind: "foliage", records: (g) => arr4(g.foliageLayers) },
+    { kind: "coast", records: (g) => arr4(isObj17(g.layers) ? g.layers.coastline : void 0) },
+    { kind: "footprint", records: (g) => arr4(isObj17(g.layers) ? g.layers.footprints : void 0) }
+  ];
+  function projectedHeightM(n, scale2) {
+    return groundHeightM(n, { verticalScaleM: scale2.value });
+  }
+  function projectGeography(worldIr, options) {
+    const engine = options.engine;
+    const refuse5 = (refused2, message) => ({
+      ok: false,
+      engine,
+      refused: refused2,
+      message
+    });
+    if (!GEOGRAPHY_PROJECTION_ENGINES.includes(engine)) {
+      return refuse5("unknown-engine", `no legacy vertical scale is known for engine ${JSON.stringify(engine)}`);
+    }
+    const g = isObj17(worldIr.geography) ? worldIr.geography : {};
+    const elevationIn = g.elevation;
+    const terrainSource = g.terrainSource;
+    if (elevationIn === void 0 && isObj17(terrainSource) && terrainSource.kind === "raster") {
+      return refuse5(
+        "raster-terrain-source-without-elevation",
+        "a raster terrainSource carries its relief as geography.elevation; without it the world has no vertical scale, and the legacy fallback is never used for a raster world"
+      );
+    }
+    let elevation;
+    if (elevationIn !== void 0) {
+      const parsed = geographyElevationIrSchema.safeParse(elevationIn);
+      if (!parsed.success) {
+        return refuse5(
+          "elevation-invalid",
+          `geography.elevation is not a relief: ${parsed.error.issues.map((i) => i.message).join("; ")}`
+        );
+      }
+      elevation = parsed.data;
+    }
+    let verticalScale;
+    if (elevation !== void 0) {
+      verticalScale = { value: elevation.verticalScaleM, source: "geography.elevation", divergence: false };
+    } else {
+      const legacy = legacyScale(engine, worldIr);
+      if ("refused" in legacy) return refuse5(legacy.refused, legacy.message);
+      verticalScale = legacy;
+    }
+    const layers = [];
+    for (const { kind, records } of LAYER_SOURCES) {
+      for (const r of records(g)) {
+        if (!isObj17(r) || typeof r.sourceFeatureId !== "string" || typeof r.id !== "string") continue;
+        if (kind !== "water") {
+          layers.push({ kind, id: r.id, sourceFeatureId: r.sourceFeatureId });
+          continue;
+        }
+        if (elevation === void 0) {
+          return refuse5(
+            "map-water-without-elevation",
+            `map water ${r.id} has a waterLevel only in the frame geography.elevation defines, and the world has none`
+          );
+        }
+        layers.push({ kind, id: r.id, sourceFeatureId: r.sourceFeatureId, surfaceY: numField(r, "waterLevel", 0) });
+      }
+    }
+    const grid2 = squareHeightmap(g);
+    let heightRange = null;
+    if (grid2 !== null) {
+      let lo = Infinity;
+      let hi = -Infinity;
+      for (const n of grid2.normalised) {
+        lo = Math.min(lo, n);
+        hi = Math.max(hi, n);
+      }
+      heightRange = { minY: projectedHeightM(lo, verticalScale), maxY: projectedHeightM(hi, verticalScale) };
+    }
+    return { ok: true, engine, verticalScale, heightRange, layers };
+  }
+
+  // @insimul/core/src/editor/scene/geography-placement.ts
+  var GROUND_SURFACE_DEFAULT_ARCHETYPE = "terrain.texture.sidewalk";
+  var COAST_ARCHETYPE = "terrain.coast";
+  var FOOTPRINT_DEFAULT_ARCHETYPE = deriveBuildingArchetype({});
+  var isObj18 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var arr5 = (v) => Array.isArray(v) ? v : [];
+  var numField2 = (o, key, fallback) => {
+    const v = isObj18(o) ? o[key] : void 0;
+    return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+  };
+  var nonEmptyString = (v) => typeof v === "string" ? v : "";
+  var RECORDS = {
+    ground_surface: (g) => arr5(g.groundSurfaces),
+    water: (g) => arr5(g.waterFeatures),
+    foliage: (g) => arr5(g.foliageLayers),
+    coast: (g) => arr5(isObj18(g.layers) ? g.layers.coastline : void 0),
+    footprint: (g) => arr5(isObj18(g.layers) ? g.layers.footprints : void 0)
+  };
+  function listedRecords(g, kind, layers) {
+    const records = RECORDS[kind](g).filter(
+      (r) => isObj18(r) && typeof r.sourceFeatureId === "string" && typeof r.id === "string"
+    );
+    const named = layers.filter((l) => l.kind === kind);
+    if (records.length !== named.length || records.some((r, i) => r.id !== named[i].id)) {
+      throw new Error(`geography placement: the projection's ${kind} layers do not name the ${kind} records`);
+    }
+    return named.map((l, i) => [l, records[i]]);
+  }
+  function framePoints(points3, half) {
+    const out = [];
+    for (const p of arr5(points3)) {
+      if (!isObj18(p)) continue;
+      out.push({ x: numField2(p, "x", 0) + half, z: numField2(p, "z", 0) + half });
+    }
+    return out;
+  }
+  function meanXZ(points3) {
+    let sx = 0;
+    let sz = 0;
+    for (const p of points3) {
+      sx += p.x;
+      sz += p.z;
+    }
+    return { x: sx / points3.length, z: sz / points3.length };
+  }
+  function pavingOf(world2, g, half) {
+    const out = [];
+    const pathOf = (points3) => framePoints(points3, half).map((p) => [p.x, p.z]);
+    const seen = /* @__PURE__ */ new Set();
+    for (const r of arr5(isObj18(world2.entities) ? world2.entities.roads : void 0)) {
+      if (!isObj18(r)) continue;
+      const from = nonEmptyString(r.fromId);
+      const to = nonEmptyString(r.toId);
+      if (from === "" || to === "") continue;
+      const id4 = `road.${from}.${to}`;
+      if (seen.has(id4)) continue;
+      seen.add(id4);
+      const path = pathOf(r.waypoints);
+      if (path.length < 2) continue;
+      out.push({ kind: "road", entityId: id4, path, width: numField2(r, "width", 0), closed: false });
+    }
+    for (const s of arr5(g.groundSurfaces)) {
+      if (!isObj18(s)) continue;
+      const id4 = nonEmptyString(s.id);
+      if (id4 === "") continue;
+      const path = pathOf(s.points);
+      if (path.length < 2) continue;
+      const width = numField2(s, "width", 0);
+      out.push({ kind: "ground_surface", entityId: id4, path, width, closed: s.closed === true || width <= 0 });
+    }
+    return out;
+  }
+  function newNode(entityId, kind, archetype, position) {
+    return {
+      entityId,
+      kind,
+      archetype,
+      assetRef: "",
+      bindingSource: "",
+      position,
+      rotationY: 0,
+      scale: { x: 1, y: 1, z: 1 },
+      generated: true
+    };
+  }
+  function computeGeographyPlacement(worldIr, resolver, options) {
+    const engine = options.engine;
+    const projection = projectGeography(worldIr, { engine });
+    if (!projection.ok) return projection;
+    const refuse5 = (refused2, message) => ({
+      ok: false,
+      engine,
+      refused: refused2,
+      message
+    });
+    const g = isObj18(worldIr.geography) ? worldIr.geography : {};
+    const size = numField2(g, "terrainSize", 0);
+    if (!(size > 0)) {
+      return refuse5(
+        "terrain-size-not-positive",
+        `geography.terrainSize is ${JSON.stringify(g.terrainSize)}: there is no terrain extent to place anything in`
+      );
+    }
+    const grid2 = squareHeightmap(g);
+    if (Array.isArray(g.heightmap) && grid2 === null) {
+      return refuse5("heightmap-not-square", "geography.heightmap is not a square grid of two or more rows");
+    }
+    const half = size / 2;
+    const scale2 = projection.verticalScale.value;
+    const heights = grid2 === null ? [] : grid2.normalised.map((n) => n * scale2);
+    const resolution = grid2 === null ? 0 : grid2.resolution;
+    const groundAt = (x, z) => sampleTerrainHeight(heights, resolution, size, size, x, z);
+    const meta = isObj18(worldIr.meta) ? worldIr.meta : {};
+    const binder = new WorldAssetBinder(
+      resolver,
+      options.pins,
+      typeof meta.worldId === "string" ? meta.worldId : "",
+      options.variantContext ?? null
+    );
+    const nodes = [];
+    const shapes = [];
+    const skipped = [];
+    const foliageOnPaving = [];
+    const fit = [];
+    const place = (node, shape) => {
+      resolveNodeAsset(binder, node, options.assetResolver);
+      nodes.push(node);
+      shapes.push(shape);
+    };
+    for (const [layer, record2] of listedRecords(g, "ground_surface", projection.layers)) {
+      const pts = framePoints(record2.points, half);
+      if (layer.id === "") {
+        skipped.push({ kind: "ground_surface", entityId: "", reason: "no-id", points: pts.length });
+        continue;
+      }
+      if (pts.length < 2) {
+        skipped.push({ kind: "ground_surface", entityId: layer.id, reason: "too-few-points", points: pts.length });
+        continue;
+      }
+      const c = meanXZ(pts);
+      const width = numField2(record2, "width", 0);
+      place(
+        newNode(layer.id, "ground_surface", nonEmptyString(record2.archetype) || GROUND_SURFACE_DEFAULT_ARCHETYPE, {
+          x: c.x,
+          y: groundAt(c.x, c.z),
+          z: c.z
+        }),
+        {
+          entityId: layer.id,
+          kind: "ground_surface",
+          points: pts.map((p) => ({ x: p.x, y: groundAt(p.x, p.z), z: p.z })),
+          width,
+          closed: record2.closed === true || width <= 0
+        }
+      );
+    }
+    for (const [layer, record2] of listedRecords(g, "water", projection.layers)) {
+      const pts = framePoints(record2.shorelinePoints, half);
+      if (layer.id === "") {
+        skipped.push({ kind: "water", entityId: "", reason: "no-id", points: pts.length });
+        continue;
+      }
+      const width = numField2(record2, "width", 0);
+      const closed = width <= 0;
+      if (pts.length < (closed ? 3 : 2)) {
+        skipped.push({ kind: "water", entityId: layer.id, reason: "too-few-points", points: pts.length });
+        continue;
+      }
+      const surfaceY = layer.surfaceY ?? 0;
+      const c = meanXZ(pts);
+      place(
+        newNode(layer.id, "water", deriveWaterFeatureArchetype(record2), {
+          x: c.x,
+          y: surfaceY,
+          z: c.z
+        }),
+        {
+          entityId: layer.id,
+          kind: "water",
+          points: pts.map((p) => ({ x: p.x, y: surfaceY, z: p.z })),
+          width,
+          closed
+        }
+      );
+    }
+    const paving = pavingOf(worldIr, g, half);
+    for (const [layer, record2] of listedRecords(g, "foliage", projection.layers)) {
+      const stated2 = arr5(record2.instances).filter(isObj18);
+      if (layer.id === "") {
+        skipped.push({ kind: "foliage", entityId: "", reason: "no-id", points: stated2.length });
+        continue;
+      }
+      const archetype = deriveFoliageLayerArchetype({
+        archetype: nonEmptyString(record2.archetype),
+        type: typeof record2.type === "string" ? record2.type.trim() : void 0
+      });
+      if (archetype === "") {
+        skipped.push({ kind: "foliage", entityId: layer.id, reason: "no-archetype", points: stated2.length });
+        continue;
+      }
+      if (stated2.length === 0) {
+        skipped.push({ kind: "foliage", entityId: layer.id, reason: "no-instances", points: 0 });
+        continue;
+      }
+      const instances = [];
+      let sx = 0;
+      let sz = 0;
+      stated2.forEach((inst, index) => {
+        const pos = isObj18(inst.position) ? inst.position : {};
+        const x = numField2(pos, "x", 0) + half;
+        const z = numField2(pos, "z", 0) + half;
+        const on = paving.find((p) => isOnPavedNode(p, x, z));
+        if (on !== void 0) {
+          foliageOnPaving.push({ entityId: layer.id, index, x, z, onKind: on.kind, onId: on.entityId });
+          return;
+        }
+        instances.push({
+          index,
+          position: { x, y: groundAt(x, z), z },
+          rotationY: numField2(inst, "rotation", 0),
+          scale: numField2(inst, "scale", 1),
+          variant: ""
+        });
+        sx += x;
+        sz += z;
+      });
+      if (instances.length === 0) {
+        skipped.push({ kind: "foliage", entityId: layer.id, reason: "every-instance-on-paving", points: stated2.length });
+        continue;
+      }
+      const cx = sx / instances.length;
+      const cz = sz / instances.length;
+      const node = newNode(layer.id, "foliage", archetype, { x: cx, y: groundAt(cx, cz), z: cz });
+      place(node, { entityId: layer.id, kind: "foliage", points: [], width: 0, closed: false, instances });
+      spreadLayerVariants(binder, node, instances, options.assetResolver);
+    }
+    for (const [layer, record2] of listedRecords(g, "coast", projection.layers)) {
+      const pts = framePoints(record2.points, half);
+      if (layer.id === "") {
+        skipped.push({ kind: "coast", entityId: "", reason: "no-id", points: pts.length });
+        continue;
+      }
+      const closed = record2.closed === true;
+      if (pts.length < (closed ? 3 : 2)) {
+        skipped.push({ kind: "coast", entityId: layer.id, reason: "too-few-points", points: pts.length });
+        continue;
+      }
+      const c = meanXZ(pts);
+      place(
+        newNode(layer.id, "coast", nonEmptyString(record2.archetype) || COAST_ARCHETYPE, {
+          x: c.x,
+          y: groundAt(c.x, c.z),
+          z: c.z
+        }),
+        {
+          entityId: layer.id,
+          kind: "coast",
+          points: pts.map((p) => ({ x: p.x, y: groundAt(p.x, p.z), z: p.z })),
+          width: 0,
+          closed
+        }
+      );
+    }
+    const streets = footprintStreets(worldIr, half);
+    for (const [layer, record2] of listedRecords(g, "footprint", projection.layers)) {
+      const pts = framePoints(record2.points, half);
+      if (layer.id === "") {
+        skipped.push({ kind: "footprint", entityId: "", reason: "no-id", points: pts.length });
+        continue;
+      }
+      if (record2.kind !== "building") {
+        skipped.push({ kind: "footprint", entityId: layer.id, reason: "not-a-building", points: pts.length });
+        continue;
+      }
+      if (pts.length < 3) {
+        skipped.push({ kind: "footprint", entityId: layer.id, reason: "too-few-points", points: pts.length });
+        continue;
+      }
+      const lot = footprintFitLot(
+        pts.map((p) => [p.x, p.z]),
+        streets
+      );
+      if (lot === null) {
+        skipped.push({ kind: "footprint", entityId: layer.id, reason: "no-area", points: pts.length });
+        continue;
+      }
+      const archetype = deriveBuildingArchetype({ archetype: nonEmptyString(record2.archetype) });
+      const node = newNode(layer.id, "footprint", archetype, {
+        x: lot.centre.x,
+        y: groundAt(lot.centre.x, lot.centre.z),
+        z: lot.centre.z
+      });
+      place(node, {
+        entityId: layer.id,
+        kind: "footprint",
+        points: pts.map((p) => ({ x: p.x, y: groundAt(p.x, p.z), z: p.z })),
+        width: 0,
+        closed: true,
+        fit: lot
+      });
+      const fitLot = fitLotOfFootprint(lot);
+      const outcome = checkAssetFit(binder.geometryFor(node.entityId, node.archetype), fitLot, { rotationY: lot.yaw });
+      node.rotationY = outcome.rotationY;
+      fit.push({
+        entityId: node.entityId,
+        archetype: node.archetype,
+        assetRef: node.assetRef,
+        outcome: outcome.outcome,
+        issues: [...outcome.issues],
+        required: outcome.required,
+        lot: { width: fitLot.width, depth: fitLot.depth },
+        rotationY: outcome.rotationY,
+        aligned: outcome.aligned
+      });
+    }
+    const order2 = nodes.map((_, i) => i).sort((a, b) => {
+      const x = nodes[a].entityId;
+      const y = nodes[b].entityId;
+      return x < y ? -1 : x > y ? 1 : a - b;
+    });
+    return {
+      ok: true,
+      engine,
+      verticalScale: projection.verticalScale,
+      nodes: order2.map((i) => nodes[i]),
+      shapes: order2.map((i) => shapes[i]),
+      skipped,
+      foliageOnPaving,
+      fit: fit.sort((a, b) => a.entityId < b.entityId ? -1 : a.entityId > b.entityId ? 1 : 0)
+    };
+  }
+  function spreadLayerVariants(binder, node, instances, assetResolver) {
+    if (node.bindingSource === "" || node.bindingSource === INSTANCE_PIN_SOURCE_NAME) return;
+    const layer = binder.variantsFor(node.entityId, node.archetype);
+    if (layer === null) return;
+    const counts = /* @__PURE__ */ new Map();
+    for (const inst of instances) {
+      const key = layerInstanceKey(node.entityId, inst.position.x, inst.position.z);
+      const chosen = binder.variantsFor(key, node.archetype)?.chosen;
+      if (chosen === void 0) continue;
+      inst.variant = chosen.id;
+      const c = counts.get(chosen.index);
+      if (c === void 0) counts.set(chosen.index, { count: 1, first: key });
+      else c.count += 1;
+    }
+    let most = null;
+    for (const candidate2 of layer.candidates) {
+      const c = counts.get(candidate2.index);
+      if (c !== void 0 && (most === null || c.count > most.count)) most = c;
+    }
+    if (most === null) return;
+    const member = newNode(most.first, "foliage", node.archetype, node.position);
+    resolveNodeAsset(binder, member, assetResolver);
+    node.assetRef = member.assetRef;
+    node.bindingSource = member.bindingSource;
+    if (member.contentHash !== void 0) node.contentHash = member.contentHash;
+    else delete node.contentHash;
+  }
+
+  // @insimul/core/src/editor/scene/hillside-grading.ts
+  var STAND_MAX_GRADIENT = Math.tan(PLAYER_GROUND.standMaxDeg * Math.PI / 180);
+  var BLEND_MAX_RISE_M = 2 / 3 * LOT_PAD_BLEND_M * STAND_MAX_GRADIENT;
+  var WALL_MAX_M = 1.5;
+  var TERRACE_DEPTH_M = LOT_PAD_MARGIN_M;
+  var HILLSIDE_MAX_WALLS = 8;
+  var MAP_PAD_ID_PREFIX = "pad.map.";
+  var WALL_STEP_MIN_M = 1e-3;
+  var WALL_SIDE_EPSILON_M = 1e-6;
+  var OVERLAP_SLOPE_LATTICE_M = 0.1;
+  var OVERLAP_SLOPE_DIFF_M = 0.02;
+  var OVERLAP_SLOPE_TOLERANCE = 1e-3;
+  var OVERLAP_SLOPE_SCREEN_GRADIENT = Math.tan(13 * Math.PI / 180);
+  var FAN_RAYS = 7;
+  var isObj19 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  function rawGround(world2, size, scale2) {
+    const g = isObj19(world2.geography) ? world2.geography : {};
+    const grid2 = squareHeightmap(g);
+    if (grid2 === null) return { resolution: 2, sizeX: size, sizeZ: size, heights: [0, 0, 0, 0] };
+    return { resolution: grid2.resolution, sizeX: size, sizeZ: size, heights: grid2.normalised.map((n) => n * scale2) };
+  }
+  function mapPadLotOf(padId, footprintId, fit) {
+    const heading = streetHeadingOf(fit.yaw);
+    return {
+      entityId: footprintId,
+      lotId: padId,
+      cx: fit.centre.x,
+      cz: fit.centre.z,
+      halfAcross: fit.width / 2,
+      halfAway: fit.depth / 2,
+      awayX: Math.cos(heading),
+      awayZ: Math.sin(heading)
+    };
+  }
+  function computeGradingPlan(worldIr, options) {
+    const placement = computeGeographyPlacement(worldIr, new BindingResolver(), { engine: options.engine });
+    if (!placement.ok) return placement;
+    const projection = projectGeography(worldIr, { engine: options.engine });
+    if (!projection.ok) return projection;
+    const g = isObj19(worldIr.geography) ? worldIr.geography : {};
+    const size = typeof g.terrainSize === "number" ? g.terrainSize : 0;
+    const raw = rawGround(worldIr, size, placement.verticalScale.value);
+    const sourceOf = /* @__PURE__ */ new Map();
+    for (const l of projection.layers) if (l.kind === "footprint") sourceOf.set(l.id, l.sourceFeatureId);
+    const lots = [];
+    placement.shapes.forEach((shape) => {
+      if (shape.kind !== "footprint" || shape.fit === void 0) return;
+      const source = sourceOf.get(shape.entityId);
+      if (source === void 0) return;
+      lots.push(mapPadLotOf(`${MAP_PAD_ID_PREFIX}${source}`, shape.entityId, shape.fit));
+    });
+    const terrainPads = buildLotPads(lots, raw);
+    const pads = terrainPads.map((p) => {
+      const lot = lots.find((l) => l.lotId === p.lotId);
+      return {
+        ...p,
+        id: p.lotId,
+        sourceFeatureId: p.lotId.slice(MAP_PAD_ID_PREFIX.length),
+        footprintId: lot.entityId,
+        hillside: false,
+        wallCount: 0,
+        terraceDepthM: 0,
+        carryM: BLEND_MAX_RISE_M
+      };
+    });
+    const padFindings = /* @__PURE__ */ new Map();
+    for (const pad2 of pads) {
+      if (!isHillside(pad2, raw)) continue;
+      const own = [];
+      sizeHillside(pad2, raw, own);
+      padFindings.set(pad2.id, own);
+    }
+    const plan2 = { pads, walls: [], report: gradingReport(pads.length), findings: [] };
+    const charged = divideNeighbours(plan2, raw, padFindings);
+    plan2.findings = [...pads.flatMap((p) => padFindings.get(p.id) ?? []), ...charged.map(overlapFinding)];
+    plan2.walls = wallsOf(plan2, raw);
+    return { ok: true, engine: options.engine, plan: plan2, raw };
+  }
+  var overlapFinding = ([p, q]) => `pads ${p} and ${q}: where their grading regions overlap, the graded ground off the walls is steeper than ${PLAYER_GROUND.standMaxDeg}\xB0`;
+  function divideNeighbours(plan2, raw, padFindings) {
+    const dividers = [];
+    const tried = /* @__PURE__ */ new Set();
+    const byId = new Map(plan2.pads.map((p) => [p.id, p]));
+    let charged = overlapSlopePairs(plan2, raw);
+    for (; ; ) {
+      const fresh = charged.filter(([p, q]) => !tried.has(`${p}\0${q}`));
+      if (fresh.length === 0) break;
+      for (const [pId, qId] of fresh) {
+        tried.add(`${pId}\0${qId}`);
+        const p = byId.get(pId);
+        const q = byId.get(qId);
+        const lines2 = dividerCandidates(p, q);
+        if (lines2.length === 0) continue;
+        const saved = [p, q].map((pad2) => ({ pad: pad2, hillside: pad2.hillside, wallCount: pad2.wallCount, terraceDepthM: pad2.terraceDepthM, carryM: pad2.carryM, own: padFindings.get(pad2.id) }));
+        for (const pad2 of [p, q]) {
+          if (pad2.hillside) continue;
+          const own = [];
+          sizeHillside(pad2, raw, own);
+          padFindings.set(pad2.id, own);
+        }
+        let held = false;
+        for (const line of lines2) {
+          dividers.push(line);
+          plan2.dividers = dividers;
+          if (highestDividingWall(plan2, raw) <= WALL_MAX_M + 1e-9) {
+            held = true;
+            break;
+          }
+          dividers.pop();
+        }
+        if (held) continue;
+        for (const s of saved) {
+          Object.assign(s.pad, { hillside: s.hillside, wallCount: s.wallCount, terraceDepthM: s.terraceDepthM, carryM: s.carryM });
+          if (s.own === void 0) padFindings.delete(s.pad.id);
+          else padFindings.set(s.pad.id, s.own);
+        }
+      }
+      if (dividers.length === 0) delete plan2.dividers;
+      charged = overlapSlopePairs(plan2, raw);
+    }
+    if (dividers.length === 0) delete plan2.dividers;
+    return charged;
+  }
+  function highestDividingWall(plan2, raw) {
+    let h = 0;
+    for (const d of plan2.dividers ?? []) {
+      for (const at of d.stripHalfM > 0 ? [-d.stripHalfM, d.stripHalfM] : [0]) {
+        for (const v of readDivider(plan2, raw, d, at)) h = Math.max(h, v.top - v.base);
+      }
+    }
+    return h;
+  }
+  function lotSpan(p, ux, uz) {
+    const c = p.cx * ux + p.cz * uz;
+    const r = p.halfAway * Math.abs(p.awayX * ux + p.awayZ * uz) + p.halfAcross * Math.abs(-p.awayZ * ux + p.awayX * uz);
+    return [c - r, c + r];
+  }
+  function dividerCandidates(p, q) {
+    const dx = q.cx - p.cx;
+    const dz = q.cz - p.cz;
+    const dl = Math.hypot(dx, dz);
+    const axes2 = [
+      [p.awayX, p.awayZ],
+      [-p.awayZ, p.awayX],
+      [q.awayX, q.awayZ],
+      [-q.awayZ, q.awayX]
+    ];
+    if (dl > 1e-9) axes2.push([dx / dl, dz / dl]);
+    const found = [];
+    for (const [ax, az] of axes2) {
+      const s = ax * dx + az * dz < 0 ? -1 : 1;
+      const ux = s * ax;
+      const uz = s * az;
+      if (found.some((f) => f.line.ux * ux + f.line.uz * uz > 1 - 1e-9)) continue;
+      const [, pMax] = lotSpan(p, ux, uz);
+      const [qMin] = lotSpan(q, ux, uz);
+      const gap = qMin - pMax;
+      if (gap < -1e-9) continue;
+      found.push({ gap, line: { pads: [p.id, q.id], ux, uz, offset: (pMax + qMin) / 2, stripHalfM: 0 } });
+    }
+    const ordered2 = found.map((f, i) => ({ ...f, i })).sort((a, b) => b.gap - a.gap > 1e-9 ? 1 : a.gap - b.gap > 1e-9 ? -1 : a.i - b.i);
+    return [
+      ...ordered2.map((f) => f.line),
+      ...ordered2.filter((f) => f.gap > 1e-9).map((f) => ({ ...f.line, stripHalfM: f.gap / 2 }))
+    ];
+  }
+  var dividerSide = (d, x, z) => x * d.ux + z * d.uz - d.offset;
+  function dividerPart(d, x, z) {
+    const s = dividerSide(d, x, z);
+    return s < -d.stripHalfM ? "<" : s < d.stripHalfM ? "=" : ">";
+  }
+  function dividedOut(dividers, id4, x, z) {
+    if (dividers === void 0) return false;
+    for (const d of dividers) {
+      if (d.pads[0] === id4 && dividerPart(d, x, z) === ">") return true;
+      if (d.pads[1] === id4 && dividerPart(d, x, z) === "<") return true;
+    }
+    return false;
+  }
+  var DIVIDER_SIDE_EPSILON_M = 1e-6;
+  function readDivider(plan2, raw, d, at) {
+    const pads = plan2.pads.filter((p) => p.id === d.pads[0] || p.id === d.pads[1]);
+    const tx = -d.uz;
+    const tz = d.ux;
+    let t0 = Infinity;
+    let t1 = -Infinity;
+    for (const p of pads) {
+      const [x0, z0, x1, z1] = reachBox(p);
+      for (const [x, z] of [
+        [x0, z0],
+        [x1, z0],
+        [x1, z1],
+        [x0, z1]
+      ]) {
+        t0 = Math.min(t0, x * tx + z * tz);
+        t1 = Math.max(t1, x * tx + z * tz);
+      }
+    }
+    const n = Math.max(1, Math.ceil((t1 - t0) / GRADED_CELL_M - 1e-9));
+    const out = [];
+    for (let i = 0; i <= n; i += 1) {
+      const t = t0 + (t1 - t0) * i / n;
+      const x = d.ux * (d.offset + at) + tx * t;
+      const z = d.uz * (d.offset + at) + tz * t;
+      const a = gradingPlanHeight(plan2, raw, x - d.ux * DIVIDER_SIDE_EPSILON_M, z - d.uz * DIVIDER_SIDE_EPSILON_M);
+      const b = gradingPlanHeight(plan2, raw, x + d.ux * DIVIDER_SIDE_EPSILON_M, z + d.uz * DIVIDER_SIDE_EPSILON_M);
+      out.push({
+        x: quantizeSceneCoord(x),
+        z: quantizeSceneCoord(z),
+        top: quantizeSceneCoord(Math.max(a, b)),
+        base: quantizeSceneCoord(Math.min(a, b))
+      });
+    }
+    return out;
+  }
+  function gradingReport(patches) {
+    return { patches, lines: gradingReportLines(patches) };
+  }
+  function gradingReportLines(patches) {
+    return patches > 0 ? [`${patches} grading patches not applied`] : [];
+  }
+  var frameOf = (p) => ({ A: p.halfAway + LOT_PAD_MARGIN_M, C: p.halfAcross + LOT_PAD_MARGIN_M });
+  function worldOf2(p, a, c) {
+    return { x: p.cx + a * p.awayX - c * p.awayZ, z: p.cz + a * p.awayZ + c * p.awayX };
+  }
+  function localOf2(p, x, z) {
+    const dx = x - p.cx;
+    const dz = z - p.cz;
+    return { a: dx * p.awayX + dz * p.awayZ, c: -dx * p.awayZ + dz * p.awayX };
+  }
+  function edgeSamples(f) {
+    const out = [];
+    const side = (a0, c0, a1, c1) => {
+      const len = Math.hypot(a1 - a0, c1 - c0);
+      const n = Math.max(1, Math.ceil(len / GRADED_CELL_M - 1e-9));
+      for (let i = 0; i < n; i += 1) out.push({ a: a0 + (a1 - a0) * i / n, c: c0 + (c1 - c0) * i / n });
+    };
+    side(f.A, -f.C, f.A, f.C);
+    side(f.A, f.C, -f.A, f.C);
+    side(-f.A, f.C, -f.A, -f.C);
+    side(-f.A, -f.C, f.A, -f.C);
+    return out;
+  }
+  function isHillside(pad2, raw) {
+    const f = frameOf(pad2);
+    return edgeSamples(f).some(({ a, c }) => {
+      const w = worldOf2(pad2, a, c);
+      return Math.abs(layoutGroundAt(raw, w.x, w.z) - pad2.height) > BLEND_MAX_RISE_M;
+    });
+  }
+  function steepestRawGradient(pad2, raw, reach) {
+    const f = frameOf(pad2);
+    const h = 0.5;
+    let g = 0;
+    for (let a = -f.A - reach; a <= f.A + reach + 1e-9; a += 1) {
+      for (let c = -f.C - reach; c <= f.C + reach + 1e-9; c += 1) {
+        const d = Math.hypot(Math.max(0, Math.abs(a) - f.A), Math.max(0, Math.abs(c) - f.C));
+        if (d > reach) continue;
+        const p = worldOf2(pad2, a, c);
+        const gx = (layoutGroundAt(raw, p.x + h, p.z) - layoutGroundAt(raw, p.x - h, p.z)) / (2 * h);
+        const gz = (layoutGroundAt(raw, p.x, p.z + h) - layoutGroundAt(raw, p.x, p.z - h)) / (2 * h);
+        g = Math.max(g, Math.hypot(gx, gz));
+      }
+    }
+    return g;
+  }
+  function bandCarryM(g) {
+    return 2 / 3 * LOT_PAD_BLEND_M * Math.max(0, STAND_MAX_GRADIENT - g);
+  }
+  var CORNERS = [
+    [1, 1],
+    [-1, 1],
+    [-1, -1],
+    [1, -1]
+  ];
+  function sizingRays(f) {
+    const rays = [];
+    const side = (a0, c0, a1, c1, na, nc) => {
+      const len = Math.hypot(a1 - a0, c1 - c0);
+      const n = Math.max(1, Math.ceil(len / GRADED_CELL_M - 1e-9));
+      for (let i = 0; i <= n; i += 1) rays.push({ a: a0 + (a1 - a0) * i / n, c: c0 + (c1 - c0) * i / n, na, nc });
+    };
+    side(f.A, -f.C, f.A, f.C, 1, 0);
+    side(f.A, f.C, -f.A, f.C, 0, 1);
+    side(-f.A, f.C, -f.A, -f.C, -1, 0);
+    side(-f.A, -f.C, f.A, -f.C, 0, -1);
+    for (const [sa, sc] of CORNERS) {
+      for (let r = 0; r < FAN_RAYS; r += 1) {
+        const th = Math.PI / 2 * r / (FAN_RAYS - 1);
+        rays.push({ a: sa * f.A, c: sc * f.C, na: sa * Math.cos(th), nc: sc * Math.sin(th) });
+      }
+    }
+    return rays;
+  }
+  function sizeHillside(pad2, raw, findings) {
+    const f = frameOf(pad2);
+    const rays = sizingRays(f);
+    let chosen = HILLSIDE_MAX_WALLS;
+    let carry = 0;
+    let need = 0;
+    for (let k = 1; k <= HILLSIDE_MAX_WALLS; k += 1) {
+      const reach = k * TERRACE_DEPTH_M + LOT_PAD_BLEND_M;
+      carry = bandCarryM(steepestRawGradient(pad2, raw, reach));
+      need = 0;
+      for (const r of rays) {
+        const b = worldOf2(pad2, r.a + r.na * k * TERRACE_DEPTH_M, r.c + r.nc * k * TERRACE_DEPTH_M);
+        need = Math.max(need, Math.abs(layoutGroundAt(raw, b.x, b.z) - pad2.height) - carry);
+      }
+      if (need <= k * WALL_MAX_M + 1e-9) {
+        chosen = k;
+        break;
+      }
+    }
+    pad2.hillside = true;
+    pad2.wallCount = chosen;
+    pad2.terraceDepthM = TERRACE_DEPTH_M;
+    pad2.carryM = carry;
+    if (carry <= 0) {
+      findings.push(`pad ${pad2.id}: the raw ground under its grading region is steeper than ${PLAYER_GROUND.standMaxDeg}\xB0`);
+    }
+    if (need > chosen * WALL_MAX_M + 1e-9) {
+      findings.push(
+        `pad ${pad2.id}: ${chosen} walls of ${WALL_MAX_M} m leave the ground short by ${quantizeSceneCoord(need - chosen * WALL_MAX_M)} m`
+      );
+    }
+    let fanStep = 0;
+    for (const [sa, sc] of CORNERS) {
+      const corner = wallExcess(pad2, rayExcess(pad2, raw, sa * f.A, sc * f.C, sa * Math.SQRT1_2, sc * Math.SQRT1_2));
+      for (let r = 0; r < FAN_RAYS; r += 1) {
+        const th = Math.PI / 2 * r / (FAN_RAYS - 1);
+        const X = rayExcess(pad2, raw, sa * f.A, sc * f.C, sa * Math.cos(th), sc * Math.sin(th));
+        fanStep = Math.max(fanStep, Math.abs(wallExcess(pad2, X) - corner));
+      }
+    }
+    if (fanStep > WALL_MAX_M + 1e-9) {
+      findings.push(`pad ${pad2.id}: a corner's fan steps ${quantizeSceneCoord(fanStep)} m, over the ${WALL_MAX_M} m wall limit`);
+    }
+  }
+  function reachBox(p) {
+    const f = frameOf(p);
+    const r = padReachM(p);
+    const hx = Math.abs(p.awayX) * (f.A + r) + Math.abs(p.awayZ) * (f.C + r);
+    const hz = Math.abs(p.awayZ) * (f.A + r) + Math.abs(p.awayX) * (f.C + r);
+    return [p.cx - hx, p.cz - hz, p.cx + hx, p.cz + hz];
+  }
+  function overlapSlopePairs(plan2, raw) {
+    const pads = plan2.pads;
+    if (!pads.some((p) => p.hillside)) return [];
+    const STEP = OVERLAP_SLOPE_LATTICE_M;
+    const h = OVERLAP_SLOPE_DIFF_M;
+    const limit = STAND_MAX_GRADIENT + OVERLAP_SLOPE_TOLERANCE;
+    const boxes = pads.map(reachBox);
+    const reach = pads.map(padReachM);
+    let x0 = Infinity;
+    let z0 = Infinity;
+    let x1 = -Infinity;
+    let z1 = -Infinity;
+    pads.forEach((p, k) => {
+      if (!p.hillside) return;
+      x0 = Math.min(x0, boxes[k][0]);
+      z0 = Math.min(z0, boxes[k][1]);
+      x1 = Math.max(x1, boxes[k][2]);
+      z1 = Math.max(z1, boxes[k][3]);
+    });
+    const i0 = Math.ceil(x0 / STEP);
+    const i1 = Math.floor(x1 / STEP);
+    const j0 = Math.ceil(z0 / STEP);
+    const j1 = Math.floor(z1 / STEP);
+    const rows = j1 - j0 + 1;
+    if (i1 < i0 || rows <= 0) return [];
+    const coverAt = (x, z, candidates) => candidates.filter((k) => boxes[k][0] <= x && x <= boxes[k][2] && boxes[k][1] <= z && z <= boxes[k][3] && padFlatOutside(pads[k], x, z) < reach[k]);
+    const dividers = plan2.dividers;
+    const partsOf = (cover, x, z) => {
+      const parts = cover.map((k) => `${k}:${gradingPartAt(pads[k], x, z)}`);
+      for (const d of dividers ?? []) parts.push(dividerPart(d, x, z));
+      return parts.join("/");
+    };
+    const all = pads.map((_, k) => k);
+    const column = (i) => {
+      const out = new Array(rows).fill(null);
+      if (i < i0 || i > i1) return out;
+      const x = i * STEP;
+      const inColumn = all.filter((k) => boxes[k][0] <= x && x <= boxes[k][2]);
+      if (inColumn.length < 2) return out;
+      for (let r = 0; r < rows; r += 1) {
+        const z = (j0 + r) * STEP;
+        const cover = coverAt(x, z, inColumn);
+        if (cover.length < 2 || !cover.some((k) => pads[k].hillside)) continue;
+        out[r] = { x, z, height: gradingPlanHeight({ pads: cover.map((k) => pads[k]), dividers }, raw, x, z), parts: partsOf(cover, x, z), cover };
+      }
+      return out;
+    };
+    const fwd = (s, t) => s !== null && t != null && t.parts === s.parts ? Math.abs(t.height - s.height) / STEP : 0;
+    const central = (s) => {
+      const stencil = [
+        [s.x + h, s.z],
+        [s.x - h, s.z],
+        [s.x, s.z + h],
+        [s.x, s.z - h]
+      ];
+      const heights = [];
+      for (const [x, z] of stencil) {
+        const cover = coverAt(x, z, all);
+        if (partsOf(cover, x, z) !== s.parts) return null;
+        heights.push(gradingPlanHeight({ pads: cover.map((k) => pads[k]), dividers }, raw, x, z));
+      }
+      return Math.hypot((heights[0] - heights[1]) / (2 * h), (heights[2] - heights[3]) / (2 * h));
+    };
+    const charged = /* @__PURE__ */ new Set();
+    let prev = column(i0 - 1);
+    let cur = column(i0);
+    for (let i = i0; i <= i1; i += 1) {
+      const next = column(i + 1);
+      for (let r = 0; r < rows; r += 1) {
+        const s = cur[r];
+        if (s === null) continue;
+        const gx = Math.max(fwd(s, prev[r]), fwd(s, next[r]));
+        const gz = Math.max(fwd(s, cur[r - 1]), fwd(s, cur[r + 1]));
+        if (Math.hypot(gx, gz) <= OVERLAP_SLOPE_SCREEN_GRADIENT) continue;
+        const slope = central(s);
+        if (slope === null || slope <= limit) continue;
+        for (let u = 0; u < s.cover.length; u += 1) {
+          for (let v = u + 1; v < s.cover.length; v += 1) {
+            const p = pads[s.cover[u]];
+            const q = pads[s.cover[v]];
+            if (p.hillside || q.hillside) charged.add(`${p.id}\0${q.id}`);
+          }
+        }
+      }
+      prev = cur;
+      cur = next;
+    }
+    return [...charged].map((k) => k.split("\0")).sort((p, q) => p[0] < q[0] ? -1 : p[0] > q[0] ? 1 : p[1] < q[1] ? -1 : p[1] > q[1] ? 1 : 0);
+  }
+  function rayExcess(pad2, raw, ea, ec, na, nc) {
+    const kT = pad2.wallCount * pad2.terraceDepthM;
+    const b = worldOf2(pad2, ea + na * kT, ec + nc * kT);
+    return layoutGroundAt(raw, b.x, b.z) - pad2.height;
+  }
+  function wallExcess(pad2, X) {
+    const sign = X < 0 ? -1 : 1;
+    return sign * Math.min(pad2.wallCount * WALL_MAX_M, Math.max(0, Math.abs(X) - pad2.carryM));
+  }
+  function hillsidePull(pad2, raw, rawHere, a, c, d) {
+    const f = frameOf(pad2);
+    const kT = pad2.wallCount * pad2.terraceDepthM;
+    const ea = Math.max(-f.A, Math.min(f.A, a));
+    const ec = Math.max(-f.C, Math.min(f.C, c));
+    if (d < kT) {
+      const inFan = Math.abs(a) > f.A && Math.abs(c) > f.C;
+      const X2 = inFan ? rayExcess(pad2, raw, ea, ec, Math.sign(a) * Math.SQRT1_2, Math.sign(c) * Math.SQRT1_2) : rayExcess(pad2, raw, ea, ec, Math.abs(a) > f.A ? Math.sign(a) : 0, Math.abs(c) > f.C ? Math.sign(c) : 0);
+      const i = Math.min(pad2.wallCount, Math.floor(d / pad2.terraceDepthM) + 1);
+      return [1, pad2.height + wallExcess(pad2, X2) * i / pad2.wallCount];
+    }
+    const X = rayExcess(pad2, raw, ea, ec, (a - ea) / d, (c - ec) / d);
+    return [padBandWeight(d - kT), rawHere + (wallExcess(pad2, X) - X)];
+  }
+  function gradingPlanHeight(plan2, raw, x, z, otherPads = []) {
+    const rawHere = layoutGroundAt(raw, x, z);
+    const dividers = plan2.dividers;
+    if (dividers === void 0 || dividers.length === 0) return blendAt(plan2.pads, otherPads, raw, rawHere, x, z, null);
+    const out = /* @__PURE__ */ new Set();
+    const shared = [];
+    for (const d of dividers) {
+      const part = dividerPart(d, x, z);
+      if (part === ">") out.add(d.pads[0]);
+      else if (part === "<") out.add(d.pads[1]);
+      else shared.push(d);
+    }
+    if (shared.length === 0) return blendAt(plan2.pads, otherPads, raw, rawHere, x, z, out);
+    let sum = 0;
+    const ways = 1 << shared.length;
+    for (let m = 0; m < ways; m += 1) {
+      const left = new Set(out);
+      shared.forEach((d, j) => left.add(d.pads[m >> j & 1 ? 0 : 1]));
+      sum += blendAt(plan2.pads, otherPads, raw, rawHere, x, z, left);
+    }
+    return sum / ways;
+  }
+  function blendAt(pads, otherPads, raw, rawHere, x, z, out) {
+    const blend = newPadBlend();
+    for (const p of orderedPads(pads, otherPads)) {
+      if (out !== null && "footprintId" in p && out.has(p.id)) continue;
+      if ("hillside" in p && p.hillside) {
+        const pad2 = p;
+        const d = padFlatOutside(pad2, x, z);
+        if (d >= padReachM(pad2)) continue;
+        if (d <= 0) {
+          addPadWeight(blend, 1, pad2.height);
+          continue;
+        }
+        const { a, c } = localOf2(pad2, x, z);
+        const [w, h] = hillsidePull(pad2, raw, rawHere, a, c, d);
+        addPadWeight(blend, w, h);
+        continue;
+      }
+      const outside = padFlatOutside(p, x, z);
+      if (outside >= LOT_PAD_BLEND_M) continue;
+      addPadWeight(blend, padBandWeight(outside), p.height);
+    }
+    return blendedHeight(blend, rawHere);
+  }
+  function orderedPads(pads, otherPads) {
+    if (otherPads.length === 0) return pads;
+    return [...pads, ...otherPads].sort((p, q) => p.lotId < q.lotId ? -1 : p.lotId > q.lotId ? 1 : 0);
+  }
+  function gradingPartAt(pad2, x, z) {
+    const d = padFlatOutside(pad2, x, z);
+    if (d <= 0) return "flat";
+    if (d >= padReachM(pad2)) return "raw";
+    const g = pad2;
+    const kT = g.hillside ? (g.wallCount ?? 0) * (g.terraceDepthM ?? 0) : 0;
+    if (d >= kT) return "band";
+    const i = Math.min(g.wallCount ?? 0, Math.floor(d / (g.terraceDepthM ?? 1)) + 1);
+    const f = frameOf(pad2);
+    const { a, c } = localOf2(pad2, x, z);
+    if (Math.abs(a) > f.A && Math.abs(c) > f.C) {
+      const q = CORNERS.findIndex(([sa, sc]) => Math.sign(a) === sa && Math.sign(c) === sc) + 1;
+      return `f${q}t${i}`;
+    }
+    return `t${i}`;
+  }
+  function padReachM(pad2) {
+    const g = pad2;
+    return (g.hillside ? (g.wallCount ?? 0) * (g.terraceDepthM ?? 0) : 0) + LOT_PAD_BLEND_M;
+  }
+  function checkPadSet(plan2, otherPads) {
+    for (const o of otherPads) {
+      for (const p of plan2.pads) {
+        const sameId = o.lotId === p.id || o.lotId === p.footprintId;
+        const samePlace = Math.abs(o.cx - p.cx) < WALL_STEP_MIN_M && Math.abs(o.cz - p.cz) < WALL_STEP_MIN_M && Math.abs(o.halfAway * o.halfAcross - p.halfAway * p.halfAcross) < WALL_STEP_MIN_M;
+        if (sameId || samePlace) {
+          return `map lot ${p.footprintId} is graded by core's pad ${p.id} and stacked on a GradeLots pad (${o.lotId || "no lot id"})`;
+        }
+      }
+    }
+    return null;
+  }
+  function ringLine(f, d) {
+    const out = [];
+    const side = (a0, c0, a1, c1, na, nc) => {
+      const len = Math.hypot(a1 - a0, c1 - c0);
+      const n = Math.max(1, Math.ceil(len / GRADED_CELL_M - 1e-9));
+      for (let i = 0; i < n; i += 1) out.push({ a: a0 + (a1 - a0) * i / n, c: c0 + (c1 - c0) * i / n, na, nc });
+    };
+    const arc = (sa, sc, th0) => {
+      if (d <= 0) {
+        out.push({ a: sa * f.A, c: sc * f.C, na: sa * Math.SQRT1_2, nc: sc * Math.SQRT1_2 });
+        return;
+      }
+      const n = Math.max(2, Math.ceil(Math.PI / 2 * d / GRADED_CELL_M - 1e-9));
+      for (let i = 0; i < n; i += 1) {
+        const th = th0 + Math.PI / 2 * i / n;
+        out.push({ a: sa * f.A + d * Math.cos(th), c: sc * f.C + d * Math.sin(th), na: Math.cos(th), nc: Math.sin(th) });
+      }
+    };
+    side(f.A + d, -f.C, f.A + d, f.C, 1, 0);
+    arc(1, 1, 0);
+    side(f.A, f.C + d, -f.A, f.C + d, 0, 1);
+    arc(-1, 1, Math.PI / 2);
+    side(-f.A - d, f.C, -f.A - d, -f.C, -1, 0);
+    arc(-1, -1, Math.PI);
+    side(-f.A, -f.C - d, f.A, -f.C - d, 0, -1);
+    arc(1, -1, 3 * Math.PI / 2);
+    return out;
+  }
+  function radialLine(pad2, f, sa, sc, alongAway) {
+    const out = [];
+    const T = pad2.terraceDepthM;
+    const inset = WALL_SIDE_EPSILON_M * 10;
+    for (let i = 1; i <= pad2.wallCount; i += 1) {
+      for (const d of [(i - 1) * T + inset, i * T - inset]) {
+        out.push(
+          alongAway ? { a: sa * (f.A + d), c: sc * f.C, na: 0, nc: sc } : { a: sa * f.A, c: sc * (f.C + d), na: sa, nc: 0 }
+        );
+      }
+    }
+    return out;
+  }
+  function readLine(plan2, raw, pad2, line) {
+    return line.map((v) => {
+      const p = worldOf2(pad2, v.a, v.c);
+      if (dividedOut(plan2.dividers, pad2.id, p.x, p.z)) {
+        const here = quantizeSceneCoord(gradingPlanHeight(plan2, raw, p.x, p.z));
+        return { x: quantizeSceneCoord(p.x), z: quantizeSceneCoord(p.z), top: here, base: here };
+      }
+      const o = worldOf2(pad2, v.a + v.na * WALL_SIDE_EPSILON_M, v.c + v.nc * WALL_SIDE_EPSILON_M);
+      const i = worldOf2(pad2, v.a - v.na * WALL_SIDE_EPSILON_M, v.c - v.nc * WALL_SIDE_EPSILON_M);
+      const outer = gradingPlanHeight(plan2, raw, o.x, o.z);
+      const inner = gradingPlanHeight(plan2, raw, i.x, i.z);
+      return {
+        x: quantizeSceneCoord(p.x),
+        z: quantizeSceneCoord(p.z),
+        top: quantizeSceneCoord(Math.max(inner, outer)),
+        base: quantizeSceneCoord(Math.min(inner, outer))
+      };
+    });
+  }
+  var DIVIDER_CUT_INSET_M = 1e-4;
+  function cutAtDividers(plan2, pad2, line, closedLine) {
+    const mine = (plan2.dividers ?? []).filter((d) => d.pads[0] === pad2.id || d.pads[1] === pad2.id);
+    if (mine.length === 0) return line;
+    const f = frameOf(pad2);
+    const arcOf = (u, v) => {
+      const inZone = (p) => Math.abs(p.a) >= f.A - 1e-9 && Math.abs(p.c) >= f.C - 1e-9;
+      if (!inZone(u) || !inZone(v) || Math.sign(u.a) !== Math.sign(v.a) || Math.sign(u.c) !== Math.sign(v.c)) return null;
+      const ca = Math.sign(u.a) * f.A;
+      const cc = Math.sign(u.c) * f.C;
+      const ru = Math.hypot(u.a - ca, u.c - cc);
+      const rv = Math.hypot(v.a - ca, v.c - cc);
+      if (ru <= 1e-9 || Math.abs(ru - rv) > 1e-9) return null;
+      const tu = Math.atan2(u.c - cc, u.a - ca);
+      let turn2 = Math.atan2(v.c - cc, v.a - ca) - tu;
+      if (turn2 > Math.PI) turn2 -= 2 * Math.PI;
+      if (turn2 < -Math.PI) turn2 += 2 * Math.PI;
+      return { ca, cc, r: ru, tu, tv: tu + turn2 };
+    };
+    const out = [];
+    const n = line.length;
+    for (let i = 0; i < n; i += 1) {
+      const u = line[i];
+      out.push(u);
+      if (i + 1 === n && !closedLine) break;
+      const v = line[(i + 1) % n];
+      const arc = arcOf(u, v);
+      const at = (t) => {
+        if (arc === null) return { a: u.a + (v.a - u.a) * t, c: u.c + (v.c - u.c) * t, na: u.na, nc: u.nc };
+        const th = arc.tu + (arc.tv - arc.tu) * t;
+        return { a: arc.ca + arc.r * Math.cos(th), c: arc.cc + arc.r * Math.sin(th), na: Math.cos(th), nc: Math.sin(th) };
+      };
+      const len = arc === null ? Math.hypot(v.a - u.a, v.c - u.c) : arc.r * Math.abs(arc.tv - arc.tu);
+      if (len <= 0) continue;
+      const cuts = [];
+      for (const d of mine) {
+        const keeps = (p2) => {
+          const w = worldOf2(pad2, p2.a, p2.c);
+          const side = dividerSide(d, w.x, w.z);
+          return d.pads[0] === pad2.id ? side < d.stripHalfM : side >= -d.stripHalfM;
+        };
+        const ku = keeps(u);
+        if (ku === keeps(v)) continue;
+        let lo = 0;
+        let hi = 1;
+        for (let k = 0; k < 60; k += 1) {
+          const mid = (lo + hi) / 2;
+          if (keeps(at(mid)) === ku) lo = mid;
+          else hi = mid;
+        }
+        const t = ku ? lo - DIVIDER_CUT_INSET_M / len : hi + DIVIDER_CUT_INSET_M / len;
+        if (!(t > 0 && t < 1)) continue;
+        const p = at(t);
+        cuts.push([t, arc === null ? { ...p, na: (ku ? u : v).na, nc: (ku ? u : v).nc } : p]);
+      }
+      cuts.sort((x, y) => x[0] - y[0]);
+      for (const [, p] of cuts) out.push(p);
+    }
+    return out;
+  }
+  function runsOf(verts, closedLine) {
+    const steps = verts.map((v) => v.top - v.base >= WALL_STEP_MIN_M - 1e-9);
+    if (!steps.some(Boolean)) return [];
+    if (closedLine && steps.every(Boolean)) return [{ closed: true, vertices: verts }];
+    const n = verts.length;
+    const out = [];
+    const start = closedLine ? steps.indexOf(false) : -1;
+    const count = closedLine ? n : n + 1;
+    let run = null;
+    for (let j = 1; j <= count; j += 1) {
+      const k = closedLine ? (start + j) % n : j - 1;
+      const stepping = k < n && steps[k];
+      if (stepping) {
+        if (run === null) run = k > 0 || closedLine ? [verts[(k - 1 + n) % n]] : [];
+        run.push(verts[k]);
+      } else if (run !== null) {
+        if (k < n) run.push(verts[k]);
+        out.push({ closed: false, vertices: run });
+        run = null;
+      }
+    }
+    return out;
+  }
+  function wallsOf(plan2, raw) {
+    const walls = [];
+    for (const pad2 of plan2.pads) {
+      if (!pad2.hillside) continue;
+      const f = frameOf(pad2);
+      const lines2 = [];
+      for (let i = 1; i <= pad2.wallCount + 1; i += 1) lines2.push([String(i), ringLine(f, (i - 1) * pad2.terraceDepthM), true]);
+      CORNERS.forEach(([sa, sc], q) => {
+        lines2.push([`r${q + 1}a`, radialLine(pad2, f, sa, sc, true), false]);
+        lines2.push([`r${q + 1}c`, radialLine(pad2, f, sa, sc, false), false]);
+      });
+      for (const [line, points3, closedLine] of lines2) {
+        runsOf(readLine(plan2, raw, pad2, cutAtDividers(plan2, pad2, points3, closedLine)), closedLine).forEach((r, n) => {
+          walls.push({ id: `wall.${pad2.id}.${line}.${n + 1}`, padId: pad2.id, line, closed: r.closed, vertices: r.vertices });
+        });
+      }
+    }
+    for (const d of plan2.dividers ?? []) {
+      const other = plan2.pads.find((p) => p.id === d.pads[1]);
+      const edges = d.stripHalfM > 0 ? [
+        [`nb.${other.sourceFeatureId}.1`, -d.stripHalfM],
+        [`nb.${other.sourceFeatureId}.2`, d.stripHalfM]
+      ] : [[`nb.${other.sourceFeatureId}`, 0]];
+      for (const [line, at] of edges) {
+        runsOf(readDivider(plan2, raw, d, at), false).forEach((r, n) => {
+          walls.push({ id: `wall.${d.pads[0]}.${line}.${n + 1}`, padId: d.pads[0], line, closed: false, vertices: r.vertices });
+        });
+      }
+    }
+    return walls.sort((p, q) => p.id < q.id ? -1 : p.id > q.id ? 1 : 0);
+  }
+
   // corebridge/js/entry.js
   function refuse4(method, message) {
     return new Error(`insimulcore: ${method}: ${message}`);
@@ -54729,6 +57043,68 @@ Return JSON format:
       needNumber(method, args.dtSec, "dtSec");
       return { state: { elapsedSec: state.elapsedSec, nextFoot: state.nextFoot }, tick: { dtSec: args.dtSec, gait: args.gait, surface: args.surface } };
     });
+  }
+  function hillsideContract() {
+    return {
+      padIdPrefix: MAP_PAD_ID_PREFIX,
+      lotPadMarginM: LOT_PAD_MARGIN_M,
+      lotPadBlendM: LOT_PAD_BLEND_M,
+      gradedCellM: GRADED_CELL_M,
+      standMaxDeg: PLAYER_GROUND.standMaxDeg,
+      standMaxGradient: STAND_MAX_GRADIENT,
+      blendMaxRiseM: BLEND_MAX_RISE_M,
+      wallMaxM: WALL_MAX_M,
+      terraceDepthM: TERRACE_DEPTH_M,
+      hillsideMaxWalls: HILLSIDE_MAX_WALLS,
+      wallStepMinM: WALL_STEP_MIN_M,
+      overlapSlopeLatticeM: OVERLAP_SLOPE_LATTICE_M,
+      overlapSlopeDiffM: OVERLAP_SLOPE_DIFF_M,
+      overlapSlopeTolerance: OVERLAP_SLOPE_TOLERANCE
+    };
+  }
+  var TERRAIN_PAD_NUMBERS = ["cx", "cz", "halfAcross", "halfAway", "awayX", "awayZ", "height"];
+  function gradingPlanArgsOf(method, args) {
+    return coded("invalid-input", () => {
+      const world2 = needObject(method, args.world, "world");
+      let points3;
+      if (args.points !== void 0 && args.points !== null) {
+        points3 = needArray(method, args.points, "points").map((pt2, i) => {
+          needObject(method, pt2, `points[${i}]`);
+          needNumber(method, pt2.x, `points[${i}].x`);
+          needNumber(method, pt2.z, `points[${i}].z`);
+          if (pt2.label !== void 0) needString(method, pt2.label, `points[${i}].label`);
+          return pt2;
+        });
+      }
+      let otherPads;
+      if (args.otherPads !== void 0 && args.otherPads !== null) {
+        otherPads = needArray(method, args.otherPads, "otherPads").map((pad2, i) => {
+          needObject(method, pad2, `otherPads[${i}]`);
+          needString(method, pad2.lotId, `otherPads[${i}].lotId`);
+          for (const k of TERRAIN_PAD_NUMBERS) needNumber(method, pad2[k], `otherPads[${i}].${k}`);
+          return pad2;
+        });
+      }
+      return { world: world2, engine: args.engine, points: points3, otherPads };
+    });
+  }
+  function gradingPlanAnswer(input) {
+    const result2 = computeGradingPlan(input.world, { engine: input.engine });
+    if (!result2.ok) return plain(result2);
+    const { plan: plan2, raw } = result2;
+    const answer2 = { ok: true, engine: result2.engine, plan: plain(plan2) };
+    const otherPads = input.otherPads ?? [];
+    if (input.points !== void 0) {
+      answer2.points = input.points.map((pt2) => ({
+        ...pt2.label !== void 0 ? { label: pt2.label } : {},
+        x: pt2.x,
+        z: pt2.z,
+        raw: gradingPlanHeight({ pads: [] }, raw, pt2.x, pt2.z),
+        graded: gradingPlanHeight(plan2, raw, pt2.x, pt2.z, otherPads)
+      }));
+    }
+    if (input.otherPads !== void 0) answer2.padSet = checkPadSet(plan2, otherPads);
+    return answer2;
   }
   function survivalTuningOf(args) {
     return survivalTuningFromIR(args.survival, args.params);
@@ -62974,7 +65350,30 @@ Return JSON format:
     "layout.seatCapacity": compositionRow("seatCapacity"),
     "layout.seatVillagers": compositionRow("seatVillagers"),
     "layout.keepClearOfProps": compositionRow("keepClearOfProps"),
-    "layout.composeVillage": compositionRow("composeVillage")
+    "layout.composeVillage": compositionRow("composeVillage"),
+    // ── hillside grading: the pads (PL.native-grading-plan-call, U115; core's NF.H3, ADR-0001) ──
+    // Core's grading plan of a World IR and its point function, STATELESS: each call
+    // computes the plan from the world it is sent. Core's
+    // `conformance/hillside/pads.json` drives it (tests/hillside_corpus.cpp): each case
+    // is one call per engine it names, with its points and otherPads. Pads only: the
+    // stairs (ADR §6) and the tiled raster sidecar (§7) are not in core's module yet.
+    /** `hillside.contract` → the data of `pads.json`'s `contract` (padIdPrefix, the pad and wall constants, the overlap lattice), core's constants at full precision. */
+    "hillside.contract": () => hillsideContract(),
+    /**
+     * `hillside.gradingPlan { world, engine, points?, otherPads? }` → `{ ok: true,
+     * engine, plan: { pads, walls, report, findings, dividers? }, points?: [{ label?, x,
+     * z, raw, graded }], padSet? }` — core's `computeGradingPlan`, its plan whole
+     * (pads ascending by id; walls with every vertex's `top` and `base`, already on
+     * core's 1 mm quantum; `dividers` only when neighbours were divided), in core's
+     * relative frame (metres over `[0, terrainSize]²`). A world core cannot place is
+     * its refusal VALUE `{ ok: false, engine, refused, message }`. `points` are read by
+     * core's point function (`raw` with no pads, `graded` with the plan's pads and
+     * `otherPads` in one set); `padSet`, present when `otherPads` is sent, is
+     * `checkPadSet`'s refusal string or null. `[invalid-input]`: `world` not an object;
+     * `points` not an array of objects with finite `x`, `z` (and a string `label` if
+     * any); `otherPads` not an array of `TerrainPad` objects.
+     */
+    "hillside.gradingPlan": (args) => gradingPlanAnswer(gradingPlanArgsOf("hillside.gradingPlan", args))
   };
   function notificationsView(model) {
     return { visible: plain(model.visible()), count: model.count() };

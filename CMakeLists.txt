@@ -1169,6 +1169,42 @@ add_test(NAME audio_cues_corpus_negative COMMAND insimulcore_props_corpus
 set_tests_properties(audio_cues_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "contract.footsteps.gaits.run.intervalSec: 0.3 != 0.28.*expected WRONGLY an unknown surface marked table [^\n]*source: .table. != .default.*expected WRONGLY idle stepping [^\n]*cue: expected a object, got a null.*expected WRONGLY the remainder dropped at a step [^\n]*ticks.3..elapsedSec: 0 != 0.09.*expected WRONGLY the right foot first [^\n]*foot: .right. != .left.*expected WRONGLY standing keeping the clock [^\n]*ticks.3..elapsedSec: 0.375 != 0.*expected WRONGLY a long frame not folded below one interval [^\n]*ticks.0..elapsedSec: 0.6 != 0.19.*expected WRONGLY a negative frame moving the clock back [^\n]*ticks.2..elapsedSec: -0.75 != 0.25.*expected WRONGLY an op of no row taken as unreached [^\n]*op .footstepBurst. is not one of area audio-cues.s.*props_corpus: FAIL")
 
+# hillside_corpus (PL.native-grading-plan-call, rulings U115, U128, U101(1) and U36):
+# core's hillside grading plan, its pads (core's NF.H3, ADR-0001:
+# src/editor/scene/hillside-grading.ts) as libinsimulcore's `hillside.gradingPlan`
+# and `hillside.contract` rows, held to core's own corpus conformance/hillside/pads.json,
+# COPIED byte for byte into corebridge/vendor/core/conformance/hillside/ at the pin
+# (sha256 in VENDORED.json, checked by core_vendor; byte-compared with core by
+# `--check --core`). The runner (tests/hillside_corpus.cpp) is core's
+# hillside-grading-corpus.ts step for step: the contract's data keys held to
+# hillside.contract; each case one row call per engine it names, projected as
+# runHillsideEngine projects (the 1 mm quantum, r6), every engine the same, the
+# expected answer's invariants, compareHillside within the file's tolerance; every
+# control refused. Pads only: core's stairs (ADR §6, cases 5-8) have not landed.
+# A pure consumer of insimulcore.h; the JSON reader is tests/radiant/json_value.cpp,
+# used unchanged. Never skips: the corpus is in-repo. The regex demands every case
+# and control (16 and 14 at 45409ed) and no failure, and holds no ';' but the runner's.
+add_executable(insimulcore_hillside_corpus tests/hillside_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_hillside_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_hillside_corpus PRIVATE insimulcore)
+add_test(NAME hillside_corpus COMMAND insimulcore_hillside_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/conformance/hillside/pads.json)
+set_tests_properties(hillside_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract: 14 data key[(]s[)] held to hillside.contract, 0 problem[(]s[)]\n.*hillside_corpus: contract 14 key[(]s[)], 0 problem[(]s[)]. 16 case[(]s[)] [(]64 call[(]s[)][)], 0 failed. 14 control[(]s[)], 0 not refused\nhillside_corpus: PASS")
+# Its negative control (tests/hillside-negative/pads-wrong.json, made from the
+# vendored file): the contract's wallMaxM moved to 1.6, one true case, six cases whose
+# expected answer is the one a wrong port would give (a terraced pad answered as a
+# default pad, a target 2 mm high, the report line on an empty plan, a stacked pad set
+# read as one pass, an engine the row refuses answering as unreal does, an overlap
+# finding where the blend holds) and a control that changes nothing. It passes only
+# when the runner reports each of them and the run as failed, in the file's order,
+# and the true case passes. No two wildcards stand side by side in the regex.
+add_test(NAME hillside_corpus_negative COMMAND insimulcore_hillside_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/hillside-negative/pads-wrong.json)
+set_tests_properties(hillside_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract.wallMaxM: 1.5 [(]want 1.6[)].*[[] ok []] case interior-and-edge-points: 4 engine.*case WRONG a terraced pad answered as a default pad [^\n]*pads.0..carryM: 0.18119 [(]want 0.714531[)].*case WRONG a target 2 mm high [^\n]*pads.0..height: 7.115 [(]want 7.117[)].*case WRONG the report line on an empty plan [^\n]*breaks an invariant: report.lines.*case WRONG a stacked pad set read as one pass [^\n]*padSet: .map lot footprint.map.fp-gentle is graded.*case WRONG an engine the row refuses [^\n]*cryengine answers differently from unreal.*case WRONG an overlap finding where the blend holds [^\n]*findings: 0 item[(]s[)] [(]want 1[)].*control WRONG a control that changes nothing NOT refused.*7 case[(]s[)] [(]26 call[(]s[)][)], 6 failed. 1 control[(]s[)], 1 not refused\nhillside_corpus: FAIL")
+
+
 # survival_corpus (PL.native-survival-rows, rulings U106(1) and U36): core's P9c
 # logic (P9c.core and PL.core-survival-rules: src/survival/needs.ts,
 # survival-hud.ts, survival-systems.ts, src/stamina/stamina.ts and

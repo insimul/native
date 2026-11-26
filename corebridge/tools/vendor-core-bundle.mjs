@@ -310,6 +310,13 @@ const CAMERA_CORPUS_FILES = ['conformance/camera/movement.json'];
 // found in vendor/core/conformance/audio/ is a stray the next write removes.
 const AUDIO_CORPUS_FILES = ['conformance/audio/ground.json', 'conformance/audio/cues.json'];
 
+// core's hillside grading corpus, its pads (PL.native-grading-plan-call, U115; core's
+// NF.H3, ADR-0001 §9), copied verbatim the same way and driven through the
+// `hillside.gradingPlan` and `hillside.contract` rows by tests/hillside_corpus.cpp.
+// `conformance/hillside/` is this set's alone: any other file found in
+// vendor/core/conformance/hillside/ is a stray the next write removes.
+const HILLSIDE_CORPUS_FILES = ['conformance/hillside/pads.json'];
+
 // core's P9c survival corpora (PL.native-survival-rows, U106(1); core's P9c.core and
 // PL.core-survival-rules), copied verbatim the same way: the needs, HUD and stamina
 // files, driven through the `survival.*` rows by tests/survival_corpus.cpp.
@@ -2722,6 +2729,11 @@ function audioFilesOnDisk() {
   return ownDirFilesOnDisk(AUDIO_CORPUS_FILES);
 }
 
+/** The vendored hillside corpus files on disk: the camera set's rule (no other set copies into `conformance/hillside/`). */
+function hillsideFilesOnDisk() {
+  return ownDirFilesOnDisk(HILLSIDE_CORPUS_FILES);
+}
+
 /** The vendored survival corpus files on disk: the camera set's rule (no other set copies into `conformance/survival/`). */
 function survivalFilesOnDisk() {
   return ownDirFilesOnDisk(SURVIVAL_CORPUS_FILES);
@@ -2744,6 +2756,11 @@ function cameraFilesAtPin(src) {
 /** core's ground reading and audio cue corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
 function audioFilesAtPin(src) {
   return filesAtPin(src, AUDIO_CORPUS_FILES, 'the audio.ground and audio.stepFootsteps rows');
+}
+
+/** core's hillside grading corpus at the pin, as { 'vendor/core/<path>': Buffer }. */
+function hillsideFilesAtPin(src) {
+  return filesAtPin(src, HILLSIDE_CORPUS_FILES, 'the hillside.gradingPlan and hillside.contract rows');
 }
 
 /** core's survival corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
@@ -3216,6 +3233,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The hillside grading corpus: the same exact-set replacement (only the listed files).
+    const hillside = hillsideFilesAtPin(src);
+    for (const rel of hillsideFilesOnDisk()) if (!(rel in hillside)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(hillside)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     // The survival corpora: the same exact-set replacement (only the listed files).
     const survival = survivalFilesAtPin(src);
     for (const rel of survivalFilesOnDisk()) if (!(rel in survival)) fs.rmSync(path.join(BRIDGE, rel));
@@ -3304,6 +3329,7 @@ async function write(coreDir) {
       questLifecycleCorpus: QUEST_LIFECYCLE_CORPUS_FILES,
       cameraCorpus: CAMERA_CORPUS_FILES,
       audioCorpus: AUDIO_CORPUS_FILES,
+      hillsideCorpus: HILLSIDE_CORPUS_FILES,
       survivalCorpus: SURVIVAL_CORPUS_FILES,
       traversalCorpus: TRAVERSAL_CORPUS_FILES,
       buildCorpus: BUILD_CORPUS_FROM,
@@ -3332,6 +3358,7 @@ async function write(coreDir) {
       ...lifecycleFilesOnDisk(),
       ...cameraFilesOnDisk(),
       ...audioFilesOnDisk(),
+      ...hillsideFilesOnDisk(),
       ...survivalFilesOnDisk(),
       ...traversalFilesOnDisk(),
       ...buildFilesOnDisk(),
@@ -3358,6 +3385,7 @@ async function write(coreDir) {
     console.log(`  quest lifecycle corpus files (${Object.keys(lifecycleSet).length}), copied unchanged`);
     console.log(`  camera movement corpus files (${Object.keys(camera).length}), copied unchanged`);
     console.log(`  audio ground reading and audio cue corpus files (${Object.keys(audio).length}), copied unchanged`);
+    console.log(`  hillside grading corpus files (${Object.keys(hillside).length}), copied unchanged`);
     console.log(`  survival corpus files (${Object.keys(survival).length}), copied unchanged`);
     console.log(`  traversal corpus files (${Object.keys(traversal).length}), copied unchanged`);
     console.log(`  headless build corpus files (${Object.keys(build).length}), copied unchanged`);
@@ -3442,6 +3470,10 @@ async function check(coreDir) {
   for (const rel of AUDIO_CORPUS_FILES) {
     if (!audioFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the audio corpus gates would run nothing`);
   }
+  const hillsideFiles = hillsideFilesOnDisk();
+  for (const rel of HILLSIDE_CORPUS_FILES) {
+    if (!hillsideFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the hillside corpus gates would run nothing`);
+  }
   const survivalFiles = survivalFilesOnDisk();
   for (const rel of SURVIVAL_CORPUS_FILES) {
     if (!survivalFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the survival corpus gate would run nothing`);
@@ -3497,6 +3529,7 @@ async function check(coreDir) {
     ...lifecycleFiles,
     ...cameraFiles,
     ...audioFiles,
+    ...hillsideFiles,
     ...survivalFiles,
     ...traversalFiles,
     ...buildFiles,
@@ -3550,7 +3583,7 @@ async function check(coreDir) {
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
       `${savesFiles.length} saves (slots, tutorial progress, village state, runtime save, interior state), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ${hudFiles.length} P2 HUD, ${lifecycleFiles.length} quest lifecycle, ` +
-      `${cameraFiles.length} camera movement, ${audioFiles.length} audio (ground, cues), ${survivalFiles.length} survival, ` +
+      `${cameraFiles.length} camera movement, ${audioFiles.length} audio (ground, cues), ${hillsideFiles.length} hillside, ${survivalFiles.length} survival, ` +
       `${traversalFiles.length} traversal, ${buildFiles.length} headless build, ${progressionFiles.length} progression/skill and ` +
       `${languageFiles.length} language corpus file(s), ${genreFiles.length} genre systems corpus file(s) (the world slice among them), ` +
       `${passByFiles.length} villager pass-by corpus file(s), ` +
@@ -3767,6 +3800,16 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
+      const hillside = hillsideFilesAtPin(src);
+      const wantHillside = Object.keys(hillside).sort();
+      if (JSON.stringify(wantHillside) !== JSON.stringify(hillsideFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s hillside corpus set is ${wantHillside.join(', ')} but vendor/core/ holds ${hillsideFiles.join(', ')}`);
+      }
+      for (const rel of wantHillside) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(hillside[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       const survival = survivalFilesAtPin(src);
       const wantSurvival = Object.keys(survival).sort();
       if (JSON.stringify(wantSurvival) !== JSON.stringify(survivalFiles)) {
@@ -3858,7 +3901,7 @@ async function check(coreDir) {
           `${wantP9a.length} P9a corpus file(s), all ${wantSaves.length} save (slots, tutorial progress, village state, runtime save, interior state) corpus file(s), all ` +
           `${wantProps.length} P6 props/inventory corpus file(s), all ${wantTitle.length} P8 title/tutorial ` +
           `corpus file(s), all ${wantCamera.length} camera movement corpus file(s), all ${wantAudio.length} audio (ground, cues) ` +
-          `corpus file(s), all ${wantSurvival.length} survival corpus file(s), all ${wantTraversal.length} traversal ` +
+          `corpus file(s), all ${wantHillside.length} hillside corpus file(s), all ${wantSurvival.length} survival corpus file(s), all ${wantTraversal.length} traversal ` +
           `corpus file(s), all ${wantBuild.length} headless build corpus file(s), all ${wantProgression.length} progression/skill ` +
           `corpus file(s), all ${wantLanguage.length} language corpus file(s), all ${wantGenre.length} genre systems corpus ` +
           `file(s) (the world slice among them), all ${wantPassBy.length} villager pass-by corpus file(s) and all ` +

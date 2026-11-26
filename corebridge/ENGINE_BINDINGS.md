@@ -559,6 +559,39 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `footstepRun` case one row call per step from `initialState`, and each `footstep`
   case as one call from `initialState` with a frame of the longest gait interval,
   as `tests/props_corpus.cpp` does.
+- **Hillside grading, the pads (NX.H4 on core's ADR-0001; after
+  PL.native-grading-plan-call).** Core's grading plan of a World IR's map lots is
+  the `hillside.gradingPlan` row (`README.md`, "The hillside grading rows"), so the
+  engine that grades map lots binds it instead of porting
+  `src/editor/scene/hillside-grading.ts`. Read at unreal main `a3d5ad71` (read
+  only): Unreal mirrors `conformance/hillside/pads.json` but has no runner for it
+  and no port; its `GradeLots` (`Portable/InsimulGroundPlan.cpp:308`) is the
+  default pad (ADR §2), which the plan's default pads grade by core's own
+  `gradedHeight` (the corpus case `default-parity-with-gradedheight`). The
+  binding, as ADR-0001 §§1–3 and core's `docs/editor-core-adoption.md` §2.6c state it:
+
+  | Unreal today | Row (and what the binding sends or reads) |
+  |---|---|
+  | `GradeLots(Nodes)` over every lot (map lots included) | `hillside.gradingPlan { world, engine: 'unreal' }` for the world's map lots (`pad.map.<sourceFeatureId>`); `GradeLots` keeps the non-map lots only, never a lot the plan grades |
+  | one pad set, resampled once (`GradedHeight(Pads, Raw, X, Z)`) | send the grid's points with `otherPads` = `GradeLots`' `FTerrainPad`s (`LotId`→`lotId`, `Cx`/`Cz`→`cx`/`cz`, `HalfAcross`/`HalfAway`, `AwayX`/`AwayZ`, `HeightM`→`height`, metres in core's frame) → each point's `graded` (core's point function, the plan's pads and the others in one set) and `raw`; `padSet` must be null (else a map lot is also a `GradeLots` pad, ADR §3) |
+  | no retaining walls | `plan.walls[]`: each `wall.<padId>.<line>.<n>` a run of vertices `{ x, z, top, base }` (core's frame, 1 mm quantum); spawn a wall from `base` to `top` along them (`closed` runs close on themselves) |
+  | nothing reported | `plan.report.lines` (`N grading patches not applied`, none when N is 0) until the walls are spawned; `plan.findings` are what the plan could not do within the limits, one line each, never silent |
+
+  Heights are metres in core's relative frame (an IR point `p` is the frame point
+  `p + terrainSize / 2`; a height is `n × verticalScale.value`), so the binding adds
+  nothing to them and converts only its own axes and units. The plan states no
+  building Y: a building seats on the graded ground by BYOA B7's rule, as today.
+  `plan.dividers` (present only when neighbours were divided) is what the point
+  function reads; a binding that asks for points never needs it. Each call computes
+  the plan afresh, so ask once per import with every point of the grid, not once per
+  point. **Pads only:** core's stairs (ADR §6, the corpus's cases 5–8) and the tiled
+  raster sidecar (§7, the server owner's) are not in this row. Re-vendor
+  `conformance/hillside/pads.json` from core at this library's pin and replay it as
+  `tests/hillside_corpus.cpp` does: each case one call per engine it names, its
+  points and `otherPads` sent as they are, projected as core's runner projects
+  (`cx`, `cz`, `halfAcross`, `halfAway`, `height`, `raw` and `graded` on the 1 mm
+  quantum, `awayX`, `awayZ` and `carryM` rounded to 1e-6), compared within the file's
+  tolerance, and every control refused.
 - **Survival: needs, the HUD bars and stamina (Unreal's
   `P9c.unreal.retire-survival-copy`, after PL.native-survival-rows; U106(1)).**
   Core's P9c logic is the `survival.*` rows (`README.md`, "The survival rows"), so

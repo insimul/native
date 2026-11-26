@@ -656,7 +656,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, audio cues, survival, traversal (vehicles-only among them), headless build, build-log redaction, progression, village save, runtime save, interior save, villager pass-by, world-vehicle parking, HUD (notifications, compass, minimap), quest lifecycle and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the generated hand cases
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, audio cues, hillside, survival, traversal (vehicles-only among them), headless build, build-log redaction, progression, village save, runtime save, interior save, villager pass-by, world-vehicle parking, HUD (notifications, compass, minimap), quest lifecycle and dock-operations ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the generated hand cases
   (`node corebridge/tools/gen-hand-cases.mjs --core <checkout>`; `core_vendor` refuses them until you do) and the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
@@ -855,6 +855,28 @@
   never `audio/audio-cues-corpus` (its comparator is the save-file code). Unreal's
   `insimul::audio::StepFootsteps` (`Portable/InsimulAudioCues`) is the P5 copy
   these rows retire.
+- **The hillside grading rows (PL.native-grading-plan-call, U115, U128) run core's
+  `conformance/hillside/pads.json` UNCHANGED**, copied as their own set
+  (`HILLSIDE_CORPUS_FILES`, `conformance/hillside/` this set's alone) and driven by
+  their own runner, `tests/hillside_corpus.cpp`, as `hillside_corpus` (+
+  `hillside_corpus_negative`): core's `hillside-grading-corpus.ts` step for step —
+  each case one `hillside.gradingPlan` call per engine it names, projected as
+  `runHillsideEngine` projects (the 1 mm quantum for positions, heights, `raw` and
+  `graded`; r6 for `awayX`, `awayZ`, `carryM`), every engine the same, the expected
+  answer's invariants (`hillsideAnswerFlaws`), `compareHillside` within the file's
+  tolerance, every control refused. `hillside.gradingPlan { world, engine, points?,
+  otherPads? }` is core's `computeGradingPlan` whole and STATELESS, its plan unrounded
+  (`dividers` included when neighbours were divided), `points` read by
+  `gradingPlanHeight` and `padSet` by `checkPadSet`; a world core cannot place is its
+  refusal VALUE. `[invalid-input]` is the row's own boundary: a `world` that is not an
+  object, `points` without finite `x`/`z`, `otherPads` not in `TerrainPad` shape.
+  `hillside.contract` states the contract's data keys from core's constants unrounded;
+  the runner holds the file's to them within `tolerance.unit` and skips the six prose
+  keys by name. Import `editor/scene/hillside-grading` (and `editor/layout/ground-plan`
+  for the contract), never `editor/scene/hillside-grading-corpus`. **Pads only:** core's
+  stairs (ADR-0001 §6) have not landed; a re-pin that brings them needs a new row and
+  the corpus's cases 5–8. QuickJS takes ~1 s per engine on an overlap case (the corpus
+  ~18 s in all).
 - **The survival rows (PL.native-survival-rows, U106(1)) run core's P9c corpora
   UNCHANGED**, `conformance/survival/{needs,hud,stamina}.json` copied as their own
   set (`SURVIVAL_CORPUS_FILES`) and driven by their own runner,

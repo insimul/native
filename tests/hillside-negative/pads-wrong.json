@@ -1,0 +1,5018 @@
+{
+  "area": "hillside",
+  "description": "NEGATIVE CONTROL for tests/hillside_corpus.cpp (PL.native-grading-plan-call), made from core's conformance/hillside/pads.json at the pin by the builder's gen-hillside-negative.mjs: the contract's wallMaxM moved to 1.6, one true case, six cases whose expected answer (or engine list) is wrong, and a control that changes nothing. hillside_corpus_negative passes only when the runner reports every one of them and fails the run.",
+  "version": 1,
+  "adr": "docs/decisions/0001-hillside-grading-carrier.md",
+  "tolerance": {
+    "metres": 0.001,
+    "unit": 0.000001
+  },
+  "contract": {
+    "padIdPrefix": "pad.map.",
+    "lotPadMarginM": 2,
+    "lotPadBlendM": 4,
+    "gradedCellM": 1,
+    "standMaxDeg": 15,
+    "standMaxGradient": 0.267949,
+    "blendMaxRiseM": 0.714531,
+    "blendMaxRiseRule": "(2/3) × lotPadBlendM × tan(standMaxDeg)",
+    "wallMaxM": 1.6,
+    "terraceDepthM": 2,
+    "hillsideMaxWalls": 8,
+    "wallStepMinM": 0.001,
+    "reportLine": "N grading patches not applied (only when N > 0)",
+    "overlapSlopeLatticeM": 0.1,
+    "overlapSlopeDiffM": 0.02,
+    "overlapSlopeTolerance": 0.001,
+    "overlapSlopeRule": "On the world lattice (i, j) × overlapSlopeLatticeM, a point covered (padFlatOutside < reach) by two or more of the plan's pads, at least one a hillside pad, is read: the point function's gradient (dividers included) by central differences of overlapSlopeDiffM, only when the four difference points lie in the same grading part of every covering pad and on the same side of every divider. A slope over standMaxGradient + overlapSlopeTolerance charges every pair of its covering pads of which at least one is a hillside pad (a hillside pad and a default pad included; two default pads never). Charged pairs are divided by neighbourWallRule; each pair still charged after that is one finding \"pads <id> and <id>: where their grading regions overlap, the graded ground off the walls is steeper than <standMaxDeg>°\", pairs ascending by id, after the pads' own findings.",
+    "neighbourWallRule": "Walls between neighbours (§5): each pair overlapSlopeRule charges on the blended ground, taken ascending by id, is divided by a straight retaining wall. The candidate lines are separating lines of the two lots (fit rectangles): for each axis (the lower id's away and across axes, the other's, then the centre-to-centre axis; each oriented from the lower id's centre toward the other's, a square axis as given; an axis the same as an earlier kept one, or along which the lots overlap by more than 1e-9 m, left out) the line square to it at the middle of the gap between the lots' projections, widest gap first, axis order on a tie: one wall on each such line first (stripHalfM 0), then, for each line whose gap is over 1e-9 m and in the same order, a shared terrace filling the gap (stripHalfM half the gap). With s the signed distance past the line toward the other pad and h = stripHalfM, the lower id grades only s < h and the other only s >= -h (a pad on its far side is left out of the blend); on the shared terrace -h <= s < h the ground is the mean of the two blends, each with one of the pair left out. A default member is sized as a hillside pad. The first candidate is kept with which no dividing wall (of any division) steps over wallMaxM; if none is kept the pair stays blended and any promotion is undone. Each pair is tried once; the rule is read again on the divided ground until it charges no untried pair. A dividing wall is wall.<lower id>.nb.<other sourceFeatureId>.<n> (a shared terrace's edges .nb.<other>.1.<n> at s = -h and .nb.<other>.2.<n> at s = h): each line sampled across both pads' reach boxes at most gradedCellM apart (both ends), top and base read 1e-6 m either side; a pad's own wall line does not step past its dividing line, and is cut there 1e-4 m inside (on the arc, on a corner's arc).",
+    "frame": "Metres in core's relative frame over [0, terrainSize]²: an IR point p is the frame point p + terrainSize / 2; a height is n × verticalScale.value of the bilinear heightmap, nothing added.",
+    "module": "src/editor/scene/hillside-grading.ts"
+  },
+  "replay": {
+    "input": "Each case's world is a World IR cut down to what the plan reads. For each engine in engines, build the grading plan; evaluate the point function at each of points, with otherPads (GradeLots' pads of the world's non-map lots, core TerrainPad shape) in the same pad set; and, when otherPads is given, check that set for a map lot stacked on GradeLots.",
+    "compare": "A refusal compares refused only. Otherwise pads, walls (every vertex), report, findings, points and padSet, numbers within tolerance (metres; awayX, awayZ and carryM within tolerance.unit), the rest exactly, object key sets included.",
+    "controls": "Each control is a case's answer with one thing changed. A checker must refuse every one: compare it with what the engine answers, and check the answer's own invariants (no wall vertex over wallMaxM; the report counts the pads and prints its line only when there are some; no wall on a default pad)."
+  },
+  "cases": [
+    {
+      "name": "interior-and-edge-points",
+      "adrCases": [
+        1
+      ],
+      "note": "Clear flat area: the centre, the fit rectangle's and the flat area's corners are at the target; the band's middle (2 m out, smoothstep weight 0.5) is raw + 0.5 × (target − raw); its outer edge (4 m out) and beyond are raw.",
+      "input": {
+        "world": {
+          "meta": {
+            "worldId": "h3-interior",
+            "seed": "h3-interior"
+          },
+          "geography": {
+            "terrainSize": 64,
+            "heightmap": [
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ]
+            ],
+            "elevation": {
+              "minM": 0,
+              "maxM": 10,
+              "verticalScaleM": 10
+            },
+            "layers": {
+              "footprints": [
+                {
+                  "id": "footprint.map.fp-gentle",
+                  "sourceFeatureId": "fp-gentle",
+                  "kind": "building",
+                  "points": [
+                    {
+                      "x": -5,
+                      "z": -4
+                    },
+                    {
+                      "x": 5,
+                      "z": -4
+                    },
+                    {
+                      "x": 5,
+                      "z": 4
+                    },
+                    {
+                      "x": -5,
+                      "z": 4
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "entities": {}
+        },
+        "engines": [
+          "unreal",
+          "unity",
+          "godot",
+          "babylon"
+        ],
+        "points": [
+          {
+            "label": "centre",
+            "x": 32,
+            "z": 32
+          },
+          {
+            "label": "fit corner (-x,-z)",
+            "x": 27,
+            "z": 28
+          },
+          {
+            "label": "fit corner (+x,-z)",
+            "x": 37,
+            "z": 28
+          },
+          {
+            "label": "fit corner (+x,+z)",
+            "x": 37,
+            "z": 36
+          },
+          {
+            "label": "fit corner (-x,+z)",
+            "x": 27,
+            "z": 36
+          },
+          {
+            "label": "flat corner (-x,-z)",
+            "x": 25,
+            "z": 26
+          },
+          {
+            "label": "flat corner (+x,-z)",
+            "x": 39,
+            "z": 26
+          },
+          {
+            "label": "flat corner (+x,+z)",
+            "x": 39,
+            "z": 38
+          },
+          {
+            "label": "flat corner (-x,+z)",
+            "x": 25,
+            "z": 38
+          },
+          {
+            "label": "band middle +z",
+            "x": 32,
+            "z": 40
+          },
+          {
+            "label": "band middle -z",
+            "x": 32,
+            "z": 24
+          },
+          {
+            "label": "band middle +x",
+            "x": 41,
+            "z": 32
+          },
+          {
+            "label": "band middle -x",
+            "x": 23,
+            "z": 32
+          },
+          {
+            "label": "band outer edge +z",
+            "x": 32,
+            "z": 42
+          },
+          {
+            "label": "band outer edge -z",
+            "x": 32,
+            "z": 22
+          },
+          {
+            "label": "band outer edge +x",
+            "x": 43,
+            "z": 32
+          },
+          {
+            "label": "band outer edge -x",
+            "x": 21,
+            "z": 32
+          },
+          {
+            "label": "beyond the band",
+            "x": 32,
+            "z": 45
+          }
+        ]
+      },
+      "expected": {
+        "pads": [
+          {
+            "id": "pad.map.fp-gentle",
+            "sourceFeatureId": "fp-gentle",
+            "footprintId": "footprint.map.fp-gentle",
+            "cx": 32,
+            "cz": 32,
+            "halfAcross": 5,
+            "halfAway": 4,
+            "awayX": 0,
+            "awayZ": 1,
+            "height": 2.96,
+            "hillside": false,
+            "wallCount": 0,
+            "terraceDepthM": 0,
+            "carryM": 0.714531
+          }
+        ],
+        "walls": [],
+        "report": {
+          "patches": 1,
+          "lines": [
+            "1 grading patches not applied"
+          ]
+        },
+        "findings": [],
+        "points": [
+          {
+            "label": "centre",
+            "x": 32,
+            "z": 32,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (-x,-z)",
+            "x": 27,
+            "z": 28,
+            "raw": 2.81,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (+x,-z)",
+            "x": 37,
+            "z": 28,
+            "raw": 3.11,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (+x,+z)",
+            "x": 37,
+            "z": 36,
+            "raw": 3.11,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (-x,+z)",
+            "x": 27,
+            "z": 36,
+            "raw": 2.81,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (-x,-z)",
+            "x": 25,
+            "z": 26,
+            "raw": 2.75,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (+x,-z)",
+            "x": 39,
+            "z": 26,
+            "raw": 3.17,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (+x,+z)",
+            "x": 39,
+            "z": 38,
+            "raw": 3.17,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (-x,+z)",
+            "x": 25,
+            "z": 38,
+            "raw": 2.75,
+            "graded": 2.96
+          },
+          {
+            "label": "band middle +z",
+            "x": 32,
+            "z": 40,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band middle -z",
+            "x": 32,
+            "z": 24,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band middle +x",
+            "x": 41,
+            "z": 32,
+            "raw": 3.23,
+            "graded": 3.095
+          },
+          {
+            "label": "band middle -x",
+            "x": 23,
+            "z": 32,
+            "raw": 2.69,
+            "graded": 2.825
+          },
+          {
+            "label": "band outer edge +z",
+            "x": 32,
+            "z": 42,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band outer edge -z",
+            "x": 32,
+            "z": 22,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band outer edge +x",
+            "x": 43,
+            "z": 32,
+            "raw": 3.29,
+            "graded": 3.29
+          },
+          {
+            "label": "band outer edge -x",
+            "x": 21,
+            "z": 32,
+            "raw": 2.63,
+            "graded": 2.63
+          },
+          {
+            "label": "beyond the band",
+            "x": 32,
+            "z": 45,
+            "raw": 2.96,
+            "graded": 2.96
+          }
+        ]
+      }
+    },
+    {
+      "name": "WRONG a terraced pad answered as a default pad",
+      "adrCases": [
+        4
+      ],
+      "note": "negative control (made from terraced-pad): a terraced pad answered as a default pad",
+      "input": {
+        "world": {
+          "meta": {
+            "worldId": "h3-terraced",
+            "seed": "h3-terraced"
+          },
+          "geography": {
+            "terrainSize": 64,
+            "heightmap": [
+              [
+                -0.034243,
+                0.000861,
+                0.035964,
+                0.071067,
+                0.106171,
+                0.141274,
+                0.176377,
+                0.211481,
+                0.246584,
+                0.281687,
+                0.31679,
+                0.351894,
+                0.386997,
+                0.4221,
+                0.457204,
+                0.492307,
+                0.52741
+              ],
+              [
+                -0.015066,
+                0.020038,
+                0.055141,
+                0.090244,
+                0.125348,
+                0.160451,
+                0.195554,
+                0.230658,
+                0.265761,
+                0.300864,
+                0.335967,
+                0.371071,
+                0.406174,
+                0.441277,
+                0.476381,
+                0.511484,
+                0.546587
+              ],
+              [
+                0.004111,
+                0.039215,
+                0.074318,
+                0.109421,
+                0.144525,
+                0.179628,
+                0.214731,
+                0.249835,
+                0.284938,
+                0.320041,
+                0.355144,
+                0.390248,
+                0.425351,
+                0.460454,
+                0.495558,
+                0.530661,
+                0.565764
+              ],
+              [
+                0.023288,
+                0.058392,
+                0.093495,
+                0.128598,
+                0.163702,
+                0.198805,
+                0.233908,
+                0.269012,
+                0.304115,
+                0.339218,
+                0.374321,
+                0.409425,
+                0.444528,
+                0.479631,
+                0.514735,
+                0.549838,
+                0.584941
+              ],
+              [
+                0.042465,
+                0.077569,
+                0.112672,
+                0.147775,
+                0.182879,
+                0.217982,
+                0.253085,
+                0.288189,
+                0.323292,
+                0.358395,
+                0.393499,
+                0.428602,
+                0.463705,
+                0.498808,
+                0.533912,
+                0.569015,
+                0.604118
+              ],
+              [
+                0.061643,
+                0.096746,
+                0.131849,
+                0.166952,
+                0.202056,
+                0.237159,
+                0.272262,
+                0.307366,
+                0.342469,
+                0.377572,
+                0.412676,
+                0.447779,
+                0.482882,
+                0.517985,
+                0.553089,
+                0.588192,
+                0.623295
+              ],
+              [
+                0.08082,
+                0.115923,
+                0.151026,
+                0.186129,
+                0.221233,
+                0.256336,
+                0.291439,
+                0.326543,
+                0.361646,
+                0.396749,
+                0.431853,
+                0.466956,
+                0.502059,
+                0.537162,
+                0.572266,
+                0.607369,
+                0.642472
+              ],
+              [
+                0.099997,
+                0.1351,
+                0.170203,
+                0.205306,
+                0.24041,
+                0.275513,
+                0.310616,
+                0.34572,
+                0.380823,
+                0.415926,
+                0.45103,
+                0.486133,
+                0.521236,
+                0.556339,
+                0.591443,
+                0.626546,
+                0.661649
+              ],
+              [
+                0.119174,
+                0.154277,
+                0.18938,
+                0.224483,
+                0.259587,
+                0.29469,
+                0.329793,
+                0.364897,
+                0.4,
+                0.435103,
+                0.470207,
+                0.50531,
+                0.540413,
+                0.575517,
+                0.61062,
+                0.645723,
+                0.680826
+              ],
+              [
+                0.138351,
+                0.173454,
+                0.208557,
+                0.243661,
+                0.278764,
+                0.313867,
+                0.34897,
+                0.384074,
+                0.419177,
+                0.45428,
+                0.489384,
+                0.524487,
+                0.55959,
+                0.594694,
+                0.629797,
+                0.6649,
+                0.700003
+              ],
+              [
+                0.157528,
+                0.192631,
+                0.227734,
+                0.262838,
+                0.297941,
+                0.333044,
+                0.368147,
+                0.403251,
+                0.438354,
+                0.473457,
+                0.508561,
+                0.543664,
+                0.578767,
+                0.613871,
+                0.648974,
+                0.684077,
+                0.71918
+              ],
+              [
+                0.176705,
+                0.211808,
+                0.246911,
+                0.282015,
+                0.317118,
+                0.352221,
+                0.387324,
+                0.422428,
+                0.457531,
+                0.492634,
+                0.527738,
+                0.562841,
+                0.597944,
+                0.633048,
+                0.668151,
+                0.703254,
+                0.738357
+              ],
+              [
+                0.195882,
+                0.230985,
+                0.266088,
+                0.301192,
+                0.336295,
+                0.371398,
+                0.406501,
+                0.441605,
+                0.476708,
+                0.511811,
+                0.546915,
+                0.582018,
+                0.617121,
+                0.652225,
+                0.687328,
+                0.722431,
+                0.757535
+              ],
+              [
+                0.215059,
+                0.250162,
+                0.285265,
+                0.320369,
+                0.355472,
+                0.390575,
+                0.425679,
+                0.460782,
+                0.495885,
+                0.530988,
+                0.566092,
+                0.601195,
+                0.636298,
+                0.671402,
+                0.706505,
+                0.741608,
+                0.776712
+              ],
+              [
+                0.234236,
+                0.269339,
+                0.304442,
+                0.339546,
+                0.374649,
+                0.409752,
+                0.444856,
+                0.479959,
+                0.515062,
+                0.550165,
+                0.585269,
+                0.620372,
+                0.655475,
+                0.690579,
+                0.725682,
+                0.760785,
+                0.795889
+              ],
+              [
+                0.253413,
+                0.288516,
+                0.323619,
+                0.358723,
+                0.393826,
+                0.428929,
+                0.464033,
+                0.499136,
+                0.534239,
+                0.569342,
+                0.604446,
+                0.639549,
+                0.674652,
+                0.709756,
+                0.744859,
+                0.779962,
+                0.815066
+              ],
+              [
+                0.27259,
+                0.307693,
+                0.342796,
+                0.3779,
+                0.413003,
+                0.448106,
+                0.48321,
+                0.518313,
+                0.553416,
+                0.588519,
+                0.623623,
+                0.658726,
+                0.693829,
+                0.728933,
+                0.764036,
+                0.799139,
+                0.834243
+              ]
+            ],
+            "elevation": {
+              "minM": 0,
+              "maxM": 20,
+              "verticalScaleM": 20
+            },
+            "layers": {
+              "footprints": [
+                {
+                  "id": "footprint.map.fp-steep",
+                  "sourceFeatureId": "fp-steep",
+                  "kind": "building",
+                  "points": [
+                    {
+                      "x": -6,
+                      "z": -4
+                    },
+                    {
+                      "x": 6,
+                      "z": -4
+                    },
+                    {
+                      "x": 6,
+                      "z": 4
+                    },
+                    {
+                      "x": -6,
+                      "z": 4
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "entities": {}
+        },
+        "engines": [
+          "unreal",
+          "unity",
+          "godot",
+          "babylon"
+        ]
+      },
+      "expected": {
+        "pads": [
+          {
+            "id": "pad.map.fp-steep",
+            "sourceFeatureId": "fp-steep",
+            "footprintId": "footprint.map.fp-steep",
+            "cx": 32,
+            "cz": 32,
+            "halfAcross": 6,
+            "halfAway": 4,
+            "awayX": 0,
+            "awayZ": 1,
+            "height": 8,
+            "hillside": false,
+            "wallCount": 0,
+            "terraceDepthM": 0,
+            "carryM": 0.714531
+          }
+        ],
+        "walls": [],
+        "report": {
+          "patches": 1,
+          "lines": [
+            "1 grading patches not applied"
+          ]
+        },
+        "findings": []
+      }
+    },
+    {
+      "name": "WRONG a target 2 mm high",
+      "adrCases": [
+        3
+      ],
+      "note": "negative control (made from cross-engine-pad-heights): a target 2 mm high",
+      "input": {
+        "world": {
+          "meta": {
+            "worldId": "h3-fragment",
+            "seed": "h3-fragment"
+          },
+          "geography": {
+            "terrainSize": 64,
+            "heightmap": [
+              [
+                0.2,
+                0.220191,
+                0.238485,
+                0.253164,
+                0.26285,
+                0.266632,
+                0.264155,
+                0.255652,
+                0.241922,
+                0.224254,
+                0.204308,
+                0.183957,
+                0.165114,
+                0.149547,
+                0.138719,
+                0.133647,
+                0.134808
+              ],
+              [
+                0.206667,
+                0.226301,
+                0.244091,
+                0.258366,
+                0.267785,
+                0.271462,
+                0.269054,
+                0.260786,
+                0.247434,
+                0.230253,
+                0.210856,
+                0.191066,
+                0.172741,
+                0.157603,
+                0.147074,
+                0.142142,
+                0.143271
+              ],
+              [
+                0.213333,
+                0.231329,
+                0.247635,
+                0.260719,
+                0.269351,
+                0.272722,
+                0.270515,
+                0.262936,
+                0.250699,
+                0.234951,
+                0.217173,
+                0.199035,
+                0.182239,
+                0.168364,
+                0.158713,
+                0.154193,
+                0.155227
+              ],
+              [
+                0.22,
+                0.235366,
+                0.249288,
+                0.26046,
+                0.267831,
+                0.270709,
+                0.268825,
+                0.262354,
+                0.251905,
+                0.238459,
+                0.223279,
+                0.207791,
+                0.19345,
+                0.181603,
+                0.173362,
+                0.169503,
+                0.170386
+              ],
+              [
+                0.226667,
+                0.238556,
+                0.249328,
+                0.257972,
+                0.263675,
+                0.265902,
+                0.264444,
+                0.259437,
+                0.251352,
+                0.240949,
+                0.229204,
+                0.21722,
+                0.206124,
+                0.196958,
+                0.190582,
+                0.187595,
+                0.188279
+              ],
+              [
+                0.233333,
+                0.24109,
+                0.248119,
+                0.253758,
+                0.257479,
+                0.258932,
+                0.257981,
+                0.254714,
+                0.249439,
+                0.242652,
+                0.234989,
+                0.22717,
+                0.21993,
+                0.21395,
+                0.20979,
+                0.207841,
+                0.208287
+              ],
+              [
+                0.24,
+                0.243197,
+                0.246095,
+                0.248419,
+                0.249953,
+                0.250552,
+                0.25016,
+                0.248813,
+                0.246639,
+                0.243841,
+                0.240682,
+                0.237459,
+                0.234475,
+                0.23201,
+                0.230295,
+                0.229492,
+                0.229676
+              ],
+              [
+                0.246667,
+                0.245128,
+                0.243735,
+                0.242616,
+                0.241878,
+                0.24159,
+                0.241779,
+                0.242427,
+                0.243473,
+                0.244819,
+                0.246338,
+                0.247889,
+                0.249325,
+                0.250511,
+                0.251336,
+                0.251722,
+                0.251634
+              ],
+              [
+                0.253333,
+                0.247144,
+                0.241536,
+                0.237036,
+                0.234067,
+                0.232908,
+                0.233667,
+                0.236274,
+                0.240482,
+                0.245898,
+                0.252013,
+                0.258251,
+                0.264027,
+                0.268799,
+                0.272119,
+                0.273673,
+                0.273317
+              ],
+              [
+                0.26,
+                0.249501,
+                0.239988,
+                0.232355,
+                0.227318,
+                0.225351,
+                0.226639,
+                0.231061,
+                0.2382,
+                0.247388,
+                0.25776,
+                0.268342,
+                0.278141,
+                0.286236,
+                0.291866,
+                0.294504,
+                0.2939
+              ],
+              [
+                0.266667,
+                0.252436,
+                0.239542,
+                0.229196,
+                0.22237,
+                0.219704,
+                0.22145,
+                0.227443,
+                0.23712,
+                0.249572,
+                0.26363,
+                0.277973,
+                0.291255,
+                0.302226,
+                0.309858,
+                0.313433,
+                0.312614
+              ],
+              [
+                0.273333,
+                0.256156,
+                0.240592,
+                0.228103,
+                0.219863,
+                0.216645,
+                0.218752,
+                0.225986,
+                0.237667,
+                0.252699,
+                0.269668,
+                0.286982,
+                0.303013,
+                0.316257,
+                0.325469,
+                0.329784,
+                0.328797
+              ],
+              [
+                0.28,
+                0.260822,
+                0.243445,
+                0.229502,
+                0.220303,
+                0.21671,
+                0.219063,
+                0.227139,
+                0.24018,
+                0.256962,
+                0.275908,
+                0.295238,
+                0.313137,
+                0.327923,
+                0.338208,
+                0.343025,
+                0.341923
+              ],
+              [
+                0.286667,
+                0.266545,
+                0.248314,
+                0.233685,
+                0.224032,
+                0.220263,
+                0.222731,
+                0.231205,
+                0.244888,
+                0.262495,
+                0.282373,
+                0.302654,
+                0.321434,
+                0.336947,
+                0.347738,
+                0.352793,
+                0.351636
+              ],
+              [
+                0.293333,
+                0.273377,
+                0.255295,
+                0.240786,
+                0.231213,
+                0.227475,
+                0.229923,
+                0.238327,
+                0.251898,
+                0.26936,
+                0.289075,
+                0.30919,
+                0.327815,
+                0.343201,
+                0.353903,
+                0.358916,
+                0.357769
+              ],
+              [
+                0.3,
+                0.281309,
+                0.264373,
+                0.250784,
+                0.241818,
+                0.238317,
+                0.240609,
+                0.24848,
+                0.261191,
+                0.277547,
+                0.296012,
+                0.314851,
+                0.332296,
+                0.346707,
+                0.35673,
+                0.361426,
+                0.360351
+              ],
+              [
+                0.306667,
+                0.290271,
+                0.275414,
+                0.263494,
+                0.255629,
+                0.252557,
+                0.254568,
+                0.261473,
+                0.272623,
+                0.28697,
+                0.303168,
+                0.319694,
+                0.334997,
+                0.347638,
+                0.356431,
+                0.36055,
+                0.359607
+              ]
+            ],
+            "elevation": {
+              "minM": 0,
+              "maxM": 30,
+              "verticalScaleM": 30
+            },
+            "layers": {
+              "footprints": [
+                {
+                  "id": "footprint.map.bld-row",
+                  "sourceFeatureId": "bld-row",
+                  "kind": "building",
+                  "points": [
+                    {
+                      "x": -16,
+                      "z": 5
+                    },
+                    {
+                      "x": -8,
+                      "z": 5
+                    },
+                    {
+                      "x": -8,
+                      "z": 11
+                    },
+                    {
+                      "x": -16,
+                      "z": 11
+                    }
+                  ]
+                },
+                {
+                  "id": "footprint.map.bld-pent",
+                  "sourceFeatureId": "bld-pent",
+                  "kind": "building",
+                  "points": [
+                    {
+                      "x": 6,
+                      "z": -14
+                    },
+                    {
+                      "x": 14,
+                      "z": -14
+                    },
+                    {
+                      "x": 16,
+                      "z": -8
+                    },
+                    {
+                      "x": 10,
+                      "z": -4
+                    },
+                    {
+                      "x": 4,
+                      "z": -8
+                    }
+                  ]
+                },
+                {
+                  "id": "footprint.map.parcel-1",
+                  "sourceFeatureId": "parcel-1",
+                  "kind": "lot",
+                  "points": [
+                    {
+                      "x": -9,
+                      "z": -7
+                    },
+                    {
+                      "x": 5,
+                      "z": -7
+                    },
+                    {
+                      "x": 5,
+                      "z": 3
+                    },
+                    {
+                      "x": -9,
+                      "z": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            "groundSurfaces": [
+              {
+                "id": "surface.dressed.yard",
+                "archetype": "terrain.texture.grass",
+                "width": 0,
+                "closed": true,
+                "points": [
+                  {
+                    "x": -4,
+                    "z": -4
+                  },
+                  {
+                    "x": 4,
+                    "z": -4
+                  },
+                  {
+                    "x": 4,
+                    "z": 4
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "n",
+                "toId": "s",
+                "width": 5,
+                "materialKey": null,
+                "waypoints": [
+                  {
+                    "x": 0,
+                    "y": 0,
+                    "z": -30
+                  },
+                  {
+                    "x": 0,
+                    "y": 0,
+                    "z": 30
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "engines": [
+          "unreal",
+          "unity",
+          "godot",
+          "babylon"
+        ],
+        "points": [
+          {
+            "label": "bld-row centre",
+            "x": 20,
+            "z": 40
+          },
+          {
+            "label": "bld-pent centre",
+            "x": 42,
+            "z": 22
+          },
+          {
+            "label": "beyond every band",
+            "x": 6,
+            "z": 6
+          }
+        ]
+      },
+      "expected": {
+        "pads": [
+          {
+            "id": "pad.map.bld-pent",
+            "sourceFeatureId": "bld-pent",
+            "footprintId": "footprint.map.bld-pent",
+            "cx": 42,
+            "cz": 23,
+            "halfAcross": 5,
+            "halfAway": 6,
+            "awayX": -1,
+            "awayZ": 0,
+            "height": 7.117,
+            "hillside": true,
+            "wallCount": 1,
+            "terraceDepthM": 2,
+            "carryM": 0.293413
+          },
+          {
+            "id": "pad.map.bld-row",
+            "sourceFeatureId": "bld-row",
+            "footprintId": "footprint.map.bld-row",
+            "cx": 20,
+            "cz": 40,
+            "halfAcross": 3,
+            "halfAway": 4,
+            "awayX": 1,
+            "awayZ": 0,
+            "height": 6.648,
+            "hillside": false,
+            "wallCount": 0,
+            "terraceDepthM": 0,
+            "carryM": 0.714531
+          }
+        ],
+        "walls": [
+          {
+            "id": "wall.pad.map.bld-pent.1.1",
+            "padId": "pad.map.bld-pent",
+            "line": "1",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 34,
+                "z": 24,
+                "top": 7.115,
+                "base": 7.115
+              },
+              {
+                "x": 34,
+                "z": 23,
+                "top": 7.127,
+                "base": 7.115
+              },
+              {
+                "x": 34,
+                "z": 22,
+                "top": 7.148,
+                "base": 7.115
+              },
+              {
+                "x": 34,
+                "z": 21,
+                "top": 7.169,
+                "base": 7.115
+              },
+              {
+                "x": 34,
+                "z": 20,
+                "top": 7.19,
+                "base": 7.115
+              },
+              {
+                "x": 34,
+                "z": 19,
+                "top": 7.204,
+                "base": 7.115
+              },
+              {
+                "x": 34,
+                "z": 18,
+                "top": 7.218,
+                "base": 7.115
+              },
+              {
+                "x": 34,
+                "z": 17,
+                "top": 7.233,
+                "base": 7.115
+              },
+              {
+                "x": 34,
+                "z": 16,
+                "top": 7.203,
+                "base": 7.115
+              },
+              {
+                "x": 34,
+                "z": 16,
+                "top": 7.115,
+                "base": 7.115
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.1.2",
+            "padId": "pad.map.bld-pent",
+            "line": "1",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 39,
+                "z": 16,
+                "top": 7.115,
+                "base": 7.115
+              },
+              {
+                "x": 40,
+                "z": 16,
+                "top": 7.115,
+                "base": 7.081
+              },
+              {
+                "x": 41,
+                "z": 16,
+                "top": 7.115,
+                "base": 6.978
+              },
+              {
+                "x": 42,
+                "z": 16,
+                "top": 7.115,
+                "base": 6.875
+              },
+              {
+                "x": 43,
+                "z": 16,
+                "top": 7.115,
+                "base": 6.772
+              },
+              {
+                "x": 44,
+                "z": 16,
+                "top": 7.115,
+                "base": 6.669
+              },
+              {
+                "x": 45,
+                "z": 16,
+                "top": 7.115,
+                "base": 6.573
+              },
+              {
+                "x": 46,
+                "z": 16,
+                "top": 7.115,
+                "base": 6.478
+              },
+              {
+                "x": 47,
+                "z": 16,
+                "top": 7.115,
+                "base": 6.382
+              },
+              {
+                "x": 48,
+                "z": 16,
+                "top": 7.115,
+                "base": 6.287
+              },
+              {
+                "x": 49,
+                "z": 16,
+                "top": 7.115,
+                "base": 6.208
+              },
+              {
+                "x": 50,
+                "z": 16,
+                "top": 7.115,
+                "base": 6.084
+              },
+              {
+                "x": 50,
+                "z": 16,
+                "top": 7.115,
+                "base": 6.202
+              },
+              {
+                "x": 50,
+                "z": 17,
+                "top": 7.115,
+                "base": 6.33
+              },
+              {
+                "x": 50,
+                "z": 18,
+                "top": 7.115,
+                "base": 6.457
+              },
+              {
+                "x": 50,
+                "z": 19,
+                "top": 7.115,
+                "base": 6.584
+              },
+              {
+                "x": 50,
+                "z": 20,
+                "top": 7.115,
+                "base": 6.712
+              },
+              {
+                "x": 50,
+                "z": 21,
+                "top": 7.115,
+                "base": 6.847
+              },
+              {
+                "x": 50,
+                "z": 22,
+                "top": 7.115,
+                "base": 6.983
+              },
+              {
+                "x": 50,
+                "z": 23,
+                "top": 7.115,
+                "base": 7.115
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.1.3",
+            "padId": "pad.map.bld-pent",
+            "line": "1",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 50,
+                "z": 27,
+                "top": 7.115,
+                "base": 7.115
+              },
+              {
+                "x": 50,
+                "z": 28,
+                "top": 7.222,
+                "base": 7.115
+              },
+              {
+                "x": 50,
+                "z": 29,
+                "top": 7.359,
+                "base": 7.115
+              },
+              {
+                "x": 50,
+                "z": 30,
+                "top": 7.672,
+                "base": 7.115
+              },
+              {
+                "x": 50,
+                "z": 30,
+                "top": 7.699,
+                "base": 7.115
+              },
+              {
+                "x": 49,
+                "z": 30,
+                "top": 7.663,
+                "base": 7.115
+              },
+              {
+                "x": 48,
+                "z": 30,
+                "top": 7.627,
+                "base": 7.115
+              },
+              {
+                "x": 47,
+                "z": 30,
+                "top": 7.584,
+                "base": 7.115
+              },
+              {
+                "x": 46,
+                "z": 30,
+                "top": 7.541,
+                "base": 7.115
+              },
+              {
+                "x": 45,
+                "z": 30,
+                "top": 7.497,
+                "base": 7.115
+              },
+              {
+                "x": 44,
+                "z": 30,
+                "top": 7.454,
+                "base": 7.115
+              },
+              {
+                "x": 43,
+                "z": 30,
+                "top": 7.407,
+                "base": 7.115
+              },
+              {
+                "x": 42,
+                "z": 30,
+                "top": 7.361,
+                "base": 7.115
+              },
+              {
+                "x": 41,
+                "z": 30,
+                "top": 7.314,
+                "base": 7.115
+              },
+              {
+                "x": 40,
+                "z": 30,
+                "top": 7.267,
+                "base": 7.115
+              },
+              {
+                "x": 39,
+                "z": 30,
+                "top": 7.221,
+                "base": 7.115
+              },
+              {
+                "x": 38,
+                "z": 30,
+                "top": 7.175,
+                "base": 7.115
+              },
+              {
+                "x": 37,
+                "z": 30,
+                "top": 7.129,
+                "base": 7.115
+              },
+              {
+                "x": 36,
+                "z": 30,
+                "top": 7.115,
+                "base": 7.115
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.2.1",
+            "padId": "pad.map.bld-pent",
+            "line": "2",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 32,
+                "z": 17,
+                "top": 7.233,
+                "base": 7.233
+              },
+              {
+                "x": 32,
+                "z": 16,
+                "top": 7.247,
+                "base": 7.203
+              },
+              {
+                "x": 32.152,
+                "z": 15.235,
+                "top": 7.238,
+                "base": 7.203
+              },
+              {
+                "x": 32.586,
+                "z": 14.586,
+                "top": 7.203,
+                "base": 7.203
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.2.2",
+            "padId": "pad.map.bld-pent",
+            "line": "2",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 32.586,
+                "z": 14.586,
+                "top": 7.203,
+                "base": 7.203
+              },
+              {
+                "x": 33.235,
+                "z": 14.152,
+                "top": 7.203,
+                "base": 7.145
+              },
+              {
+                "x": 34,
+                "z": 14,
+                "top": 7.115,
+                "base": 7.115
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.2.3",
+            "padId": "pad.map.bld-pent",
+            "line": "2",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 49,
+                "z": 14,
+                "top": 6.208,
+                "base": 6.208
+              },
+              {
+                "x": 50,
+                "z": 14,
+                "top": 6.129,
+                "base": 6.084
+              },
+              {
+                "x": 50.765,
+                "z": 14.152,
+                "top": 6.086,
+                "base": 6.084
+              },
+              {
+                "x": 51.414,
+                "z": 14.586,
+                "top": 6.084,
+                "base": 6.084
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.2.4",
+            "padId": "pad.map.bld-pent",
+            "line": "2",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 51.414,
+                "z": 14.586,
+                "top": 6.084,
+                "base": 6.084
+              },
+              {
+                "x": 51.848,
+                "z": 15.235,
+                "top": 6.125,
+                "base": 6.084
+              },
+              {
+                "x": 52,
+                "z": 16,
+                "top": 6.202,
+                "base": 6.202
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.2.5",
+            "padId": "pad.map.bld-pent",
+            "line": "2",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 52,
+                "z": 29,
+                "top": 7.359,
+                "base": 7.359
+              },
+              {
+                "x": 52,
+                "z": 30,
+                "top": 7.672,
+                "base": 7.496
+              },
+              {
+                "x": 51.848,
+                "z": 30.765,
+                "top": 7.672,
+                "base": 7.597
+              },
+              {
+                "x": 51.414,
+                "z": 31.414,
+                "top": 7.672,
+                "base": 7.672
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.2.6",
+            "padId": "pad.map.bld-pent",
+            "line": "2",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 51.414,
+                "z": 31.414,
+                "top": 7.672,
+                "base": 7.672
+              },
+              {
+                "x": 50.765,
+                "z": 31.848,
+                "top": 7.707,
+                "base": 7.672
+              },
+              {
+                "x": 50,
+                "z": 32,
+                "top": 7.699,
+                "base": 7.699
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.r1a.1",
+            "padId": "pad.map.bld-pent",
+            "line": "r1a",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 34,
+                "z": 16,
+                "top": 7.247,
+                "base": 7.203
+              },
+              {
+                "x": 32,
+                "z": 16,
+                "top": 7.247,
+                "base": 7.203
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.r1c.1",
+            "padId": "pad.map.bld-pent",
+            "line": "r1c",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 34,
+                "z": 16,
+                "top": 7.203,
+                "base": 7.115
+              },
+              {
+                "x": 34,
+                "z": 14,
+                "top": 7.203,
+                "base": 7.115
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.r2a.1",
+            "padId": "pad.map.bld-pent",
+            "line": "r2a",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 50,
+                "z": 16,
+                "top": 6.202,
+                "base": 6.084
+              },
+              {
+                "x": 52,
+                "z": 16,
+                "top": 6.202,
+                "base": 6.084
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.r2c.1",
+            "padId": "pad.map.bld-pent",
+            "line": "r2c",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 50,
+                "z": 16,
+                "top": 6.129,
+                "base": 6.084
+              },
+              {
+                "x": 50,
+                "z": 14,
+                "top": 6.129,
+                "base": 6.084
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.r3a.1",
+            "padId": "pad.map.bld-pent",
+            "line": "r3a",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 50,
+                "z": 30,
+                "top": 7.672,
+                "base": 7.496
+              },
+              {
+                "x": 52,
+                "z": 30,
+                "top": 7.672,
+                "base": 7.496
+              }
+            ]
+          },
+          {
+            "id": "wall.pad.map.bld-pent.r3c.1",
+            "padId": "pad.map.bld-pent",
+            "line": "r3c",
+            "closed": false,
+            "vertices": [
+              {
+                "x": 50,
+                "z": 30,
+                "top": 7.699,
+                "base": 7.672
+              },
+              {
+                "x": 50,
+                "z": 32,
+                "top": 7.699,
+                "base": 7.672
+              }
+            ]
+          }
+        ],
+        "report": {
+          "patches": 2,
+          "lines": [
+            "2 grading patches not applied"
+          ]
+        },
+        "findings": [],
+        "points": [
+          {
+            "label": "bld-row centre",
+            "x": 20,
+            "z": 40,
+            "raw": 6.591,
+            "graded": 6.648
+          },
+          {
+            "label": "bld-pent centre",
+            "x": 42,
+            "z": 22,
+            "raw": 7.052,
+            "graded": 7.115
+          },
+          {
+            "label": "beyond every band",
+            "x": 6,
+            "z": 6,
+            "raw": 7.12,
+            "graded": 7.12
+          }
+        ]
+      }
+    },
+    {
+      "name": "WRONG the report line on an empty plan",
+      "adrCases": [
+        9,
+        10
+      ],
+      "note": "negative control (made from no-map-world-has-an-empty-plan): the report line on an empty plan",
+      "input": {
+        "world": {
+          "meta": {
+            "insimulVersion": "1.0.0",
+            "worldId": "fixture-ground-surfaces",
+            "worldName": "Ground Surfaces Today",
+            "worldType": "medieval-fantasy",
+            "genreConfig": {},
+            "exportTimestamp": "2026-10-30T00:00:00.000Z",
+            "exportVersion": 1,
+            "seed": "nf-c6s"
+          },
+          "geography": {
+            "terrainSize": 512,
+            "worldScaleFactor": 1,
+            "terrainFeatures": [],
+            "biomeZones": [],
+            "countries": [],
+            "states": [],
+            "settlements": [],
+            "waterFeatures": [],
+            "foliageLayers": [],
+            "groundSurfaces": [
+              {
+                "id": "surface.6abb767c2b16b9b231ebd078.6abb76da2b16b9b231ebd557.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "6abb767c2b16b9b231ebd078",
+                "lotId": "6abb76da2b16b9b231ebd557",
+                "points": [
+                  {
+                    "x": -26.46476083964027,
+                    "z": -22.391117150083005
+                  },
+                  {
+                    "x": -32.905341184305,
+                    "z": -8.63
+                  },
+                  {
+                    "x": -19.25,
+                    "z": -2.2
+                  },
+                  {
+                    "x": -12.81,
+                    "z": -15.96
+                  }
+                ],
+                "closed": true,
+                "width": 0,
+                "name": "Town Square",
+                "districtName": "Old Town"
+              },
+              {
+                "id": "surface.6abb767c2b16b9b231ebd078.6abb76da2b16b9b231ebd556.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "6abb767c2b16b9b231ebd078",
+                "lotId": "6abb76da2b16b9b231ebd556",
+                "points": [
+                  {
+                    "x": -3.279999999999999,
+                    "z": 35.583
+                  },
+                  {
+                    "x": -3.279999999999999,
+                    "z": 42.783
+                  },
+                  {
+                    "x": 3.92,
+                    "z": 42.783
+                  },
+                  {
+                    "x": 3.92,
+                    "z": 35.583
+                  }
+                ],
+                "closed": true,
+                "width": 0,
+                "name": null,
+                "districtName": null
+              },
+              {
+                "id": "surface.6abb767c2b16b9b231ebd078.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "6abb767c2b16b9b231ebd078",
+                "lotId": null,
+                "points": [
+                  {
+                    "x": 40.5,
+                    "z": -10.25
+                  },
+                  {
+                    "x": 52.5,
+                    "z": -10.25
+                  },
+                  {
+                    "x": 52.5,
+                    "z": 1.75
+                  },
+                  {
+                    "x": 40.5,
+                    "z": 1.75
+                  }
+                ],
+                "closed": true,
+                "width": 0,
+                "name": null,
+                "districtName": null
+              },
+              {
+                "id": "surface.6abb767c2b16b9b231ebd078.6abb76da2b16b9b231ebd53e.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "6abb767c2b16b9b231ebd078",
+                "lotId": "6abb76da2b16b9b231ebd53e",
+                "points": [
+                  {
+                    "x": -12.067360650538264,
+                    "z": -43.12740975807394
+                  },
+                  {
+                    "x": -11.99418973896,
+                    "z": -47.5
+                  }
+                ],
+                "closed": false,
+                "width": 2.4
+              },
+              {
+                "id": "surface.6abb767c2b16b9b231ebd078.6abb76da2b16b9b231ebd540.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "6abb767c2b16b9b231ebd078",
+                "lotId": "6abb76da2b16b9b231ebd540",
+                "points": [
+                  {
+                    "x": 8.1,
+                    "z": 12.3
+                  },
+                  {
+                    "x": 8.1,
+                    "z": 17.9
+                  }
+                ],
+                "closed": false,
+                "width": 1.5
+              }
+            ],
+            "latitude": 51.5
+          },
+          "entities": {},
+          "systems": {},
+          "theme": {},
+          "assets": {},
+          "player": {},
+          "ui": {},
+          "combat": {},
+          "survival": null,
+          "resources": null,
+          "assessment": null,
+          "languageLearning": null,
+          "aiConfig": {}
+        },
+        "engines": [
+          "unreal",
+          "unity",
+          "godot",
+          "babylon"
+        ],
+        "points": [
+          {
+            "label": "a dressed surface",
+            "x": 32,
+            "z": 32
+          }
+        ]
+      },
+      "expected": {
+        "pads": [],
+        "walls": [],
+        "report": {
+          "patches": 0,
+          "lines": [
+            "0 grading patches not applied"
+          ]
+        },
+        "findings": [],
+        "points": [
+          {
+            "label": "a dressed surface",
+            "x": 32,
+            "z": 32,
+            "raw": 0,
+            "graded": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "WRONG a stacked pad set read as one pass",
+      "adrCases": [
+        10
+      ],
+      "note": "negative control (made from a-pad-stacked-on-gradelots-is-refused): a stacked pad set read as one pass",
+      "input": {
+        "world": {
+          "meta": {
+            "worldId": "h3-interior",
+            "seed": "h3-interior"
+          },
+          "geography": {
+            "terrainSize": 64,
+            "heightmap": [
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ]
+            ],
+            "elevation": {
+              "minM": 0,
+              "maxM": 10,
+              "verticalScaleM": 10
+            },
+            "layers": {
+              "footprints": [
+                {
+                  "id": "footprint.map.fp-gentle",
+                  "sourceFeatureId": "fp-gentle",
+                  "kind": "building",
+                  "points": [
+                    {
+                      "x": -5,
+                      "z": -4
+                    },
+                    {
+                      "x": 5,
+                      "z": -4
+                    },
+                    {
+                      "x": 5,
+                      "z": 4
+                    },
+                    {
+                      "x": -5,
+                      "z": 4
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "entities": {}
+        },
+        "engines": [
+          "unreal",
+          "unity",
+          "godot",
+          "babylon"
+        ],
+        "otherPads": [
+          {
+            "lotId": "footprint.map.fp-gentle",
+            "cx": 32,
+            "cz": 32,
+            "halfAcross": 5,
+            "halfAway": 4,
+            "awayX": 0,
+            "awayZ": 1,
+            "height": 2.96
+          }
+        ]
+      },
+      "expected": {
+        "pads": [
+          {
+            "id": "pad.map.fp-gentle",
+            "sourceFeatureId": "fp-gentle",
+            "footprintId": "footprint.map.fp-gentle",
+            "cx": 32,
+            "cz": 32,
+            "halfAcross": 5,
+            "halfAway": 4,
+            "awayX": 0,
+            "awayZ": 1,
+            "height": 2.96,
+            "hillside": false,
+            "wallCount": 0,
+            "terraceDepthM": 0,
+            "carryM": 0.714531
+          }
+        ],
+        "walls": [],
+        "report": {
+          "patches": 1,
+          "lines": [
+            "1 grading patches not applied"
+          ]
+        },
+        "findings": [],
+        "padSet": null
+      }
+    },
+    {
+      "name": "WRONG an engine the row refuses",
+      "adrCases": [
+        1
+      ],
+      "note": "negative control (made from interior-and-edge-points): an engine the row refuses",
+      "input": {
+        "world": {
+          "meta": {
+            "worldId": "h3-interior",
+            "seed": "h3-interior"
+          },
+          "geography": {
+            "terrainSize": 64,
+            "heightmap": [
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ],
+              [
+                0.2,
+                0.212,
+                0.224,
+                0.236,
+                0.248,
+                0.26,
+                0.272,
+                0.284,
+                0.296,
+                0.308,
+                0.32,
+                0.332,
+                0.344,
+                0.356,
+                0.368,
+                0.38,
+                0.392
+              ]
+            ],
+            "elevation": {
+              "minM": 0,
+              "maxM": 10,
+              "verticalScaleM": 10
+            },
+            "layers": {
+              "footprints": [
+                {
+                  "id": "footprint.map.fp-gentle",
+                  "sourceFeatureId": "fp-gentle",
+                  "kind": "building",
+                  "points": [
+                    {
+                      "x": -5,
+                      "z": -4
+                    },
+                    {
+                      "x": 5,
+                      "z": -4
+                    },
+                    {
+                      "x": 5,
+                      "z": 4
+                    },
+                    {
+                      "x": -5,
+                      "z": 4
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "entities": {}
+        },
+        "engines": [
+          "unreal",
+          "cryengine"
+        ],
+        "points": [
+          {
+            "label": "centre",
+            "x": 32,
+            "z": 32
+          },
+          {
+            "label": "fit corner (-x,-z)",
+            "x": 27,
+            "z": 28
+          },
+          {
+            "label": "fit corner (+x,-z)",
+            "x": 37,
+            "z": 28
+          },
+          {
+            "label": "fit corner (+x,+z)",
+            "x": 37,
+            "z": 36
+          },
+          {
+            "label": "fit corner (-x,+z)",
+            "x": 27,
+            "z": 36
+          },
+          {
+            "label": "flat corner (-x,-z)",
+            "x": 25,
+            "z": 26
+          },
+          {
+            "label": "flat corner (+x,-z)",
+            "x": 39,
+            "z": 26
+          },
+          {
+            "label": "flat corner (+x,+z)",
+            "x": 39,
+            "z": 38
+          },
+          {
+            "label": "flat corner (-x,+z)",
+            "x": 25,
+            "z": 38
+          },
+          {
+            "label": "band middle +z",
+            "x": 32,
+            "z": 40
+          },
+          {
+            "label": "band middle -z",
+            "x": 32,
+            "z": 24
+          },
+          {
+            "label": "band middle +x",
+            "x": 41,
+            "z": 32
+          },
+          {
+            "label": "band middle -x",
+            "x": 23,
+            "z": 32
+          },
+          {
+            "label": "band outer edge +z",
+            "x": 32,
+            "z": 42
+          },
+          {
+            "label": "band outer edge -z",
+            "x": 32,
+            "z": 22
+          },
+          {
+            "label": "band outer edge +x",
+            "x": 43,
+            "z": 32
+          },
+          {
+            "label": "band outer edge -x",
+            "x": 21,
+            "z": 32
+          },
+          {
+            "label": "beyond the band",
+            "x": 32,
+            "z": 45
+          }
+        ]
+      },
+      "expected": {
+        "pads": [
+          {
+            "id": "pad.map.fp-gentle",
+            "sourceFeatureId": "fp-gentle",
+            "footprintId": "footprint.map.fp-gentle",
+            "cx": 32,
+            "cz": 32,
+            "halfAcross": 5,
+            "halfAway": 4,
+            "awayX": 0,
+            "awayZ": 1,
+            "height": 2.96,
+            "hillside": false,
+            "wallCount": 0,
+            "terraceDepthM": 0,
+            "carryM": 0.714531
+          }
+        ],
+        "walls": [],
+        "report": {
+          "patches": 1,
+          "lines": [
+            "1 grading patches not applied"
+          ]
+        },
+        "findings": [],
+        "points": [
+          {
+            "label": "centre",
+            "x": 32,
+            "z": 32,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (-x,-z)",
+            "x": 27,
+            "z": 28,
+            "raw": 2.81,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (+x,-z)",
+            "x": 37,
+            "z": 28,
+            "raw": 3.11,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (+x,+z)",
+            "x": 37,
+            "z": 36,
+            "raw": 3.11,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (-x,+z)",
+            "x": 27,
+            "z": 36,
+            "raw": 2.81,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (-x,-z)",
+            "x": 25,
+            "z": 26,
+            "raw": 2.75,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (+x,-z)",
+            "x": 39,
+            "z": 26,
+            "raw": 3.17,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (+x,+z)",
+            "x": 39,
+            "z": 38,
+            "raw": 3.17,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (-x,+z)",
+            "x": 25,
+            "z": 38,
+            "raw": 2.75,
+            "graded": 2.96
+          },
+          {
+            "label": "band middle +z",
+            "x": 32,
+            "z": 40,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band middle -z",
+            "x": 32,
+            "z": 24,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band middle +x",
+            "x": 41,
+            "z": 32,
+            "raw": 3.23,
+            "graded": 3.095
+          },
+          {
+            "label": "band middle -x",
+            "x": 23,
+            "z": 32,
+            "raw": 2.69,
+            "graded": 2.825
+          },
+          {
+            "label": "band outer edge +z",
+            "x": 32,
+            "z": 42,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band outer edge -z",
+            "x": 32,
+            "z": 22,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band outer edge +x",
+            "x": 43,
+            "z": 32,
+            "raw": 3.29,
+            "graded": 3.29
+          },
+          {
+            "label": "band outer edge -x",
+            "x": 21,
+            "z": 32,
+            "raw": 2.63,
+            "graded": 2.63
+          },
+          {
+            "label": "beyond the band",
+            "x": 32,
+            "z": 45,
+            "raw": 2.96,
+            "graded": 2.96
+          }
+        ]
+      }
+    },
+    {
+      "name": "WRONG an overlap finding where the blend holds",
+      "adrCases": [
+        11
+      ],
+      "note": "negative control (made from overlapping-neighbours-16m): an overlap finding where the blend holds",
+      "input": {
+        "world": {
+          "meta": {
+            "worldId": "h3-overlap-16",
+            "seed": "h3-overlap-16"
+          },
+          "geography": {
+            "terrainSize": 64,
+            "heightmap": [
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            ],
+            "elevation": {
+              "minM": 0,
+              "maxM": 1,
+              "verticalScaleM": 1
+            },
+            "layers": {
+              "footprints": [
+                {
+                  "id": "footprint.map.a",
+                  "sourceFeatureId": "a",
+                  "kind": "building",
+                  "points": [
+                    {
+                      "x": -17,
+                      "z": -5
+                    },
+                    {
+                      "x": -7,
+                      "z": -5
+                    },
+                    {
+                      "x": -7,
+                      "z": 5
+                    },
+                    {
+                      "x": -17,
+                      "z": 5
+                    }
+                  ]
+                },
+                {
+                  "id": "footprint.map.b",
+                  "sourceFeatureId": "b",
+                  "kind": "building",
+                  "points": [
+                    {
+                      "x": -1,
+                      "z": -5
+                    },
+                    {
+                      "x": 9,
+                      "z": -5
+                    },
+                    {
+                      "x": 9,
+                      "z": 5
+                    },
+                    {
+                      "x": -1,
+                      "z": 5
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "entities": {}
+        },
+        "engines": [
+          "unreal",
+          "unity",
+          "godot",
+          "babylon"
+        ],
+        "points": [
+          {
+            "label": "A centre",
+            "x": 20,
+            "z": 32
+          },
+          {
+            "label": "A's clear flat area (5 m from A's centre, away from B)",
+            "x": 15,
+            "z": 32
+          },
+          {
+            "label": "A's clear flat area (x = 21)",
+            "x": 21,
+            "z": 32
+          },
+          {
+            "label": "6 m from A's centre toward B",
+            "x": 26,
+            "z": 32
+          },
+          {
+            "label": "7 m from A's centre toward B",
+            "x": 27,
+            "z": 32
+          }
+        ]
+      },
+      "expected": {
+        "pads": [
+          {
+            "id": "pad.map.a",
+            "sourceFeatureId": "a",
+            "footprintId": "footprint.map.a",
+            "cx": 20,
+            "cz": 32,
+            "halfAcross": 5,
+            "halfAway": 5,
+            "awayX": 0,
+            "awayZ": 1,
+            "height": 0,
+            "hillside": false,
+            "wallCount": 0,
+            "terraceDepthM": 0,
+            "carryM": 0.714531
+          },
+          {
+            "id": "pad.map.b",
+            "sourceFeatureId": "b",
+            "footprintId": "footprint.map.b",
+            "cx": 36,
+            "cz": 32,
+            "halfAcross": 5,
+            "halfAway": 5,
+            "awayX": 0,
+            "awayZ": 1,
+            "height": 1,
+            "hillside": false,
+            "wallCount": 0,
+            "terraceDepthM": 0,
+            "carryM": 0.714531
+          }
+        ],
+        "walls": [],
+        "report": {
+          "patches": 2,
+          "lines": [
+            "2 grading patches not applied"
+          ]
+        },
+        "findings": [
+          "pads pad.map.a and pad.map.b: where their grading regions overlap, the graded ground off the walls is steeper than 15°"
+        ],
+        "points": [
+          {
+            "label": "A centre",
+            "x": 20,
+            "z": 32,
+            "raw": 0,
+            "graded": 0
+          },
+          {
+            "label": "A's clear flat area (5 m from A's centre, away from B)",
+            "x": 15,
+            "z": 32,
+            "raw": 0,
+            "graded": 0
+          },
+          {
+            "label": "A's clear flat area (x = 21)",
+            "x": 21,
+            "z": 32,
+            "raw": 0,
+            "graded": 0
+          },
+          {
+            "label": "6 m from A's centre toward B",
+            "x": 26,
+            "z": 32,
+            "raw": 0,
+            "graded": 0.135
+          },
+          {
+            "label": "7 m from A's centre toward B",
+            "x": 27,
+            "z": 32,
+            "raw": 0.5,
+            "graded": 0.333
+          }
+        ]
+      }
+    }
+  ],
+  "controls": [
+    {
+      "name": "WRONG a control that changes nothing",
+      "case": "interior-and-edge-points",
+      "change": "nothing: the case's own expected answer",
+      "answer": {
+        "pads": [
+          {
+            "id": "pad.map.fp-gentle",
+            "sourceFeatureId": "fp-gentle",
+            "footprintId": "footprint.map.fp-gentle",
+            "cx": 32,
+            "cz": 32,
+            "halfAcross": 5,
+            "halfAway": 4,
+            "awayX": 0,
+            "awayZ": 1,
+            "height": 2.96,
+            "hillside": false,
+            "wallCount": 0,
+            "terraceDepthM": 0,
+            "carryM": 0.714531
+          }
+        ],
+        "walls": [],
+        "report": {
+          "patches": 1,
+          "lines": [
+            "1 grading patches not applied"
+          ]
+        },
+        "findings": [],
+        "points": [
+          {
+            "label": "centre",
+            "x": 32,
+            "z": 32,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (-x,-z)",
+            "x": 27,
+            "z": 28,
+            "raw": 2.81,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (+x,-z)",
+            "x": 37,
+            "z": 28,
+            "raw": 3.11,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (+x,+z)",
+            "x": 37,
+            "z": 36,
+            "raw": 3.11,
+            "graded": 2.96
+          },
+          {
+            "label": "fit corner (-x,+z)",
+            "x": 27,
+            "z": 36,
+            "raw": 2.81,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (-x,-z)",
+            "x": 25,
+            "z": 26,
+            "raw": 2.75,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (+x,-z)",
+            "x": 39,
+            "z": 26,
+            "raw": 3.17,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (+x,+z)",
+            "x": 39,
+            "z": 38,
+            "raw": 3.17,
+            "graded": 2.96
+          },
+          {
+            "label": "flat corner (-x,+z)",
+            "x": 25,
+            "z": 38,
+            "raw": 2.75,
+            "graded": 2.96
+          },
+          {
+            "label": "band middle +z",
+            "x": 32,
+            "z": 40,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band middle -z",
+            "x": 32,
+            "z": 24,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band middle +x",
+            "x": 41,
+            "z": 32,
+            "raw": 3.23,
+            "graded": 3.095
+          },
+          {
+            "label": "band middle -x",
+            "x": 23,
+            "z": 32,
+            "raw": 2.69,
+            "graded": 2.825
+          },
+          {
+            "label": "band outer edge +z",
+            "x": 32,
+            "z": 42,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band outer edge -z",
+            "x": 32,
+            "z": 22,
+            "raw": 2.96,
+            "graded": 2.96
+          },
+          {
+            "label": "band outer edge +x",
+            "x": 43,
+            "z": 32,
+            "raw": 3.29,
+            "graded": 3.29
+          },
+          {
+            "label": "band outer edge -x",
+            "x": 21,
+            "z": 32,
+            "raw": 2.63,
+            "graded": 2.63
+          },
+          {
+            "label": "beyond the band",
+            "x": 32,
+            "z": 45,
+            "raw": 2.96,
+            "graded": 2.96
+          }
+        ]
+      }
+    }
+  ]
+}
