@@ -1064,6 +1064,15 @@
     },
     {
       "rule": "undeclared-dependency",
+      "path": "corebridge/tools/hand-cases/build-redact.mjs",
+      "specifier": "@insimul/core/build/build-log-redaction",
+      "classification": "keep",
+      "reason": "A GENERATOR INPUT, never shipped: the hand-case spec tools/gen-hand-cases.mjs bundles against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, exactly as vendor-core-bundle.mjs resolves entry.js's specifiers, to compute corebridge/tests/cases/bridge-build-redact.json's expectations with core's own redactBuildLogLine and redactBuildLog (PL.native-build-redact-rows, rulings U120 and U128). Nothing in the shipped artifact imports it. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-build-redact-rows (Features Gauntlet PL.native-build-redact-rows)",
+      "reviewedAt": "2026-11-25"
+    },
+    {
+      "rule": "undeclared-dependency",
       "path": "corebridge/tools/hand-cases/runtime-save.mjs",
       "specifier": "@insimul/core/runtime-save",
       "classification": "keep",
