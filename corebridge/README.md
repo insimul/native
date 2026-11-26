@@ -1717,8 +1717,14 @@ by `tools/hand-cases/hillside.mjs`) pin the plan whole as the row answers it (un
 `dividers` included), the contract unrounded, a terraced pad (three walls on a 26 %
 slope), the wall count stopping at `HILLSIDE_MAX_WALLS` with its findings, divided
 neighbours (one wall; a shared terrace), each engine's legacy scale where a world
-states no relief, core's refusals as values, `GradeLots` pads in one set and the
-boundary. **Cost:** the overlap cases read the slope on core's 0.1 m lattice; a pair of
+states no relief, core's refusals as values, `GradeLots` pads in one set (a pad 1.5 mm
+off a map pad is not a stack: `WALL_STEP_MIN_M`), a house and shed on either side of the
+overlap rule's margin (charged and divided at 10 %, held at 9.8 % and 9.866 % and across
+a 3 m gap: worlds that turn red when the overlap lattice, its difference or its
+tolerance moves) and the boundary. Core's own cases pin the wall step and terrace depth
+in the plan; the overlap constants move none of them, which is why these worlds exist.
+Moving the difference to 0.01 m changes no world found, and only `hillside.contract`
+catches it. **Cost:** the overlap cases read the slope on core's 0.1 m lattice; a pair of
 terraced neighbours takes about 1 s per engine in QuickJS (the whole corpus, 64 calls,
 about 18 s on the 16 GB Mac), so a binding asks once per import, not once per point.
 
